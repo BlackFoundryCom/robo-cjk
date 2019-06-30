@@ -2,10 +2,10 @@
   "name": "robocjkmermaid",
   "version": "1.0.0",
   "description": "build svg for documentation",
-  "main": "mermaid/index.js",
+  "main": "mermaidDoc/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node index.js"
+    "build": "node mermaidDoc/index.js"
   },
   "repository": {
     "type": "git",
