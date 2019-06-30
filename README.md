@@ -3,20 +3,20 @@ RoboFont extension for CJK font development
 
 ```mermaid
 graph TD
-PE[Project Editor] --> Project
+PE[Project Editor] --> .roboCJKproject
 SC[Space Center] -.->wip((WIP))
 Settings -.-> wip((WIP))
 
-Project --> Calendar
-Project --> Character-Sets
-Project --> UFO-Masters
-Project --> gcd[Glyph Composition Data]
-Project --> df[Design Frame]
-Project --> rf[Reference Viewer]
+ .roboCJKproject --> Calendar
+ .roboCJKproject --> Character-Sets
+ .roboCJKproject --> UFO-Masters
+ .roboCJKproject --> gcd[Glyph Composition Data]
+ .roboCJKproject --> df[Design Frame]
+ .roboCJKproject --> rf[Reference Viewer]
 
 
 Calendar -.->  wip((WIP))
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTI0NTU1Njk1N119
+eyJoaXN0b3J5IjpbMjA0NTQwNDI3NSwtMjQ1NTU2OTU3XX0=
 -->
