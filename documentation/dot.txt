@@ -1,12 +1,15 @@
 digraph {
 	
-	node [shape = record]
+	node [shape = record, fontname=courier]
 	rankdir = TB
+	fontpath="./documentation/"
+	fontname="Helvetica"
+	fontnames="ps"
 
 	"RoboCJK UI"
 
 	subgraph {
-		node [style=filled, color=pink]
+		node [style=filled, fillcolor=pink]
 
 		"RoboCJK UI" -> "Project Editor"
 		"RoboCJK UI" -> "Settings"
@@ -17,7 +20,7 @@ digraph {
 	}
 	
 	subgraph {
-		node [style=filled, color=lightblue]
+		node [style=filled, fillcolor=lightblue]
 		 "UFO-Masters" -> "Get Mini Font / Inject Back" -> "UFO-Subsetted" [dir="both"]
 		 "Variable Component Editor" -> "Variable Component Glyphs"
 	}
@@ -25,7 +28,7 @@ digraph {
  	"Project Editor" -> ".roboCJKproject"
 
 	subgraph {
-		node [style=filled, color=gray]
+		node [style=filled, fillcolor=gray]
 		".roboCJKproject" -> "Character-Sets"
 	 	".roboCJKproject" -> "UFO-Masters"
 	 	".roboCJKproject" -> "Glyph Composition Data"
@@ -49,14 +52,14 @@ digraph {
 	"UFO-Masters" -> "CI Build"
 	"Variable Component Glyphs" -> "CI Build"
 
-	"Variable Component Instances Data" [style=filled, color=turquoise]
+	"Variable Component Instances Data" [style=filled, fillcolor=turquoise]
 
 	"Variable Component Selector" -> "Variable Component Instances Data" 
 	"Variable Component Instances Data" ->  "CI Build"
 
-	"VarFont 1.9" [style=filled, color=yellow, shape=diamond]
-	"VarFont 1.8" [style=filled, color=yellow, shape=diamond]
-	"Static Fonts" [style=filled, color=yellow, shape=diamond]
+	"VarFont 1.9" [style=filled, fillcolor=yellow, shape=diamond]
+	"VarFont 1.8" [style=filled, fillcolor=yellow, shape=diamond]
+	"Static Fonts" [style=filled, fillcolor=yellow, shape=diamond]
 
 	"CI Build" -> "VarFont 1.9"
 	"CI Build" -> "VarFont 1.8"

@@ -20,33 +20,33 @@ var dot = fs.readFile(diagramFile, 'utf-8', (err, data) => {
 
   })
   .catch(error => {
-    // Possibly display the error
     console.error(error);
   });
 });
 
 
 
+// var graphviz = require('graphviz');
 
+// var g = graphviz.digraph("RoboCJK");
+// g.set("rankdir", "TB")
+// g.setNodeAttribut("shape", "record")
+// g.setNodeAttribut("fontname", "Courier")
 
+// var n1 = g.addNode( "Hello", {"color" : "blue"} );
+// n1.set( "style", "filled" );
 
+// // Add node (ID: World)
+// g.addNode( "World" );
 
+// // Add edge between the two nodes
+// var e = g.addEdge( n1, "World" );
+// e.set( "color", "red" );
 
-// function buildHtml(req) {
-//   var header = '';
-//   var body = '';
+// // Print the dot script
+// console.log( g.to_dot() );
 
-//   // concatenate header string
-//   // concatenate body string
+// // Set GraphViz path (if not in your path)
+// // Generate a PNG output
+// g.output( "svg", "documentation/Diagram.svg" );
 
-//   return '<!DOCTYPE html>'
-//        + '<html><head>' + header + '</head><body>' + body + '</body></html>';
-// };
-
-// var fileName = 'mermaidDoc/index.html';
-// var stream = fs.createWriteStream(fileName);
-
-// stream.once('open', function(fd) {
-//   var html = buildHtml();
-//   stream.end(html);
-// });
