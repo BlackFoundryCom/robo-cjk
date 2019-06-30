@@ -1,6 +1,6 @@
 digraph {
 	
-	node [shape = record, fontname=courier]
+	node [shape = record, fontname="Arial"]
 	rankdir = TB
 	fontpath="./documentation/"
 	fontname="Helvetica"
@@ -60,7 +60,7 @@ digraph {
 	"VarFont 1.9" [style=filled, fillcolor=yellow, shape=diamond]
 	"VarFont 1.8" [style=filled, fillcolor=yellow, shape=diamond]
 	"Static Fonts" [style=filled, fillcolor=yellow, shape=diamond]
-
+	
 	"CI Build" -> "VarFont 1.9"
 	"CI Build" -> "VarFont 1.8"
 	"CI Build" -> "Static Fonts"
