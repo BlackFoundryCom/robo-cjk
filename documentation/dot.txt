@@ -1,69 +1,80 @@
-digraph {
-	
-	node [shape = record, fontname="Arial"]
-	rankdir = TB
-	fontpath="./documentation/"
-	fontname="Helvetica"
-	fontnames="ps"
-
-	"RoboCJK UI"
+digraph{
 
 	subgraph {
-		node [style=filled, fillcolor=pink]
+		
+		node [shape = record, fontname="Arial"]
+		rankdir = TB
+		fontpath="./documentation/"
+		fontname="Helvetica"
+		fontnames="ps"
 
-		"RoboCJK UI" -> "Project Editor"
-		"RoboCJK UI" -> "Settings"
-		"RoboCJK UI" -> "Space Center"
-		"RoboCJK UI" -> "Variable Component Editor"
-		"RoboCJK UI" -> "Variable Component Selector"
-		"RoboCJK UI" -> "Get Mini Font / Inject Back"
+		"RoboCJK" [style=filled, fillcolor=deeppink]
+
+		subgraph {
+			node [style=filled, fillcolor=pink]
+
+			"RoboCJK Settings" [style=filled, fillcolor=gray]
+
+			"RoboCJK" -> "Project Editor"
+			"RoboCJK" -> "RoboCJK Settings"
+			"Variable Component Editor"
+			"Variable Component Selector"
+			"Get Mini Font / Inject Back"
+
+		}
+		
+		subgraph {
+			node [style=filled, fillcolor=lightblue]
+			 "UFO-Masters" -> "Get Mini Font / Inject Back" -> "UFO-Subsetted" [dir="both"]
+			 "Variable Component Editor" -> "Variable Component Glyphs"
+		}
+
+	 	"Project Editor" -> "JSON roboCJKproject"
+
+		subgraph {
+			node [style=filled, fillcolor=gray]
+			"JSON roboCJKproject" -> "Character-Sets"
+		 	"JSON roboCJKproject" -> "UFO-Masters"
+		 	"JSON roboCJKproject" -> "Glyph Composition Data"
+		 	"JSON roboCJKproject" -> "Project Settings"
+		}
+
+		
+
+		"Variable Component Editor" -> "UFO-Masters"
+
+		"Glyph Composition Data" -> "Variable Component Editor" [dir="both"]
+		"Glyph Composition Data" -> "Get Mini Font / Inject Back" [dir="both"]
+		"Glyph Composition Data" -> "Variable Component Selector"
+		"Variable Component Glyphs" -> "Variable Component Selector"
+
+		"Variable Component Selector" -> "UFO-Subsetted" 
+
+		"CI Build" [shape=circle]
+		"UFO-Masters" -> "CI Build"
+		"Variable Component Glyphs" -> "CI Build"
+
+		"Variable Component Instances Data" [style=filled, fillcolor=gray]
+
+		"Variable Component Selector" -> "Variable Component Instances Data" 
+		"Variable Component Instances Data" ->  "CI Build"
+
+		"VarFont 1.9" [style=filled, fillcolor=darkorange, shape=diamond]
+		
+		"CI Build" -> "VarFont 1.9"
+
+
 	}
-	
+
 	subgraph {
-		node [style=filled, fillcolor=lightblue]
-		 "UFO-Masters" -> "Get Mini Font / Inject Back" -> "UFO-Subsetted" [dir="both"]
-		 "Variable Component Editor" -> "Variable Component Glyphs"
+		node [style=filled, fillcolor=gold, shape = record, fontname="Arial"]
+		"RoboCJK" -> "Space Center"
+		"Balance Handles" -> "RoboCJK Settings" [dir="back"]
+		"Power Ruler" -> "RoboCJK Settings" [dir="back"]
+		"Design Frame" -> "Project Settings" [dir="back"]
+		"Reference Viewer" -> "Project Settings" [dir="back"]
+		"Calendar" -> "Project Settings" [dir="back"]
 	}
-
- 	"Project Editor" -> ".roboCJKproject"
-
-	subgraph {
-		node [style=filled, fillcolor=gray]
-		".roboCJKproject" -> "Character-Sets"
-	 	".roboCJKproject" -> "UFO-Masters"
-	 	".roboCJKproject" -> "Glyph Composition Data"
-	 	".roboCJKproject" -> "Design Frame"
-	 	".roboCJKproject" -> "Reference Viewer"
-	 	".roboCJKproject" -> "Calendar"
-	}
-
-	
-
-	"Variable Component Editor" -> "UFO-Masters"
-
-	"Glyph Composition Data" -> "Variable Component Editor" [dir="both"]
-	"Glyph Composition Data" -> "Get Mini Font / Inject Back" [dir="both"]
-	"Glyph Composition Data" -> "Variable Component Selector"
-	"Variable Component Glyphs" -> "Variable Component Selector"
-
-	"Variable Component Selector" -> "UFO-Subsetted" [dir="back"]
-
-	"CI Build" [shape=circle]
-	"UFO-Masters" -> "CI Build"
-	"Variable Component Glyphs" -> "CI Build"
-
-	"Variable Component Instances Data" [style=filled, fillcolor=turquoise]
-
-	"Variable Component Selector" -> "Variable Component Instances Data" 
-	"Variable Component Instances Data" ->  "CI Build"
-
-	"VarFont 1.9" [style=filled, fillcolor=yellow, shape=diamond]
-	"VarFont 1.8" [style=filled, fillcolor=yellow, shape=diamond]
-	"Static Fonts" [style=filled, fillcolor=yellow, shape=diamond]
-	
-	"CI Build" -> "VarFont 1.9"
-	"CI Build" -> "VarFont 1.8"
-	"CI Build" -> "Static Fonts"
 
 
 
