@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/BlackFoundryCom/robo-cjk#readme",
   "dependencies": {
-    "mermaid": "^8.1.0"
+    "tiny-worker": "^2.2.0",
+    "viz.js": "^2.1.2"
   }
 }

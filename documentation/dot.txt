@@ -1,0 +1,36 @@
+digraph {
+	
+	node [shape=record]
+
+	"Project Editor"
+	"Settings"
+	"Space Center"
+
+	"Project Editor" -> ".roboCJKproject"
+
+	subgraph {
+		node [style=filled, color=gray]
+		".roboCJKproject" -> "Character-Sets"
+	 	".roboCJKproject" -> "UFO-Masters"
+	 	".roboCJKproject" -> "Glyph Composition Data"
+	 	".roboCJKproject" -> "Design Frame"
+	 	".roboCJKproject" -> "Reference Viewer"
+	 	".roboCJKproject" -> "Calendar"
+	}
+ 	"RoboCJK UI" -> "Get Mini Font" 
+ 	"RoboCJK UI" -> "Inject Back"
+
+	"WIP" [style=dotted]
+	"Settings" -> "WIP"
+	"Space Center"-> "WIP"
+	"Calendar" -> "WIP"
+
+	subgraph {
+		node [style=filled, color=lightblue]
+
+		"Get Mini Font" -> "Master UFO" -> "Subset UFO"
+		"Inject Back" -> "Subset UFO" -> "Master UFO"
+	}
+
+	
+}
