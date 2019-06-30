@@ -1,8 +1,8 @@
 
 ```mermaid
-graph TD
+graph LR
 PE[Project Editor] --> .roboCJKproject
-SC[Space Center] -.->wip((WIP))
+SC[Space Center] -.-> wip((WIP))
 Settings -.-> wip((WIP))
 
  .roboCJKproject --> Calendar
@@ -17,5 +17,6 @@ Calendar -.->  wip((WIP))
 
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNDgyNTAwNjE2LC0xMzc5NzA5MjhdfQ==
+eyJoaXN0b3J5IjpbNjk4OTU3MTcwLDQ4MjUwMDYxNiwtMTM3OT
+cwOTI4XX0=
 -->
