@@ -1,5 +1,5 @@
 {
-  "name": "robocjkmermaid",
+  "name": "robocjkdoc",
   "version": "1.0.0",
   "description": "build svg for documentation",
   "main": "documentation/index.js",

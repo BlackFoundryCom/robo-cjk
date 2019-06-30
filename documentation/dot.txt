@@ -1,12 +1,28 @@
 digraph {
 	
-	node [shape=record]
+	node [shape = record]
+	rankdir = TB
 
-	"Project Editor"
-	"Settings"
-	"Space Center"
+	"RoboCJK UI"
 
-	"Project Editor" -> ".roboCJKproject"
+	subgraph {
+		node [style=filled, color=pink]
+
+		"RoboCJK UI" -> "Project Editor"
+		"RoboCJK UI" -> "Settings"
+		"RoboCJK UI" -> "Space Center"
+		"RoboCJK UI" -> "Variable Component Editor"
+		"RoboCJK UI" -> "Variable Component Selector"
+		"RoboCJK UI" -> "Get Mini Font / Inject Back"
+	}
+	
+	subgraph {
+		node [style=filled, color=lightblue]
+		 "UFO-Masters" -> "Get Mini Font / Inject Back" -> "UFO-Subsetted" [dir="both"]
+		 "Variable Component Editor" -> "Variable Component Glyphs"
+	}
+
+ 	"Project Editor" -> ".roboCJKproject"
 
 	subgraph {
 		node [style=filled, color=gray]
@@ -17,20 +33,31 @@ digraph {
 	 	".roboCJKproject" -> "Reference Viewer"
 	 	".roboCJKproject" -> "Calendar"
 	}
- 	"RoboCJK UI" -> "Get Mini Font" 
- 	"RoboCJK UI" -> "Inject Back"
-
-	"WIP" [style=dotted]
-	"Settings" -> "WIP"
-	"Space Center"-> "WIP"
-	"Calendar" -> "WIP"
-
-	subgraph {
-		node [style=filled, color=lightblue]
-
-		"Get Mini Font" -> "Master UFO" -> "Subset UFO"
-		"Inject Back" -> "Subset UFO" -> "Master UFO"
-	}
 
 	
+
+	"Variable Component Editor" -> "UFO-Masters"
+
+	"Glyph Composition Data" -> "Variable Component Editor" [dir="both"]
+	"Glyph Composition Data" -> "Get Mini Font / Inject Back" [dir="both"]
+	"Glyph Composition Data" -> "Variable Component Selector"
+	"Variable Component Glyphs" -> "Variable Component Selector"
+
+	"Variable Component Selector" -> "UFO-Subsetted" [dir="back"]
+
+	"CI Build" [shape=circle]
+	"UFO-Masters" -> "CI Build"
+	"Variable Component Glyphs" -> "CI Build"
+
+	"Variable Component Instances Data" [style=filled, color=turquoise]
+
+	"Variable Component Selector" -> "Variable Component Instances Data" 
+	"Variable Component Instances Data" ->  "CI Build"
+
+	"CI Build" -> "VarFont 1.9"
+	"CI Build" -> "VarFont 1.8"
+	"CI Build" -> "Static Fonts"
+
+
+
 }

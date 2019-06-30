@@ -13,7 +13,7 @@ var dot = fs.readFile(diagramFile, 'utf-8', (err, data) => {
   viz.renderString(data, {engine: "dot"})
   .then(result => {
     console.log(result);
-    fs.writeFile("mermaidDoc/Diagram.svg", result, (err) => {
+    fs.writeFile("documentation/Diagram.svg", result, (err) => {
       if (err) throw err;
       console.log('The file has been saved!');
     });
