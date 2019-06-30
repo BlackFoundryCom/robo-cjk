@@ -3,9 +3,12 @@ RoboFont extension for CJK font development
 
 ```mermaid
 graph TD
-PE[Project Editor]
-SC[Space Center] --> WIP
-Settings
+PE[Project Editor] --> Project
+SC[Space Center] -.-> WIP
+Settings -.-> WIP
+
+Project --> Character-Sets
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTAxNjUyMjYxNV19
+eyJoaXN0b3J5IjpbLTE0MTMxMDEwNzBdfQ==
 -->
