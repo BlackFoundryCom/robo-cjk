@@ -1,0 +1,19 @@
+{
+  "name": "mermaid",
+  "version": "1.0.0",
+  "description": "build svg for documentation",
+  "main": "mermaid/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://JeremieHornus@github.com/BlackFoundryCom/robo-cjk.git"
+  },
+  "author": "Black Foundry",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BlackFoundryCom/robo-cjk/issues"
+  },
+  "homepage": "https://github.com/BlackFoundryCom/robo-cjk#readme"
+}
