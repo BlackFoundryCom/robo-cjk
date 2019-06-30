@@ -4,8 +4,8 @@ RoboFont extension for CJK font development
 ```mermaid
 graph TD
 PE[Project Editor] --> Project
-SC[Space Center] -.-> WIP
-Settings -.-> WIP
+SC[Space Center] -.->wip((WIP))
+Settings -.-> wip((WIP))
 
 Project --> Character-Sets
 Project --> UFO-Masters
@@ -14,8 +14,8 @@ Project --> df[Design Frame]
 Project --> rf[Reference Viewer]
 Project --> Calendar
 
-Calendar -.-> WIP
+Calendar -.->  wip((WIP))
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTkzOTkzNjc5NV19
+eyJoaXN0b3J5IjpbLTkzMDA0NTI3XX0=
 -->
