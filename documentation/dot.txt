@@ -71,7 +71,7 @@ digraph{
 		"CJK Space Center" -> "RoboCJK Settings" [dir="back"]
 		"Balance Handles" -> "RoboCJK Settings" [dir="back"]
 		"Power Ruler" -> "RoboCJK Settings" [dir="back"]
-		"Safe Interpolator" -> "RoboCJK Settings" [dir="back"]
+		"Interpolaviour" -> "RoboCJK Settings" [dir="back"]
 
 		"Design Frame" -> "Project Settings" [dir="back"]
 		"Reference Viewer" -> "Project Settings" [dir="back"]
