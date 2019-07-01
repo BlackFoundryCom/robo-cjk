@@ -68,7 +68,7 @@ digraph{
 
 	subgraph {
 		node [style=filled, fillcolor=gold, shape = record, fontname="Arial"]
-		"RoboCJK" -> "Space Center"
+		"Space Center" -> "RoboCJK Settings" [dir="back"]
 		"Balance Handles" -> "RoboCJK Settings" [dir="back"]
 		"Power Ruler" -> "RoboCJK Settings" [dir="back"]
 		"Design Frame" -> "Project Settings" [dir="back"]
