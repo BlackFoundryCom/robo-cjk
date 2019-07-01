@@ -18,7 +18,7 @@ digraph{
 			"RoboCJK" -> "Project Editor"
 			"RoboCJK" -> "RoboCJK Settings"
 			"Deep Component Editor"
-			"Deep Component Selector"
+			"Deep Component Instantiator"
 			"Get Mini Font / Inject Back"
 
 		}
@@ -45,10 +45,10 @@ digraph{
 
 		"Glyph Composition Data" -> "Deep Component Editor" [dir="both"]
 		"Glyph Composition Data" -> "Get Mini Font / Inject Back" [dir="both"]
-		"Glyph Composition Data" -> "Deep Component Selector"
-		"Deep Component Glyphs" -> "Deep Component Selector"
+		"Glyph Composition Data" -> "Deep Component Instantiator"
+		"Deep Component Glyphs" -> "Deep Component Instantiator"
 
-		"Deep Component Selector" -> "UFO-Subsetted" 
+		"Deep Component Instantiator" -> "UFO-Subsetted" 
 
 		"CI Build" [shape=circle]
 		"UFO-Masters" -> "CI Build"
@@ -56,7 +56,7 @@ digraph{
 
 		"Deep Component Instances Data" [style=filled, fillcolor=gray]
 
-		"Deep Component Selector" -> "Deep Component Instances Data" 
+		"Deep Component Instantiator" -> "Deep Component Instances Data" 
 		"Deep Component Instances Data" ->  "CI Build"
 
 		"VarFont 1.9" [style=filled, fillcolor=darkorange, shape=diamond]

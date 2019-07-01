@@ -81,11 +81,11 @@
 <path fill="none" stroke="#000000" d="M536.7391,-417.1305C536.7391,-409.0583 536.7391,-399.3519 536.7391,-390.3572"/>
 <polygon fill="#000000" stroke="#000000" points="540.2392,-390.2658 536.7391,-380.2659 533.2392,-390.2659 540.2392,-390.2658"/>
 </g>
-<!-- Deep Component Selector -->
+<!-- Deep Component Instantiator -->
 <g id="node5" class="node">
-<title>Deep Component Selector</title>
-<polygon fill="#ffc0cb" stroke="#000000" points="634.2735,-271.1755 634.2735,-307.1755 815.2047,-307.1755 815.2047,-271.1755 634.2735,-271.1755"/>
-<text text-anchor="middle" x="724.7391" y="-284.9755" font-family="Arial" font-size="14.00" fill="#000000">Deep Component Selector</text>
+<title>Deep Component Instantiator</title>
+<polygon fill="#ffc0cb" stroke="#000000" points="631.3233,-271.1755 631.3233,-307.1755 830.1549,-307.1755 830.1549,-271.1755 631.3233,-271.1755"/>
+<text text-anchor="middle" x="730.7391" y="-284.9755" font-family="Arial" font-size="14.00" fill="#000000">Deep Component Instantiator</text>
 </g>
 <!-- UFO&#45;Subsetted -->
 <g id="node8" class="node">
@@ -93,67 +93,67 @@
 <polygon fill="#add8e6" stroke="#000000" points="472.1185,-198.1755 472.1185,-234.1755 585.3597,-234.1755 585.3597,-198.1755 472.1185,-198.1755"/>
 <text text-anchor="middle" x="528.7391" y="-211.9755" font-family="Arial" font-size="14.00" fill="#000000">UFO&#45;Subsetted</text>
 </g>
-<!-- Deep Component Selector&#45;&gt;UFO&#45;Subsetted -->
+<!-- Deep Component Instantiator&#45;&gt;UFO&#45;Subsetted -->
 <g id="edge16" class="edge">
-<title>Deep Component Selector&#45;&gt;UFO&#45;Subsetted</title>
-<path fill="none" stroke="#000000" d="M676.2896,-271.1305C649.198,-261.0403 615.2503,-248.3965 586.7494,-237.7814"/>
-<polygon fill="#000000" stroke="#000000" points="587.9032,-234.4763 577.3105,-234.2659 585.46,-241.0361 587.9032,-234.4763"/>
+<title>Deep Component Instantiator&#45;&gt;UFO&#45;Subsetted</title>
+<path fill="none" stroke="#000000" d="M680.8065,-271.1305C652.8855,-261.0403 617.8986,-248.3965 588.5252,-237.7814"/>
+<polygon fill="#000000" stroke="#000000" points="589.3917,-234.373 578.7974,-234.2659 587.0125,-240.9563 589.3917,-234.373"/>
 </g>
 <!-- Deep Component Instances Data -->
 <g id="node15" class="node">
 <title>Deep Component Instances Data</title>
-<polygon fill="#c0c0c0" stroke="#000000" points="609.2623,-198.1755 609.2623,-234.1755 832.2159,-234.1755 832.2159,-198.1755 609.2623,-198.1755"/>
-<text text-anchor="middle" x="720.7391" y="-211.9755" font-family="Arial" font-size="14.00" fill="#000000">Deep Component Instances Data</text>
+<polygon fill="#c0c0c0" stroke="#000000" points="613.2623,-198.1755 613.2623,-234.1755 836.2159,-234.1755 836.2159,-198.1755 613.2623,-198.1755"/>
+<text text-anchor="middle" x="724.7391" y="-211.9755" font-family="Arial" font-size="14.00" fill="#000000">Deep Component Instances Data</text>
 </g>
-<!-- Deep Component Selector&#45;&gt;Deep Component Instances Data -->
+<!-- Deep Component Instantiator&#45;&gt;Deep Component Instances Data -->
 <g id="edge19" class="edge">
-<title>Deep Component Selector&#45;&gt;Deep Component Instances Data</title>
-<path fill="none" stroke="#000000" d="M723.7503,-271.1305C723.308,-263.0583 722.7762,-253.3519 722.2833,-244.3572"/>
-<polygon fill="#000000" stroke="#000000" points="725.7723,-244.0593 721.7304,-234.2659 718.7828,-244.4424 725.7723,-244.0593"/>
+<title>Deep Component Instantiator&#45;&gt;Deep Component Instances Data</title>
+<path fill="none" stroke="#000000" d="M729.256,-271.1305C728.5925,-263.0583 727.7947,-253.3519 727.0554,-244.3572"/>
+<polygon fill="#000000" stroke="#000000" points="730.5335,-243.9455 726.226,-234.2659 723.557,-244.519 730.5335,-243.9455"/>
 </g>
 <!-- Get Mini Font / Inject Back -->
 <g id="node6" class="node">
 <title>Get Mini Font / Inject Back</title>
-<polygon fill="#ffc0cb" stroke="#000000" points="435.6669,-271.1755 435.6669,-307.1755 615.8113,-307.1755 615.8113,-271.1755 435.6669,-271.1755"/>
-<text text-anchor="middle" x="525.7391" y="-284.9755" font-family="Arial" font-size="14.00" fill="#000000">Get Mini Font / Inject Back</text>
+<polygon fill="#ffc0cb" stroke="#000000" points="433.6669,-271.1755 433.6669,-307.1755 613.8113,-307.1755 613.8113,-271.1755 433.6669,-271.1755"/>
+<text text-anchor="middle" x="523.7391" y="-284.9755" font-family="Arial" font-size="14.00" fill="#000000">Get Mini Font / Inject Back</text>
 </g>
 <!-- Get Mini Font / Inject Back&#45;&gt;UFO&#45;Subsetted -->
 <g id="edge4" class="edge">
 <title>Get Mini Font / Inject Back&#45;&gt;UFO&#45;Subsetted</title>
-<path fill="none" stroke="#000000" d="M526.8952,-261.0443C527.1204,-255.5649 527.3565,-249.8194 527.5817,-244.3389"/>
-<polygon fill="#000000" stroke="#000000" points="523.3943,-260.9952 526.4807,-271.1305 530.3884,-261.2827 523.3943,-260.9952"/>
-<polygon fill="#000000" stroke="#000000" points="531.082,-244.4012 527.9957,-234.2659 524.0879,-244.1137 531.082,-244.4012"/>
+<path fill="none" stroke="#000000" d="M525.6659,-261.0443C526.0412,-255.5649 526.4347,-249.8194 526.8101,-244.3389"/>
+<polygon fill="#000000" stroke="#000000" points="522.1667,-260.9147 524.9751,-271.1305 529.1503,-261.3931 522.1667,-260.9147"/>
+<polygon fill="#000000" stroke="#000000" points="530.3084,-244.4817 527.5,-234.2659 523.3248,-244.0033 530.3084,-244.4817"/>
 </g>
 <!-- UFO&#45;Masters&#45;&gt;Get Mini Font / Inject Back -->
 <g id="edge3" class="edge">
 <title>UFO&#45;Masters&#45;&gt;Get Mini Font / Inject Back</title>
-<path fill="none" stroke="#000000" d="M426.4627,-339.5031C443.7246,-330.7523 463.4411,-320.7571 480.7299,-311.9927"/>
-<polygon fill="#000000" stroke="#000000" points="424.6714,-336.4871 417.3346,-344.1305 427.8366,-342.7306 424.6714,-336.4871"/>
-<polygon fill="#000000" stroke="#000000" points="482.7172,-314.9093 490.054,-307.2659 479.5521,-308.6657 482.7172,-314.9093"/>
+<path fill="none" stroke="#000000" d="M425.8415,-339.5031C442.8637,-330.7523 462.3063,-320.7571 479.355,-311.9927"/>
+<polygon fill="#000000" stroke="#000000" points="424.1336,-336.4457 416.8402,-344.1305 427.3341,-342.6712 424.1336,-336.4457"/>
+<polygon fill="#000000" stroke="#000000" points="481.2563,-314.9507 488.5496,-307.2659 478.0558,-308.7252 481.2563,-314.9507"/>
 </g>
 <!-- CI Build -->
 <g id="node14" class="node">
 <title>CI Build</title>
-<ellipse fill="none" stroke="#000000" cx="407.7391" cy="-116.8377" rx="44.6761" ry="44.6761"/>
-<text text-anchor="middle" x="407.7391" y="-112.6377" font-family="Arial" font-size="14.00" fill="#000000">CI Build</text>
+<ellipse fill="none" stroke="#000000" cx="405.7391" cy="-116.8377" rx="44.6761" ry="44.6761"/>
+<text text-anchor="middle" x="405.7391" y="-112.6377" font-family="Arial" font-size="14.00" fill="#000000">CI Build</text>
 </g>
 <!-- UFO&#45;Masters&#45;&gt;CI Build -->
 <g id="edge17" class="edge">
 <title>UFO&#45;Masters&#45;&gt;CI Build</title>
-<path fill="none" stroke="#000000" d="M382.4844,-343.8613C383.8553,-313.4239 387.2493,-250.5396 393.7391,-197.6755 394.7983,-189.0474 396.1482,-179.9388 397.5899,-171.0691"/>
-<polygon fill="#000000" stroke="#000000" points="401.0437,-171.636 399.2462,-161.1948 394.1401,-170.478 401.0437,-171.636"/>
+<path fill="none" stroke="#000000" d="M382.1905,-343.8603C383.0888,-313.4215 385.5744,-250.5351 391.7391,-197.6755 392.7461,-189.0412 394.0686,-179.9293 395.499,-171.0582"/>
+<polygon fill="#000000" stroke="#000000" points="398.9531,-171.6232 397.1488,-161.1831 392.0488,-170.4697 398.9531,-171.6232"/>
 </g>
-<!-- Deep Component Glyphs&#45;&gt;Deep Component Selector -->
+<!-- Deep Component Glyphs&#45;&gt;Deep Component Instantiator -->
 <g id="edge15" class="edge">
-<title>Deep Component Glyphs&#45;&gt;Deep Component Selector</title>
-<path fill="none" stroke="#000000" d="M583.211,-344.1305C609.0839,-334.0841 641.476,-321.5064 668.7397,-310.9199"/>
-<polygon fill="#000000" stroke="#000000" points="670.0952,-314.1483 678.1502,-307.2659 667.5614,-307.6229 670.0952,-314.1483"/>
+<title>Deep Component Glyphs&#45;&gt;Deep Component Instantiator</title>
+<path fill="none" stroke="#000000" d="M584.6942,-344.1305C611.3928,-334.0841 644.8186,-321.5064 672.9525,-310.9199"/>
+<polygon fill="#000000" stroke="#000000" points="674.5367,-314.0635 682.6633,-307.2659 672.0714,-307.512 674.5367,-314.0635"/>
 </g>
 <!-- Deep Component Glyphs&#45;&gt;CI Build -->
 <g id="edge18" class="edge">
 <title>Deep Component Glyphs&#45;&gt;CI Build</title>
-<path fill="none" stroke="#000000" d="M474.0296,-344.1191C455.9915,-335.8782 438.1338,-324.1533 426.7391,-307.6755 399.4173,-268.1658 396.8564,-212.5772 399.825,-171.5813"/>
-<polygon fill="#000000" stroke="#000000" points="403.323,-171.7535 400.6872,-161.4917 396.3484,-171.1574 403.323,-171.7535"/>
+<path fill="none" stroke="#000000" d="M472.3261,-344.0951C454.1612,-335.8798 436.2364,-324.1755 424.7391,-307.6755 397.1889,-268.1376 394.7176,-212.3069 397.7737,-171.2444"/>
+<polygon fill="#000000" stroke="#000000" points="401.2726,-171.4089 398.6578,-161.1418 394.2992,-170.7985 401.2726,-171.4089"/>
 </g>
 <!-- JSON roboCJKproject&#45;&gt;UFO&#45;Masters -->
 <g id="edge8" class="edge">
@@ -204,36 +204,36 @@
 <polygon fill="#000000" stroke="#000000" points="556.2782,-482.7099 563.8402,-490.1305 562.5563,-479.6138 556.2782,-482.7099"/>
 <polygon fill="#000000" stroke="#000000" points="553.2224,-460.6865 545.6604,-453.2659 546.9443,-463.7826 553.2224,-460.6865"/>
 </g>
-<!-- Glyph Composition Data&#45;&gt;Deep Component Selector -->
+<!-- Glyph Composition Data&#45;&gt;Deep Component Instantiator -->
 <g id="edge14" class="edge">
-<title>Glyph Composition Data&#45;&gt;Deep Component Selector</title>
-<path fill="none" stroke="#000000" d="M606.6303,-490.1027C621.6485,-480.7891 638.6196,-468.3053 650.7391,-453.6755 685.1382,-412.1515 706.7408,-352.0663 717.1987,-317.1742"/>
-<polygon fill="#000000" stroke="#000000" points="720.6666,-317.7819 720.0883,-307.2028 713.9432,-315.8334 720.6666,-317.7819"/>
+<title>Glyph Composition Data&#45;&gt;Deep Component Instantiator</title>
+<path fill="none" stroke="#000000" d="M606.4324,-489.9362C621.4089,-480.5876 638.4021,-468.1223 650.7391,-453.6755 686.4023,-411.9133 710.3888,-351.5095 722.2005,-316.7057"/>
+<polygon fill="#000000" stroke="#000000" points="725.5306,-317.783 725.342,-307.1898 718.8834,-315.5885 725.5306,-317.783"/>
 </g>
 <!-- Glyph Composition Data&#45;&gt;Get Mini Font / Inject Back -->
 <g id="edge13" class="edge">
 <title>Glyph Composition Data&#45;&gt;Get Mini Font / Inject Back</title>
-<path fill="none" stroke="#000000" d="M606.5476,-483.0886C615.3146,-474.7625 623.6999,-464.755 628.7391,-453.6755 648.993,-409.1439 658.3033,-385.3858 632.7391,-343.6755 624.4282,-330.1155 611.5684,-319.7975 597.6089,-311.9933"/>
+<path fill="none" stroke="#000000" d="M606.5476,-483.0886C615.3146,-474.7625 623.6999,-464.755 628.7391,-453.6755 648.993,-409.1439 658.4585,-385.2904 632.7391,-343.6755 624.2647,-329.9637 611.1803,-319.5863 596.9803,-311.7731"/>
 <polygon fill="#000000" stroke="#000000" points="603.9688,-480.698 598.8194,-489.9573 608.6191,-485.9301 603.9688,-480.698"/>
-<polygon fill="#000000" stroke="#000000" points="598.8079,-308.6745 588.3135,-307.2191 595.6097,-314.9013 598.8079,-308.6745"/>
+<polygon fill="#000000" stroke="#000000" points="598.5278,-308.6335 588.0259,-307.2327 595.3621,-314.8768 598.5278,-308.6335"/>
 </g>
 <!-- VarFont 1.9 -->
 <g id="node16" class="node">
 <title>VarFont 1.9</title>
-<polygon fill="#ff8c00" stroke="#000000" points="407.7391,-36 320.8377,-18 407.7391,0 494.6405,-18 407.7391,-36"/>
-<text text-anchor="middle" x="407.7391" y="-13.8" font-family="Arial" font-size="14.00" fill="#000000">VarFont 1.9</text>
+<polygon fill="#ff8c00" stroke="#000000" points="405.7391,-36 318.8377,-18 405.7391,0 492.6405,-18 405.7391,-36"/>
+<text text-anchor="middle" x="405.7391" y="-13.8" font-family="Arial" font-size="14.00" fill="#000000">VarFont 1.9</text>
 </g>
 <!-- CI Build&#45;&gt;VarFont 1.9 -->
 <g id="edge21" class="edge">
 <title>CI Build&#45;&gt;VarFont 1.9</title>
-<path fill="none" stroke="#000000" d="M407.7391,-71.7574C407.7391,-63.0767 407.7391,-54.2161 407.7391,-46.2581"/>
-<polygon fill="#000000" stroke="#000000" points="411.2392,-46.0672 407.7391,-36.0673 404.2392,-46.0673 411.2392,-46.0672"/>
+<path fill="none" stroke="#000000" d="M405.7391,-71.7574C405.7391,-63.0767 405.7391,-54.2161 405.7391,-46.2581"/>
+<polygon fill="#000000" stroke="#000000" points="409.2392,-46.0672 405.7391,-36.0673 402.2392,-46.0673 409.2392,-46.0672"/>
 </g>
 <!-- Deep Component Instances Data&#45;&gt;CI Build -->
 <g id="edge20" class="edge">
 <title>Deep Component Instances Data&#45;&gt;CI Build</title>
-<path fill="none" stroke="#000000" d="M663.694,-198.0709C605.8075,-179.6993 516.9242,-151.4901 460.5923,-133.6119"/>
-<polygon fill="#000000" stroke="#000000" points="461.4016,-130.1968 450.8114,-130.5077 459.2841,-136.8688 461.4016,-130.1968"/>
+<path fill="none" stroke="#000000" d="M666.6005,-198.0709C607.1424,-179.5555 515.5968,-151.0478 458.2631,-133.1939"/>
+<polygon fill="#000000" stroke="#000000" points="459.2574,-129.8378 448.669,-130.2063 457.1761,-136.5213 459.2574,-129.8378"/>
 </g>
 <!-- CJK Space Center -->
 <g id="node17" class="node">
