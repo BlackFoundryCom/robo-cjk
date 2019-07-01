@@ -17,8 +17,8 @@ digraph{
 
 			"RoboCJK" -> "Project Editor"
 			"RoboCJK" -> "RoboCJK Settings"
-			"Variable Component Editor"
-			"Variable Component Selector"
+			"Deep Component Editor"
+			"Deep Component Selector"
 			"Get Mini Font / Inject Back"
 
 		}
@@ -26,7 +26,7 @@ digraph{
 		subgraph {
 			node [style=filled, fillcolor=lightblue]
 			 "UFO-Masters" -> "Get Mini Font / Inject Back" -> "UFO-Subsetted" [dir="both"]
-			 "Variable Component Editor" -> "Variable Component Glyphs"
+			 "Deep Component Editor" -> "Deep Component Glyphs"
 		}
 
 	 	"Project Editor" -> "JSON roboCJKproject"
@@ -41,23 +41,23 @@ digraph{
 
 		
 
-		"Variable Component Editor" -> "UFO-Masters"
+		"Deep Component Editor" -> "UFO-Masters"
 
-		"Glyph Composition Data" -> "Variable Component Editor" [dir="both"]
+		"Glyph Composition Data" -> "Deep Component Editor" [dir="both"]
 		"Glyph Composition Data" -> "Get Mini Font / Inject Back" [dir="both"]
-		"Glyph Composition Data" -> "Variable Component Selector"
-		"Variable Component Glyphs" -> "Variable Component Selector"
+		"Glyph Composition Data" -> "Deep Component Selector"
+		"Deep Component Glyphs" -> "Deep Component Selector"
 
-		"Variable Component Selector" -> "UFO-Subsetted" 
+		"Deep Component Selector" -> "UFO-Subsetted" 
 
 		"CI Build" [shape=circle]
 		"UFO-Masters" -> "CI Build"
-		"Variable Component Glyphs" -> "CI Build"
+		"Deep Component Glyphs" -> "CI Build"
 
-		"Variable Component Instances Data" [style=filled, fillcolor=gray]
+		"Deep Component Instances Data" [style=filled, fillcolor=gray]
 
-		"Variable Component Selector" -> "Variable Component Instances Data" 
-		"Variable Component Instances Data" ->  "CI Build"
+		"Deep Component Selector" -> "Deep Component Instances Data" 
+		"Deep Component Instances Data" ->  "CI Build"
 
 		"VarFont 1.9" [style=filled, fillcolor=darkorange, shape=diamond]
 		
