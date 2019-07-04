@@ -5,7 +5,8 @@
   "main": "documentation/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node documentation/index.js"
+    "build_main": "node documentation/index.js diagram.txt",
+    "build_deepcompo": "node documentation/index.js deepcompo.txt"
   },
   "repository": {
     "type": "git",
