@@ -5,3 +5,6 @@ RoboFont extension for CJK font development
 
 **Workflow chart:**
 ![RoboCJK](https://github.com/BlackFoundryCom/robo-cjk/blob/master/documentation/diagram.svg)
+
+
+![DeepComponentDemo](https://github.com/BlackFoundryCom/robo-cjk/blob/master/documentation/DeepComponentEditorDemo.mp4)
