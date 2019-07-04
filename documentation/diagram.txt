@@ -1,0 +1,83 @@
+digraph{
+
+	subgraph {
+		
+		node [shape = record, fontname="Arial"]
+		rankdir = TB
+		fontpath="./documentation/"
+		fontname="Helvetica"
+		fontnames="ps"
+
+		"RoboCJK" [style=filled, fillcolor=deeppink]
+
+		subgraph {
+			node [style=filled, fillcolor=pink]
+
+			"RoboCJK Settings" [style=filled, fillcolor=gray]
+
+			"RoboCJK" -> "Project Editor"
+			"RoboCJK" -> "RoboCJK Settings"
+			"Deep Component Editor"
+			"Deep Component Instantiator"
+			"Get Mini Font / Inject Back"
+
+		}
+		
+		subgraph {
+			node [style=filled, fillcolor=lightblue]
+			 "UFO-Masters" -> "Get Mini Font / Inject Back" -> "UFO-Subsetted" [dir="both"]
+			 "Deep Component Editor" -> "Deep Component Glyphs"
+		}
+
+	 	"Project Editor" -> "JSON roboCJKproject"
+
+		subgraph {
+			node [style=filled, fillcolor=gray]
+			"JSON roboCJKproject" -> "Character-Sets"
+		 	"JSON roboCJKproject" -> "UFO-Masters"
+		 	"JSON roboCJKproject" -> "Glyph Composition Data"
+		 	"JSON roboCJKproject" -> "Project Settings"
+		}
+
+		
+
+		"Deep Component Editor" -> "UFO-Masters"
+
+		"Glyph Composition Data" -> "Deep Component Editor" [dir="both"]
+		"Glyph Composition Data" -> "Get Mini Font / Inject Back" [dir="both"]
+		"Glyph Composition Data" -> "Deep Component Instantiator"
+		"Deep Component Glyphs" -> "Deep Component Instantiator"
+
+		"Deep Component Instantiator" -> "UFO-Subsetted" 
+
+		"CI Build" [shape=circle]
+		"UFO-Masters" -> "CI Build"
+		"Deep Component Glyphs" -> "CI Build"
+
+		"Deep Component Instances Data" [style=filled, fillcolor=gray]
+
+		"Deep Component Instantiator" -> "Deep Component Instances Data" 
+		"Deep Component Instances Data" ->  "CI Build"
+
+		"VarFont 1.9" [style=filled, fillcolor=darkorange, shape=diamond]
+		
+		"CI Build" -> "VarFont 1.9"
+
+
+	}
+
+	subgraph {
+		node [style=filled, fillcolor=gold, shape = record, fontname="Arial"]
+		"CJK Space Center" -> "RoboCJK Settings" [dir="back"]
+		"Balance Handles" -> "RoboCJK Settings" [dir="back"]
+		"Power Ruler" -> "RoboCJK Settings" [dir="back"]
+		"Interpolaviour" -> "RoboCJK Settings" [dir="back"]
+
+		"Design Frame" -> "Project Settings" [dir="back"]
+		"Reference Viewer" -> "Project Settings" [dir="back"]
+		"Calendar" -> "Project Settings" [dir="back"]
+	}
+
+
+
+}

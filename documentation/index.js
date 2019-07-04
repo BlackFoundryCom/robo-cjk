@@ -1,3 +1,6 @@
+var args = process.argv.slice(2);
+console.log(args)
+
 const fs = require('fs');
 const Viz = require('viz.js');
 const { Module, render } = require('viz.js/full.render.js');
@@ -5,15 +8,16 @@ const { Module, render } = require('viz.js/full.render.js');
 
 let viz = new Viz({ Module, render });
 
-var diagramFile = 'documentation/dot.txt'
+var diagramFile = 'documentation/' + args
+var savepath = "documentation/"+args[0].slice(0, -3)+"svg"
 
 var dot = fs.readFile(diagramFile, 'utf-8', (err, data) => {
   if (err) throw err;
   console.log(data);
   viz.renderString(data, {engine: "dot"})
   .then(result => {
-    console.log(result);
-    fs.writeFile("documentation/Diagram.svg", result, (err) => {
+    // console.log(result);
+    fs.writeFile(savepath, result, (err) => {
       if (err) throw err;
       console.log('The file has been saved!');
     });
