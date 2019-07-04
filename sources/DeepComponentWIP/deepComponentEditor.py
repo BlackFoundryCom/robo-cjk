@@ -8,10 +8,14 @@ from ufoLib.pointPen import PointToSegmentPen
 
 layerSuffix = '.deep'
 
+
+#### FROM HELPERS ######
 def unique(sequence):
     seen = set()
     return [x for x in sequence if not (x in seen or seen.add(x))]
     
+
+#### GLOBAL ALGO ######
 def deepCompatible(masterGlyph, layersNames):
     for layerName in layersNames:
         glyph = masterGlyph.getLayer(layerName)
@@ -59,7 +63,9 @@ def deepolation(newGlyph, masterGlyph, layersInfo = {}):
         pen.endPath()
         
     return newGlyph
-    
+
+
+###### EDITOR UI ######    
 class deepComponentEditor():
     
     def __init__(self):
@@ -103,6 +109,10 @@ class deepComponentEditor():
         self.w.open()
         
     def getAvailableLayers_ForGlyph(self, g, f):
+
+        """
+        need to change ?
+        """
         return list(filter(lambda x: len(g.getLayer(x.name)), f.layers))
         
     def _windowDidResize(self, sender):
@@ -110,6 +120,9 @@ class deepComponentEditor():
         self.w.layerCanvas.update()
         
     def _newLayer_Button_callback(self, sender):
+        """
+        think about factorisation ? In helpers ?
+        """
         i=0
         while True:
             index = "_%s"%str(i).zfill(2)
