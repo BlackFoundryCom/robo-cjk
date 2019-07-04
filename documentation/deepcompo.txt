@@ -8,76 +8,61 @@ digraph{
 		fontname="Helvetica"
 		fontnames="ps"
 
-		"RoboCJK" [style=filled, fillcolor=deeppink]
+		"Data Base Decomposition" [style=filled, fillcolor=pink]
 
+		
+		"Deep Components Instantiator" [style=filled, fillcolor=green, shape=oval]
+
+		"Deep Components Editor" [style=filled, fillcolor=green, shape=oval]
+		
 		subgraph {
-			node [style=filled, fillcolor=pink]
-
-			"RoboCJK Settings" [style=filled, fillcolor=gray]
-
-			"RoboCJK" -> "Project Editor"
-			"RoboCJK" -> "RoboCJK Settings"
-			"Deep Component Editor"
-			"Deep Component Instantiator"
-			"Get Mini Font / Inject Back"
-
+			node [style=filled, fillcolor=lightyellow]
+			"Current Glyph" -> "Glyph Lib {DeepCompoName:Offsets}" 
 		}
+
+		"Deep Components Instantiator" -> "Current Glyph"
+
+		"Current Font" [style=filled, fillcolor=grey]
+		"Font Lib {DeepCompoName:Values}" [style=filled, fillcolor=grey]
+
+		"Current Glyph" -> "Data Base Decomposition" 
+
+		"Data Base Decomposition" -> "JSON Glyph 2 Components" 
+
+		"Deep Components Editor" -> "Font Lib {DeepCompoName:Values}"
+
 		
 		subgraph {
 			node [style=filled, fillcolor=lightblue]
-			 "UFO-Masters" -> "Get Mini Font / Inject Back" -> "UFO-Subsetted" [dir="both"]
-			 "Deep Component Editor" -> "Deep Component Glyphs"
+			"Data Base Decomposition" -> "Deep Components Alternates"
 		}
-
-	 	"Project Editor" -> "JSON roboCJKproject"
 
 		subgraph {
-			node [style=filled, fillcolor=gray]
-			"JSON roboCJKproject" -> "Character-Sets"
-		 	"JSON roboCJKproject" -> "UFO-Masters"
-		 	"JSON roboCJKproject" -> "Glyph Composition Data"
-		 	"JSON roboCJKproject" -> "Project Settings"
+			node [style=filled, fillcolor=lightblue]
+			"Deep Components Alternates" -> "Existing Settings"
+			"Deep Components Alternates" -> "New Settings"
+
+			"Font Lib {DeepCompoName:Values}" -> "Existing Settings"
+
+			"Current Font" -> "Font Lib {DeepCompoName:Values}"
+
 		}
 
-		
-
-		"Deep Component Editor" -> "UFO-Masters"
-
-		"Glyph Composition Data" -> "Deep Component Editor" [dir="both"]
-		"Glyph Composition Data" -> "Get Mini Font / Inject Back" [dir="both"]
-		"Glyph Composition Data" -> "Deep Component Instantiator"
-		"Deep Component Glyphs" -> "Deep Component Instantiator"
-
-		"Deep Component Instantiator" -> "UFO-Subsetted" 
-
-		"CI Build" [shape=circle]
-		"UFO-Masters" -> "CI Build"
-		"Deep Component Glyphs" -> "CI Build"
-
-		"Deep Component Instances Data" [style=filled, fillcolor=gray]
-
-		"Deep Component Instantiator" -> "Deep Component Instances Data" 
-		"Deep Component Instances Data" ->  "CI Build"
-
-		"VarFont 1.9" [style=filled, fillcolor=darkorange, shape=diamond]
-		
-		"CI Build" -> "VarFont 1.9"
+		subgraph {
+			node [style=filled, fillcolor=red, fontcolor = white]
+			"Existing Settings" -> "Add Deep Components"
+			"New Settings" -> "Add Deep Components"
+			"Add Deep Components" -> "Glyph Lib {DeepCompoName:Offsets}"
+			"Add Deep Components" -> "Font Lib {DeepCompoName:Values}"
+		}
 
 
+		subgraph {
+			node [style=filled, fillcolor=blue, fontcolor = white]
+			"Display Deep Component in Glyph View" -> "Current Glyph"
+			"Font Lib {DeepCompoName:Values}" -> "Display Deep Component in Glyph View"
+			"Glyph Lib {DeepCompoName:Offsets}" -> "Display Deep Component in Glyph View"
+		}
 	}
-
-	subgraph {
-		node [style=filled, fillcolor=gold, shape = record, fontname="Arial"]
-		"CJK Space Center" -> "RoboCJK Settings" [dir="back"]
-		"Balance Handles" -> "RoboCJK Settings" [dir="back"]
-		"Power Ruler" -> "RoboCJK Settings" [dir="back"]
-		"Interpolaviour" -> "RoboCJK Settings" [dir="back"]
-
-		"Design Frame" -> "Project Settings" [dir="back"]
-		"Reference Viewer" -> "Project Settings" [dir="back"]
-		"Calendar" -> "Project Settings" [dir="back"]
-	}
-
-
 
 }

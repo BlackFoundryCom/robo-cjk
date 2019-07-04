@@ -20,6 +20,7 @@
   "homepage": "https://github.com/BlackFoundryCom/robo-cjk#readme",
   "dependencies": {
     "graphviz": "0.0.9",
+    "lodash": "^4.17.11",
     "tiny-worker": "^2.2.0",
     "viz.js": "^2.1.2"
   }

@@ -19,7 +19,7 @@ import offTools.BalanceHandles as BalanceHandles
 reload(BalanceHandles)
 import offTools.OpenSelectedComponent as OpenSelectedComponent
 reload(OpenSelectedComponent)
-# from interface.SmartComponents import SmartComponents
+from interface.SmartComponents import SmartComponents
 from interface.ReferenceViewer import ReferenceViewer
 from interface.Fonts import Fonts
 from interface.DesignFrame import DesignFrame
@@ -114,13 +114,13 @@ class RoboCJK():
         self.flatComponent = FlatComponent((0,0,-0,-0), self)
 
         ###### SMART COMPONENT ######
-        # self.smartComponent = SmartComponents((0,0,-0,-0), self)
+        self.smartComponent = SmartComponents((0,0,-0,-0), self)
 
         ###### ACCORDION VIEW ######
         self.accordionViewDescriptions = [
                        dict(label="Fonts", view=self.fontsGroup, size=100, collapsed=False, canResize=1),
                        dict(label="Mini Fonts", view=self.minifonts, size=120, collapsed=True, canResize=1),
-                       # dict(label="Smart Components", view=self.smartComponent, size=260, collapsed=False, canResize=1),
+                       dict(label="Smart Components", view=self.smartComponent, size=260, collapsed=False, canResize=1),
                        dict(label="Flat Components", view=self.flatComponent, size=125, collapsed=True, canResize=1),
                        dict(label="Selection to Components", view=self.selection2component, size=100, collapsed=True, canResize=1),
                        dict(label="Reference Viewer", view=self.referenceViewer, size=30, collapsed=True, canResize=0),
