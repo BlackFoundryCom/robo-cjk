@@ -17,7 +17,7 @@ digraph{
 		
 		subgraph {
 			node [style=filled, fillcolor=lightyellow]
-			"Current Glyph" -> "Glyph Lib {DeepCompoName:Offsets}" 
+			"Current Glyph" -> "Glyph Lib {DeepCompoName:[Index,Offsets]}" 
 		}
 
 		"Deep Components Instantiator" -> "Current Glyph"
@@ -52,7 +52,7 @@ digraph{
 			node [style=filled, fillcolor=red, fontcolor = white]
 			"Existing Settings" -> "Add Deep Components"
 			"New Settings" -> "Add Deep Components"
-			"Add Deep Components" -> "Glyph Lib {DeepCompoName:Offsets}"
+			"Add Deep Components" -> "Glyph Lib {DeepCompoName:[Index,Offsets]}"
 			"Add Deep Components" -> "Font Lib {DeepCompoName:Values}"
 		}
 
@@ -61,7 +61,7 @@ digraph{
 			node [style=filled, fillcolor=blue, fontcolor = white]
 			"Display Deep Component in Glyph View" -> "Current Glyph"
 			"Font Lib {DeepCompoName:Values}" -> "Display Deep Component in Glyph View"
-			"Glyph Lib {DeepCompoName:Offsets}" -> "Display Deep Component in Glyph View"
+			"Glyph Lib {DeepCompoName:[Index,Offsets]}" -> "Display Deep Component in Glyph View"
 		}
 	}
 
