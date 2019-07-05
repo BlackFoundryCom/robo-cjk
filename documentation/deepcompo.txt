@@ -1,6 +1,6 @@
 digraph{
 	node [shape = record, fontname="Arial"]
-	rankdir = LR
+	rankdir = TB
 	fontname="Helvetica"
 
 	subgraph "Deep Component Editor"{
