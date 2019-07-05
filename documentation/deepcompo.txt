@@ -1,68 +1,72 @@
 digraph{
+	node [shape = record, fontname="Arial"]
+	rankdir = TB
+	fontname="Helvetica"
 
-	subgraph {
-		
-		node [shape = record, fontname="Arial"]
-		rankdir = TB
-		fontpath="./documentation/"
-		fontname="Helvetica"
-		fontnames="ps"
+	subgraph "Deep Component Editor"{
 
-		"Data Base Decomposition" [style=filled, fillcolor=pink]
+		"Master UFO" [style=filled, fillcolor=lightblue]
+		"Master UFO" -> "Basic Character Set" 
+		"Deep Components Editor Tool" [style=filled, fillcolor=green, shape=oval]
 
-		
-		"Deep Components Instantiator" [style=filled, fillcolor=green, shape=oval]
+		"Basic Character Set" -> "Selection to DeepComponent"
 
-		"Deep Components Editor" [style=filled, fillcolor=green, shape=oval]
-		
-		subgraph {
-			node [style=filled, fillcolor=lightyellow]
-			"Current Glyph" -> "Glyph Lib {DeepCompoName:[Index,Offsets]}" 
-		}
+		"Selection to DeepComponent" [style=filled, fillcolor=green, shape=oval]
 
-		"Deep Components Instantiator" -> "Current Glyph"
+		"Selection to DeepComponent" -> "Deep Components Editor Tool" [dir=both]
 
-		"Current Font" [style=filled, fillcolor=grey]
-		"Font Lib {DeepCompoName:Values}" [style=filled, fillcolor=grey]
+		"DeepComponent Storage UFO" [dir=both, style=filled, fillcolor=lightblue]
 
-		"Current Glyph" -> "Data Base Decomposition" 
+		"Deep Components Editor Tool" -> "DeepComponent Storage UFO"
+		"DeepComponent Storage UFO" -> "{DeepComponentGlyph:{}}"
 
-		"Data Base Decomposition" -> "JSON Glyph 2 Components" 
+		"Storage FontLib" [style=filled, fillcolor=lightblue]
 
-		"Deep Components Editor" -> "Font Lib {DeepCompoName:Values}"
+		"{DeepComponentGlyph:{}}" -> "Storage FontLib" [dir=both]
 
-		
-		subgraph {
-			node [style=filled, fillcolor=lightblue]
-			"Data Base Decomposition" -> "Deep Components Alternates"
-		}
+		"DeepComponent Storage UFO" -> "DeepComponent Glyph"
 
-		subgraph {
-			node [style=filled, fillcolor=lightblue]
-			"Deep Components Alternates" -> "Existing Settings"
-			"Deep Components Alternates" -> "New Settings"
+		"DeepComponent Glyph" [style=filled, fillcolor=yellow]
 
-			"Font Lib {DeepCompoName:Values}" -> "Existing Settings"
+		"Master Layers" [style=filled, fillcolor=yellow]
 
-			"Current Font" -> "Font Lib {DeepCompoName:Values}"
+		"DeepComponent Glyph" -> "Master Layers" [dir=both]
 
-		}
+		"Master Layers" -> "[LayerNames]" 
 
-		subgraph {
-			node [style=filled, fillcolor=red, fontcolor = white]
-			"Existing Settings" -> "Add Deep Components"
-			"New Settings" -> "Add Deep Components"
-			"Add Deep Components" -> "Glyph Lib {DeepCompoName:[Index,Offsets]}"
-			"Add Deep Components" -> "Font Lib {DeepCompoName:Values}"
-		}
+		"Storage GlyphLib" [style=filled, fillcolor=yellow]
 
+		"[LayerNames]" -> "Storage GlyphLib" [dir=both]
 
-		subgraph {
-			node [style=filled, fillcolor=blue, fontcolor = white]
-			"Display Deep Component in Glyph View" -> "Current Glyph"
-			"Font Lib {DeepCompoName:Values}" -> "Display Deep Component in Glyph View"
-			"Glyph Lib {DeepCompoName:[Index,Offsets]}" -> "Display Deep Component in Glyph View"
-		}
+	}
+
+	subgraph "Deep Component Instantiator"{
+		"Deep Components Instantiator Tool" [style=filled, fillcolor=green, shape=oval]
+
+		"Character Glyph" [style=filled, fillcolor=yellow]
+
+		"Master UFO" -> "Character Glyph" -> "Deep Components Instantiator Tool"
+
+		"GlyphsCompositionRules DB" [style=filled, fillcolor=pink]
+		"GlyphsCompositionRules DB" -> "Character Glyph" [dir=both]
+		"GlyphsCompositionRules DB" -> "Deep Components Instantiator Tool" [dir=both]
+
+		"Select Instance" [shape=circle]
+		"Add Instance" [shape=circle]
+		"Deep Components Instantiator Tool" -> "Select Instance" [dir=both]
+		"Select Instance" -> "{DeepComponentGlyph:{}}" 
+		"Deep Components Instantiator Tool" -> "Add Instance" -> "[LayerNames]" [dir=both]
+		"Add Instance" -> "{DeepComponentGlyph:{}}"
+
+		"Character GlyphLib" [style=filled, fillcolor=yellow]
+		"Visual Feedback (UI)" [style=filled, fillcolor=green, shape=oval]
+		"Character Glyph" -> "Visual Feedback (UI)" [dir=both]
+		"Visual Feedback (UI)" -> "Character GlyphLib" [dir=both]
+
+		"Add Instance" -> "{DeepComponentGlyph:(UUID, Offset)}"
+		"Select Instance" -> "{DeepComponentGlyph:(UUID, Offset)}"
+
+		"{DeepComponentGlyph:(UUID, Offset)}" -> "Character GlyphLib"
 	}
 
 }
