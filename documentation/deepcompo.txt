@@ -1,6 +1,6 @@
 digraph{
 	node [shape = record, fontname="Arial"]
-	rankdir = TB
+	rankdir = LR
 	fontname="Helvetica"
 
 	subgraph "Deep Component Editor"{
@@ -56,7 +56,8 @@ digraph{
 		"Deep Components Instantiator Tool" -> "Select Instance" [dir=both]
 		"Select Instance" -> "{DeepComponentGlyph:{}}" 
 		"Deep Components Instantiator Tool" -> "Add Instance" -> "[LayerNames]" [dir=both]
-		"Add Instance" -> "{DeepComponentGlyph:{}}"
+		"Add Instance" -> "{UUID:{Instance DeepCompo-DesignSpace Location}}"
+		"{UUID:{Instance DeepCompo-DesignSpace Location}}" -> "{DeepComponentGlyph:{}}"
 
 		"Character GlyphLib" [style=filled, fillcolor=yellow]
 		"Visual Feedback (UI)" [style=filled, fillcolor=green, shape=oval]
