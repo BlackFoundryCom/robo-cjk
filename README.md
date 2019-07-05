@@ -6,5 +6,5 @@ RoboFont extension for CJK font development
 **Workflow chart:**
 ![RoboCJK](/documentation/diagram.svg)
 
-
+**Deep Component chart:**
 ![DeepCompo](/documentation/deepcompo.svg)
