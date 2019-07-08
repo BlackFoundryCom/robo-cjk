@@ -79,6 +79,9 @@ def readCurrentProject(self, project):
     self.fontDict = {path.split("/")[-1][:-4]:path for path in self.mastersPaths}
     self.fontList = [name for name in sorted(self.fontDict.keys())]
     self.fonts = {name:OpenFont(self.projectPath + path, showUI = False) for name, path in self.fontDict.items()}
+    self.glyphsSetDict = {self.fonts[fontName]:\
+    [dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in self.fonts[fontName].lib['public.glyphOrder']]\
+     for fontName in self.fonts}
     self.masterslist = [{"FamilyName": name.split("-")[0], "StyleName": name.split("-")[1]} for name in self.fontList]
 
     # Design Frame

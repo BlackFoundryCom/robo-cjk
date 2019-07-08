@@ -42,6 +42,7 @@ from interface.ReferenceViewer import ReferenceViewer
 
 from interface.Fonts import Fonts
 from interface.GlyphSet import GlyphSet
+from interface.GlyphData import GlyphData
 
 from interface.DesignFrame import DesignFrame
 from interface.MiniFonts import MiniFonts
@@ -85,6 +86,8 @@ class RoboCJK():
         self.font = CurrentFont()
         self.glyph = CurrentGlyph()
         self.glyphset = list()
+
+        self.glyphsSetDict = dict()
 
         toolbarItems = [
             {
@@ -140,6 +143,9 @@ class RoboCJK():
 
         ####### GLYPHSET #######
         self.w.activeMasterGroup.glyphSet = GlyphSet((220,0,-0,-200), self)
+
+        ####### GLYPHSET #######
+        self.w.activeMasterGroup.glyphData = GlyphData((0,180,220,-0), self)
 
         ####### MINIFONT GROUP #######
         self.minifonts = MiniFonts((0,0,-0,-0), self)

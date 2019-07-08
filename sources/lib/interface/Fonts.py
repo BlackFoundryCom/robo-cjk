@@ -57,7 +57,7 @@ class Fonts(Box):
         else:
             self.ui.font = self.ui.fonts[sender.get()[sel[0]]]
             self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
-        self.ui.w.activeMasterGroup.glyphSet.glyphset_List.set(self.ui.glyphset)
+        self.ui.w.activeMasterGroup.glyphSet.set_glyphset_List()
 
     # def _fonts_list_doubleClickCallback(self, sender):
     #     sel = sender.getSelection()
