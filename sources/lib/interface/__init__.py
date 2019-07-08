@@ -39,7 +39,10 @@ import offTools.OpenSelectedComponent as OpenSelectedComponent
 reload(OpenSelectedComponent)
 from interface.SmartComponents import SmartComponents
 from interface.ReferenceViewer import ReferenceViewer
+
 from interface.Fonts import Fonts
+from interface.GlyphSet import GlyphSet
+
 from interface.DesignFrame import DesignFrame
 from interface.MiniFonts import MiniFonts
 from interface.Selection2Component import Selection2Component
@@ -76,10 +79,12 @@ class RoboCJK():
     glyphCompositionData = []
 
     def __init__(self):
-        self.w = Window((300,506), "Robo CJK", minSize = (300,300), maxSize = (300,2000))
+        self.windowWidth, self.windowHeight = 1000,600
+        self.w = Window((self.windowWidth, self.windowHeight), "Robo CJK", minSize = (300,300), maxSize = (2500,2000))
 
         self.font = CurrentFont()
         self.glyph = CurrentGlyph()
+        self.glyphset = list()
 
         toolbarItems = [
             {
@@ -91,6 +96,12 @@ class RoboCJK():
             {
                 'itemIdentifier': "spaceCenter",
                 'label': 'Space Center',
+                'callback': self._spaceCenter_callback,
+                'imagePath': SpaceCenterPDF
+            },
+            {
+                'itemIdentifier': "masterOverview",
+                'label': 'Master Overview',
                 'callback': self._spaceCenter_callback,
                 'imagePath': SpaceCenterPDF
             },
@@ -111,10 +122,24 @@ class RoboCJK():
                 self.project_popUpButton_list, 
                 callback = self._projects_popUpButton_callback)
 
+        segmentedElements = ["Active Master", "Deep Components"]
+        self.w.segmentedButton = SegmentedButton((10,40,-180,20), 
+                [dict(title=e, width = (self.windowWidth-224)/len(segmentedElements)) for e in segmentedElements],
+                callback = self._segmentedButton_callback,
+                sizeStyle='regular')
+        self.w.segmentedButton.set(0)
+
         self.getSuggestComponent()
 
+        self.w.activeMasterGroup = Group((10,70,-205,-20))
+        self.w.deepComponentsGroup = Group((10,70,-205,-20))
+        self.w.deepComponentsGroup.show(0)
+
         ####### FONT GROUP #######
-        self.fontsGroup = Fonts((0,0,-0,-0), self)
+        self.w.activeMasterGroup.fontsGroup = Fonts((0,0,220,180), self)
+
+        ####### GLYPHSET #######
+        self.w.activeMasterGroup.glyphSet = GlyphSet((220,0,-0,-200), self)
 
         ####### MINIFONT GROUP #######
         self.minifonts = MiniFonts((0,0,-0,-0), self)
@@ -136,16 +161,16 @@ class RoboCJK():
 
         ###### ACCORDION VIEW ######
         self.accordionViewDescriptions = [
-                       dict(label="Fonts", view=self.fontsGroup, size=100, collapsed=False, canResize=1),
-                       dict(label="Mini Fonts", view=self.minifonts, size=120, collapsed=True, canResize=1),
-                       dict(label="Smart Components", view=self.smartComponent, size=260, collapsed=False, canResize=1),
-                       dict(label="Flat Components", view=self.flatComponent, size=125, collapsed=True, canResize=1),
-                       dict(label="Selection to Components", view=self.selection2component, size=100, collapsed=True, canResize=1),
-                       dict(label="Reference Viewer", view=self.referenceViewer, size=30, collapsed=True, canResize=0),
-                       dict(label="Design Frame", view=self.designFrame, size=113, collapsed=True, canResize=0),
+                       # dict(label="Fonts", view=self.fontsGroup, size=100, collapsed=False, canResize=1),
+                       # dict(label="Mini Fonts", view=self.minifonts, size=120, collapsed=True, canResize=1),
+                       # dict(label="Smart Components", view=self.smartComponent, size=260, collapsed=False, canResize=1),
+                       # dict(label="Flat Components", view=self.flatComponent, size=125, collapsed=True, canResize=1),
+                       # dict(label="Selection to Components", view=self.selection2component, size=100, collapsed=True, canResize=1),
+                       dict(label="Reference Viewer", view=self.referenceViewer, size=55, collapsed=True, canResize=0),
+                       dict(label="Design Frame", view=self.designFrame, size=173, collapsed=True, canResize=0),
                        ]
 
-        self.w.accordionView = AccordionView((0, 40, -0, -20), self.accordionViewDescriptions,
+        self.w.accordionView = AccordionView((-200, 40, -0, -20), self.accordionViewDescriptions,
             backgroundColor=NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1))
         
         ###### DARK MODE ######
@@ -184,6 +209,11 @@ class RoboCJK():
     def _spaceCenter_callback(self, sender):
         message("Work in Progress...")
 
+    def _segmentedButton_callback(self, sender):
+        sel = sender.get()
+        self.w.activeMasterGroup.show(abs(sel-1))
+        self.w.deepComponentsGroup.show(sel)
+
     def observer(self, remove = False):
         if not remove:
             addObserver(self, "currentGlyphChanged", "currentGlyphChanged")
@@ -195,7 +225,7 @@ class RoboCJK():
             self.flatComponent.resetComponentInfo()
             self.flatComponent.suggestComponent_list.setSelection([])
         self.glyph = info['glyph']
-        self.font = CurrentFont()
+        # self.font = CurrentFont()
         self._setUI_with_CurrentGlyph()
         UpdateCurrentGlyphView()
 
@@ -215,7 +245,7 @@ class RoboCJK():
 
     def _setUI(self):
         # FONT GROUP
-        self.fontsGroup.fonts_list.set(self.fontList)
+        self.w.activeMasterGroup.fontsGroup.fonts_list.set(self.fontList)
         self.setUIMiniFonts()
 
     def getSuggestComponent(self):
@@ -248,6 +278,7 @@ class RoboCJK():
             # Reset all the UI
             self._setUI()
             self._setUI_with_CurrentGlyph()
+        print(self.fonts)
 
     ##### MINI FONT #####
     def setMiniFontsView(self, collapsed = False):
@@ -255,8 +286,9 @@ class RoboCJK():
             if desc['label'] == "Mini Fonts":
                 desc["collapsed"] = collapsed
         delattr(self.w, "accordionView")
-        self.w.accordionView = AccordionView((0, 40, -0, -20), self.accordionViewDescriptions,
+        self.w.accordionView = AccordionView((-200, 40, -0, -20), self.accordionViewDescriptions,
             backgroundColor=NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1))
+        Helpers.setDarkMode(self.w, self.darkMode)
 
     def setUIMiniFonts(self):
         try:

@@ -50,8 +50,8 @@ class DesignFrame(Group):
                 value = self.onOff_designFrame,
                 sizeStyle = "small",
                 callback = self._onOff_checkBox_callback)
-
-        self.drawPreview_designFrame_checkBox = CheckBox((150,y,-10,20),
+        y += 20
+        self.drawPreview_designFrame_checkBox = CheckBox((10,y,-10,20),
                 'Draw Preview',
                 value = self.drawPreview_designFrame,
                 sizeStyle = "small",
@@ -62,8 +62,8 @@ class DesignFrame(Group):
                 value = self.showMainFrames,
                 sizeStyle = "small",
                 callback = self._showMainFrames_checkBox_callback)
-
-        self.showproximityPoints_checkBox = CheckBox((150,y,-10,20),
+        y += 20
+        self.showproximityPoints_checkBox = CheckBox((10,y,-10,20),
                 "Proximity Points",
                 value = self.showproximityPoints,
                 sizeStyle = "small",
@@ -75,15 +75,15 @@ class DesignFrame(Group):
                 sizeStyle = "small",
                 callback = self._showSecondLines_checkBox_callback)
         
-        
-        self.translate_secondLine_X_slider = Slider((115,y,-10,20),
+        y += 20
+        self.translate_secondLine_X_slider = Slider((25,y,-10,20),
                 minValue = -500,
                 maxValue = 500,
                 value = self.translate_secondLine_X,
                 sizeStyle = "small",
                 callback = self._translate_secondLine_X_slider_callback)
         y += 20
-        self.translate_secondLine_Y_slider = Slider((115,y,-10,20),
+        self.translate_secondLine_Y_slider = Slider((25,y,-10,20),
                 minValue = -500,
                 maxValue = 500,
                 value = self.translate_secondLine_Y,

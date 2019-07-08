@@ -16,14 +16,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-from imp import reload
-import Global
-reload(Global)
-import interface
-reload(interface)
+from mojo.drawingTools import *
+from mojo.roboFont import *
+from drawers.DesignFrameDrawer import DesignFrameDrawer
 
-from interface import RoboCJK
 
-Global.CharactersSets.get()
-Global.fontsList.get()
-RoboCJK()
+class CurrentGlyphCanvas():
+
+    def __init__(self, interface):
+        self.ui = interface
+        self.scale = .22
+        self.canvasWidth = 386
+
+    def draw(self):
+    	try:
+    		g = self.ui.glyph
+    		if g is None: return
+    		scale(self.scale, self.scale)
+    		translate(((self.canvasWidth/self.scale)-1000)*.5,250)
+    		drawGlyph(g)
+    		DesignFrameDrawer(self.ui).draw(scale = self.scale)
+    	except Exception as e:
+    		print(e)

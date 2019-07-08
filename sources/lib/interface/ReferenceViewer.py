@@ -37,7 +37,7 @@ class ReferenceViewer(Group):
                 callback = self._OnOff_referenceViewer_callback)
 
         self.drawPreview_referenceViewer = 1
-        self.drawPreview_referenceViewer_checkBox = CheckBox((150,5,-10,20),
+        self.drawPreview_referenceViewer_checkBox = CheckBox((10,25,-10,20),
                 'Draw Preview',
                 value = self.drawPreview_referenceViewer,
                 sizeStyle = "small",

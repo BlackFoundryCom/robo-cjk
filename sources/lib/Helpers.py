@@ -20,7 +20,9 @@ import os, subprocess
 from pathlib import Path
 from vanilla.dialogs import message
 from AppKit import NSColor, NSFont, NSAppearance
+from mojo.UI import CurrentGlyphWindow
 from vanilla import TextBox
+from mojo.roboFont import *
 
 def normalizeUnicode(code):
     if len(code) < 4:
@@ -32,12 +34,14 @@ def setDarkMode(w, darkMode):
     if darkMode:
         appearance = NSAppearance.appearanceNamed_('NSAppearanceNameVibrantDark')
         if hasattr(w, "accordionView"):
-            w.accordionView.setBackgroundColor(NSColor.colorWithCalibratedRed_green_blue_alpha_(.1, .1, .1, 1))
+            w.accordionView.setBackgroundColor(NSColor.colorWithCalibratedRed_green_blue_alpha_(.08, .08, .08, 1))
     else:
         appearance = NSAppearance.appearanceNamed_('NSAppearanceNameAqua')
         if hasattr(w, "accordionView"):
             w.accordionView.setBackgroundColor(NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1))
     w.getNSWindow().setAppearance_(appearance)
+    if CurrentGlyphWindow():
+        CurrentGlyphWindow().window().getNSWindow().setAppearance_(appearance)
 
 def makepath(filepath):
     # Create path if it do not exist
@@ -74,6 +78,7 @@ def readCurrentProject(self, project):
     self.mastersPaths = project["MastersPaths"]
     self.fontDict = {path.split("/")[-1][:-4]:path for path in self.mastersPaths}
     self.fontList = [name for name in sorted(self.fontDict.keys())]
+    self.fonts = {name:OpenFont(self.projectPath + path, showUI = False) for name, path in self.fontDict.items()}
     self.masterslist = [{"FamilyName": name.split("-")[0], "StyleName": name.split("-")[1]} for name in self.fontList]
 
     # Design Frame

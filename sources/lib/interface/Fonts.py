@@ -28,29 +28,43 @@ import os, json, subprocess, datetime, Helpers, getpass
 reload(Helpers)
 from Helpers import makepath, GitHelper, unique
 
-class Fonts(Group):
+class Fonts(Box):
 
     def __init__(self, posSize, interface):
         super(Fonts, self).__init__(posSize)
         self.ui = interface
 
+        self.fontTextBox = TextBox((0,0,-0,20), 
+                'UFO(s)',
+                sizeStyle = "small")
+
         self.fontList = []
-        self.fonts_list = List((10,10,-10,-30), 
+        self.fonts_list = List((0,20,-0,-30), 
                 self.fontList,
-                doubleClickCallback = self._fonts_list_doubleClickCallback,
+                # doubleClickCallback = self._fonts_list_doubleClickCallback,
+                selectionCallback = self._fonts_list_selectionCallback,
                 drawFocusRing = False)
 
-        self.getMiniFont = Button((10,-25,-10,-5),
+        self.getMiniFont = SquareButton((0,-30,-0,-0),
                 "Get Mini Font",
                 sizeStyle = "small",
                 callback = self._getMiniFont_callback)
 
-    def _fonts_list_doubleClickCallback(self, sender):
+    def _fonts_list_selectionCallback(self, sender):
         sel = sender.getSelection()
-        if not sel: return
-        for i in sel:
-            fontPath = self.ui.projectPath+self.ui.fontDict[self.ui.fontList[i]]
-            f = OpenFont(fontPath)
+        if not sel:
+            self.ui.glyphset = []
+        else:
+            self.ui.font = self.ui.fonts[sender.get()[sel[0]]]
+            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
+        self.ui.w.activeMasterGroup.glyphSet.glyphset_List.set(self.ui.glyphset)
+
+    # def _fonts_list_doubleClickCallback(self, sender):
+    #     sel = sender.getSelection()
+    #     if not sel: return
+    #     for i in sel:
+    #         fontPath = self.ui.projectPath+self.ui.fontDict[self.ui.fontList[i]]
+    #         f = OpenFont(fontPath)
 
     def _getMiniFont_callback(self, sender):
         self.glyph = self.ui.glyph

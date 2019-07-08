@@ -79,7 +79,7 @@ class ProjectEditor():
                 'Project Name:',
                 alignment = 'right')
         self.w.projectName_editText = EditText((305, 11, -10, 20), 
-                self.projectName, 
+                placeholder = self.projectName, 
                 callback = self._projectName_editText_callback)
 
         self.charactersSets_Dict, self.characterSet_list = Global.CharactersSets.get()
