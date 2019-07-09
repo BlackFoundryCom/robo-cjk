@@ -276,18 +276,22 @@ class ProjectEditor():
         for charset in self.selectedCharactersSets:
             glyphOrder.extend(["uni"+normalizeUnicode(hex(ord(c))[2:].upper()) for c in self.charactersSets_Dict[charset]])
 
+        font2storagePath = {}
         for master in self.masterslist:
             # Get the master info
             familyName = master["FamilyName"]
             styleName = master["StyleName"]
             # Get the master path
             masterPath =  "/Design/%s-%s.ufo"%(familyName, styleName)
+            storagePath =  "/Storage/deepComponents%s-%s.ufo"%(familyName, styleName)
 
             fullPath = folderpath[0] + masterPath
+            fullStoragePath = folderpath[0] + storagePath
 
             try:
                 # Open the ufo file if the path already exist
                 f = OpenFont(fullPath, showUI = False)
+                
             except:
                 # Create the path if it do not already exist
                 makepath(fullPath)
@@ -295,11 +299,26 @@ class ProjectEditor():
                 f = NewFont(familyName = familyName, 
                             styleName = styleName, 
                             showUI = False)
+            try:
+                storageF = OpenFont(fullStoragePath, showUI = False)
+
+            except:
+                makepath(fullStoragePath)
+                storageF = NewFont(familyName = familyName+" DeepComponents", 
+                            styleName = styleName, 
+                            showUI = False)
+
             # Set the glyphOrder to the font, save it and close it
-            f.lib['public.glyphOrder'] = glyphOrder
+            if glyphOrder:
+                f.lib['public.glyphOrder'] = glyphOrder
 
             f.save(fullPath)
             f.close()
+
+            storageF.save(fullStoragePath)
+            storageF.close()
+
+            font2storagePath[masterPath] = storagePath
 
             if masterPath not in self.mastersPaths:
                 self.mastersPaths.append(masterPath)
@@ -331,7 +350,7 @@ class ProjectEditor():
         self.project = {
             "Project" : self.projectDescription,
             "CharactersSets" : self.selectedCharactersSets,
-            "MastersPaths" : self.mastersPaths,
+            "UFOsPaths" : font2storagePath,
             "DesignFrame" : self.designFrameSettings,
             "ReferenceViewer" : self.referenceViewerSettings,
             "Calendar" : self.calendar,

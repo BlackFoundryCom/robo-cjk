@@ -28,7 +28,7 @@ import os, json, subprocess, datetime, Helpers, getpass
 reload(Helpers)
 from Helpers import makepath, GitHelper, unique
 
-class Fonts(Box):
+class Fonts(Group):
 
     def __init__(self, posSize, interface):
         super(Fonts, self).__init__(posSize)
@@ -57,6 +57,9 @@ class Fonts(Box):
         else:
             self.ui.font = self.ui.fonts[sender.get()[sel[0]]]
             self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
+        
+
+
         self.ui.w.activeMasterGroup.glyphSet.set_glyphset_List()
 
     # def _fonts_list_doubleClickCallback(self, sender):

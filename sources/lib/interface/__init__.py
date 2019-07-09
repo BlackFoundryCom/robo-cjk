@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from vanilla import *
 from vanilla.dialogs import getFile, message
 from mojo.UI import AccordionView, UpdateCurrentGlyphView
-from mojo.events import addObserver, removeObserver
+from mojo.events import addObserver, removeObserver, installTool, uninstallTool
 
 from mojo.roboFont import *
 from AppKit import *
@@ -43,11 +43,16 @@ from interface.ReferenceViewer import ReferenceViewer
 from interface.Fonts import Fonts
 from interface.GlyphSet import GlyphSet
 from interface.GlyphData import GlyphData
+from interface.DeepComponentsInstantiator import DeepComponentsInstantiator
 
 from interface.DesignFrame import DesignFrame
-from interface.MiniFonts import MiniFonts
-from interface.Selection2Component import Selection2Component
-from interface.FlatComponent import FlatComponent
+
+from drawers.CurrentGlyphViewDrawer import CurrentGlyphViewDrawer
+
+from offTools.smartSelector import SmartSelector
+# from interface.MiniFonts import MiniFonts
+# from interface.Selection2Component import Selection2Component
+# from interface.FlatComponent import FlatComponent
 import Global
 reload(Global)
 
@@ -57,6 +62,7 @@ rdir = os.path.abspath(os.path.join(cwd, os.pardir))
 ProjectEditorPDF = os.path.join(rdir, "resources/ProjectEditor.pdf")
 PreferencesPDF = os.path.join(rdir, "resources/Preferences.pdf")
 SpaceCenterPDF = os.path.join(rdir, "resources/SpaceCenter.pdf")
+SavePDF = os.path.join(rdir, "resources/Save.pdf")
 
 class RoboCJK():
     
@@ -89,7 +95,15 @@ class RoboCJK():
 
         self.glyphsSetDict = dict()
 
+        self.selectedCompositionGlyphName = ""
+
         toolbarItems = [
+            {   
+                'itemIdentifier': "saveUFO(s)",
+                'label': 'Save UFO(s)',
+                'callback': self._saveUFOs_callback,
+                'imagePath': SavePDF
+            },
             {
                 'itemIdentifier': "projectEditor",
                 'label': 'Projects Editor',
@@ -125,30 +139,32 @@ class RoboCJK():
                 self.project_popUpButton_list, 
                 callback = self._projects_popUpButton_callback)
 
-        segmentedElements = ["Active Master", "Deep Components"]
-        self.w.segmentedButton = SegmentedButton((10,40,-180,20), 
+        segmentedElements = ["Active Master", "Deep Components Editor"]
+        self.w.main_segmentedButton = SegmentedButton((10,40,-180,20), 
                 [dict(title=e, width = (self.windowWidth-224)/len(segmentedElements)) for e in segmentedElements],
-                callback = self._segmentedButton_callback,
+                callback = self._main_segmentedButton_callback,
                 sizeStyle='regular')
-        self.w.segmentedButton.set(0)
+        self.w.main_segmentedButton.set(0)
 
-        self.getSuggestComponent()
+        self.getCompositionGlyph()
 
         self.w.activeMasterGroup = Group((10,70,-205,-20))
         self.w.deepComponentsGroup = Group((10,70,-205,-20))
         self.w.deepComponentsGroup.show(0)
 
         ####### FONT GROUP #######
-        self.w.activeMasterGroup.fontsGroup = Fonts((0,0,220,180), self)
+        self.w.activeMasterGroup.fontsGroup = Fonts((0,0,215,170), self)
 
         ####### GLYPHSET #######
-        self.w.activeMasterGroup.glyphSet = GlyphSet((220,0,-0,-200), self)
+        self.w.activeMasterGroup.glyphSet = GlyphSet((225,0,-0,-200), self)
 
         ####### GLYPHSET #######
-        self.w.activeMasterGroup.glyphData = GlyphData((0,180,220,-0), self)
+        self.w.activeMasterGroup.glyphData = GlyphData((0,180,215,-0), self)
+
+        self.w.activeMasterGroup.DeepComponentsInstantiator = DeepComponentsInstantiator((225,-190,-0,-0), self)
 
         ####### MINIFONT GROUP #######
-        self.minifonts = MiniFonts((0,0,-0,-0), self)
+        # self.minifonts = MiniFonts((0,0,-0,-0), self)
 
         ####### REFERENCE VIEWER #######
         self.referenceViewer = ReferenceViewer((0,0,-0,-0), self)
@@ -157,13 +173,19 @@ class RoboCJK():
         self.designFrame = DesignFrame((0,0,-0,-0), self)
 
         ###### SELECTION TO COMPONENT ######
-        self.selection2component = Selection2Component((0,0,-0,-0), self)
+        # self.selection2component = Selection2Component((0,0,-0,-0), self)
 
-        ###### IMPORT COMPONENT ######
-        self.flatComponent = FlatComponent((0,0,-0,-0), self)
+        # ###### IMPORT COMPONENT ######
+        # self.flatComponent = FlatComponent((0,0,-0,-0), self)
 
-        ###### SMART COMPONENT ######
-        self.smartComponent = SmartComponents((0,0,-0,-0), self)
+        # ###### SMART COMPONENT ######
+        # self.smartComponent = SmartComponents((0,0,-0,-0), self)
+        # segmentedElements = ["Select Deep Component", "New Deep Component"]
+        # self.w.activeMasterGroup.deepCompo_segmentedButton = SegmentedButton((225,-190,-0,20), 
+        #         [dict(title=e, width = (550)/len(segmentedElements)) for e in segmentedElements],
+        #         callback = self._deepCompo_segmentedButton_callback,
+        #         sizeStyle='regular')
+        # self.w.activeMasterGroup.deepCompo_segmentedButton.set(0)
 
         ###### ACCORDION VIEW ######
         self.accordionViewDescriptions = [
@@ -194,6 +216,9 @@ class RoboCJK():
         BalanceHandles.BalanceHandles(self)
         OpenSelectedComponent.OpenSelectedComponent(self)
 
+        self.smartSelector = SmartSelector(self)
+        installTool(self.smartSelector)
+
         ###### OBSERVER ######
         self.observer()
         self.w.bind('close', self.windowWillClose)
@@ -205,6 +230,11 @@ class RoboCJK():
         self.darkMode = sender.get()
         Helpers.setDarkMode(self.w, self.darkMode)
 
+    def _saveUFOs_callback(self, sender):
+        for f1, f2 in self.font2Storage.items():
+            f1.save() 
+            f2.save()
+
     def _projectsSettings_callback(self, sender):
         ProjectEditor(self)
 
@@ -215,25 +245,44 @@ class RoboCJK():
     def _spaceCenter_callback(self, sender):
         message("Work in Progress...")
 
-    def _segmentedButton_callback(self, sender):
+    def _main_segmentedButton_callback(self, sender):
         sel = sender.get()
         self.w.activeMasterGroup.show(abs(sel-1))
         self.w.deepComponentsGroup.show(sel)
 
+    # def _deepCompo_segmentedButton_callback(self, sender):
+    #     sel = sender.get()
+
     def observer(self, remove = False):
         if not remove:
             addObserver(self, "currentGlyphChanged", "currentGlyphChanged")
+            addObserver(self, "draw", "draw")
+            addObserver(self, "draw", "drawPreview")
+            addObserver(self, "draw", "drawInactive")
             return
         removeObserver(self, "currentGlyphChanged")
+        removeObserver(self, "draw")
+        removeObserver(self, "drawPreview")
+        removeObserver(self, "drawInactive")
 
     def currentGlyphChanged(self, info):
-        if self.glyph != info['glyph']: 
-            self.flatComponent.resetComponentInfo()
-            self.flatComponent.suggestComponent_list.setSelection([])
+        # if self.glyph != info['glyph']: 
+        #     self.flatComponent.resetComponentInfo()
+        #     self.flatComponent.suggestComponent_list.setSelection([])
+
         self.glyph = info['glyph']
+        if self.glyph is None:
+            sel = self.w.activeMasterGroup.glyphSet.glyphset_List.getSelection()
+            if sel:
+                name = self.glyphset[sel[0]]
+                self.glyph = self.font[name]
         # self.font = CurrentFont()
-        self._setUI_with_CurrentGlyph()
+        # self._setUI_with_CurrentGlyph()
         UpdateCurrentGlyphView()
+
+    def draw(self, info):
+        if self.glyph is None: return
+        CurrentGlyphViewDrawer(self).draw()
 
     def _projects_popUpButton_callback(self, sender):
         sel = sender.get()
@@ -252,20 +301,20 @@ class RoboCJK():
     def _setUI(self):
         # FONT GROUP
         self.w.activeMasterGroup.fontsGroup.fonts_list.set(self.fontList)
-        self.setUIMiniFonts()
+        # self.setUIMiniFonts()
 
-    def getSuggestComponent(self):
-        self.suggestComponent = []
+    def getCompositionGlyph(self):
+        self.compositionGlyph = []
         if self.glyph is not None and self.glyphCompositionData and self.glyph.unicode:
             uni = normalizeUnicode(hex(self.glyph.unicode)[2:].upper())
             if uni in self.glyphCompositionData:
-                self.suggestComponent = [v for v in self.glyphCompositionData[uni]]
+                self.compositionGlyph = [dict(Char = chr(int(name.split('_')[0],16)), Name = name) for name in self.glyphCompositionData[uni]]
 
-    def _setUI_with_CurrentGlyph(self):
-        if self.glyph is not None:
-            self.getSuggestComponent()
-            self.selection2component.suggestComponent_list.set(self.suggestComponent)
-            self.flatComponent.suggestComponent_list.set(self.suggestComponent)
+    # def _setUI_with_CurrentGlyph(self):
+    #     if self.glyph is not None:
+    #         self.getCompositionGlyph()
+    #         self.selection2component.suggestComponent_list.set(self.compositionGlyph)
+    #         self.flatComponent.suggestComponent_list.set(self.compositionGlyph)
 
     def _importProject_callback(self, projectPath):
         # get the path of .project file
@@ -283,8 +332,8 @@ class RoboCJK():
             self.w.projects_popUpButton.setItems(self.project_popUpButton_list)
             # Reset all the UI
             self._setUI()
-            self._setUI_with_CurrentGlyph()
-        print(self.fonts)
+            # self._setUI_with_CurrentGlyph()
+        # print(self.fonts)
 
     ##### MINI FONT #####
     def setMiniFontsView(self, collapsed = False):
@@ -296,18 +345,19 @@ class RoboCJK():
             backgroundColor=NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1))
         Helpers.setDarkMode(self.w, self.darkMode)
 
-    def setUIMiniFonts(self):
-        try:
-            self.minifontList = os.listdir(self.projectPath+"/Temp") 
-        except:
-            self.minifontList = []
-        if len(self.minifontList):
-            self.setMiniFontsView(collapsed = False)
-        else:
-            self.setMiniFontsView(collapsed = True)
-        self.minifonts.minifonts_list.set(self.minifontList)
+    # def setUIMiniFonts(self):
+    #     try:
+    #         self.minifontList = os.listdir(self.projectPath+"/Temp") 
+    #     except:
+    #         self.minifontList = []
+    #     if len(self.minifontList):
+    #         self.setMiniFontsView(collapsed = False)
+    #     else:
+    #         self.setMiniFontsView(collapsed = True)
+    #     self.minifonts.minifonts_list.set(self.minifontList)
 
     ##### CLOSE #####
     def windowWillClose(self, sender):
         self.observer(remove = True)
+        uninstallTool(self.smartSelector)
         UpdateCurrentGlyphView()

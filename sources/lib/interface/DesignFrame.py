@@ -31,7 +31,7 @@ class DesignFrame(Group):
         self.glyph = self.ui.glyph
 
         self.onOff_designFrame = 1
-        self.drawPreview_designFrame = 1
+        self.drawPreview_designFrame = 0
         self.showMainFrames = 1
         self.showproximityPoints = 1
         self.showSecondLines = 1

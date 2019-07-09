@@ -24,7 +24,7 @@ from AppKit import NSAppearance, NSColor
 from drawers.CurrentGlyphCanvas import CurrentGlyphCanvas
 from lib.cells.colorCell import RFColorCell
 
-class GlyphSet(Box):
+class GlyphSet(Group):
 
     def __init__(self, posSize, interface):
         super(GlyphSet, self).__init__(posSize)
@@ -46,7 +46,10 @@ class GlyphSet(Box):
 
         self.set_glyphset_List()
 
-        self.canvas = Canvas((165,20,-0,-0), delegate=CurrentGlyphCanvas(self.ui))
+        self.canvas = Canvas((165,20,-0,-0), 
+            delegate=CurrentGlyphCanvas(self.ui, self),
+            hasHorizontalScroller=False, 
+            hasVerticalScroller=False)
 
     def set_glyphset_List(self):
         if self.ui.font in self.ui.glyphsSetDict:
@@ -55,11 +58,11 @@ class GlyphSet(Box):
     def _glyphset_List_selectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        name = self.ui.glyphset[sel[0]]
-        self.ui.glyph = self.ui.font[name]
-        self.ui.getSuggestComponent()
-        print(self.ui.suggestComponent)
-        self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.suggestComponent)
+        if self.ui.glyphset:
+            name = self.ui.glyphset[sel[0]]
+            self.ui.glyph = self.ui.font[name]
+        self.ui.getCompositionGlyph()
+        self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
         self.canvas.update()
 
     def _glyphset_List_doubleClickCallback(self, sender):

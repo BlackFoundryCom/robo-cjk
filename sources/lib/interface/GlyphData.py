@@ -17,26 +17,79 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
+from vanilla.dialogs import message
+from sheets.Select2DeepCompoSheet import Select2DeepCompoSheet
 
-class GlyphData(Box):
+class GlyphData(Group):
 
     def __init__(self, posSize, interface):
         super(GlyphData, self).__init__(posSize)
         self.ui = interface
 
-
-        self.glyphCompositionRules_TextBox = TextBox((0, 0, -0, 20),
+        self.glyphCompositionRules_TextBox = TextBox((0, 10, -0, 20),
             "Glyph composition rules",
             sizeStyle = "small")
 
-        self.glyphCompositionRules_List = List((0, 20, -0, 100),
-            self.ui.suggestComponent,
-            drawFocusRing=False, )
+        self.glyphCompositionRules_List = List((0, 30, -0, 100),
+            self.ui.compositionGlyph,
+            columnDescriptions = [
+                                {"title": "Char", "width" : 30},
+                                {"title": "Name", "width" : 175},                  
+                                ],
 
-        self.variants_TextBox = TextBox((0, 130, -0, 20),
+            drawFocusRing=False, 
+            selectionCallback = self._glyphCompositionRules_List_selectionCallback)
+
+        self.selection2DeepCompo_Button = SquareButton((0, 130, -0, 30),
+            "Selection to Deep Components",
+            sizeStyle = "small",
+            callback = self._selection2DeepCompo_Button_Callback)
+
+        self.variants_TextBox = TextBox((0, 170, -0, 20),
             "Variants",
             sizeStyle = "small")
 
-        self.variants_List = List((0, 150, -0, 100),
+        self.existingName = []
+
+        self.variants_List = List((0, 190, -0, -0),
             [],
-            drawFocusRing=False, )
+            drawFocusRing=False, 
+            selectionCallback = self._variants_List_callback)
+
+    def _selection2DeepCompo_Button_Callback(self, sender):
+        if not self.ui.selectedCompositionGlyphName:
+            message("Warning, there is no selected composition glyph name")
+            return
+        if self.ui.glyph is None:
+            message("Warning, there is no glyph")
+            return
+        selectedContours = [c for c in self.ui.glyph if c.selected or [p for p in c.points if p.selected]]
+        if not selectedContours:
+            message("Warning, there is no selectedContours")
+            return
+        Select2DeepCompoSheet(self.ui, self, self.ui.selectedCompositionGlyphName["Name"], selectedContours)
+
+    def _glyphCompositionRules_List_selectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.ui.selectedCompositionGlyphName = ""
+            return
+        else:
+            self.ui.selectedCompositionGlyphName = sender.get()[sel[0]]
+
+        self.font = self.ui.font
+        self.storageFont = self.ui.font2Storage[self.font]
+        self.existingName = list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))
+
+        self.variants_List.set(self.existingName)
+
+    def _variants_List_callback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list.set([])
+            return
+        name = sender.get()[sel[0]]
+        f = self.storageFont
+        if "deepComponentsGlyph" in f.lib:
+            if name in f.lib["deepComponentsGlyph"]:
+                self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list.set(list(f.lib["deepComponentsGlyph"][name].keys()))
