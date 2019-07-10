@@ -82,17 +82,27 @@ class GlyphData(Group):
         self.existingName = list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))
 
         self.variants_List.set(self.existingName)
+        if self.existingName:
+            self.variants_List.setSelection([len(self.existingName)-1])
 
     def _variants_List_callback(self, sender):
         sel = sender.getSelection()
         selectDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list
         if not sel:
             selectDeepCompoList.set([])
+            self.ui.selectedVariantName = ""
+            self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
             return
-        name = sender.get()[sel[0]]
+
+        self.ui.selectedVariantName = sender.get()[sel[0]]
         f = self.storageFont
+
         if "deepComponentsGlyph" in f.lib:
-            if name in f.lib["deepComponentsGlyph"]:
-                selectDeepCompoList.set(list(f.lib["deepComponentsGlyph"][name].keys()))
+
+            if self.ui.selectedVariantName in f.lib["deepComponentsGlyph"]:
+                selectDeepCompoList.set(list(f.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()))
+
             else:
                 selectDeepCompoList.set([])
+
+        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()

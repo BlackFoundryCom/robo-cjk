@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
+from mojo.UI import UpdateCurrentGlyphView
 
 class DeepComponentsInstantiator(Group):
 
@@ -33,8 +34,16 @@ class DeepComponentsInstantiator(Group):
         self.selectDeepCompo = Group((0, 30,-0, -0))
         self.newDeepCompo = Group((0, 30,-0, -0))
 
-        self.selectDeepCompo.list = List((0, 0, -170, -0), [])
-        self.newDeepCompo.list = List((0, 0, -170, -0), [])
+        self.selectDeepCompo.list = List((0, 0, -170, -0), [],
+            drawFocusRing=False, )
+
+        slider = SliderListCell(minValue = 0, maxValue = 1000)
+        self.newDeepCompo.list = List((0, 0, -170, -0), 
+            [],
+            columnDescriptions = [{"title": "Layer" }, 
+                                    {"title": "Values", "cell": slider}],
+            drawFocusRing=False, 
+            editCallback = self._newDeepCompo_List_editCallback)
 
         self.deepCompo_segmentedButton.set(0)
         self.newDeepCompo.show(0)
@@ -50,3 +59,22 @@ class DeepComponentsInstantiator(Group):
         sel = sender.get()
         self.selectDeepCompo.show(abs(sel-1))
         self.newDeepCompo.show(sel)
+        if sel:
+            self.setSliderList()
+        else:
+            self.ui.temp_DeepCompo_slidersValuesList = []
+        self.newDeepCompo.list.set(self.ui.temp_DeepCompo_slidersValuesList)
+
+    def setSliderList(self):
+        if hasattr(self.ui, "selectedVariantName") and self.ui.selectedVariantName:
+            storageFont = self.ui.font2Storage[self.ui.font]
+            storageGlyph = storageFont[self.ui.selectedVariantName]
+            self.ui.temp_DeepCompo_slidersValuesList = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+        else:
+            self.ui.temp_DeepCompo_slidersValuesList = []            
+        self.newDeepCompo.list.set(self.ui.temp_DeepCompo_slidersValuesList)
+
+    def _newDeepCompo_List_editCallback(self, sender):
+        self.ui.temp_DeepCompo_slidersValuesList = sender.get()
+        self.ui.w.activeMasterGroup.glyphSet.canvas.update()
+        UpdateCurrentGlyphView()

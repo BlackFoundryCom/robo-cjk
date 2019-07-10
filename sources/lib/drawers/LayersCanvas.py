@@ -33,7 +33,7 @@ class LayersCanvas():
         self.boxHeight = 1200
         self.boxWidth = 1000
         self.scroll = 0
-        self.gl.selectedLayer = None
+        self.gl.StorageGlyphCurrentLayer = None
         
     def scrollWheel(self, info):
         alt = extractNSEvent(info)['optionDown']
@@ -58,9 +58,9 @@ class LayersCanvas():
         for loc in self.glyphLocation_in_Window:
             x, y, w, h = loc
             if x < (pointX-400)/self.scale < x+w and y < (pointY-224)/self.scale < y+h:
-                self.gl.selectedLayer = self.glyphLocation_in_Window[loc]
+                self.gl.StorageGlyphCurrentLayer = self.glyphLocation_in_Window[loc]
                 if info.clickCount() == 2:
-                    OpenGlyphWindow(self.gl.selectedLayer)
+                    OpenGlyphWindow(self.gl.StorageGlyphCurrentLayer)
         self.update()
         
     def update(self):
@@ -97,7 +97,7 @@ class LayersCanvas():
                 save()
                 fill(0,.4,1,1)
                 stroke(None)                
-                if g == self.gl.selectedLayer:
+                if g == self.gl.StorageGlyphCurrentLayer:
                     fill(.9,0,.3,1)                
                 font('Menlo-Regular', fontSize=int(90))                
                 text(str(layerName), (20, self.boxHeight-120))

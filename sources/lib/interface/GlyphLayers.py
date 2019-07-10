@@ -33,7 +33,7 @@ class GlyphLayers(Group):
 
         self.storageGlyph = None
         self.storageGlyphName = ""
-        self.selectedLayer = ""
+        self.StorageGlyphCurrentLayer = ""
 
         self.goTo = EditText((0,0,165,20),
             placeholder = "🔎 Char/Name",
@@ -58,7 +58,6 @@ class GlyphLayers(Group):
 
         slider = SliderListCell(minValue = 0, maxValue = 1000)
         self.slidersValuesList = []
-        # self.slidersValuesList = [dict(Layer=layer.name, Values=0) for layer in self.availableLayers if layer.name != "foreground"]
         self.sliderList = List((0,-190,350,-10),self.slidersValuesList,
             columnDescriptions = [{"title": "Layer" }, 
                                     {"title": "Values", "cell": slider}],

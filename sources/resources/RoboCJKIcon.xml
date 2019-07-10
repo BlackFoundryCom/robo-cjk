@@ -1,4 +1,21 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!-- Copyright 2019 Black Foundry.
+
+This file is part of Robo-CJK.
+
+Robo-CJK is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Robo-CJK is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
+ -->
 <glyph name="roboCJK.Icon" format="2">
   <advance width="1000"/>
   <unicode hex="0042"/>
@@ -116,6 +133,7 @@
       <point x="345" y="391"/>
       <point x="384" y="391" type="curve" smooth="yes"/>
       <point x="400.0" y="391.0"/>
+      
       <point x="414" y="386"/>
       <point x="424" y="378" type="curve"/>
       <point x="424" y="339" type="line"/>
@@ -134,6 +152,7 @@
       <point x="424" y="186" type="line"/>
       <point x="414" y="178"/>
       <point x="400.0" y="175.0"/>
+      
       <point x="384" y="175" type="curve" smooth="yes"/>
       <point x="345" y="175"/>
       <point x="327" y="203"/>
@@ -141,9 +160,12 @@
     <contour>
       <point x="533" y="243" type="line"/>
       <point x="533.0" y="193.0"/>
+      
       <point x="518.0" y="175.0"/>
+      
       <point x="484" y="175" type="curve" smooth="yes"/>
       <point x="468.0" y="175.0"/>
+      
       <point x="454" y="178"/>
       <point x="444" y="186" type="curve"/>
       <point x="444" y="227" type="line"/>
@@ -151,18 +173,25 @@
       <point x="464" y="215"/>
       <point x="474" y="215" type="curve" smooth="yes"/>
       <point x="492.0" y="215.0"/>
+      
       <point x="494.0" y="227.0"/>
+      
       <point x="494" y="243" type="curve"/>
       <point x="494" y="348" type="line"/>
       <point x="448.0" y="348.0" type="line"/>
+      
       <point x="448.0" y="386.0" type="line"/>
+      
       <point x="533" y="386" type="line"/>
     </contour>
     <contour>
       <point x="558.0" y="180.0" type="line"/>
+      
       <point x="558.0" y="386.0" type="line"/>
+      
       <point x="597" y="386" type="line"/>
       <point x="597.0" y="180.0" type="line"/>
+      
     </contour>
     <contour>
       <point x="628" y="180" type="line"/>

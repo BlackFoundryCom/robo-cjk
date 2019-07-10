@@ -31,4 +31,4 @@ class CurrentGlyphViewDrawer():
 		fill(.2, 0, 1, .5)
 		if info['notificationName'] == "drawPreview":
 			fill(0, 0, 0, 1)
-		DeepComponentDrawer(g, f)
+		DeepComponentDrawer(self.ui, g, f)

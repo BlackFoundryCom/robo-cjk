@@ -48,21 +48,22 @@ class Layers(Group):
     def _layers_list_editCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
+        
         newName = sender.get()[sel[0]]
         oldName = self.ui.layerList[sel[0]]
         storageFont = self.ui.font2Storage[self.ui.font]
+
         for layer in storageFont.layers:
             if layer.name == oldName:
                 layer.name = newName
+
         self.ui.layerList = [layer.name for layer in storageFont.layers]
         self.selectedLayerName = newName
-        # self.layers_list.set(self.ui.layerList)
-        # self.getAvailableLayers_ForGlyph(self.glyph, self.font)
-        # self.w.layerCanvas.update()
 
     def _layers_list_selectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
+
         self.selectedLayerName = sender.get()[sel[0]]
         self.ui.w.deepComponentsEditorGroup.GlyphLayers.layersCanvas.update()
 
@@ -74,23 +75,28 @@ class Layers(Group):
             if not name in self.ui.layerList:
                 break
             i+=1
+
         storageFont = self.ui.font2Storage[self.ui.font]
         storageFont.newLayer(name)
+
         self.ui.layerList.append(name)
         self.layers_list.set(self.ui.layerList)
 
     def _assignLayerToGlyph_Button_callback(self, sender):
         storageGlyphName = self.ui.w.deepComponentsEditorGroup.GlyphLayers.storageGlyphName
-        selectedLayer = self.ui.w.deepComponentsEditorGroup.GlyphLayers.selectedLayer
+        StorageGlyphCurrentLayer = self.ui.w.deepComponentsEditorGroup.GlyphLayers.StorageGlyphCurrentLayer
 
         if storageGlyphName is None:
             message("Warning there is no selected glyph")
             return
+
         if not self.selectedLayerName:
             message("Warning there is no selected layer")
             return
+
         storageFont = self.ui.font2Storage[self.ui.font]
-        layer = selectedLayer
+        layer = StorageGlyphCurrentLayer
+
         if not layer:
             layer = storageFont[storageGlyphName]
 

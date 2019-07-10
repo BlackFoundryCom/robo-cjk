@@ -99,9 +99,10 @@ class RoboCJK():
         self.layerList = list()
         self.glyphsSetDict = dict()
 
-        
+        self.temp_DeepCompo_slidersValuesList = []
 
         self.selectedCompositionGlyphName = ""
+        self.selectedVariantName = ""
 
         toolbarItems = [
             {   
