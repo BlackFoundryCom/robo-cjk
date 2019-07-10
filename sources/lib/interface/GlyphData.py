@@ -85,11 +85,14 @@ class GlyphData(Group):
 
     def _variants_List_callback(self, sender):
         sel = sender.getSelection()
+        selectDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list
         if not sel:
-            self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list.set([])
+            selectDeepCompoList.set([])
             return
         name = sender.get()[sel[0]]
         f = self.storageFont
         if "deepComponentsGlyph" in f.lib:
             if name in f.lib["deepComponentsGlyph"]:
-                self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list.set(list(f.lib["deepComponentsGlyph"][name].keys()))
+                selectDeepCompoList.set(list(f.lib["deepComponentsGlyph"][name].keys()))
+            else:
+                selectDeepCompoList.set([])

@@ -307,6 +307,11 @@ class ProjectEditor():
                 storageF = NewFont(familyName = familyName+" DeepComponents", 
                             styleName = styleName, 
                             showUI = False)
+                storageF.info.ascender = 750
+                storageF.info.capHeight = 750
+                storageF.info.descender = -250
+                storageF.info.unitsPerEm = 1000
+                storageF.info.xHeight = 500
 
             # Set the glyphOrder to the font, save it and close it
             if glyphOrder:

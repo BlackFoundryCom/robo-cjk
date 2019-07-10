@@ -18,17 +18,26 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from mojo.drawingTools import *
 from mojo.roboFont import *
-from drawers.DeepComponentDrawer import DeepComponentDrawer
+from Helpers import deepolation
 
-class CurrentGlyphViewDrawer():
+class DeepComponentDrawer():
 
-	def __init__(self, interface):
-		self.ui = interface
+    def __init__(self, glyph, storageFont):
+        self.glyph = glyph
+        self.font = storageFont
+        self.draw()
 
-	def draw(self, info):
-		g = self.ui.glyph
-		f = self.ui.font2Storage[self.ui.font]
-		fill(.2, 0, 1, .5)
-		if info['notificationName'] == "drawPreview":
-			fill(0, 0, 0, 1)
-		DeepComponentDrawer(g, f)
+    def draw(self):
+        g = self.glyph
+        f = self.font
+        if "deepComponentsGlyph" not in g.lib: return
+        save()
+        for glyphName, value in g.lib["deepComponentsGlyph"].items():
+            ID = value[0]
+            offset_X, offset_Y = value[1]
+            layersInfo = f.lib["deepComponentsGlyph"][glyphName][ID]
+            newGlyph = deepolation(RGlyph(), f[glyphName].getLayer("foreground"), layersInfo)
+            
+            translate(offset_X, offset_Y)
+            drawGlyph(newGlyph)
+        restore()

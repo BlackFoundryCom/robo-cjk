@@ -44,6 +44,8 @@ from interface.Fonts import Fonts
 from interface.GlyphSet import GlyphSet
 from interface.GlyphData import GlyphData
 from interface.DeepComponentsInstantiator import DeepComponentsInstantiator
+from interface.Layers import Layers
+from interface.GlyphLayers import GlyphLayers
 
 from interface.DesignFrame import DesignFrame
 
@@ -93,7 +95,11 @@ class RoboCJK():
         self.glyph = CurrentGlyph()
         self.glyphset = list()
 
+        self.font2Storage = dict()
+        self.layerList = list()
         self.glyphsSetDict = dict()
+
+        
 
         self.selectedCompositionGlyphName = ""
 
@@ -149,8 +155,8 @@ class RoboCJK():
         self.getCompositionGlyph()
 
         self.w.activeMasterGroup = Group((10,70,-205,-20))
-        self.w.deepComponentsGroup = Group((10,70,-205,-20))
-        self.w.deepComponentsGroup.show(0)
+        self.w.deepComponentsEditorGroup = Group((10,70,-205,-20))
+        self.w.deepComponentsEditorGroup.show(0)
 
         ####### FONT GROUP #######
         self.w.activeMasterGroup.fontsGroup = Fonts((0,0,215,170), self)
@@ -162,6 +168,10 @@ class RoboCJK():
         self.w.activeMasterGroup.glyphData = GlyphData((0,180,215,-0), self)
 
         self.w.activeMasterGroup.DeepComponentsInstantiator = DeepComponentsInstantiator((225,-190,-0,-0), self)
+
+        self.w.deepComponentsEditorGroup.Layers = Layers((0,0,215,310), self)
+
+        self.w.deepComponentsEditorGroup.GlyphLayers = GlyphLayers((225,0,-0,-0), self)
 
         ####### MINIFONT GROUP #######
         # self.minifonts = MiniFonts((0,0,-0,-0), self)
@@ -222,6 +232,7 @@ class RoboCJK():
         ###### OBSERVER ######
         self.observer()
         self.w.bind('close', self.windowWillClose)
+        self.w.bind('resize', self.windowDidResize)
 
         ###### LAUNCH WINDOW ######        
         self.w.open()
@@ -230,11 +241,12 @@ class RoboCJK():
         self.darkMode = sender.get()
         Helpers.setDarkMode(self.w, self.darkMode)
 
+
     def _saveUFOs_callback(self, sender):
         for f1, f2 in self.font2Storage.items():
             f1.save() 
             f2.save()
-
+            
     def _projectsSettings_callback(self, sender):
         ProjectEditor(self)
 
@@ -243,15 +255,27 @@ class RoboCJK():
         Preferences(self)
 
     def _spaceCenter_callback(self, sender):
-        message("Work in Progress...")
+        message("Work in Progress...")        
 
     def _main_segmentedButton_callback(self, sender):
         sel = sender.get()
         self.w.activeMasterGroup.show(abs(sel-1))
-        self.w.deepComponentsGroup.show(sel)
+        self.w.deepComponentsEditorGroup.show(sel)
 
-    # def _deepCompo_segmentedButton_callback(self, sender):
-    #     sel = sender.get()
+        if not sel:
+            glyphset_ListSel = self.w.activeMasterGroup.glyphSet.glyphset_List.getSelection()
+            if glyphset_ListSel:
+                name = self.glyphset[glyphset_ListSel[0]]
+                self.glyph = self.font[name]
+
+        self.layerList = []
+        if self.font2Storage and self.font:
+            if self.font2Storage[self.font] is not None:
+                self.layerList = [layer.name for layer in self.font2Storage[self.font].layers]
+        self.w.deepComponentsEditorGroup.Layers.layers_list.set(self.layerList)
+        self.w.deepComponentsEditorGroup.Layers.layers_list.setSelection([])
+
+        self.w.deepComponentsEditorGroup.GlyphLayers.set_glyphset_List()
 
     def observer(self, remove = False):
         if not remove:
@@ -282,7 +306,7 @@ class RoboCJK():
 
     def draw(self, info):
         if self.glyph is None: return
-        CurrentGlyphViewDrawer(self).draw()
+        CurrentGlyphViewDrawer(self).draw(info)
 
     def _projects_popUpButton_callback(self, sender):
         sel = sender.get()
@@ -361,3 +385,6 @@ class RoboCJK():
         self.observer(remove = True)
         uninstallTool(self.smartSelector)
         UpdateCurrentGlyphView()
+
+    def windowDidResize(self, sender):
+        _, _, self.windowWidth, self.windowHeight = sender.getPosSize()

@@ -25,8 +25,6 @@ from mojo.events import extractNSEvent
 from mojo.UI import OpenGlyphWindow
 from ufoLib.pointPen import PointToSegmentPen
 
-layerSuffix = '.deep'
-
 
 #### FROM HELPERS ######
 def unique(sequence):

@@ -22,6 +22,7 @@ from drawers.DesignFrameDrawer import DesignFrameDrawer
 from mojo.UI import OpenGlyphWindow
 from mojo.events import extractNSEvent
 from ufoLib.glifLib import readGlyphFromString
+from drawers.DeepComponentDrawer import DeepComponentDrawer
 import os
 
 cwd = os.getcwd()
@@ -80,8 +81,12 @@ class CurrentGlyphCanvas():
                 readGlyphFromString(iconText, icon, pen)
                 drawGlyph(icon)
             else:
+                fill(0, 0, 0, 1)
                 drawGlyph(g)
                 DesignFrameDrawer(self.ui).draw(scale = self.scale)
+                f = self.ui.font2Storage[self.ui.font]
+                fill(.2, 0, 1, .5)
+                DeepComponentDrawer(g, f)
             restore()
         except Exception as e:
             print(e)

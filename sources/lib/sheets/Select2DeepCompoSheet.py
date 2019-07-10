@@ -40,7 +40,6 @@ class Select2DeepCompoSheet():
         self.w.existingName_List = List((10, 10, 150, 150),
             self.existingName,
             selectionCallback = self._existingName_List_selectionCallback,
-            editCallback = self._existingName_List_editCallback,
             drawFocusRing=False,
             allowsMultipleSelection = False)
         self.w.existingName_List.setSelection([])
@@ -50,12 +49,8 @@ class Select2DeepCompoSheet():
             callback = self._newName_button_callback)
 
         self.selectedLayer = ""
-
-
         self.existingLayers = []
-        # self.existingLayers = [layer.name for layer in self.storageFont.layers]
-        # if "foreground" in self.existingLayers:
-        #     self.existingLayers = ["foreground"]
+
         self.w.existingLayers_List = List((170, 10, 150, 150),
             self.existingLayers,
             selectionCallback = self._existingLayers_List_selectionCallback,
@@ -63,14 +58,12 @@ class Select2DeepCompoSheet():
             drawFocusRing=False,
             allowsEmptySelection = False,
             allowsMultipleSelection = False)
-        # self.w.existingLayers_List.setSelection([0])
 
         self.w.newLayerbutton = Button((170, 160, 150, 20), 
             "new Layer",
             callback = self._newLayer_button_callback)
-        # if "foreground" in self.existingLayers:
+        
         self.w.newLayerbutton.show(False)
-
 
         self.w.GlyphPreview = GlyphPreview((0, 190, -0, -30))
 
@@ -90,10 +83,11 @@ class Select2DeepCompoSheet():
             message("Warning, there is no selected name")
             return
         f = self.storageFont
-
+        
         if self.selectedLayer not in f.layers:
+            print(self.selectedLayer)
             f.newLayer(self.selectedLayer)
-
+        
         if self.selectedName not in self.existingName:
             f.newGlyph(self.selectedName)
 
@@ -105,6 +99,7 @@ class Select2DeepCompoSheet():
 
         g.width = self.ui.EM_Dimension_X
         g.round()
+        g.update()
 
         if "deepComponentsLayer" not in f[self.selectedName].lib:
             f[self.selectedName].lib["deepComponentsLayer"] = []
@@ -124,11 +119,11 @@ class Select2DeepCompoSheet():
             if ID not in f.lib["deepComponentsGlyph"][self.selectedName]:
                 break
             i+=1
+
         if self.selectedLayer == "foreground":
             f.lib["deepComponentsGlyph"][self.selectedName][ID] = {}
         else:
             f.lib["deepComponentsGlyph"][self.selectedName][ID] = {self.selectedLayer:1000}
-
 
         self.gd.existingName = list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))
         self.gd.variants_List.set(self.gd.existingName)
@@ -187,7 +182,7 @@ class Select2DeepCompoSheet():
 
     def setGlyphPreview(self):
         f = self.storageFont
-        if self.selectedName and self.selectedLayer and self.selectedName in self.existingName and f[self.selectedName].getLayer(self.selectedLayer):
+        if self.selectedName and self.selectedLayer and self.selectedName in self.existingName and self.selectedLayer in self.existingLayers:
             g = f[self.selectedName].getLayer(self.selectedLayer)
             self.w.GlyphPreview.setGlyph(g)
         else:
@@ -203,12 +198,12 @@ class Select2DeepCompoSheet():
             i += 1
 
         self.w.existingName_List.append(name)
-
-    def _existingName_List_editCallback(self, sender):
-        print(sender.get())
+        self.w.existingName_List.setSelection([len(self.w.existingName_List.get())-1])
 
     def _existingLayers_List_editCallback(self, sender):
-        print(sender.get())
+        sel = sender.getSelection()
+        if not sel: return
+        self.selectedLayer = sender.get()[sel[0]]
 
     def _newLayer_button_callback(self, sender):
         i = 0
