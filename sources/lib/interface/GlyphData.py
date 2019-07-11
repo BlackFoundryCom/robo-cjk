@@ -54,7 +54,7 @@ class GlyphData(Group):
         self.variants_List = List((0, 190, -0, -0),
             [],
             drawFocusRing=False, 
-            selectionCallback = self._variants_List_callback)
+            selectionCallback = self._variants_List_selectionCallback)
 
     def _selection2DeepCompo_Button_Callback(self, sender):
         if not self.ui.selectedCompositionGlyphName:
@@ -85,10 +85,12 @@ class GlyphData(Group):
         if self.existingName:
             self.variants_List.setSelection([len(self.existingName)-1])
 
-    def _variants_List_callback(self, sender):
+    def _variants_List_selectionCallback(self, sender):
         sel = sender.getSelection()
         selectDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list
-        if not sel:
+        selectDeepCompoButton = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.deepCompo_segmentedButton
+        
+        if not sel :
             selectDeepCompoList.set([])
             self.ui.selectedVariantName = ""
             self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()

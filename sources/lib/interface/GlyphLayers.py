@@ -58,7 +58,7 @@ class GlyphLayers(Group):
 
         slider = SliderListCell(minValue = 0, maxValue = 1000)
         self.slidersValuesList = []
-        self.sliderList = List((0,-190,350,-10),self.slidersValuesList,
+        self.sliderList = List((0,-190,350,-0),self.slidersValuesList,
             columnDescriptions = [{"title": "Layer" }, 
                                     {"title": "Values", "cell": slider}],
             editCallback = self._sliderList_editCallback,

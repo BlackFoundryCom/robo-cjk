@@ -54,7 +54,7 @@ class DesignFrame(Group):
         self.characterFace_title = TextBox((10,y,200,20), 
                 "Character Face (EM%)", 
                 sizeStyle = "small")
-        self.characterFacePercent_title = TextBox((208,y,200,20), 
+        self.characterFacePercent_title = TextBox((208,y,30,20), 
                 "%", 
                 sizeStyle = "small")
         self.characterFace_editText = EditText((160,y-3,45,20), 
@@ -65,14 +65,14 @@ class DesignFrame(Group):
         self.overshoot_title = TextBox((10,y,200,20), 
                 "Overshoot (FU)", 
                 sizeStyle = "small")
-        self.overshootOutside_title = TextBox((110,y,200,20), 
+        self.overshootOutside_title = TextBox((110,y,70,20), 
                 "Outside:", 
                 sizeStyle = "small")
         self.overshootOutside_editText = EditText((160,y-3,45,20), 
                 self.s.overshootOutsideValue, 
                 callback = self.overshootOutside_editText_callback,
                 sizeStyle = "small")
-        self.overshootInside_title = TextBox((210,y,200,20), 
+        self.overshootInside_title = TextBox((210,y,60,20), 
                 "Inside:", 
                 sizeStyle = "small")
         self.overshootInside_editText = EditText((250,y-3,45,20), 
@@ -80,7 +80,7 @@ class DesignFrame(Group):
                 callback = self.overshootInside_editText_callback,
                 sizeStyle = "small")
         y += 30
-        self.horizontalLine_title = TextBox((10,y,200,20), 
+        self.horizontalLine_title = TextBox((10,y,140,20), 
                 "Horizontal Line (EM%)", 
                 sizeStyle = "small")
         self.horizontalLine_slider = Slider((160,y-3 ,135,20), 
@@ -88,7 +88,7 @@ class DesignFrame(Group):
                 sizeStyle = "small",
                 callback = self._horizontalLine_slider_callback)
         y += 30
-        self.verticalLine_title = TextBox((10,y,200,20), 
+        self.verticalLine_title = TextBox((10,y,140,20), 
                 "Vertical Line (EM%)", 
                 sizeStyle = "small")
         self.verticalLine_slider = Slider((160,y-3 ,135,20), 

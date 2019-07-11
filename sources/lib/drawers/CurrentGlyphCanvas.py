@@ -84,7 +84,7 @@ class CurrentGlyphCanvas():
             else:
                 fill(0, 0, 0, 1)
                 drawGlyph(g)
-                DesignFrameDrawer(self.ui).draw(scale = self.scale)
+                DesignFrameDrawer(self.ui).draw(glyph = g, scale = self.scale)
                 f = self.ui.font2Storage[self.ui.font]
                 fill(.2, 0, 1, .5)
                 DeepComponentDrawer(self.ui, g, f)

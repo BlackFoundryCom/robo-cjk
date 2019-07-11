@@ -53,7 +53,7 @@ class LayersPreviewCanvas():
                 scale(self.scale, self.scale)
                 translate(0,200)
                 translate(self.translateX, self.translateY)
-                DesignFrameDrawer(self.ui).draw(scale = self.scale)
+                DesignFrameDrawer(self.ui).draw(glyph = newGlyph, scale = self.scale)
                 fill(0,0,0,1)
                 drawGlyph(newGlyph)
 

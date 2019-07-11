@@ -50,6 +50,8 @@ class Fonts(Group):
                 sizeStyle = "small",
                 callback = self._getMiniFont_callback)
 
+
+
     def _fonts_list_selectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
@@ -61,6 +63,8 @@ class Fonts(Group):
 
 
         self.ui.w.activeMasterGroup.glyphSet.set_glyphset_List()
+        self.ui.w.deepComponentsEditorGroup.GlyphLayers.set_glyphset_List()
+        self.ui.setLayer_List()
 
     # def _fonts_list_doubleClickCallback(self, sender):
     #     sel = sender.getSelection()

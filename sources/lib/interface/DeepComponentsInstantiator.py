@@ -34,11 +34,11 @@ class DeepComponentsInstantiator(Group):
         self.selectDeepCompo = Group((0, 30,-0, -0))
         self.newDeepCompo = Group((0, 30,-0, -0))
 
-        self.selectDeepCompo.list = List((0, 0, -170, -0), [],
+        self.selectDeepCompo.list = List((0, 0, 350, -0), [],
             drawFocusRing=False, )
 
         slider = SliderListCell(minValue = 0, maxValue = 1000)
-        self.newDeepCompo.list = List((0, 0, -170, -0), 
+        self.newDeepCompo.list = List((0, 0, 350, -0), 
             [],
             columnDescriptions = [{"title": "Layer" }, 
                                     {"title": "Values", "cell": slider}],
@@ -60,13 +60,17 @@ class DeepComponentsInstantiator(Group):
         self.selectDeepCompo.show(abs(sel-1))
         self.newDeepCompo.show(sel)
         if sel:
+            self.ui.newDeepComponent_active = True
+        else:
+            self.ui.newDeepComponent_active = False
+        if sel:
             self.setSliderList()
         else:
             self.ui.temp_DeepCompo_slidersValuesList = []
         self.newDeepCompo.list.set(self.ui.temp_DeepCompo_slidersValuesList)
 
     def setSliderList(self):
-        if hasattr(self.ui, "selectedVariantName") and self.ui.selectedVariantName:
+        if hasattr(self.ui, "selectedVariantName") and self.ui.selectedVariantName and self.ui.newDeepComponent_active:
             storageFont = self.ui.font2Storage[self.ui.font]
             storageGlyph = storageFont[self.ui.selectedVariantName]
             self.ui.temp_DeepCompo_slidersValuesList = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]

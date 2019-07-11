@@ -102,8 +102,10 @@ class Layers(Group):
 
         layer.round()
         
-        storageFont.getLayer(self.selectedLayerName).insertGlyph(layer)
-        storageFont[storageGlyphName].lib["deepComponentsLayer"].append(self.selectedLayerName)
+        
+        if self.selectedLayerName not in storageFont[storageGlyphName].lib["deepComponentsLayer"]:
+            storageFont.getLayer(self.selectedLayerName).insertGlyph(layer)
+            storageFont[storageGlyphName].lib["deepComponentsLayer"].append(self.selectedLayerName)
         storageFont[storageGlyphName].update()
 
         self.ui.w.deepComponentsEditorGroup.GlyphLayers.layersCanvas.update()  

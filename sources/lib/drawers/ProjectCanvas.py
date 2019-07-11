@@ -107,7 +107,7 @@ class ProjectCanvas():
                 if self.ui.glyph:
                     drawGlyph(self.ui.glyph)
                 
-                DesignFrameDrawer(self.ui).draw(scale = self.scale)
+                DesignFrameDrawer(self.ui).draw(glyph = self.ui.glyph, scale = self.scale)
 
         except Exception as e:
             print(e)

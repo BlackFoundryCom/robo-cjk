@@ -61,8 +61,11 @@ class GlyphSet(Group):
         if self.ui.glyphset:
             name = self.ui.glyphset[sel[0]]
             self.ui.glyph = self.ui.font[name]
+        self.ui.getDeepComponents_FromCurrentGlyph()
         self.ui.getCompositionGlyph()
         self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
+        if not self.ui.compositionGlyph:
+            self.ui.w.activeMasterGroup.glyphData.variants_List.set([])
         self.canvas.update()
 
     def _glyphset_List_doubleClickCallback(self, sender):

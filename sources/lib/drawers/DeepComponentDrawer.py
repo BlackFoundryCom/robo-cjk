@@ -31,22 +31,27 @@ class DeepComponentDrawer():
     def draw(self):
         g = self.glyph
         f = self.font
-        if "deepComponentsGlyph" not in g.lib: return
-        
-        save()
-        for glyphName, value in g.lib["deepComponentsGlyph"].items():
-            ID = value[0]
-            offset_X, offset_Y = value[1]
-            layersInfo = f.lib["deepComponentsGlyph"][glyphName][ID]
-            newGlyph = deepolation(RGlyph(), f[glyphName].getLayer("foreground"), layersInfo)
-            
-            translate(offset_X, offset_Y)
-            drawGlyph(newGlyph)
-        restore()
+
+        if "deepComponentsGlyph" in g.lib: 
+
+            save()
+            for glyph in self.ui.current_DeepComponents:
+                save()
+                name, value = self.ui.current_DeepComponents[glyph]
+                ID = value[0]
+                offset_X, offset_Y = value[1]
+                if glyph == self.ui.current_DeepComponent_selection:
+                    translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
+                stroke(None)
+                if glyph == self.ui.current_DeepComponent_selection:
+                    stroke(1, 0, 0, 1)
+                drawGlyph(glyph)
+                restore()
+            restore()
 
         ##### TEMP DEEP COMP #####
         save()
-        if self.ui.temp_DeepCompo_slidersValuesList and self.ui.selectedVariantName:
+        if self.ui.temp_DeepCompo_slidersValuesList and self.ui.selectedVariantName and self.ui.activeMaster:
             newGlyph = deepolation(RGlyph(), self.ui.font2Storage[self.ui.font][self.ui.selectedVariantName], layersInfo = {e["Layer"]:int(e["Values"]) for e in self.ui.temp_DeepCompo_slidersValuesList})
             fill(1, 0, .3, .8)
             drawGlyph(newGlyph)

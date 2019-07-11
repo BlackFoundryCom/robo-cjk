@@ -21,6 +21,7 @@ from mojo.drawingTools import *
 from mojo.events import extractNSEvent
 from Helpers import deepCompatible, deepolation
 from mojo.UI import OpenGlyphWindow, UpdateCurrentGlyphView
+from drawers.DesignFrameDrawer import DesignFrameDrawer
 
 class LayersCanvas():
     
@@ -30,7 +31,7 @@ class LayersCanvas():
         self.scale = .12
         self.canvasHeight = 290
         self.canvasWidth = 395
-        self.boxHeight = 1200
+        self.boxHeight = 1250
         self.boxWidth = 1000
         self.scroll = 0
         self.gl.StorageGlyphCurrentLayer = None
@@ -67,7 +68,6 @@ class LayersCanvas():
         self.gl.layersCanvas.update()
         
     def draw(self):
-        save()
         self.glyphLocation_in_Window = {}
         try:            
             self.ui.glyph = self.gl.storageGlyph
@@ -80,7 +80,9 @@ class LayersCanvas():
             for i, layerName in enumerate(self.gl.storageGlyph.lib['deepComponentsLayer']):                
                 g = self.gl.storageGlyph.getLayer(layerName)                
                 fill(None)
-                stroke(0)                
+                stroke(0)  
+                if g == self.gl.StorageGlyphCurrentLayer:
+                    fill(0,0,1,.08)               
                 rect(0, 0, self.boxWidth, self.boxHeight)                
                 #### DRAW GLYPH ####
                 save()
@@ -90,7 +92,8 @@ class LayersCanvas():
                     fill(.9,0,.3,1)                
                 x = (self.boxWidth-g.width)*.5
                 y = 200                
-                translate(x, y)                
+                translate(x, y)   
+                DesignFrameDrawer(self.ui).draw(glyph = g, scale = self.scale, proximityPoints = True)             
                 drawGlyph(g)
                 restore()                
                 #### LAYERS NAMES ####
@@ -100,7 +103,7 @@ class LayersCanvas():
                 if g == self.gl.StorageGlyphCurrentLayer:
                     fill(.9,0,.3,1)                
                 font('Menlo-Regular', fontSize=int(90))                
-                text(str(layerName), (20, self.boxHeight-120))
+                text(str(layerName), (20, self.boxHeight-135))
                 restore()                
                 x, y, w, h = columnWidth-self.boxWidth, lineHeight, self.boxWidth, self.boxHeight
                 self.glyphLocation_in_Window[(x, y, w, h)] = g                
@@ -115,5 +118,4 @@ class LayersCanvas():
                 # print(self.glyphLocation_in_Window)       
         except Exception as e:
             print(e)
-        restore()
         UpdateCurrentGlyphView()

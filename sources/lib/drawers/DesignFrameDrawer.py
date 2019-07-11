@@ -89,6 +89,7 @@ class DesignFrameDrawer():
         return False
 
     def draw(self, 
+            glyph = None,
             mainFrames = True, 
             secondLines = True, 
             customsFrames = True,
@@ -113,7 +114,7 @@ class DesignFrameDrawer():
             fill(0,.75,1,.3)
             outside, inside = self.c.overshootOutsideValue, self.c.overshootInsideValue
             self.makeOvershoot(RGlyph(), x, y, charfaceW, charfaceH, outside, inside)
-            g = self.c.glyph
+            g = glyph
             if proximityPoints and g is not None:
                 listXleft = [x-outside, x+charfaceW-inside]
                 listXright = [x+inside, x+charfaceW+outside]

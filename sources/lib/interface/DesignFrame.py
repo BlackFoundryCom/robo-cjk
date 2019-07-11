@@ -175,6 +175,7 @@ class DesignFrame(Group):
         s = info['scale']
         strokeWidth(.6*s)
         DesignFrameDrawer(self.ui).draw(
+            glyph = self.glyph,
             mainFrames = self.showMainFrames, 
             secondLines = self.showSecondLines, 
             customsFrames = self.showCustomsFrames, 
