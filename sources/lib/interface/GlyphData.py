@@ -84,6 +84,8 @@ class GlyphData(Group):
         self.variants_List.set(self.existingName)
         if self.existingName:
             self.variants_List.setSelection([len(self.existingName)-1])
+        else:
+            self.variants_List.setSelection([])
 
     def _variants_List_selectionCallback(self, sender):
         sel = sender.getSelection()
@@ -94,6 +96,7 @@ class GlyphData(Group):
             selectDeepCompoList.set([])
             self.ui.selectedVariantName = ""
             self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
+            self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
             return
 
         self.ui.selectedVariantName = sender.get()[sel[0]]
@@ -107,4 +110,6 @@ class GlyphData(Group):
             else:
                 selectDeepCompoList.set([])
 
+        if self.ui.newDeepComponent_active:
+            self.ui.temp_DeepComponents[self.ui.selectedVariantName] = {}
         self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()

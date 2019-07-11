@@ -102,11 +102,13 @@ class RoboCJK():
         self.glyphsSetDict = dict()
 
         self.newDeepComponent_active = False
+        self.temp_DeepCompo_slidersValuesList = []
+        self.temp_DeepComponents = {}
 
         self.activeMaster = True
         self.deepCompoWillDrag = False
 
-        self.temp_DeepCompo_slidersValuesList = []
+        
         self.current_DeepComponents = {}
         self.deepCompo_DeltaX, self.deepCompo_DeltaY = 0, 0
 
@@ -315,11 +317,28 @@ class RoboCJK():
         removeObserver(self, "mouseUp")
 
     def mouseDown(self, info):
+        self.deepCompoWillDrag = False
+
         x, y = info['point']
+        clickDidInside = False
+
         for deepComp in self.current_DeepComponents:
             if deepComp.pointInside((x, y)):
                 addObserver(self, "mouseDragged", "mouseDragged")
                 self.current_DeepComponent_selection = deepComp
+                clickDidInside = True
+            
+        if not clickDidInside:
+            for temp_deepCompo in self.temp_DeepComponents:
+                if self.temp_DeepComponents[temp_deepCompo]['Glyph'].pointInside((x, y)):
+                    addObserver(self, "mouseDragged", "mouseDragged")
+                    self.current_DeepComponent_selection = self.temp_DeepComponents[temp_deepCompo]['Glyph']
+                    clickDidInside = True
+
+        if not clickDidInside:
+            self.current_DeepComponent_selection = None
+
+        UpdateCurrentGlyphView()
 
     def mouseDragged(self, info):
         self.deepCompoWillDrag = True
@@ -329,21 +348,27 @@ class RoboCJK():
 
     def mouseUp(self, info):
         if self.deepCompoWillDrag:
-            glyphName = self.current_DeepComponents[self.current_DeepComponent_selection][0]
-            value = self.glyph.lib["deepComponentsGlyph"][glyphName]
-            
-            ID = value[0]
-            offset_x, offset_Y = self.glyph.lib["deepComponentsGlyph"][glyphName][1]
+            if self.current_DeepComponent_selection in self.current_DeepComponents:
+                glyphName = self.current_DeepComponents[self.current_DeepComponent_selection][0]
+                value = self.glyph.lib["deepComponentsGlyph"][glyphName]
+                
+                ID = value[0]
+                offset_x, offset_Y = self.glyph.lib["deepComponentsGlyph"][glyphName][1]
 
-            self.glyph.lib["deepComponentsGlyph"][glyphName] = [ID, [offset_x+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]]
-            self.current_DeepComponent_selection = None
+                self.glyph.lib["deepComponentsGlyph"][glyphName] = [ID, [offset_x+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]]
+                self.getDeepComponents_FromCurrentGlyph()
 
-            self.deepCompo_DeltaX, self.deepCompo_DeltaY = 0, 0
-            self.getDeepComponents_FromCurrentGlyph()
-            
-            removeObserver(self, "mouseDragged")
-            UpdateCurrentGlyphView()
+            for temp_deepCompo in self.temp_DeepComponents:
+                if self.temp_DeepComponents[temp_deepCompo]['Glyph'] == self.current_DeepComponent_selection:
+                    offset_X, offset_Y = self.temp_DeepComponents[temp_deepCompo]['Offset']
+                    self.temp_DeepComponents[temp_deepCompo]['Offset'] = [offset_X+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]
+                    self.temp_DeepComponents[temp_deepCompo]['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
 
+        # self.current_DeepComponent_selection = None
+        
+        self.deepCompo_DeltaX, self.deepCompo_DeltaY = 0, 0
+        UpdateCurrentGlyphView()
+        removeObserver(self, "mouseDragged")
         self.deepCompoWillDrag = False
 
     def currentGlyphChanged(self, info):

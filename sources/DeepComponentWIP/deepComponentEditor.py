@@ -172,7 +172,7 @@ class deepComponentEditor():
         sel = self.w.layersFontList.getSelection()
         if not sel: return
         layerName = self.layersList[sel[0]]
-        self.addLayer2Glyph(self.font, self.selectedLayer, layerName, self.availableLayers)
+    self.addLayer2Glyph(self.font, self.selectedLayer, layerName, self.availableLayers)
         
         self.slidersValuesList = self.w.sliderList.get()
         self.slidersValuesList.append(dict(Layer=layerName, Values=0))

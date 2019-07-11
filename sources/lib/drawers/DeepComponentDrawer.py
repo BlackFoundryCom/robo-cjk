@@ -18,7 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from mojo.drawingTools import *
 from mojo.roboFont import *
-from Helpers import deepolation
+# from Helpers import deepolation
 
 class DeepComponentDrawer():
 
@@ -40,10 +40,9 @@ class DeepComponentDrawer():
                 name, value = self.ui.current_DeepComponents[glyph]
                 ID = value[0]
                 offset_X, offset_Y = value[1]
-                if glyph == self.ui.current_DeepComponent_selection:
-                    translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
                 stroke(None)
                 if glyph == self.ui.current_DeepComponent_selection:
+                    translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
                     stroke(1, 0, 0, 1)
                 drawGlyph(glyph)
                 restore()
@@ -51,8 +50,16 @@ class DeepComponentDrawer():
 
         ##### TEMP DEEP COMP #####
         save()
-        if self.ui.temp_DeepCompo_slidersValuesList and self.ui.selectedVariantName and self.ui.activeMaster:
-            newGlyph = deepolation(RGlyph(), self.ui.font2Storage[self.ui.font][self.ui.selectedVariantName], layersInfo = {e["Layer"]:int(e["Values"]) for e in self.ui.temp_DeepCompo_slidersValuesList})
+        if self.ui.selectedVariantName and self.ui.selectedVariantName in self.ui.temp_DeepComponents:
+            save()
+            glyph = self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Glyph']
+            # offset_X, offset_Y = self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Offset']
             fill(1, 0, .3, .8)
-            drawGlyph(newGlyph)
+            stroke(None)
+            if glyph == self.ui.current_DeepComponent_selection:
+                translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
+                stroke(0, 0, 1, 1)
+            # translate(offset_X, offset_Y)
+            drawGlyph(glyph)
+            restore()
         restore()
