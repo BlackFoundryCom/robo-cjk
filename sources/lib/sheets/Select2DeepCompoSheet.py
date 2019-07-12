@@ -36,7 +36,7 @@ class Select2DeepCompoSheet():
 
         self.selectedName = ""
 
-        self.existingName = self.gd.existingName
+        self.existingName = [value["Name"] for value in self.gd.variantsName]
         self.w.existingName_List = List((10, 10, 150, 150),
             self.existingName,
             selectionCallback = self._existingName_List_selectionCallback,
@@ -82,10 +82,10 @@ class Select2DeepCompoSheet():
         if not self.selectedName:
             message("Warning, there is no selected name")
             return
+
         f = self.storageFont
-        
+     
         if self.selectedLayer not in f.layers:
-            print(self.selectedLayer)
             f.newLayer(self.selectedLayer)
         
         if self.selectedName not in self.existingName:
@@ -125,8 +125,8 @@ class Select2DeepCompoSheet():
         else:
             f.lib["deepComponentsGlyph"][self.selectedName][ID] = {self.selectedLayer:1000}
 
-        self.gd.existingName = list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))
-        self.gd.variants_List.set(self.gd.existingName)
+        self.gd.variantsName = [dict(Sel=0, Name = name) for name in list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))]
+        self.gd.variants_List.set(self.gd.variantsName)
 
         self.ui.glyph.prepareUndo()
 
@@ -140,7 +140,13 @@ class Select2DeepCompoSheet():
 
         self.ui.glyph.performUndo()
 
-        UpdateCurrentGlyphView()
+        self.ui.currentGlyph_DeepComponents = {
+                                            'CurrentDeepComponents':{}, 
+                                            'Existing':{}, 
+                                            'NewDeepComponents':{},
+                                            }
+        self.ui.getDeepComponents_FromCurrentGlyph()
+        self.ui.updateViews()
 
         self.w.close()
 

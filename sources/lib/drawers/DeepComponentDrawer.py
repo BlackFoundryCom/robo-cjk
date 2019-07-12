@@ -31,15 +31,13 @@ class DeepComponentDrawer():
     def draw(self):
         g = self.glyph
         f = self.font
-
         if "deepComponentsGlyph" in g.lib: 
-
             save()
-            for glyph in self.ui.current_DeepComponents:
+            for desc in self.ui.currentGlyph_DeepComponents["CurrentDeepComponents"].values():
                 save()
-                name, value = self.ui.current_DeepComponents[glyph]
-                ID = value[0]
-                offset_X, offset_Y = value[1]
+                glyph = desc['Glyph']
+                ID = desc['ID']
+                offset_X, offset_Y = desc['Offsets']
                 stroke(None)
                 if glyph == self.ui.current_DeepComponent_selection:
                     translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
@@ -50,9 +48,12 @@ class DeepComponentDrawer():
 
         ##### TEMP DEEP COMP #####
         save()
-        if self.ui.selectedVariantName and self.ui.selectedVariantName in self.ui.temp_DeepComponents:
+        for desc in self.ui.currentGlyph_DeepComponents['NewDeepComponents'].values():
+            if not "Glyph" in desc: continue
             save()
-            glyph = self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Glyph']
+            glyph = desc["Glyph"]
+            offset_X, offset_Y = desc['Offsets']
+            
             # offset_X, offset_Y = self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Offset']
             fill(1, 0, .3, .8)
             stroke(None)

@@ -49,24 +49,34 @@ class GlyphData(Group):
             "Variants",
             sizeStyle = "small")
 
-        self.existingName = []
+        self.variantsName = []
 
+        checkBox = CheckBoxListCell()
         self.variants_List = List((0, 190, -0, -0),
             [],
+            columnDescriptions = [
+                                {"title": "Sel", "width" : 30, "cell":checkBox},
+                                {"title": "Name", "width" : 175},                  
+                                ],
             drawFocusRing=False, 
-            selectionCallback = self._variants_List_selectionCallback)
+            selectionCallback = self._variants_List_selectionCallback,
+            editCallback = self._variants_List_editCallback)
 
     def _selection2DeepCompo_Button_Callback(self, sender):
         if not self.ui.selectedCompositionGlyphName:
             message("Warning, there is no selected composition glyph name")
             return
+
         if self.ui.glyph is None:
             message("Warning, there is no glyph")
             return
+
         selectedContours = [c for c in self.ui.glyph if c.selected or [p for p in c.points if p.selected]]
+
         if not selectedContours:
             message("Warning, there is no selectedContours")
             return
+
         Select2DeepCompoSheet(self.ui, self, self.ui.selectedCompositionGlyphName["Name"], selectedContours)
 
     def _glyphCompositionRules_List_selectionCallback(self, sender):
@@ -79,15 +89,16 @@ class GlyphData(Group):
 
         self.font = self.ui.font
         self.storageFont = self.ui.font2Storage[self.font]
-        self.existingName = list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))
+        self.variantsName = [dict(Sel=name in self.ui.currentGlyph_DeepComponents['NewDeepComponents'], Name = name) for name in list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))]
 
-        self.variants_List.set(self.existingName)
-        if self.existingName:
-            self.variants_List.setSelection([len(self.existingName)-1])
+        self.variants_List.set(self.variantsName)
+        if self.variantsName:
+            self.variants_List.setSelection([len(self.variantsName)-1])
         else:
             self.variants_List.setSelection([])
 
     def _variants_List_selectionCallback(self, sender):
+
         sel = sender.getSelection()
         selectDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list
         selectDeepCompoButton = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.deepCompo_segmentedButton
@@ -99,17 +110,64 @@ class GlyphData(Group):
             self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
             return
 
-        self.ui.selectedVariantName = sender.get()[sel[0]]
+        self.ui.selectedVariantName = sender.get()[sel[0]]["Name"]
+
         f = self.storageFont
 
+        #Check for existing deep component settings
         if "deepComponentsGlyph" in f.lib:
-
             if self.ui.selectedVariantName in f.lib["deepComponentsGlyph"]:
                 selectDeepCompoList.set(list(f.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()))
-
             else:
                 selectDeepCompoList.set([])
 
-        if self.ui.newDeepComponent_active:
-            self.ui.temp_DeepComponents[self.ui.selectedVariantName] = {}
         self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
+
+    def _variants_List_editCallback(self, sender):
+        select = sender.getSelection()
+        if not select :
+            return
+        selectDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list
+        didSeleted = False
+        for item in sender.get():
+            sel = item['Sel']
+            deepComp_Name = item['Name']
+
+            if sel and not didSeleted:
+                if deepComp_Name not in self.ui.currentGlyph_DeepComponents['NewDeepComponents']:
+                    self.ui.currentGlyph_DeepComponents['NewDeepComponents'][deepComp_Name] = {}
+                    if self.ui.newDeepComponent_active:
+
+                        storageFont = self.ui.font2Storage[self.ui.font]
+
+                        """
+                        Traceback (most recent call last):
+                          File "lib/doodleDelegate.pyc", line 97, in sendEvent_
+                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/vanilla/vanillaList.py", line 53, in observeValueForKeyPath_ofObject_change_context_
+                            self._targetMethod()
+                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/vanilla/vanillaList.py", line 787, in _edit
+                            self._editCallback(self)
+                          File "/Users/gaetanbaehr/Documents/BlackFoundry/TECH/Git/ROBO-CJK/sources/lib/interface/GlyphData.py", line 142, in _variants_List_editCallback
+                            storageGlyph = storageFont[self.ui.selectedVariantName]
+                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/fontParts/base/layer.py", line 87, in __getitem__
+                            name = normalizers.normalizeGlyphName(name)
+                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/fontParts/base/normalizers.py", line 295, in normalizeGlyphName
+                            raise ValueError("Glyph names must be at least one character long.")
+                        ValueError: Glyph names must be at least one character long.
+
+                        """ 
+                        self.ui.selectedVariantName = sender.get()[select[0]]["Name"]
+                        storageGlyph = storageFont[self.ui.selectedVariantName]
+                        values = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+                        
+                        selectDeepCompoList.set(values)
+                        self.ui.currentGlyph_DeepComponents['NewDeepComponents'][deepComp_Name] = {'Values':values}
+                        didSeleted = True
+            else:
+                if deepComp_Name in self.ui.currentGlyph_DeepComponents['NewDeepComponents']:
+                    del self.ui.currentGlyph_DeepComponents['NewDeepComponents'][deepComp_Name]
+
+        if not didSeleted:
+            selectDeepCompoList.set([])
+        # for k, v in self.ui.currentGlyph_DeepComponents.items():
+        #     print(k, v, '\n\n')

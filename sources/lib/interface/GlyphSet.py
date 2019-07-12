@@ -61,12 +61,18 @@ class GlyphSet(Group):
         if self.ui.glyphset:
             name = self.ui.glyphset[sel[0]]
             self.ui.glyph = self.ui.font[name]
-        self.ui.getDeepComponents_FromCurrentGlyph()
+        
         self.ui.getCompositionGlyph()
-        self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
-        self.ui.w.activeMasterGroup.glyphData.variants_List.set([])
+        
         self.ui.selectedVariantName = ""
-        self.ui.temp_DeepComponents = {} 
+        self.ui.currentGlyph_DeepComponents = {
+                                            'CurrentDeepComponents':{}, 
+                                            'Existing':{}, 
+                                            'NewDeepComponents':{},
+                                            }
+        self.ui.getDeepComponents_FromCurrentGlyph()                   
+        self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
+        self.ui.w.activeMasterGroup.glyphData.variants_List.set([])                        
         self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
         self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
         self.canvas.update()

@@ -54,9 +54,7 @@ from drawers.CurrentGlyphViewDrawer import CurrentGlyphViewDrawer
 from offTools.smartSelector import SmartSelector
 
 from Helpers import deepolation
-# from interface.MiniFonts import MiniFonts
-# from interface.Selection2Component import Selection2Component
-# from interface.FlatComponent import FlatComponent
+
 import Global
 reload(Global)
 
@@ -108,9 +106,13 @@ class RoboCJK():
         self.activeMaster = True
         self.deepCompoWillDrag = False
 
-        
-        self.current_DeepComponents = {}
+        self.currentGlyph_DeepComponents = {
+                                            'CurrentDeepComponents':{}, 
+                                            'Existing':{}, 
+                                            'NewDeepComponents':{},
+                                            }
         self.deepCompo_DeltaX, self.deepCompo_DeltaY = 0, 0
+
 
         self.current_DeepComponent_selection = None 
 
@@ -172,9 +174,6 @@ class RoboCJK():
         self.w.deepComponentsEditorGroup = Group((10,70,-205,-20))
         self.w.deepComponentsEditorGroup.show(0)
 
-        ####### FONT GROUP #######
-        
-
         ####### GLYPHSET #######
         self.w.activeMasterGroup.glyphSet = GlyphSet((225,0,-0,-200), self)
 
@@ -198,29 +197,11 @@ class RoboCJK():
         ###### DESIGN FRAMES ######
         self.designFrame = DesignFrame((0,0,-0,-0), self)
 
+        ####### FONT GROUP #######
         self.w.fontsGroup = Fonts((10,70,215,170), self)
-        ###### SELECTION TO COMPONENT ######
-        # self.selection2component = Selection2Component((0,0,-0,-0), self)
-
-        # ###### IMPORT COMPONENT ######
-        # self.flatComponent = FlatComponent((0,0,-0,-0), self)
-
-        # ###### SMART COMPONENT ######
-        # self.smartComponent = SmartComponents((0,0,-0,-0), self)
-        # segmentedElements = ["Select Deep Component", "New Deep Component"]
-        # self.w.activeMasterGroup.deepCompo_segmentedButton = SegmentedButton((225,-190,-0,20), 
-        #         [dict(title=e, width = (550)/len(segmentedElements)) for e in segmentedElements],
-        #         callback = self._deepCompo_segmentedButton_callback,
-        #         sizeStyle='regular')
-        # self.w.activeMasterGroup.deepCompo_segmentedButton.set(0)
 
         ###### ACCORDION VIEW ######
         self.accordionViewDescriptions = [
-                       # dict(label="Fonts", view=self.fontsGroup, size=100, collapsed=False, canResize=1),
-                       # dict(label="Mini Fonts", view=self.minifonts, size=120, collapsed=True, canResize=1),
-                       # dict(label="Smart Components", view=self.smartComponent, size=260, collapsed=False, canResize=1),
-                       # dict(label="Flat Components", view=self.flatComponent, size=125, collapsed=True, canResize=1),
-                       # dict(label="Selection to Components", view=self.selection2component, size=100, collapsed=True, canResize=1),
                        dict(label="Reference Viewer", view=self.referenceViewer, size=55, collapsed=True, canResize=0),
                        dict(label="Design Frame", view=self.designFrame, size=173, collapsed=True, canResize=0),
                        ]
@@ -284,9 +265,16 @@ class RoboCJK():
 
         if not sel:
             glyphset_ListSel = self.w.activeMasterGroup.glyphSet.glyphset_List.getSelection()
-            if glyphset_ListSel:
-                name = self.glyphset[glyphset_ListSel[0]]
-                self.glyph = self.font[name]
+        else:
+            glyphset_ListSel = self.w.deepComponentsEditorGroup.GlyphLayers.glyphset_List.getSelection()
+
+        if glyphset_ListSel:
+            name = self.glyphset[glyphset_ListSel[0]]
+            self.glyph = self.font[name]
+        else:
+            self.glyph = None
+        #     glyphset_ListSel = self.w.deepComponentsEditorGroup.GlyphLayers.glyphset_List.getSelection()
+
         self.setLayer_List()
 
     def setLayer_List(self):
@@ -322,82 +310,102 @@ class RoboCJK():
         x, y = info['point']
         clickDidInside = False
 
-        for deepComp in self.current_DeepComponents:
-            if deepComp.pointInside((x, y)):
+        for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
+            deepComp_glyph = desc['Glyph']
+
+            if deepComp_glyph.pointInside((x, y)):
                 addObserver(self, "mouseDragged", "mouseDragged")
-                self.current_DeepComponent_selection = deepComp
+                self.current_DeepComponent_selection = deepComp_glyph
                 clickDidInside = True
             
         if not clickDidInside:
-            for temp_deepCompo in self.temp_DeepComponents:
-                if self.temp_DeepComponents[temp_deepCompo]['Glyph'].pointInside((x, y)):
-                    addObserver(self, "mouseDragged", "mouseDragged")
-                    self.current_DeepComponent_selection = self.temp_DeepComponents[temp_deepCompo]['Glyph']
-                    clickDidInside = True
+            for deepComp_Name, desc in self.currentGlyph_DeepComponents['NewDeepComponents'].items():
+                if "Glyph" in desc:
+                    deepComp_glyph = desc['Glyph']
+
+                    if deepComp_glyph.pointInside((x, y)):
+                        addObserver(self, "mouseDragged", "mouseDragged")
+                        self.current_DeepComponent_selection = deepComp_glyph
+                        clickDidInside = True
 
         if not clickDidInside:
             self.current_DeepComponent_selection = None
 
+        self.updateViews()
+
+    def updateViews(self):
+        self.w.activeMasterGroup.glyphSet.canvas.update()
         UpdateCurrentGlyphView()
 
     def mouseDragged(self, info):
         self.deepCompoWillDrag = True
         self.deepCompo_DeltaX = int(info['delta'].x)
         self.deepCompo_DeltaY = int(info['delta'].y)
-        UpdateCurrentGlyphView()
+        self.updateViews()
 
     def mouseUp(self, info):
-        if self.deepCompoWillDrag:
-            if self.current_DeepComponent_selection in self.current_DeepComponents:
-                glyphName = self.current_DeepComponents[self.current_DeepComponent_selection][0]
-                value = self.glyph.lib["deepComponentsGlyph"][glyphName]
-                
-                ID = value[0]
-                offset_x, offset_Y = self.glyph.lib["deepComponentsGlyph"][glyphName][1]
+        if self.deepCompoWillDrag and "deepComponentsGlyph" in self.glyph.lib:
 
-                self.glyph.lib["deepComponentsGlyph"][glyphName] = [ID, [offset_x+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]]
-                self.getDeepComponents_FromCurrentGlyph()
+            for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
 
-            for temp_deepCompo in self.temp_DeepComponents:
-                if self.temp_DeepComponents[temp_deepCompo]['Glyph'] == self.current_DeepComponent_selection:
-                    offset_X, offset_Y = self.temp_DeepComponents[temp_deepCompo]['Offset']
-                    self.temp_DeepComponents[temp_deepCompo]['Offset'] = [offset_X+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]
-                    self.temp_DeepComponents[temp_deepCompo]['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
+                if self.current_DeepComponent_selection == desc['Glyph']:
+                    ID = desc['ID']
+                    offset_x, offset_Y = desc['Offsets']
 
-        # self.current_DeepComponent_selection = None
+                    self.glyph.lib["deepComponentsGlyph"][deepComp_Name] = [ID, [offset_x+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]]
+                    self.getDeepComponents_FromCurrentGlyph()
+
+            for deepComp_Name, desc in self.currentGlyph_DeepComponents['NewDeepComponents'].items():
+
+                if self.current_DeepComponent_selection == desc['Glyph']:
+                    offset_X, offset_Y = desc['Offsets']
+                    desc['Offsets'] = [offset_X+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]
+                    desc['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
         
         self.deepCompo_DeltaX, self.deepCompo_DeltaY = 0, 0
-        UpdateCurrentGlyphView()
+        self.updateViews()
         removeObserver(self, "mouseDragged")
         self.deepCompoWillDrag = False
 
     def currentGlyphChanged(self, info):
-        self.glyph = info['glyph']
         if self.glyph is None:
             sel = self.w.activeMasterGroup.glyphSet.glyphset_List.getSelection()
             if sel:
                 name = self.glyphset[sel[0]]
                 self.glyph = self.font[name]
+            
+        elif info['glyph'] and self.glyph.name != info['glyph'].name:
+            self.glyph = info['glyph']
+            self.currentGlyph_DeepComponents = {
+                                            'CurrentDeepComponents':{}, 
+                                            'Existing':{}, 
+                                            'NewDeepComponents':{},
+                                            }
+        # self.glyph = info['glyph']
+        
         
         self.current_DeepComponent_selection = None 
         self.getDeepComponents_FromCurrentGlyph()
-        UpdateCurrentGlyphView()
+        self.updateViews()
 
     def getDeepComponents_FromCurrentGlyph(self):
-        self.current_DeepComponents = {}
-
+        
+        
         if "deepComponentsGlyph" in self.glyph.lib:
+
             storageFont = self.font2Storage[self.font]
 
-            for glyphName, value in self.glyph.lib["deepComponentsGlyph"].items():
+            for deepComp_Name, value in self.glyph.lib["deepComponentsGlyph"].items():
+
                 ID = value[0]
                 offset_x, offset_Y = value[1]
-                layersInfo = storageFont.lib["deepComponentsGlyph"][glyphName][ID]
 
-                newGlyph = deepolation(RGlyph(), storageFont[glyphName].getLayer("foreground"), layersInfo)
+                layersInfo = storageFont.lib["deepComponentsGlyph"][deepComp_Name][ID]
+
+                newGlyph = deepolation(RGlyph(), storageFont[deepComp_Name].getLayer("foreground"), layersInfo)
                 newGlyph.moveBy((offset_x, offset_Y))
 
-                self.current_DeepComponents[newGlyph] = (glyphName, [ID, [offset_x, offset_Y]])
+                self.currentGlyph_DeepComponents['CurrentDeepComponents'][deepComp_Name] = {"ID" : ID, "Offsets":[offset_x, offset_Y], "Glyph":newGlyph}
 
     def draw(self, info):
         if self.glyph is None: return
@@ -415,13 +423,11 @@ class RoboCJK():
             self.projectName = self.project_popUpButton_list[sel]
             readCurrentProject(self, self.projects[self.projectName])
             self._setUI()
-        UpdateCurrentGlyphView()
+        self.updateViews()
 
     def _setUI(self):
         # FONT GROUP
         self.w.fontsGroup.fonts_list.set(self.fontList)
-        # self.w.deepComponentsEditorGroup.fontsGroup.fonts_list.set(self.fontList)
-        # self.setUIMiniFonts()
 
     def getCompositionGlyph(self):
         self.compositionGlyph = []
@@ -429,12 +435,6 @@ class RoboCJK():
             uni = normalizeUnicode(hex(self.glyph.unicode)[2:].upper())
             if uni in self.glyphCompositionData:
                 self.compositionGlyph = [dict(Char = chr(int(name.split('_')[0],16)), Name = name) for name in self.glyphCompositionData[uni]]
-
-    # def _setUI_with_CurrentGlyph(self):
-    #     if self.glyph is not None:
-    #         self.getCompositionGlyph()
-    #         self.selection2component.suggestComponent_list.set(self.compositionGlyph)
-    #         self.flatComponent.suggestComponent_list.set(self.compositionGlyph)
 
     def _importProject_callback(self, projectPath):
         # get the path of .project file
@@ -452,35 +452,12 @@ class RoboCJK():
             self.w.projects_popUpButton.setItems(self.project_popUpButton_list)
             # Reset all the UI
             self._setUI()
-            # self._setUI_with_CurrentGlyph()
-        # print(self.fonts)
-
-    ##### MINI FONT #####
-    def setMiniFontsView(self, collapsed = False):
-        for desc in self.accordionViewDescriptions:
-            if desc['label'] == "Mini Fonts":
-                desc["collapsed"] = collapsed
-        delattr(self.w, "accordionView")
-        self.w.accordionView = AccordionView((-200, 40, -0, -20), self.accordionViewDescriptions,
-            backgroundColor=NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1))
-        Helpers.setDarkMode(self.w, self.darkMode)
-
-    # def setUIMiniFonts(self):
-    #     try:
-    #         self.minifontList = os.listdir(self.projectPath+"/Temp") 
-    #     except:
-    #         self.minifontList = []
-    #     if len(self.minifontList):
-    #         self.setMiniFontsView(collapsed = False)
-    #     else:
-    #         self.setMiniFontsView(collapsed = True)
-    #     self.minifonts.minifonts_list.set(self.minifontList)
 
     ##### CLOSE #####
     def windowWillClose(self, sender):
         self.observer(remove = True)
         uninstallTool(self.smartSelector)
-        UpdateCurrentGlyphView()
+        self.updateViews()
 
     def windowDidResize(self, sender):
         _, _, self.windowWidth, self.windowHeight = sender.getPosSize()

@@ -118,4 +118,4 @@ class LayersCanvas():
                 # print(self.glyphLocation_in_Window)       
         except Exception as e:
             print(e)
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()

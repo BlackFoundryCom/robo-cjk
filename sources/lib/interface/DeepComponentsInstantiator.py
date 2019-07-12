@@ -55,101 +55,117 @@ class DeepComponentsInstantiator(Group):
             sizeStyle = "small",
             callback = self._addDeepCompo_callback)
 
-        self.replaceDeepCompo_button = SquareButton((-200, 65, -0, 30), 
-            "Replace", 
-            sizeStyle = "small",
-            callback = self._replaceDeepCompo_callback)
+        # self.replaceDeepCompo_button = SquareButton((-200, 65, -0, 30), 
+        #     "Replace", 
+        #     sizeStyle = "small",
+        #     callback = self._replaceDeepCompo_callback)
 
     def _deepCompo_segmentedButton_callback(self, sender):
         sel = sender.get()
         self.selectDeepCompo.show(abs(sel-1))
         self.newDeepCompo.show(sel)
+
         if sel:
             self.ui.newDeepComponent_active = True
-            self.ui.temp_DeepComponents = {}
-            if self.ui.selectedVariantName:
-                self.ui.temp_DeepComponents[self.ui.selectedVariantName] = {}
+            if self.ui.selectedVariantName in self.ui.currentGlyph_DeepComponents['NewDeepComponents']:
+
+                storageFont = self.ui.font2Storage[self.ui.font]
+                storageGlyph = storageFont[self.ui.selectedVariantName]
+                values = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+                if 'Values' not in self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]:
+                    self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName] = {'Values':values}
+                self.setSliderList()
+            # self.setSliderList()
+            # self.ui.temp_DeepComponents = {}
+            # if self.ui.selectedVariantName:
+            #     self.ui.temp_DeepComponents[self.ui.selectedVariantName] = {}
         else:
             self.ui.newDeepComponent_active = False
-            self.ui.temp_DeepComponents = {}
-        if sel:
-            self.setSliderList()
-        else:
-            self.ui.temp_DeepComponents = {}
-        if self.ui.temp_DeepComponents:
-            self.newDeepCompo.list.set(self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Values'])
-        self.updateViews()
+            # self.ui.temp_DeepComponents = {}
+        # if sel:
+        #     self.setSliderList()
+        # else:
+        #     self.ui.temp_DeepComponents = {}
+        # if self.ui.temp_DeepComponents:
+        #     self.newDeepCompo.list.set(self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Values'])
+        self.ui.updateViews()
 
     def setSliderList(self):
-        if hasattr(self.ui, "selectedVariantName") and self.ui.selectedVariantName and self.ui.newDeepComponent_active and self.ui.selectedVariantName in self.ui.temp_DeepComponents:
-            storageFont = self.ui.font2Storage[self.ui.font]
-            storageGlyph = storageFont[self.ui.selectedVariantName]
-            self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Values'] = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+        
+        if self.ui.selectedVariantName and self.ui.selectedVariantName in self.ui.currentGlyph_DeepComponents['NewDeepComponents']:
+            values = []
+            if "Values" in self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]:
+                values = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]['Values']
+            self.newDeepCompo.list.set(values)
         else:
-            self.ui.temp_DeepComponents = {}  
-            # self.newDeepCompo.list.set([])          
-        if self.ui.temp_DeepComponents:
-            self.newDeepCompo.list.set(self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Values'])
+            self.newDeepCompo.list.set([])
+        # if hasattr(self.ui, "selectedVariantName") and self.ui.selectedVariantName and self.ui.newDeepComponent_active and self.ui.selectedVariantName in self.ui.temp_DeepComponents:
+        #     storageFont = self.ui.font2Storage[self.ui.font]
+        #     storageGlyph = storageFont[self.ui.selectedVariantName]
+        #     self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Values'] = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+        # else:
+        #     self.ui.temp_DeepComponents = {}  
+        #     # self.newDeepCompo.list.set([])          
+        # if self.ui.temp_DeepComponents:
+        #     self.newDeepCompo.list.set(self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Values'])
 
     def _newDeepCompo_List_editCallback(self, sender):
+
+        """
+        self.ui.currentGlyph_DeepComponents['CurrentDeepComponents'][deepComp_Name] = {"ID" : ID, "Offsets":[offset_x, offset_Y], "Glyph":newGlyph}
+        self.ui.currentGlyph_DeepComponents['NewDeepComponents']
+        self.ui.selectedVariantName
+        """
         if not sender.get(): return
-        if self.ui.selectedVariantName not in self.ui.temp_DeepComponents:
-            self.ui.temp_DeepComponents[self.ui.selectedVariantName] = {}
-        values = self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Values'] = sender.get()
-        newGlyph = deepolation(RGlyph(), self.ui.font2Storage[self.ui.font][self.ui.selectedVariantName], layersInfo = {e["Layer"]:int(e["Values"]) for e in values})
-        self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Glyph'] = newGlyph
-        if not 'Offset' in self.ui.temp_DeepComponents[self.ui.selectedVariantName]:
-            self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Offset'] = (0, 0)
+
+        self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName] = {"Values":sender.get()}
+
+        values = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]["Values"]
+        deepCompo_GlyphMaster = self.ui.font2Storage[self.ui.font][self.ui.selectedVariantName]
+
+        newGlyph = deepolation(RGlyph(), deepCompo_GlyphMaster, layersInfo = {e["Layer"]:int(e["Values"]) for e in values})
+
+        if not 'Offset' in self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]:
+            self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]['Offsets'] = (0, 0)
         else:
-            x, y = self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Offset']
+            x, y = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]
             newGlyph.moveBy((x, y))
-        self.updateViews()
 
-    def updateViews(self):
-        self.ui.w.activeMasterGroup.glyphSet.canvas.update()
-        UpdateCurrentGlyphView()
-
-    def _replaceDeepCompo_callback(self, sender):
-        if self.ui.current_DeepComponent_selection is None: return
-
-        if self.ui.current_DeepComponent_selection in self.ui.current_DeepComponents:
-            glyphName = self.ui.current_DeepComponents[self.ui.current_DeepComponent_selection][0]
-            if glyphName in self.ui.glyph.lib["deepComponentsGlyph"]:
-                del self.ui.glyph.lib["deepComponentsGlyph"][glyphName]
-
-        self.addDeepCompo()
+        self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]['Glyph'] = newGlyph
+        self.ui.updateViews()
 
     def _addDeepCompo_callback(self, sender):
-        self.addDeepCompo()
-
-    def addDeepCompo(self):
-        if not self.ui.selectedVariantName:
-            message("Warning, there is no selected name")
-            return
         f = self.ui.font2Storage[self.ui.font]
 
-        if not self.ui.selectedVariantName in f.lib["deepComponentsGlyph"]:
-            f.lib["deepComponentsGlyph"][self.ui.selectedVariantName] = {}
+        for deepComp_Name, desc in self.ui.currentGlyph_DeepComponents['NewDeepComponents'].items():
+                
+            glyph = desc['Glyph']
+            offsets = desc['Offsets']
+            values = desc['Values']
 
-        i = 0
-        while True:
-            index = "_%s"%str(i).zfill(2)
-            ID = self.ui.selectedVariantName + index
-            if ID not in f.lib["deepComponentsGlyph"][self.ui.selectedVariantName]:
-                break
-            i+=1
+            if not deepComp_Name in f.lib["deepComponentsGlyph"]:
+                f.lib["deepComponentsGlyph"][deepComp_Name] = {}
 
-        for temp_deepCompo in self.ui.temp_DeepComponents:
+            i = 0
+            while True:
+                index = "_%s"%str(i).zfill(2)
+                ID = deepComp_Name + index
+                if ID not in f.lib["deepComponentsGlyph"][deepComp_Name]:
+                    break
+                i+=1
+            
+            f.lib["deepComponentsGlyph"][deepComp_Name][ID] = {value["Layer"]: int(value["Values"]) for value in values}
 
-            f.lib["deepComponentsGlyph"][self.ui.selectedVariantName][ID] = {v["Layer"]: int(v["Values"]) for v in self.ui.temp_DeepComponents[temp_deepCompo]['Values']}
-            offset_X, offset_Y = self.ui.temp_DeepComponents[temp_deepCompo]['Offset']
+            if "deepComponentsGlyph" not in self.ui.glyph.lib:
+                self.ui.glyph.lib["deepComponentsGlyph"] = {}
 
-        if "deepComponentsGlyph" not in self.ui.glyph.lib:
-            self.ui.glyph.lib["deepComponentsGlyph"] = {}
+            self.ui.glyph.lib["deepComponentsGlyph"][deepComp_Name] = (ID, offsets)
 
-        self.ui.glyph.lib["deepComponentsGlyph"][self.ui.selectedVariantName] = (ID, (offset_X, offset_Y))
-
-        self.ui.temp_DeepComponents = {}
+        self.ui.currentGlyph_DeepComponents = {
+                                            'CurrentDeepComponents':{}, 
+                                            'Existing':{}, 
+                                            'NewDeepComponents':{},
+                                            }
         self.ui.getDeepComponents_FromCurrentGlyph()
-        self.updateViews()
+        self.ui.updateViews()
 

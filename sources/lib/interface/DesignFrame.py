@@ -101,34 +101,34 @@ class DesignFrame(Group):
 
     def _onOff_checkBox_callback(self, sender):
         self.onOff_designFrame = sender.get()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def _drawPreview_designFrame_checkBox_callback(self, sender):
         self.drawPreview_designFrame = sender.get()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def _showMainFrames_checkBox_callback(self, sender):
         self.showMainFrames = sender.get()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def _showproximityPoints_checkBox_callback(self, sender):
         self.showproximityPoints = sender.get()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def _showSecondLines_checkBox_callback(self, sender):
         self.showSecondLines = sender.get()
         self.translate_secondLine_X_slider.show(self.showSecondLines)
         self.translate_secondLine_Y_slider.show(self.showSecondLines)
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def _showCustomsFrames_checkBox_callback(self, sender):
         self.showCustomsFrames = sender.get()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def _translate_secondLine_X_slider_callback(self, sender):
         self.translate_secondLine_X = int(sender.get())
         self.set_DesignFrame_GlyphLib_Data()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def set_DesignFrame_GlyphLib_Data(self):
         if self.glyph is not None:
@@ -141,7 +141,7 @@ class DesignFrame(Group):
     def _translate_secondLine_Y_slider_callback(self, sender):
         self.translate_secondLine_Y = int(sender.get())
         self.set_DesignFrame_GlyphLib_Data()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def windowWillClose(self, sender):
         self.observer(remove=True)
@@ -166,7 +166,7 @@ class DesignFrame(Group):
                 self.translate_secondLine_Y = self.glyph.lib["DesignFrame"]["secondeLines"][1]
                 self.translate_secondLine_X_slider.set(self.translate_secondLine_X)
                 self.translate_secondLine_Y_slider.set(self.translate_secondLine_Y)
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def draw(self, info):
         self.glyph = self.ui.glyph

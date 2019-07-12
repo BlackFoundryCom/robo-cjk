@@ -48,11 +48,11 @@ class ReferenceViewer(Group):
 
     def _OnOff_referenceViewer_callback(self, sender):
         self.OnOff_referenceViewer = sender.get()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def _drawPreview_referenceViewer_callback(self, sender):
         self.drawPreview_referenceViewer = sender.get()
-        UpdateCurrentGlyphView()
+        self.ui.updateViews()
 
     def windowWillClose(self, sender):
         self.observer(remove=True)
