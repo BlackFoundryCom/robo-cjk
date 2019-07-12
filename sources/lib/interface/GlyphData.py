@@ -140,22 +140,6 @@ class GlyphData(Group):
 
                         storageFont = self.ui.font2Storage[self.ui.font]
 
-                        """
-                        Traceback (most recent call last):
-                          File "lib/doodleDelegate.pyc", line 97, in sendEvent_
-                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/vanilla/vanillaList.py", line 53, in observeValueForKeyPath_ofObject_change_context_
-                            self._targetMethod()
-                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/vanilla/vanillaList.py", line 787, in _edit
-                            self._editCallback(self)
-                          File "/Users/gaetanbaehr/Documents/BlackFoundry/TECH/Git/ROBO-CJK/sources/lib/interface/GlyphData.py", line 142, in _variants_List_editCallback
-                            storageGlyph = storageFont[self.ui.selectedVariantName]
-                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/fontParts/base/layer.py", line 87, in __getitem__
-                            name = normalizers.normalizeGlyphName(name)
-                          File "/Applications/RoboFont3.app/Contents/Resources/lib/python3.6/fontParts/base/normalizers.py", line 295, in normalizeGlyphName
-                            raise ValueError("Glyph names must be at least one character long.")
-                        ValueError: Glyph names must be at least one character long.
-
-                        """ 
                         self.ui.selectedVariantName = sender.get()[select[0]]["Name"]
                         storageGlyph = storageFont[self.ui.selectedVariantName]
                         values = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
@@ -169,5 +153,4 @@ class GlyphData(Group):
 
         if not didSeleted:
             selectDeepCompoList.set([])
-        # for k, v in self.ui.currentGlyph_DeepComponents.items():
-        #     print(k, v, '\n\n')
+

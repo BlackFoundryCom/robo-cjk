@@ -271,10 +271,16 @@ class RoboCJK():
         if glyphset_ListSel:
             name = self.glyphset[glyphset_ListSel[0]]
             self.glyph = self.font[name]
+            self.currentGlyph_DeepComponents = {
+                                            'CurrentDeepComponents':{}, 
+                                            'Existing':{}, 
+                                            'NewDeepComponents':{},
+                                            }
+            self.getDeepComponents_FromCurrentGlyph()
         else:
             self.glyph = None
         #     glyphset_ListSel = self.w.deepComponentsEditorGroup.GlyphLayers.glyphset_List.getSelection()
-
+        
         self.setLayer_List()
 
     def setLayer_List(self):
