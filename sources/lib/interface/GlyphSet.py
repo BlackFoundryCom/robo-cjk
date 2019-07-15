@@ -23,16 +23,18 @@ from mojo.canvas import Canvas
 from AppKit import NSAppearance, NSColor
 from drawers.CurrentGlyphCanvas import CurrentGlyphCanvas
 from lib.cells.colorCell import RFColorCell
-
+from Helpers import normalizeUnicode
 class GlyphSet(Group):
 
     def __init__(self, posSize, interface):
         super(GlyphSet, self).__init__(posSize)
         self.ui = interface
 
-        self.goTo = EditText((0,0,165,20),
+        self.jumpTo = EditText((0,0,165,20),
             placeholder = "🔎 Char/Name",
-            sizeStyle = "small")
+            sizeStyle = "small", 
+            callback = self._jumpTo_callback,
+            continuous = False)
 
         self.glyphset_List = List((0,20,165,-0),
             [],
@@ -85,6 +87,18 @@ class GlyphSet(Group):
         gw = CurrentGlyphWindow()
         appearance = NSAppearance.appearanceNamed_('NSAppearanceNameVibrantDark')
         gw.window().getNSWindow().setAppearance_(appearance)
+
+    def _jumpTo_callback(self, sender):
+        string = sender.get()
+        try:
+            if string.startswith("uni"):
+                index = self.ui.glyphset.index(string)
+            elif len(string) == 1:
+                code = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
+                index = self.ui.glyphset.index(code)
+            self.glyphset_List.setSelection([index])
+        except:
+            pass
 
     # def draw(self):
     #     CurrentGlyphCanvas(self.ui)

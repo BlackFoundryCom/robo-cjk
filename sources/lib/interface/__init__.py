@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from vanilla import *
 from vanilla.dialogs import getFile, message
 from mojo.UI import AccordionView, UpdateCurrentGlyphView
-from mojo.events import addObserver, removeObserver, installTool, uninstallTool
+from mojo.events import addObserver, removeObserver, installTool, uninstallTool, getActiveEventTool
 
 from mojo.roboFont import *
 from AppKit import *
@@ -302,6 +302,7 @@ class RoboCJK():
             addObserver(self, "draw", "drawInactive")
             addObserver(self, "mouseDown", "mouseDown")
             addObserver(self, "mouseUp", "mouseUp")
+            addObserver(self, "keyDown", "keyDown")
             return
         removeObserver(self, "currentGlyphChanged")
         removeObserver(self, "draw")
@@ -309,6 +310,7 @@ class RoboCJK():
         removeObserver(self, "drawInactive")
         removeObserver(self, "mouseDown")
         removeObserver(self, "mouseUp")
+        removeObserver(self, "keyDown")
 
     def mouseDown(self, info):
         self.deepCompoWillDrag = False
@@ -333,9 +335,7 @@ class RoboCJK():
                     addObserver(self, "mouseDragged", "mouseDragged")
                     self.current_DeepComponent_selection = deepComp_glyph
                     clickDidInside = True
-            
-            
-
+                    
         if not clickDidInside:
             self.current_DeepComponent_selection = None
 
@@ -352,6 +352,40 @@ class RoboCJK():
         self.updateViews()
 
     def mouseUp(self, info):
+        self.dragDeepComponent()
+
+    def keyDown(self, info):
+        """
+            126
+        123     124
+            125
+        """
+        modifiers = getActiveEventTool().getModifiers()
+
+        shift = modifiers['shiftDown']
+        command = modifiers['commandDown']
+
+        key = info['event'].keyCode()
+
+        self.deepCompoWillDrag = True
+
+        move = lambda x: int(str(x) + "".zfill(sum([shift, 0 if not shift else command])))
+
+        if key == 123:
+            self.deepCompo_DeltaX = move(-1)
+
+        elif key == 124:
+            self.deepCompo_DeltaX = move(1)
+        
+        elif key == 125:
+            self.deepCompo_DeltaY = move(-1)
+            
+        elif key == 126:
+            self.deepCompo_DeltaY = move(1)
+            
+        self.dragDeepComponent()
+
+    def dragDeepComponent(self):
         if self.deepCompoWillDrag and "deepComponentsGlyph" in self.glyph.lib:
 
             for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
@@ -361,7 +395,8 @@ class RoboCJK():
                     offset_x, offset_Y = desc['Offsets']
 
                     self.glyph.lib["deepComponentsGlyph"][deepComp_Name] = [ID, [offset_x+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]]
-                    self.getDeepComponents_FromCurrentGlyph()
+                    desc['Offsets'] = [offset_x+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]
+                    desc['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
 
             for deepComp_Name, desc in self.currentGlyph_DeepComponents['NewDeepComponents'].items():
 
@@ -369,9 +404,10 @@ class RoboCJK():
                     offset_X, offset_Y = desc['Offsets']
                     desc['Offsets'] = [offset_X+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]
                     desc['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
-        
+
         self.deepCompo_DeltaX, self.deepCompo_DeltaY = 0, 0
         self.updateViews()
+        self.glyph.update()
         removeObserver(self, "mouseDragged")
         self.deepCompoWillDrag = False
 
@@ -390,7 +426,6 @@ class RoboCJK():
                                             'NewDeepComponents':{},
                                             }
         # self.glyph = info['glyph']
-        
         
         self.current_DeepComponent_selection = None 
         self.getDeepComponents_FromCurrentGlyph()

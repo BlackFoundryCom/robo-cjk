@@ -97,11 +97,3 @@ class OpenSelectedComponent():
             removeObserver(self, "drawInactive")
             removeObserver(self, "mouseDown")
 
-
-"""
-from mojo.UI import OpenSpaceCenter
-f = CurrentFont()
-name = CurrentGlyph().name
-l = list(filter(lambda g: name in [c.baseGlyph for c in g.components], f))
-OpenSpaceCenter(f).set([g.name for g in l])
-"""
