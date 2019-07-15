@@ -280,7 +280,7 @@ class RoboCJK():
         else:
             self.glyph = None
         #     glyphset_ListSel = self.w.deepComponentsEditorGroup.GlyphLayers.glyphset_List.getSelection()
-        
+
         self.setLayer_List()
 
     def setLayer_List(self):
@@ -316,23 +316,25 @@ class RoboCJK():
         x, y = info['point']
         clickDidInside = False
 
-        for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
-            deepComp_glyph = desc['Glyph']
+        for deepComp_Name, desc in self.currentGlyph_DeepComponents['NewDeepComponents'].items():
+            if "Glyph" in desc:
+                deepComp_glyph = desc['Glyph']
 
-            if deepComp_glyph.pointInside((x, y)):
-                addObserver(self, "mouseDragged", "mouseDragged")
-                self.current_DeepComponent_selection = deepComp_glyph
-                clickDidInside = True
+                if deepComp_glyph.pointInside((x, y)):
+                    addObserver(self, "mouseDragged", "mouseDragged")
+                    self.current_DeepComponent_selection = deepComp_glyph
+                    clickDidInside = True
             
         if not clickDidInside:
-            for deepComp_Name, desc in self.currentGlyph_DeepComponents['NewDeepComponents'].items():
-                if "Glyph" in desc:
-                    deepComp_glyph = desc['Glyph']
+            for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
+                deepComp_glyph = desc['Glyph']
 
-                    if deepComp_glyph.pointInside((x, y)):
-                        addObserver(self, "mouseDragged", "mouseDragged")
-                        self.current_DeepComponent_selection = deepComp_glyph
-                        clickDidInside = True
+                if deepComp_glyph.pointInside((x, y)):
+                    addObserver(self, "mouseDragged", "mouseDragged")
+                    self.current_DeepComponent_selection = deepComp_glyph
+                    clickDidInside = True
+            
+            
 
         if not clickDidInside:
             self.current_DeepComponent_selection = None

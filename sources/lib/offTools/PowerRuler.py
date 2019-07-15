@@ -72,7 +72,7 @@ class Ruler():
 
     def keyDown(self, sender):
         self.glyph = CurrentGlyph()
-        if self.glyph is None: return
+        if self.glyph is None or not len(self.glyph): return
         command = extractNSEvent(sender['event'])["commandDown"]
         if sender['event'].characters() == "r":
             self.activDraw = 1

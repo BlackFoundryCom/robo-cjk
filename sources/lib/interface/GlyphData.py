@@ -154,3 +154,6 @@ class GlyphData(Group):
         if not didSeleted:
             selectDeepCompoList.set([])
 
+        self.ui.updateViews()
+
+
