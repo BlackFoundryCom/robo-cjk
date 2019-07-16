@@ -47,6 +47,27 @@ class DeepComponentDrawer():
             restore()
 
         ##### TEMP DEEP COMP #####
+    
+        save()
+        for name in self.ui.currentGlyph_DeepComponents['Existing']:
+            for desc in self.ui.currentGlyph_DeepComponents['Existing'][name]:
+                # for desc in desc:
+                if not "Glyph" in desc: continue
+                save()
+                glyph = desc["Glyph"]
+                offset_X, offset_Y = desc['Offsets']
+                
+                # offset_X, offset_Y = self.ui.temp_DeepComponents[self.ui.selectedVariantName]['Offset']
+                fill(1, .8, .3, .7)
+                stroke(None)
+                if glyph == self.ui.current_DeepComponent_selection:
+                    translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
+                    stroke(0, 0, 1, 1)
+                # translate(offset_X, offset_Y)
+                drawGlyph(glyph)
+                restore()
+        restore()
+        
         save()
         for desc in self.ui.currentGlyph_DeepComponents['NewDeepComponents'].values():
             if not "Glyph" in desc: continue

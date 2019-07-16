@@ -326,6 +326,16 @@ class RoboCJK():
                     addObserver(self, "mouseDragged", "mouseDragged")
                     self.current_DeepComponent_selection = deepComp_glyph
                     clickDidInside = True
+
+        if not clickDidInside:
+            for name in self.currentGlyph_DeepComponents['Existing']:
+                for desc in self.currentGlyph_DeepComponents['Existing'][name]:
+                    deepComp_glyph = desc['Glyph']
+
+                    if deepComp_glyph.pointInside((x, y)):
+                        addObserver(self, "mouseDragged", "mouseDragged")
+                        self.current_DeepComponent_selection = deepComp_glyph
+                        clickDidInside = True
             
         if not clickDidInside:
             for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
@@ -335,7 +345,7 @@ class RoboCJK():
                     addObserver(self, "mouseDragged", "mouseDragged")
                     self.current_DeepComponent_selection = deepComp_glyph
                     clickDidInside = True
-                    
+
         if not clickDidInside:
             self.current_DeepComponent_selection = None
 
@@ -369,7 +379,7 @@ class RoboCJK():
 
         self.deepCompoWillDrag = True
 
-        move = lambda x: int(str(x) + "".zfill(sum([shift, 0 if not shift else command])))
+        move = lambda x: int(str(x) + "".zfill(sum([shift, shift*command])))
 
         if key == 123:
             self.deepCompo_DeltaX = move(-1)
@@ -389,7 +399,7 @@ class RoboCJK():
         if self.deepCompoWillDrag and "deepComponentsGlyph" in self.glyph.lib:
 
             for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
-
+                if not 'Glyph' in desc:continue
                 if self.current_DeepComponent_selection == desc['Glyph']:
                     ID = desc['ID']
                     offset_x, offset_Y = desc['Offsets']
@@ -399,11 +409,19 @@ class RoboCJK():
                     desc['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
 
             for deepComp_Name, desc in self.currentGlyph_DeepComponents['NewDeepComponents'].items():
-
+                if not 'Glyph' in desc:continue
                 if self.current_DeepComponent_selection == desc['Glyph']:
                     offset_X, offset_Y = desc['Offsets']
                     desc['Offsets'] = [offset_X+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]
                     desc['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
+
+            for name in self.currentGlyph_DeepComponents['Existing']:
+                for desc in self.currentGlyph_DeepComponents['Existing'][name]:
+                    if not 'Glyph' in desc:continue
+                    if self.current_DeepComponent_selection == desc['Glyph']:
+                        offset_X, offset_Y = desc['Offsets']
+                        desc['Offsets'] = [offset_X+self.deepCompo_DeltaX, offset_Y+self.deepCompo_DeltaY]
+                        desc['Glyph'].moveBy((self.deepCompo_DeltaX, self.deepCompo_DeltaY))
 
         self.deepCompo_DeltaX, self.deepCompo_DeltaY = 0, 0
         self.updateViews()

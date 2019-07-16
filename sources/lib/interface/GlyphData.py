@@ -36,7 +36,6 @@ class GlyphData(Group):
                                 {"title": "Char", "width" : 30},
                                 {"title": "Name", "width" : 175},                  
                                 ],
-
             drawFocusRing=False, 
             selectionCallback = self._glyphCompositionRules_List_selectionCallback)
 
@@ -110,14 +109,27 @@ class GlyphData(Group):
             self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
             return
 
+        self.setSelectDeepCompoList(sender, selectDeepCompoList)
+
+    def setSelectDeepCompoList(self, sender, selectDeepCompoList):
+
+        sel = sender.getSelection()
+        if not sender.get(): return
         self.ui.selectedVariantName = sender.get()[sel[0]]["Name"]
+        self.ui.selectedVariantSel = sender.get()[sel[0]]["Sel"]
 
         f = self.storageFont
 
         #Check for existing deep component settings
         if "deepComponentsGlyph" in f.lib:
-            if self.ui.selectedVariantName in f.lib["deepComponentsGlyph"]:
-                selectDeepCompoList.set(list(f.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()))
+
+            if self.ui.selectedVariantName in f.lib["deepComponentsGlyph"] and self.ui.selectedVariantSel and self.ui.selectedVariantName in self.ui.currentGlyph_DeepComponents['Existing']:
+                data = self.ui.currentGlyph_DeepComponents['Existing'][self.ui.selectedVariantName]
+                selectDeepCompoList.set( dict(Sel = item in [elem["ID"] for elem in data], Name = item) for item in list(f.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()) )
+
+            elif self.ui.selectedVariantName in f.lib["deepComponentsGlyph"] and self.ui.selectedVariantSel:
+                selectDeepCompoList.set( dict(Sel = 0, Name = item) for item in list(f.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()) )
+
             else:
                 selectDeepCompoList.set([])
 
@@ -127,7 +139,7 @@ class GlyphData(Group):
         select = sender.getSelection()
         if not select :
             return
-        selectDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list
+        newDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list
         didSeleted = False
         for item in sender.get():
             sel = item['Sel']
@@ -144,7 +156,7 @@ class GlyphData(Group):
                         storageGlyph = storageFont[self.ui.selectedVariantName]
                         values = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
                         
-                        selectDeepCompoList.set(values)
+                        newDeepCompoList.set(values)
                         self.ui.currentGlyph_DeepComponents['NewDeepComponents'][deepComp_Name] = {'Values':values}
                         didSeleted = True
             else:
@@ -152,7 +164,14 @@ class GlyphData(Group):
                     del self.ui.currentGlyph_DeepComponents['NewDeepComponents'][deepComp_Name]
 
         if not didSeleted:
+            newDeepCompoList.set([])
+
+        selectDeepCompoList = self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.list
+        if not select :
             selectDeepCompoList.set([])
+            return
+        else:
+            self.setSelectDeepCompoList(sender, selectDeepCompoList)
 
         self.ui.updateViews()
 
