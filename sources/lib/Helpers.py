@@ -173,6 +173,14 @@ def readCurrentProject(self, project):
     #Glyph composition Data
     self.glyphCompositionData = project["glyphCompositionData"]
 
+    self.key2Glyph = {}
+    for glyphName, keys in self.glyphCompositionData.items():
+        for key in keys:
+            k = key.split('_')[0]
+            if not k in self.key2Glyph:
+                self.key2Glyph[k] = []
+            self.key2Glyph[k].append("uni"+glyphName)
+
 class GitHelper():
 
     def __init__(self, path):

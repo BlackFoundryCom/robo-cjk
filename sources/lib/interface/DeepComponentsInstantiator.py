@@ -72,20 +72,24 @@ class DeepComponentsInstantiator(Group):
 
         if sel:
             self.ui.newDeepComponent_active = True
+            self.ui.currentGlyph_DeepComponents['Existing'][self.ui.selectedVariantName] = []
             if self.ui.selectedVariantName in self.ui.currentGlyph_DeepComponents['NewDeepComponents']:
 
                 storageFont = self.ui.font2Storage[self.ui.font]
                 storageGlyph = storageFont[self.ui.selectedVariantName]
                 if self.selectDeepCompo.list.getSelection():
                     ID = self.selectDeepCompo.list.get()[self.selectDeepCompo.list.getSelection()[0]]["Name"]
-                    values = [dict(Layer=layerName, Values=storageFont.lib["deepComponentsGlyph"][self.ui.selectedVariantName][ID][layerName]) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+                    layersInfo = storageFont.lib["deepComponentsGlyph"][self.ui.selectedVariantName][ID]
+                    values = [dict(Layer=layerName, Values=layersInfo[layerName] if layerName in layersInfo else 0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
                 else:
                     values = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
                 if 'Values' not in self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]:
                     self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName] = {'Values':values}
+
                 self.setSliderList()
         else:
             self.ui.newDeepComponent_active = False
+            self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName] = {}
 
         self.ui.updateViews()
 

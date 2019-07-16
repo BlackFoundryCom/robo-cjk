@@ -30,11 +30,12 @@ class GlyphSet(Group):
         super(GlyphSet, self).__init__(posSize)
         self.ui = interface
 
-        self.jumpTo = EditText((0,0,165,20),
-            placeholder = "🔎 Char/Name",
+        self.jumpTo = SearchBox((0,0,165,20),
+            placeholder = "Char/Name",
             sizeStyle = "small", 
             callback = self._jumpTo_callback,
-            continuous = False)
+            # continuous = False,
+            )
 
         self.glyphset_List = List((0,20,165,-0),
             [],
@@ -46,6 +47,13 @@ class GlyphSet(Group):
             selectionCallback = self._glyphset_List_selectionCallback,
             doubleClickCallback = self._glyphset_List_doubleClickCallback)
 
+        self.displayGlyphset_settingList = ['find Char/Name', "Sort by key"]
+        self.displaySettings = 'find Char/Name'
+        self.displayGlyphset_setting = PopUpButton((170, 0, 200, 20),
+            self.displayGlyphset_settingList,
+            sizeStyle = "small",
+            callback = self._displayGlyphset_setting_callback)
+
         self.set_glyphset_List()
 
         self.canvas = Canvas((165,20,-0,-0), 
@@ -53,9 +61,21 @@ class GlyphSet(Group):
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
 
+    def _displayGlyphset_setting_callback(self, sender):
+        self.displaySettings = self.displayGlyphset_settingList[sender.get()]
+        print(self.displaySettings)
+        if self.displaySettings == 'find Char/Name':
+            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
+            glyphset = self.ui.glyphsSetDict[self.ui.font]
+            self.glyphset_List.set(glyphset)
+        # if self.displaySettings == 'find Char/Name':
+        #     self.ui.glyphset = self.ui.glyphsSetDict[self.ui.font]
+        # print(self.ui.glyphCompositionData)
+
     def set_glyphset_List(self):
         if self.ui.font in self.ui.glyphsSetDict:
-            self.glyphset_List.set(self.ui.glyphsSetDict[self.ui.font])
+            glyphset = self.ui.glyphsSetDict[self.ui.font]
+            self.glyphset_List.set(glyphset)
 
     def _glyphset_List_selectionCallback(self, sender):
         sel = sender.getSelection()
@@ -90,13 +110,30 @@ class GlyphSet(Group):
 
     def _jumpTo_callback(self, sender):
         string = sender.get()
+        if not string:
+            glyphset = self.ui.glyphsSetDict[self.ui.font]
+            self.glyphset_List.setSelection([])
+            self.glyphset_List.set(glyphset)
+
+            return
         try:
-            if string.startswith("uni"):
-                index = self.ui.glyphset.index(string)
-            elif len(string) == 1:
-                code = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
-                index = self.ui.glyphset.index(code)
-            self.glyphset_List.setSelection([index])
+            if self.displaySettings == 'find Char/Name':
+                # self.ui.glyphset = self.ui.glyphsSetDict[self.ui.font]
+                if string.startswith("uni"):
+                    index = self.ui.glyphset.index(string)
+                elif len(string) == 1:
+                    code = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
+                    index = self.ui.glyphset.index(code)
+                self.glyphset_List.setSelection([index])
+            elif self.displaySettings == 'Sort by key':
+                name = string
+                if string.startswith("uni"):
+                    name = string[3:]
+                elif len(string) == 1:
+                    name = normalizeUnicode(hex(ord(string))[2:].upper())
+                    
+                self.ui.glyphset = self.ui.key2Glyph[name]
+                self.glyphset_List.set([dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in self.ui.glyphset])
         except:
             pass
 

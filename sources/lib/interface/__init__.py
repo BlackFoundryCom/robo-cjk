@@ -86,6 +86,7 @@ class RoboCJK():
     referenceViewerSettings = []
     calendar = []
     glyphCompositionData = []
+    key2Glyph = {}
 
     def __init__(self):
         self.windowWidth, self.windowHeight = 1000,600
