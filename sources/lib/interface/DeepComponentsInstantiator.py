@@ -69,6 +69,7 @@ class DeepComponentsInstantiator(Group):
         sel = sender.get()
         self.selectDeepCompo.show(abs(sel-1))
         self.newDeepCompo.show(sel)
+        if not self.ui.selectedVariantName: return
 
         if sel:
             self.ui.newDeepComponent_active = True
