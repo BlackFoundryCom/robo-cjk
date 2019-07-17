@@ -171,7 +171,7 @@ class DeepComponentsInstantiator(Group):
         self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName] = {"Values":sender.get()}
 
         values = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName]["Values"]
-        deepCompo_GlyphMaster = self.ui.font2Storage[self.ui.font][variantName]
+        deepCompo_GlyphMaster = self.ui.storageFont[variantName]
 
         newGlyph = deepolation(RGlyph(), deepCompo_GlyphMaster, layersInfo = {e["Layer"]:int(e["Values"]) for e in values})
 
@@ -204,7 +204,7 @@ class DeepComponentsInstantiator(Group):
                                             'NewDeepComponents':{},
                                             }
 
-        self.selectDeepCompo.list.set( dict(Sel = 0, Name = item) for item in list(self.ui.font2Storage.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()) )
+        self.selectDeepCompo.list.set( dict(Sel = 0, Name = item) for item in list(self.ui.storageFont.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()) )
 
         self.ui.getDeepComponents_FromCurrentGlyph()
         self.ui.updateViews()
@@ -218,18 +218,18 @@ class DeepComponentsInstantiator(Group):
             offsets = desc['Offsets']
             values = desc['Values']
 
-            if not deepComp_Name in self.ui.font2Storage.lib["deepComponentsGlyph"]:
-                self.ui.font2Storage.lib["deepComponentsGlyph"][deepComp_Name] = {}
+            if not deepComp_Name in self.ui.storageFont.lib["deepComponentsGlyph"]:
+                self.ui.storageFont.lib["deepComponentsGlyph"][deepComp_Name] = {}
 
             i = 0
             while True:
                 index = "_%s"%str(i).zfill(2)
                 ID = deepComp_Name + index
-                if ID not in self.ui.font2Storage.lib["deepComponentsGlyph"][deepComp_Name]:
+                if ID not in self.ui.storageFont.lib["deepComponentsGlyph"][deepComp_Name]:
                     break
                 i+=1
             
-            self.ui.font2Storage.lib["deepComponentsGlyph"][deepComp_Name][ID] = {value["Layer"]: int(value["Values"]) for value in values}
+            self.ui.storageFont.lib["deepComponentsGlyph"][deepComp_Name][ID] = {value["Layer"]: int(value["Values"]) for value in values}
 
             if "deepComponentsGlyph" not in self.ui.glyph.lib:
                 self.ui.glyph.lib["deepComponentsGlyph"] = {}
@@ -237,7 +237,7 @@ class DeepComponentsInstantiator(Group):
             self.ui.glyph.lib["deepComponentsGlyph"][deepComp_Name] = [ID, offsets]
 
         self.ui.glyph.update()
-        self.ui.font2Storage.update()
+        self.ui.storageFont.update()
         self.ui.currentGlyph_DeepComponents = {
                                             'CurrentDeepComponents':{}, 
                                             'Existing':{}, 
