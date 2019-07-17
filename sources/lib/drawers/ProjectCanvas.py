@@ -63,7 +63,7 @@ class ProjectCanvas():
             currentSetting = self.ui.referenceViewerSettings[self.ui.reference_list_selection[0]]
             currentSetting["x"] += deltaX
             currentSetting["y"] -= deltaY
-        self.ui.updateViews()
+        UpdateCurrentGlyphView()
         self.update()
 
     def scrollWheel(self, info):

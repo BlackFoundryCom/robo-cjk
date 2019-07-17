@@ -93,10 +93,16 @@ class GlyphSet(Group):
                                             'NewDeepComponents':{},
                                             }
         self.ui.getDeepComponents_FromCurrentGlyph()                   
+        self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.setSelection([])
         self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
         self.ui.w.activeMasterGroup.glyphData.variants_List.set([])                        
         self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
         self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
+
+        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.deepCompo_segmentedButton.set(0)
+        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.show(0)
+        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.show(1)
+        self.ui.newDeepComponent_active = False
         self.canvas.update()
 
     def _glyphset_List_doubleClickCallback(self, sender):
@@ -114,7 +120,7 @@ class GlyphSet(Group):
             glyphset = self.ui.glyphsSetDict[self.ui.font]
             self.glyphset_List.setSelection([])
             self.glyphset_List.set(glyphset)
-
+            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             return
         try:
             if self.displaySettings == 'find Char/Name':
@@ -125,6 +131,7 @@ class GlyphSet(Group):
                     code = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
                     index = self.ui.glyphset.index(code)
                 self.glyphset_List.setSelection([index])
+                
             elif self.displaySettings == 'Sort by key':
                 name = string
                 if string.startswith("uni"):
