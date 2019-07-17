@@ -204,7 +204,7 @@ class RoboCJK():
         ###### ACCORDION VIEW ######
         self.accordionViewDescriptions = [
                        dict(label="Reference Viewer", view=self.referenceViewer, size=55, collapsed=True, canResize=0),
-                       dict(label="Design Frame", view=self.designFrame, size=173, collapsed=True, canResize=0),
+                       dict(label="Design Frame", view=self.designFrame, size=173, collapsed=False, canResize=0),
                        ]
 
         self.w.accordionView = AccordionView((-200, 40, -0, -20), self.accordionViewDescriptions,

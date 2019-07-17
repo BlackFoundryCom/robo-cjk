@@ -25,9 +25,10 @@ class DeepComponentsInstantiator(Group):
 
     def __init__(self, posSize, interface):
         super(DeepComponentsInstantiator, self).__init__(posSize)
+
         self.ui = interface
 
-        segmentedElements = ["Select Deep Component", "New Deep Component"]
+        segmentedElements = ["Existing Deep Components Settings", "New Deep Component Setting"]
         self.deepCompo_segmentedButton = SegmentedButton((0,0,-0,20), 
                 [dict(title=e, width = (550)/len(segmentedElements)) for e in segmentedElements],
                 callback = self._deepCompo_segmentedButton_callback,
@@ -67,30 +68,44 @@ class DeepComponentsInstantiator(Group):
 
     def _deepCompo_segmentedButton_callback(self, sender):
         sel = sender.get()
+
+        #switch groups
         self.selectDeepCompo.show(abs(sel-1))
         self.newDeepCompo.show(sel)
-        if not self.ui.selectedVariantName: return
 
+        variantName = self.ui.selectedVariantName
+
+        #test if there is a selected variant name to build the lists
+        if not variantName: return
+
+        #if active on "New Deep Component Setting"
         if sel:
             self.ui.newDeepComponent_active = True
-            self.ui.currentGlyph_DeepComponents['Existing'][self.ui.selectedVariantName] = []
-            if self.ui.selectedVariantName in self.ui.currentGlyph_DeepComponents['NewDeepComponents']:
 
-                storageFont = self.ui.font2Storage[self.ui.font]
-                storageGlyph = storageFont[self.ui.selectedVariantName]
+            #remove elements in the existing deep component dictionary
+            self.ui.currentGlyph_DeepComponents['Existing'][variantName] = []
+
+            if variantName in self.ui.currentGlyph_DeepComponents['NewDeepComponents']:
+
+                #get the deep component from the storage font
+                storageGlyph = self.ui.storageFont[variantName]
+
+                #recover the layers settings from the selected existing deep component setting
                 if self.selectDeepCompo.list.getSelection():
                     ID = self.selectDeepCompo.list.get()[self.selectDeepCompo.list.getSelection()[0]]["Name"]
-                    layersInfo = storageFont.lib["deepComponentsGlyph"][self.ui.selectedVariantName][ID]
+                    layersInfo = self.ui.storageFont.lib["deepComponentsGlyph"][variantName][ID]
                     values = [dict(Layer=layerName, Values=layersInfo[layerName] if layerName in layersInfo else 0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
                 else:
                     values = [dict(Layer=layerName, Values=0) for layerName in storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
-                if 'Values' not in self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]:
-                    self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName] = {'Values':values}
+
+                #set values
+                self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName] = {'Values':values}
 
                 self.setSliderList()
         else:
             self.ui.newDeepComponent_active = False
-            self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName] = {}
+            #remove elements in the new deep component dictionary
+            self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName] = {}
 
         self.ui.updateViews()
 
@@ -106,21 +121,25 @@ class DeepComponentsInstantiator(Group):
 
     def _selectedDeepCompo_List_editCallback(self, sender):
         if not sender.get(): return
-        if self.ui.selectedVariantName in self.ui.currentGlyph_DeepComponents['Existing']:
+
+        variantName = self.ui.selectedVariantName
+
+        #remove uncheck elements from list
+        if variantName in self.ui.currentGlyph_DeepComponents['Existing']:
             newList = []
-            currentDeepCompo_existing = self.ui.currentGlyph_DeepComponents['Existing'][self.ui.selectedVariantName]
+            currentDeepCompo_existing = self.ui.currentGlyph_DeepComponents['Existing'][variantName]
             for item in sender.get():
                 sel = item["Sel"]
                 ID = item["Name"]
                 for elem in currentDeepCompo_existing:
                     if ID == elem["ID"] and sel:
                         newList.append(elem)
-            self.ui.currentGlyph_DeepComponents['Existing'][self.ui.selectedVariantName] = newList
+            self.ui.currentGlyph_DeepComponents['Existing'][variantName] = newList
 
-        elif not self.ui.selectedVariantName in self.ui.currentGlyph_DeepComponents['Existing']:
-            self.ui.currentGlyph_DeepComponents['Existing'][self.ui.selectedVariantName] = []
+        elif not variantName in self.ui.currentGlyph_DeepComponents['Existing']:
+            self.ui.currentGlyph_DeepComponents['Existing'][variantName] = []
 
-        currentDeepCompo_existing = self.ui.currentGlyph_DeepComponents['Existing'][self.ui.selectedVariantName]
+        currentDeepCompo_existing = self.ui.currentGlyph_DeepComponents['Existing'][variantName]
 
         for item in sender.get():
             sel = item["Sel"]
@@ -133,11 +152,10 @@ class DeepComponentsInstantiator(Group):
                     here = 1
 
             if not here and sel:
-                storageFont = self.ui.font2Storage[self.ui.font]
-                layersInfo = storageFont.lib["deepComponentsGlyph"][self.ui.selectedVariantName][ID]
+                layersInfo = self.ui.storageFont.lib["deepComponentsGlyph"][variantName][ID]
                 offset_x, offset_Y = 0, 0
 
-                newGlyph = deepolation(RGlyph(), storageFont[self.ui.selectedVariantName].getLayer("foreground"), layersInfo)
+                newGlyph = deepolation(RGlyph(), self.ui.storageFont[variantName].getLayer("foreground"), layersInfo)
                 newGlyph.moveBy((offset_x, offset_Y))
 
                 currentDeepCompo_existing.append({"ID" : ID, "Offsets" : [offset_x, offset_Y], "Glyph" : newGlyph})
@@ -148,32 +166,30 @@ class DeepComponentsInstantiator(Group):
 
         if not sender.get(): return
 
-        self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName] = {"Values":sender.get()}
+        variantName = self.ui.selectedVariantName
 
-        values = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]["Values"]
-        deepCompo_GlyphMaster = self.ui.font2Storage[self.ui.font][self.ui.selectedVariantName]
+        self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName] = {"Values":sender.get()}
+
+        values = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName]["Values"]
+        deepCompo_GlyphMaster = self.ui.font2Storage[self.ui.font][variantName]
 
         newGlyph = deepolation(RGlyph(), deepCompo_GlyphMaster, layersInfo = {e["Layer"]:int(e["Values"]) for e in values})
 
-        if not 'Offset' in self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]:
-            self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]['Offsets'] = (0, 0)
+        if not 'Offsets' in self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName]:
+            self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName]['Offsets'] = (0, 0)
         else:
-            x, y = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]
+            x, y = self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName]
             newGlyph.moveBy((x, y))
 
-        self.ui.currentGlyph_DeepComponents['NewDeepComponents'][self.ui.selectedVariantName]['Glyph'] = newGlyph
+        self.ui.currentGlyph_DeepComponents['NewDeepComponents'][variantName]['Glyph'] = newGlyph
         self.ui.updateViews()
 
     def _selectDeepCompo_addDeepCompo_callback(self, sender):
-        storageFont = self.ui.font2Storage[self.ui.font]
         for deepComp_Name in self.ui.currentGlyph_DeepComponents['Existing']:
             for desc in self.ui.currentGlyph_DeepComponents['Existing'][deepComp_Name]:
                 glyph = desc['Glyph']
                 offsets = desc['Offsets']
                 ID = desc['ID']
-
-                # if not deepComp_Name in storageFont.lib["deepComponentsGlyph"]:
-                #     storageFont.lib["deepComponentsGlyph"][deepComp_Name] = {}
 
                 if "deepComponentsGlyph" not in self.ui.glyph.lib:
                     self.ui.glyph.lib["deepComponentsGlyph"] = {}
@@ -188,14 +204,13 @@ class DeepComponentsInstantiator(Group):
                                             'NewDeepComponents':{},
                                             }
 
-        self.selectDeepCompo.list.set( dict(Sel = 0, Name = item) for item in list(storageFont.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()) )
+        self.selectDeepCompo.list.set( dict(Sel = 0, Name = item) for item in list(self.ui.font2Storage.lib["deepComponentsGlyph"][self.ui.selectedVariantName].keys()) )
 
         self.ui.getDeepComponents_FromCurrentGlyph()
         self.ui.updateViews()
 
 
     def _newDeepCompo_addDeepCompo_callback(self, sender):
-        f = self.ui.font2Storage[self.ui.font]
 
         for deepComp_Name, desc in self.ui.currentGlyph_DeepComponents['NewDeepComponents'].items():
                 
@@ -203,26 +218,26 @@ class DeepComponentsInstantiator(Group):
             offsets = desc['Offsets']
             values = desc['Values']
 
-            if not deepComp_Name in f.lib["deepComponentsGlyph"]:
-                f.lib["deepComponentsGlyph"][deepComp_Name] = {}
+            if not deepComp_Name in self.ui.font2Storage.lib["deepComponentsGlyph"]:
+                self.ui.font2Storage.lib["deepComponentsGlyph"][deepComp_Name] = {}
 
             i = 0
             while True:
                 index = "_%s"%str(i).zfill(2)
                 ID = deepComp_Name + index
-                if ID not in f.lib["deepComponentsGlyph"][deepComp_Name]:
+                if ID not in self.ui.font2Storage.lib["deepComponentsGlyph"][deepComp_Name]:
                     break
                 i+=1
             
-            f.lib["deepComponentsGlyph"][deepComp_Name][ID] = {value["Layer"]: int(value["Values"]) for value in values}
+            self.ui.font2Storage.lib["deepComponentsGlyph"][deepComp_Name][ID] = {value["Layer"]: int(value["Values"]) for value in values}
 
             if "deepComponentsGlyph" not in self.ui.glyph.lib:
                 self.ui.glyph.lib["deepComponentsGlyph"] = {}
 
-            self.ui.glyph.lib["deepComponentsGlyph"][deepComp_Name] = (ID, offsets)
+            self.ui.glyph.lib["deepComponentsGlyph"][deepComp_Name] = [ID, offsets]
 
         self.ui.glyph.update()
-        f.update()
+        self.ui.font2Storage.update()
         self.ui.currentGlyph_DeepComponents = {
                                             'CurrentDeepComponents':{}, 
                                             'Existing':{}, 

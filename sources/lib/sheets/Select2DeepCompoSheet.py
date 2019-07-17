@@ -135,8 +135,8 @@ class Select2DeepCompoSheet():
 
         self.ui.glyph.lib["deepComponentsGlyph"][self.selectedName] = (ID, (0, 0))
 
-        for c in self.selectedContours:
-            self.ui.glyph.removeContour(c)
+        # for c in self.selectedContours:
+        #     self.ui.glyph.removeContour(c)
 
         self.ui.glyph.performUndo()
 

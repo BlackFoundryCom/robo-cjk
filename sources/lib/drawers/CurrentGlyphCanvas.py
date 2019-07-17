@@ -72,7 +72,7 @@ class CurrentGlyphCanvas():
             save()
             g = self.ui.glyph
             scale(self.scale, self.scale)
-            translate(((self.canvasWidth/self.scale)-1000)*.5,250)
+            translate(((self.canvasWidth/self.scale)-1000)*.5, 250)
             translate(self.translateX, self.translateY)
             if g is None: 
                 with open(RoboCJKIconPath, "r") as file:
@@ -84,7 +84,17 @@ class CurrentGlyphCanvas():
             else:
                 fill(0, 0, 0, 1)
                 drawGlyph(g)
-                DesignFrameDrawer(self.ui).draw(glyph = g, scale = self.scale)
+                if  self.ui.onOff_designFrame:
+                    DesignFrameDrawer(self.ui).draw(
+                        glyph = g,
+                        mainFrames = self.ui.showMainFrames, 
+                        secondLines = self.ui.showSecondLines, 
+                        customsFrames = self.ui.showCustomsFrames, 
+                        proximityPoints = self.ui.showproximityPoints,
+                        translate_secondLine_X = self.ui.translate_secondLine_X, 
+                        translate_secondLine_Y = self.ui.translate_secondLine_Y,
+                        scale = self.scale
+                        )
                 f = self.ui.font2Storage[self.ui.font]
                 fill(.2, 0, 1, .5)
                 DeepComponentDrawer(self.ui, g, f)

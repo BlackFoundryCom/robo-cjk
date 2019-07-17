@@ -28,50 +28,50 @@ class DesignFrame(Group):
     def __init__(self, posSize, interface):
         super(DesignFrame, self).__init__(posSize)
         self.ui = interface
-        self.glyph = self.ui.glyph
+        self.ui.glyph = self.ui.glyph
 
-        self.onOff_designFrame = 1
-        self.drawPreview_designFrame = 0
-        self.showMainFrames = 1
-        self.showproximityPoints = 1
-        self.showSecondLines = 1
-        self.showCustomsFrames = 1
-        self.translate_secondLine_X = 0
-        self.translate_secondLine_Y = 0
+        self.ui.onOff_designFrame = 1
+        self.ui.drawPreview_designFrame = 0
+        self.ui.showMainFrames = 1
+        self.ui.showproximityPoints = 1
+        self.ui.showSecondLines = 1
+        self.ui.showCustomsFrames = 1
+        self.ui.translate_secondLine_X = 0
+        self.ui.translate_secondLine_Y = 0
 
-        if self.glyph is not None:
-            if "DesignFrame" in self.glyph.lib:
-                self.translate_secondLine_X = self.glyph.lib["DesignFrame"]["secondeLines"][0]
-                self.translate_secondLine_Y = self.glyph.lib["DesignFrame"]["secondeLines"][1]
+        if self.ui.glyph is not None:
+            if "DesignFrame" in self.ui.glyph.lib:
+                self.ui.translate_secondLine_X = self.ui.glyph.lib["DesignFrame"]["secondeLines"][0]
+                self.ui.translate_secondLine_Y = self.ui.glyph.lib["DesignFrame"]["secondeLines"][1]
 
         y = 5
         self.onOff_checkBox = CheckBox((10,y,-10,20),
                 "On/Off",
-                value = self.onOff_designFrame,
+                value = self.ui.onOff_designFrame,
                 sizeStyle = "small",
                 callback = self._onOff_checkBox_callback)
         y += 20
         self.drawPreview_designFrame_checkBox = CheckBox((10,y,-10,20),
                 'Draw Preview',
-                value = self.drawPreview_designFrame,
+                value = self.ui.drawPreview_designFrame,
                 sizeStyle = "small",
                 callback = self._drawPreview_designFrame_checkBox_callback)
         y += 20
         self.showMainFrames_checkBox = CheckBox((10,y,-10,20),
                 "Main Frames",
-                value = self.showMainFrames,
+                value = self.ui.showMainFrames,
                 sizeStyle = "small",
                 callback = self._showMainFrames_checkBox_callback)
         y += 20
         self.showproximityPoints_checkBox = CheckBox((10,y,-10,20),
                 "Proximity Points",
-                value = self.showproximityPoints,
+                value = self.ui.showproximityPoints,
                 sizeStyle = "small",
                 callback = self._showproximityPoints_checkBox_callback)
         y += 20
         self.showSecondLines_checkBox = CheckBox((10,y,-10,20),
                 "Second Lines",
-                value = self.showSecondLines,
+                value = self.ui.showSecondLines,
                 sizeStyle = "small",
                 callback = self._showSecondLines_checkBox_callback)
         
@@ -79,20 +79,20 @@ class DesignFrame(Group):
         self.translate_secondLine_X_slider = Slider((25,y,-10,20),
                 minValue = -500,
                 maxValue = 500,
-                value = self.translate_secondLine_X,
+                value = self.ui.translate_secondLine_X,
                 sizeStyle = "small",
                 callback = self._translate_secondLine_X_slider_callback)
         y += 20
         self.translate_secondLine_Y_slider = Slider((25,y,-10,20),
                 minValue = -500,
                 maxValue = 500,
-                value = self.translate_secondLine_Y,
+                value = self.ui.translate_secondLine_Y,
                 sizeStyle = "small",
                 callback = self._translate_secondLine_Y_slider_callback)
         y += 20
         self.showCustomsFrames_checkBox = CheckBox((10,y,-10,20),
                 "Customs Frames",
-                value = self.showCustomsFrames,
+                value = self.ui.showCustomsFrames,
                 sizeStyle = "small",
                 callback = self._showCustomsFrames_checkBox_callback)
 
@@ -100,7 +100,7 @@ class DesignFrame(Group):
         self.observer()
 
     def _onOff_checkBox_callback(self, sender):
-        self.onOff_designFrame = sender.get()
+        self.ui.onOff_designFrame = sender.get()
         self.ui.updateViews()
 
     def _drawPreview_designFrame_checkBox_callback(self, sender):
@@ -108,38 +108,38 @@ class DesignFrame(Group):
         self.ui.updateViews()
 
     def _showMainFrames_checkBox_callback(self, sender):
-        self.showMainFrames = sender.get()
+        self.ui.showMainFrames = sender.get()
         self.ui.updateViews()
 
     def _showproximityPoints_checkBox_callback(self, sender):
-        self.showproximityPoints = sender.get()
+        self.ui.showproximityPoints = sender.get()
         self.ui.updateViews()
 
     def _showSecondLines_checkBox_callback(self, sender):
-        self.showSecondLines = sender.get()
-        self.translate_secondLine_X_slider.show(self.showSecondLines)
-        self.translate_secondLine_Y_slider.show(self.showSecondLines)
+        self.ui.showSecondLines = sender.get()
+        self.translate_secondLine_X_slider.show(self.ui.showSecondLines)
+        self.translate_secondLine_Y_slider.show(self.ui.showSecondLines)
         self.ui.updateViews()
 
     def _showCustomsFrames_checkBox_callback(self, sender):
-        self.showCustomsFrames = sender.get()
+        self.ui.showCustomsFrames = sender.get()
         self.ui.updateViews()
 
     def _translate_secondLine_X_slider_callback(self, sender):
-        self.translate_secondLine_X = int(sender.get())
+        self.ui.translate_secondLine_X = int(sender.get())
         self.set_DesignFrame_GlyphLib_Data()
         self.ui.updateViews()
 
     def set_DesignFrame_GlyphLib_Data(self):
-        if self.glyph is not None:
-            if "DesignFrame" in self.glyph.lib:
-                self.glyph.lib["DesignFrame"]["secondeLines"][0] = self.translate_secondLine_X
-                self.glyph.lib["DesignFrame"]["secondeLines"][1] = self.translate_secondLine_Y
+        if self.ui.glyph is not None:
+            if "DesignFrame" in self.ui.glyph.lib:
+                self.ui.glyph.lib["DesignFrame"]["secondeLines"][0] = self.ui.translate_secondLine_X
+                self.ui.glyph.lib["DesignFrame"]["secondeLines"][1] = self.ui.translate_secondLine_Y
             else:
-                self.glyph.lib["DesignFrame"] = {"secondeLines":[self.translate_secondLine_X, self.translate_secondLine_Y]}
+                self.ui.glyph.lib["DesignFrame"] = {"secondeLines":[self.ui.translate_secondLine_X, self.ui.translate_secondLine_Y]}
 
     def _translate_secondLine_Y_slider_callback(self, sender):
-        self.translate_secondLine_Y = int(sender.get())
+        self.ui.translate_secondLine_Y = int(sender.get())
         self.set_DesignFrame_GlyphLib_Data()
         self.ui.updateViews()
 
@@ -159,27 +159,27 @@ class DesignFrame(Group):
         removeObserver(self, "currentGlyphChanged")
 
     def currentGlyphChanged(self, info):
-        self.glyph = info['glyph']
-        if self.glyph is not None:
-            if "DesignFrame" in self.glyph.lib:
-                self.translate_secondLine_X = self.glyph.lib["DesignFrame"]["secondeLines"][0]
-                self.translate_secondLine_Y = self.glyph.lib["DesignFrame"]["secondeLines"][1]
-                self.translate_secondLine_X_slider.set(self.translate_secondLine_X)
-                self.translate_secondLine_Y_slider.set(self.translate_secondLine_Y)
+        self.ui.glyph = info['glyph']
+        if self.ui.glyph is not None:
+            if "DesignFrame" in self.ui.glyph.lib:
+                self.ui.translate_secondLine_X = self.ui.glyph.lib["DesignFrame"]["secondeLines"][0]
+                self.ui.translate_secondLine_Y = self.ui.glyph.lib["DesignFrame"]["secondeLines"][1]
+                self.ui.translate_secondLine_X_slider.set(self.ui.translate_secondLine_X)
+                self.ui.translate_secondLine_Y_slider.set(self.ui.translate_secondLine_Y)
         self.ui.updateViews()
 
     def draw(self, info):
-        self.glyph = self.ui.glyph
-        if not self.onOff_designFrame: return
-        if info['notificationName'] == "drawPreview" and not self.drawPreview_designFrame: return
+        self.ui.glyph = self.ui.glyph
+        if not self.ui.onOff_designFrame: return
+        if info['notificationName'] == "drawPreview" and not self.ui.drawPreview_designFrame: return
         s = info['scale']
         strokeWidth(.6*s)
         DesignFrameDrawer(self.ui).draw(
-            glyph = self.glyph,
-            mainFrames = self.showMainFrames, 
-            secondLines = self.showSecondLines, 
-            customsFrames = self.showCustomsFrames, 
-            proximityPoints = self.showproximityPoints,
-            translate_secondLine_X = self.translate_secondLine_X, 
-            translate_secondLine_Y = self.translate_secondLine_Y,
+            glyph = self.ui.glyph,
+            mainFrames = self.ui.showMainFrames, 
+            secondLines = self.ui.showSecondLines, 
+            customsFrames = self.ui.showCustomsFrames, 
+            proximityPoints = self.ui.showproximityPoints,
+            translate_secondLine_X = self.ui.translate_secondLine_X, 
+            translate_secondLine_Y = self.ui.translate_secondLine_Y,
             scale = s)

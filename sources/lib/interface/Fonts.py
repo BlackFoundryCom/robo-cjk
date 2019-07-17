@@ -58,6 +58,7 @@ class Fonts(Group):
             self.ui.glyphset = []
         else:
             self.ui.font = self.ui.fonts[sender.get()[sel[0]]]
+            self.ui.storageFont = self.ui.font2Storage[self.ui.font]
             self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
         
 

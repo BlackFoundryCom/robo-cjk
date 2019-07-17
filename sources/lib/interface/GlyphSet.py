@@ -68,9 +68,6 @@ class GlyphSet(Group):
             self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             glyphset = self.ui.glyphsSetDict[self.ui.font]
             self.glyphset_List.set(glyphset)
-        # if self.displaySettings == 'find Char/Name':
-        #     self.ui.glyphset = self.ui.glyphsSetDict[self.ui.font]
-        # print(self.ui.glyphCompositionData)
 
     def set_glyphset_List(self):
         if self.ui.font in self.ui.glyphsSetDict:
@@ -120,7 +117,7 @@ class GlyphSet(Group):
             glyphset = self.ui.glyphsSetDict[self.ui.font]
             self.glyphset_List.setSelection([])
             self.glyphset_List.set(glyphset)
-            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
+            elf.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             return
         try:
             if self.displaySettings == 'find Char/Name':
@@ -131,7 +128,7 @@ class GlyphSet(Group):
                     code = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
                     index = self.ui.glyphset.index(code)
                 self.glyphset_List.setSelection([index])
-                
+
             elif self.displaySettings == 'Sort by key':
                 name = string
                 if string.startswith("uni"):
@@ -143,6 +140,3 @@ class GlyphSet(Group):
                 self.glyphset_List.set([dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in self.ui.glyphset])
         except:
             pass
-
-    # def draw(self):
-    #     CurrentGlyphCanvas(self.ui)
