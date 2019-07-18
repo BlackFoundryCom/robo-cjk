@@ -40,6 +40,7 @@ class CurrentGlyphCanvas():
         self.canvasWidth = 386
         self.translateX = 0
         self.translateY = 0
+        self.preview = 0
 
     def mouseDown(self, info):
         if info.clickCount() == 2:
@@ -67,6 +68,15 @@ class CurrentGlyphCanvas():
             self.scale = scale
         self.update()
 
+    def keyDown(self, info):
+        if info.characters() == " ":
+            self.preview = 1
+            self.update()
+
+    def keyUp(self, info):
+        self.preview = 0
+        self.update()
+
     def draw(self):
         try:
             save()
@@ -84,7 +94,7 @@ class CurrentGlyphCanvas():
             else:
                 fill(0, 0, 0, 1)
                 drawGlyph(g)
-                if  self.ui.onOff_designFrame:
+                if self.ui.onOff_designFrame and not self.preview:
                     DesignFrameDrawer(self.ui).draw(
                         glyph = g,
                         mainFrames = self.ui.showMainFrames, 
@@ -97,6 +107,8 @@ class CurrentGlyphCanvas():
                         )
                 f = self.ui.font2Storage[self.ui.font]
                 fill(.2, 0, 1, .5)
+                if self.preview: 
+                    fill(0, 0, 0, 1)
                 DeepComponentDrawer(self.ui, g, f)
             restore()
         except Exception as e:
