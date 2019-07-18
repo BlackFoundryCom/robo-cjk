@@ -473,10 +473,10 @@ class RoboCJK():
                                             'Existing':{}, 
                                             'NewDeepComponents':{},
                                             }
-        # self.glyph = info['glyph']
         
         self.current_DeepComponent_selection = None 
-        self.getDeepComponents_FromCurrentGlyph()
+        if not self.w.main_segmentedButton.get():
+            self.getDeepComponents_FromCurrentGlyph()
         self.updateViews()
 
     def getDeepComponents_FromCurrentGlyph(self):

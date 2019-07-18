@@ -36,14 +36,17 @@ class DeepComponentDrawer():
             for desc in self.ui.currentGlyph_DeepComponents["CurrentDeepComponents"].values():
                 save()
                 glyph = desc['Glyph']
-                if not glyph: continue
-                ID = desc['ID']
-                offset_X, offset_Y = desc['Offsets']
-                stroke(None)
-                if glyph == self.ui.current_DeepComponent_selection:
-                    translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
-                    stroke(1, 0, 0, 1)
-                drawGlyph(glyph)
+                if not glyph: 
+                    fill(1, 0, .3, .7)
+                    oval(0, 0, 1000, 1000)
+                else:
+                    ID = desc['ID']
+                    offset_X, offset_Y = desc['Offsets']
+                    stroke(None)
+                    if glyph == self.ui.current_DeepComponent_selection:
+                        translate(self.ui.deepCompo_DeltaX, self.ui.deepCompo_DeltaY)
+                        stroke(1, 0, 0, 1)
+                    drawGlyph(glyph)
                 restore()
             restore()
 
