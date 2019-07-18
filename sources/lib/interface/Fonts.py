@@ -26,7 +26,7 @@ from imp import reload
 import os, json, subprocess, datetime, Helpers, getpass
 
 reload(Helpers)
-from Helpers import makepath, GitHelper, unique
+from Helpers import makepath, GitHelper, unique, deepolation
 
 class Fonts(Group):
 
@@ -75,14 +75,16 @@ class Fonts(Group):
     #         f = OpenFont(fontPath)
 
     def _getMiniFont_callback(self, sender):
-        self.glyph = self.ui.glyph
-        if self.glyph is None:
-            message("You should have at least one selected glyph to do a minifont")
-            return
-        self.font = CurrentFont()
-        # GetMiniFont(self.ui)
-        self.ui.setUIMiniFonts()
-        self.ui.setMiniFontsView(collapsed = False)
+        pass
+        # self.glyph = self.ui.glyph
+        # if self.glyph is None:
+        #     message("You should have at least one selected glyph to do a minifont")
+        #     return
+        # self.font = CurrentFont()
+        # # GetMiniFont(self.ui)
+        # self.ui.setUIMiniFonts()
+        # self.ui.setMiniFontsView(collapsed = False)
+
 
 # class GetMiniFont():
 

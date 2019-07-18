@@ -70,7 +70,7 @@ class GlyphData(Group):
             message("Warning, there is no glyph")
             return
 
-        selectedContours = [c for c in self.ui.glyph.getLayer("mask") if c.selected or [p for p in c.points if p.selected]]
+        selectedContours = [c for c in self.ui.glyph if c.selected or [p for p in c.points if p.selected]]
 
         if not selectedContours:
             message("Warning, there is no selectedContours")

@@ -36,6 +36,7 @@ class DeepComponentDrawer():
             for desc in self.ui.currentGlyph_DeepComponents["CurrentDeepComponents"].values():
                 save()
                 glyph = desc['Glyph']
+                if not glyph: continue
                 ID = desc['ID']
                 offset_X, offset_Y = desc['Offsets']
                 stroke(None)

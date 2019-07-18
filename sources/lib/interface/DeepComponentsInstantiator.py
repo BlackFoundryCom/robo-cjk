@@ -234,7 +234,7 @@ class DeepComponentsInstantiator(Group):
             if "deepComponentsGlyph" not in self.ui.glyph.lib:
                 self.ui.glyph.lib["deepComponentsGlyph"] = {}
 
-            self.ui.glyph.lib["deepComponentsGlyph"][deepComp_Name] = [ID, offsets]
+            self.ui.glyph.lib["deepComponentsGlyph"][deepComp_Name] = (ID, offsets)
 
         self.ui.glyph.update()
         self.ui.storageFont.update()

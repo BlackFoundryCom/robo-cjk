@@ -137,14 +137,18 @@ def readCurrentProject(self, project):
 
         fontName = fontPath.split("/")[-1][:-4]
         storageFontName = storagePath.split("/")[-1][:-4]
-        font = OpenFont(self.projectPath + fontPath, showUI = False)
-        storageFont = OpenFont(self.projectPath + storagePath, showUI = False)
 
-        self.fonts[fontName] = font
-        self.storageFonts[storageFontName] = storageFont
+        try:
+            font = OpenFont(self.projectPath + fontPath, showUI = False)
+            storageFont = OpenFont(self.projectPath + storagePath, showUI = False)
+            self.font2Storage[font] = storageFont
+            self.fonts[fontName] = font
+            self.storageFonts[storageFontName] = storageFont
+        except:pass 
+
         self.fontList.append(fontName)
         self.storageFontsList.append(storageFontName)
-        self.font2Storage[font] = storageFont
+        
 
     self.glyphsSetDict = {font: [dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in font.lib['public.glyphOrder']] for font in self.fonts.values()}
 
@@ -173,13 +177,23 @@ def readCurrentProject(self, project):
     #Glyph composition Data
     self.glyphCompositionData = project["glyphCompositionData"]
 
-    self.key2Glyph = {}
+    key2Glyph = {}
     for glyphName, keys in self.glyphCompositionData.items():
         for key in keys:
-            k = key.split('_')[0]
-            if not k in self.key2Glyph:
-                self.key2Glyph[k] = []
-            self.key2Glyph[k].append("uni"+glyphName)
+            elem = key.split('_')
+            k = elem[0]
+            pos = elem[2]
+            if k not in key2Glyph:
+                key2Glyph[k] = {}
+            if pos not in key2Glyph[k]:
+                key2Glyph[k][pos] = []
+            key2Glyph[k][pos].append("uni" + glyphName)
+    self.key2Glyph = {}
+    for k, v in key2Glyph.items():
+        if k not in self.key2Glyph:
+            self.key2Glyph[k] = []
+        for pos, elem in v.items():
+            self.key2Glyph[k].extend(elem)
 
 class GitHelper():
 

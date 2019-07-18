@@ -18,53 +18,70 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from vanilla.dialogs import getFile, message
+
 from mojo.UI import AccordionView, UpdateCurrentGlyphView
 from mojo.events import addObserver, removeObserver, installTool, uninstallTool, getActiveEventTool
-
 from mojo.roboFont import *
+
 from AppKit import *
 
-from imp import reload
-import os, json, Helpers
-reload(Helpers)
-from Helpers import readCurrentProject, normalizeUnicode, SmartTextBox
+import os, json, Helpers, Global
 
 from sheets.preferences import Preferences
 from sheets.projectEditor import ProjectEditor
+
 import offTools.PowerRuler as PowerRuler
-reload(PowerRuler)
 import offTools.BalanceHandles as BalanceHandles
-reload(BalanceHandles)
 import offTools.OpenSelectedComponent as OpenSelectedComponent
-reload(OpenSelectedComponent)
+from offTools.smartSelector import SmartSelector
+
 from interface.SmartComponents import SmartComponents
 from interface.ReferenceViewer import ReferenceViewer
-
 from interface.Fonts import Fonts
 from interface.GlyphSet import GlyphSet
 from interface.GlyphData import GlyphData
 from interface.DeepComponentsInstantiator import DeepComponentsInstantiator
 from interface.Layers import Layers
 from interface.GlyphLayers import GlyphLayers
-
 from interface.DesignFrame import DesignFrame
 
 from drawers.CurrentGlyphViewDrawer import CurrentGlyphViewDrawer
 
-from offTools.smartSelector import SmartSelector
+from Helpers import readCurrentProject, normalizeUnicode, SmartTextBox, deepolation
 
-from Helpers import deepolation
+from testInstall import testInstall
 
-import Global
-reload(Global)
+
 
 cwd = os.getcwd()
 rdir = os.path.abspath(os.path.join(cwd, os.pardir))
 
 ProjectEditorPDF = os.path.join(rdir, "resources/ProjectEditor.pdf")
 PreferencesPDF = os.path.join(rdir, "resources/Preferences.pdf")
-SpaceCenterPDF = os.path.join(rdir, "resources/SpaceCenter.pdf")
+TextCenterPDF = os.path.join(rdir, "resources/TextCenter.pdf")
+MastersOverviewPDF = os.path.join(rdir, "resources/MastersOverview.pdf")
 SavePDF = os.path.join(rdir, "resources/Save.pdf")
+TestInstallPDF = os.path.join(rdir, "resources/TestInstall.pdf")
+
+
+"""
+Deep component data structure
+ _________________________________
+|                                 |                                          
+| Deep Components StorageFont lib | --> "deepComponentsGlyph" (dict) --> Deep componentName --> ID --> LayersInfos
+|_________________________________|
+
+ __________________________________
+|                                  |                                          
+| Deep Components StorageGlyph lib | --> "deepComponentsLayer" (list) --> layersName
+|__________________________________|
+
+ __________________
+|                  |                                          
+| Master Glyph lib | --> "deepComponentsGlyph" (dict) --> Deep componentName --> (ID , offsets)
+|__________________|
+
+"""
 
 class RoboCJK():
     
@@ -128,25 +145,34 @@ class RoboCJK():
                 'imagePath': SavePDF
             },
             {
+                'itemIdentifier': "testInstall",
+                'label': 'Test Install',
+                'callback': self._testInstall_callback,
+                'imagePath': TestInstallPDF
+            },
+            {
+                'itemIdentifier': NSToolbarFlexibleSpaceItemIdentifier,
+            },
+            {
+                'itemIdentifier': "textCenter",
+                'label': 'Text Center',
+                'callback': self._textCenter_callback,
+                'imagePath': TextCenterPDF
+            },
+            {
+                'itemIdentifier': "mastersOverview",
+                'label': 'Masters Overview',
+                'callback': self._textCenter_callback,
+                'imagePath': MastersOverviewPDF
+            },
+            {
+                'itemIdentifier': NSToolbarFlexibleSpaceItemIdentifier,
+            },
+            {
                 'itemIdentifier': "projectEditor",
                 'label': 'Projects Editor',
                 'callback': self._projectsSettings_callback,
                 'imagePath': ProjectEditorPDF
-            },
-            {
-                'itemIdentifier': "spaceCenter",
-                'label': 'Space Center',
-                'callback': self._spaceCenter_callback,
-                'imagePath': SpaceCenterPDF
-            },
-            {
-                'itemIdentifier': "masterOverview",
-                'label': 'Master Overview',
-                'callback': self._spaceCenter_callback,
-                'imagePath': SpaceCenterPDF
-            },
-            {
-                'itemIdentifier': NSToolbarFlexibleSpaceItemIdentifier,
             },
             {
                 'itemIdentifier': "preference",
@@ -253,8 +279,11 @@ class RoboCJK():
         message("Work in Progress...")
         Preferences(self)
 
-    def _spaceCenter_callback(self, sender):
-        message("Work in Progress...")        
+    def _textCenter_callback(self, sender):
+        message("Work in Progress...")    
+
+    def _testInstall_callback(self, sender):
+        testInstall(self)
 
     def _main_segmentedButton_callback(self, sender):
         sel = sender.get()
@@ -342,7 +371,7 @@ class RoboCJK():
             for deepComp_Name, desc in self.currentGlyph_DeepComponents['CurrentDeepComponents'].items():
                 deepComp_glyph = desc['Glyph']
 
-                if deepComp_glyph.pointInside((x, y)):
+                if deepComp_glyph and deepComp_glyph.pointInside((x, y)):
                     addObserver(self, "mouseDragged", "mouseDragged")
                     self.current_DeepComponent_selection = deepComp_glyph
                     clickDidInside = True
@@ -465,7 +494,8 @@ class RoboCJK():
                 layersInfo = storageFont.lib["deepComponentsGlyph"][deepComp_Name][ID]
 
                 newGlyph = deepolation(RGlyph(), storageFont[deepComp_Name].getLayer("foreground"), layersInfo)
-                newGlyph.moveBy((offset_x, offset_Y))
+                if newGlyph:
+                    newGlyph.moveBy((offset_x, offset_Y))
 
                 self.currentGlyph_DeepComponents['CurrentDeepComponents'][deepComp_Name] = {"ID" : ID, "Offsets":[offset_x, offset_Y], "Glyph":newGlyph}
 

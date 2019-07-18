@@ -63,7 +63,6 @@ class GlyphSet(Group):
 
     def _displayGlyphset_setting_callback(self, sender):
         self.displaySettings = self.displayGlyphset_settingList[sender.get()]
-        print(self.displaySettings)
         if self.displaySettings == 'find Char/Name':
             self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             glyphset = self.ui.glyphsSetDict[self.ui.font]
@@ -117,7 +116,7 @@ class GlyphSet(Group):
             glyphset = self.ui.glyphsSetDict[self.ui.font]
             self.glyphset_List.setSelection([])
             self.glyphset_List.set(glyphset)
-            elf.ui.glyphset = self.ui.font.lib['public.glyphOrder']
+            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             return
         try:
             if self.displaySettings == 'find Char/Name':
