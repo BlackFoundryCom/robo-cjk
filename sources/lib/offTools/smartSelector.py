@@ -20,11 +20,9 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from mojo.extensions import ExtensionBundle
 from mojo.events import EditingTool
 from vanilla import *
-# from AppKit import *
 import os
 
 toolbarIcon = ExtensionBundle("sources/resources").get("SmartSelectorIcon")
-# print(toolbarIcon)
 
 class SmartSelector(EditingTool):
 

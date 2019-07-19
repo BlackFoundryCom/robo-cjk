@@ -277,7 +277,7 @@ class RoboCJK():
 
     def _preference_callback(self, sender):
         message("Work in Progress...")
-        Preferences(self)
+        # Preferences(self)
 
     def _textCenter_callback(self, sender):
         message("Work in Progress...")    

@@ -115,7 +115,6 @@ class LayersCanvas():
                 else:                    
                     translate(self.boxWidth, 0)                
                 columnWidth += self.boxWidth     
-                # print(self.glyphLocation_in_Window)       
         except Exception as e:
             print(e)
         self.ui.updateViews()

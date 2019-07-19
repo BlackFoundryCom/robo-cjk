@@ -24,6 +24,7 @@ from AppKit import NSAppearance, NSColor
 from drawers.LayersCanvas import LayersCanvas
 from drawers.LayersPreviewCanvas import LayersPreviewCanvas
 from lib.cells.colorCell import RFColorCell
+from Helpers import normalizeUnicode
 
 class GlyphLayers(Group):
 
@@ -35,12 +36,22 @@ class GlyphLayers(Group):
         self.storageGlyphName = ""
         self.StorageGlyphCurrentLayer = ""
 
-        self.goTo = EditText((0,0,165,20),
-            placeholder = "🔎 Char/Name",
-            sizeStyle = "small")
+        self.jumpTo = SearchBox((0,0,165,20),
+            placeholder = "Char/Name",
+            sizeStyle = "small",
+            callback = self._jumpTo_callback
+            )
 
+        self.displayGlyphset_settingList = ['find Char/Name', "Sort by key"]
+        self.displaySettings = 'find Char/Name'
+        self.displayGlyphset_setting = PopUpButton((170, 0, 200, 20),
+            self.displayGlyphset_settingList,
+            sizeStyle = "small",
+            callback = self._displayGlyphset_setting_callback)
+
+        self.glyphset = []
         self.glyphset_List = List((0,20,165,-200),
-            [],
+            self.glyphset,
             columnDescriptions = [
                                 {"title": "Char", "width" : 30},
                                 {"title": "Name", "width" : 105},                  
@@ -70,9 +81,21 @@ class GlyphLayers(Group):
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
 
+    def getGlyphset(self):
+        return [dict(Char=chr(int(name.split("_")[0],16)), Name = name) for name in self.ui.font2Storage[self.ui.font].keys()]
+
+    def _displayGlyphset_setting_callback(self, sender):
+        self.displaySettings = self.displayGlyphset_settingList[sender.get()]
+        if self.displaySettings == 'find Char/Name':
+            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
+            # glyphset = [dict(Char=chr(int(name.split("_")[0],16)), Name = name) for name in self.ui.font2Storage[self.ui.font].keys()]
+            self.glyphset = self.getGlyphset()
+            self.glyphset_List.set(self.glyphset)
+
     def set_glyphset_List(self):
-        if self.ui.font in self.ui.glyphsSetDict:
-            self.glyphset_List.set([dict(Char=chr(int(name.split("_")[0],16)), Name = name) for name in self.ui.font2Storage[self.ui.font].keys()])
+        if self.ui.font in self.ui.glyphsSetDict and self.displaySettings == 'find Char/Name':
+            self.glyphset = self.getGlyphset()
+            self.glyphset_List.set(self.glyphset)
 
     def _glyphset_List_selectionCallback(self, sender):
         sel = sender.getSelection()
@@ -93,3 +116,37 @@ class GlyphLayers(Group):
     def _sliderList_editCallback(self, sender):
         self.slidersValuesList = sender.get()
         self.layersPreviewCanvas.update()
+
+    def _jumpTo_callback(self, sender):
+        string = sender.get()
+        if not string:
+            self.glyphset_List.setSelection([])
+            self.glyphset_List.set(self.glyphset)
+            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
+            return
+
+        try: 
+            if self.displaySettings == 'find Char/Name':
+                glyphSet = [e["Name"].split('_')[0] for e in self.glyphset]
+                if string.startswith("uni"):
+                    index = glyphSet.index(string[3:])
+
+                elif len(string) == 1:
+                    code = "uni"+normalizeUnicode(hex(ord(string[3:]))[2:].upper())
+                    index = glyphSet.index(code)
+
+                else:
+                    index = glyphSet.index(string)
+
+                self.glyphset_List.setSelection([index])
+
+            elif self.displaySettings == 'Sort by key':
+                glyphSet = [e["Name"] for e in self.glyphset]
+                name = string
+                if  string.startswith("uni"):
+                    name = string[3:]
+                elif len(string) == 1:
+                    name = normalizeUnicode(hex(ord(string))[2:].upper())
+                self.glyphset_List.set([dict(Name = names, Char = chr(int(names.split('_')[0],16))) for names in glyphSet if name in names])
+        except:
+            pass

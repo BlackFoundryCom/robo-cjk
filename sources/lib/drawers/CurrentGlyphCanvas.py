@@ -92,24 +92,32 @@ class CurrentGlyphCanvas():
                 readGlyphFromString(iconText, icon, pen)
                 drawGlyph(icon)
             else:
-                fill(0, 0, 0, 1)
-                drawGlyph(g)
-                if self.ui.onOff_designFrame and not self.preview:
-                    DesignFrameDrawer(self.ui).draw(
-                        glyph = g,
-                        mainFrames = self.ui.showMainFrames, 
-                        secondLines = self.ui.showSecondLines, 
-                        customsFrames = self.ui.showCustomsFrames, 
-                        proximityPoints = self.ui.showproximityPoints,
-                        translate_secondLine_X = self.ui.translate_secondLine_X, 
-                        translate_secondLine_Y = self.ui.translate_secondLine_Y,
-                        scale = self.scale
-                        )
-                f = self.ui.font2Storage[self.ui.font]
-                fill(.2, 0, 1, .5)
-                if self.preview: 
+                if not len(g) and not "deepComponentsGlyph" in g.lib and g.unicode and not self.preview:
+                    fill(0, 0, 0, .1)
+                    rect(-1000, -1000, 10000, 10000)
+                    fill(.5, 0, .3, .5)
+                    translate(0, -150)
+                    fontSize(1000)
+                    text(chr(g.unicode), (0, 0))
+                else:
                     fill(0, 0, 0, 1)
-                DeepComponentDrawer(self.ui, g, f)
+                    drawGlyph(g)
+                    if self.ui.onOff_designFrame and not self.preview:
+                        DesignFrameDrawer(self.ui).draw(
+                            glyph = g,
+                            mainFrames = self.ui.showMainFrames, 
+                            secondLines = self.ui.showSecondLines, 
+                            customsFrames = self.ui.showCustomsFrames, 
+                            proximityPoints = self.ui.showproximityPoints,
+                            translate_secondLine_X = self.ui.translate_secondLine_X, 
+                            translate_secondLine_Y = self.ui.translate_secondLine_Y,
+                            scale = self.scale
+                            )
+                    f = self.ui.font2Storage[self.ui.font]
+                    fill(.2, 0, 1, .5)
+                    if self.preview: 
+                        fill(0, 0, 0, 1)
+                    DeepComponentDrawer(self.ui, g, f)
             restore()
         except Exception as e:
             print(e)

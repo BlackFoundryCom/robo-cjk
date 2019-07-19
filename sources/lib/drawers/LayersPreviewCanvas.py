@@ -28,7 +28,7 @@ class LayersPreviewCanvas():
     def __init__(self, interface, glyphLayerGroup):
         self.ui = interface
         self.gl = glyphLayerGroup
-        self.translateX, self.translateY = 0,0
+        self.translateX, self.translateY = 194,40
         self.scale = .15
         
     def mouseDragged(self, info):
