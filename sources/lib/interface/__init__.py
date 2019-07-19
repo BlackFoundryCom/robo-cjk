@@ -35,7 +35,7 @@ import offTools.BalanceHandles as BalanceHandles
 import offTools.OpenSelectedComponent as OpenSelectedComponent
 from offTools.smartSelector import SmartSelector
 
-from interface.SmartComponents import SmartComponents
+# from interface.SmartComponents import SmartComponents
 from interface.ReferenceViewer import ReferenceViewer
 from interface.Fonts import Fonts
 from interface.GlyphSet import GlyphSet
@@ -480,8 +480,6 @@ class RoboCJK():
         self.updateViews()
 
     def getDeepComponents_FromCurrentGlyph(self):
-        
-        
         if "deepComponentsGlyph" in self.glyph.lib:
 
             storageFont = self.font2Storage[self.font]

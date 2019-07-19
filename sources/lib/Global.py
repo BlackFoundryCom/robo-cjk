@@ -42,7 +42,6 @@ class fontsList:
     @classmethod
     def get(cls):
         if cls._fonts is None:
-            # Get system font list
             manager = Cocoa.NSFontManager.sharedFontManager()
             cls._fonts = list(manager.availableFontFamilies())
         return cls._fonts
