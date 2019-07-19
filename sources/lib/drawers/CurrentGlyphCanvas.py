@@ -95,10 +95,17 @@ class CurrentGlyphCanvas():
                 if not len(g) and not "deepComponentsGlyph" in g.lib and g.unicode and not self.preview:
                     fill(0, 0, 0, .1)
                     rect(-1000, -1000, 10000, 10000)
-                    fill(.5, 0, .3, .5)
+                    # fill(.5, 0, .3, .5)
+                    fill(0, 0, .8, .2)
                     translate(0, -150)
                     fontSize(1000)
                     text(chr(g.unicode), (0, 0))
+                    stroke(0)
+                    strokeWidth(100*self.scale)
+                    newPath()
+                    moveTo((0, 0))
+                    lineTo((1100, 1100))
+                    drawPath()
                 else:
                     fill(0, 0, 0, 1)
                     drawGlyph(g)
