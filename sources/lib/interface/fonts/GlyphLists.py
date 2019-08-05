@@ -21,23 +21,31 @@ from mojo.roboFont import *
 from mojo.UI import OpenGlyphWindow, CurrentGlyphWindow
 from mojo.canvas import Canvas
 from AppKit import NSAppearance, NSColor
-from drawers.CurrentGlyphCanvas import CurrentGlyphCanvas
+# from drawers.MainCanvas import MainCanvas
 from lib.cells.colorCell import RFColorCell
 from Helpers import normalizeUnicode
-class GlyphSet(Group):
+
+class GlyphLists(Group):
 
     def __init__(self, posSize, interface):
-        super(GlyphSet, self).__init__(posSize)
+        super(GlyphLists, self).__init__(posSize)
         self.ui = interface
 
-        self.jumpTo = SearchBox((0,0,165,20),
+        self.displayGlyphset_settingList = ['find Char/Name', "Sort by key"]
+        self.displaySettings = 'find Char/Name'
+        self.displayGlyphset_setting = PopUpButton((0, 0, -0, 20),
+            self.displayGlyphset_settingList,
+            sizeStyle = "small",
+            callback = self._displayGlyphset_setting_callback)
+
+        self.jumpTo = SearchBox((0,30,-0,20),
             placeholder = "Char/Name",
             sizeStyle = "small", 
             callback = self._jumpTo_callback,
             # continuous = False,
             )
 
-        self.glyphset_List = List((0,20,165,-0),
+        self.glyphset_List = List((0,50,-0,-0),
             [],
             columnDescriptions = [
                                 {"title": "Char", "width" : 30},
@@ -47,19 +55,14 @@ class GlyphSet(Group):
             selectionCallback = self._glyphset_List_selectionCallback,
             doubleClickCallback = self._glyphset_List_doubleClickCallback)
 
-        self.displayGlyphset_settingList = ['find Char/Name', "Sort by key"]
-        self.displaySettings = 'find Char/Name'
-        self.displayGlyphset_setting = PopUpButton((170, 0, 200, 20),
-            self.displayGlyphset_settingList,
-            sizeStyle = "small",
-            callback = self._displayGlyphset_setting_callback)
+        
 
         self.set_glyphset_List()
 
-        self.canvas = Canvas((165,20,-0,-0), 
-            delegate=CurrentGlyphCanvas(self.ui, self),
-            hasHorizontalScroller=False, 
-            hasVerticalScroller=False)
+        # self.canvas = Canvas((165,20,-0,-0), 
+        #     delegate=MainCanvas(self.ui, self),
+        #     hasHorizontalScroller=False, 
+        #     hasVerticalScroller=False)
 
     def _displayGlyphset_setting_callback(self, sender):
         self.displaySettings = self.displayGlyphset_settingList[sender.get()]
@@ -89,17 +92,17 @@ class GlyphSet(Group):
                                             'NewDeepComponents':{},
                                             }
         self.ui.getDeepComponents_FromCurrentGlyph()                   
-        self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.setSelection([])
-        self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
-        self.ui.w.activeMasterGroup.glyphData.variants_List.set([])                        
-        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
-        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
+        # self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.setSelection([])
+        # self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
+        # self.ui.w.activeMasterGroup.glyphData.variants_List.set([])                        
+        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
+        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
 
-        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.deepCompo_segmentedButton.set(0)
-        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.show(0)
-        self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.show(1)
+        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.deepCompo_segmentedButton.set(0)
+        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.show(0)
+        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.show(1)
         self.ui.newDeepComponent_active = False
-        self.canvas.update()
+        self.ui.updateViews()
 
     def _glyphset_List_doubleClickCallback(self, sender):
         sel = sender.getSelection()

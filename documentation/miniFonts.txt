@@ -1,0 +1,37 @@
+digraph{
+	node [shape = record, fontname="Arial"]
+	rankdir = TB
+	fontname="Helvetica"
+
+	subgraph "Mini Fonts"{
+		
+		"Get Mini Font" -> "Deep Components Editor"
+		"Get Mini Font" -> "Deep Components Instantiator"
+
+		"Data Base: Glyph Composition" [style=filled, fillcolor=yellow]
+		"Data Base: Deep Component Structure" [style=filled, fillcolor=yellow]
+		"Deep Components Instantiator" -> "Data Base: Glyph Composition"
+
+		"Glyphs to keys" [shape=oval, style=filled, fillcolor=lightgray]
+		"Data Base: Glyph Composition" -> "Glyphs to keys"
+
+		"Deep Components Editor" -> "Data Base: Deep Component Structure"
+
+		"key to extremes Glyphs" [shape=oval, style=filled, fillcolor=lightgray]
+		"Data Base: Deep Component Structure" -> "key to extremes Glyphs"
+
+		"Data Base: Glyph Composition" -> "Selected Char/Key"		
+		"Data Base: Deep Component Structure" -> "Selected Key"
+
+		"Selected Key" -> "Temp UFO with extremes glyphs"
+		"Temp UFO with extremes glyphs" -> "Temp storage UFO empty"
+
+
+		"Selected Char/Key"	-> "Temp UFO with all the glyphs 
+		that contains a part from the selected glyph"
+
+		"Temp UFO with all the glyphs 
+		that contains a part from the selected glyph" -> "Temp storage UFO with parts from the temp UFO glyphs"
+	}
+
+}

@@ -23,6 +23,7 @@ from mojo.canvas import Canvas
 from AppKit import NSAppearance, NSColor
 from drawers.LayersCanvas import LayersCanvas
 from drawers.LayersPreviewCanvas import LayersPreviewCanvas
+from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
 from lib.cells.colorCell import RFColorCell
 from Helpers import normalizeUnicode
 
@@ -36,7 +37,9 @@ class GlyphLayers(Group):
         self.storageGlyphName = ""
         self.StorageGlyphCurrentLayer = ""
 
-        self.jumpTo = SearchBox((0,0,165,20),
+        self.top = Group((0, 0, -0, -0))
+
+        self.top.jumpTo = SearchBox((0,30,195,20),
             placeholder = "Char/Name",
             sizeStyle = "small",
             callback = self._jumpTo_callback
@@ -44,13 +47,13 @@ class GlyphLayers(Group):
 
         self.displayGlyphset_settingList = ['find Char/Name', "Sort by key"]
         self.displaySettings = 'find Char/Name'
-        self.displayGlyphset_setting = PopUpButton((170, 0, 200, 20),
+        self.top.displayGlyphset_setting = PopUpButton((0, 10, 195, 20),
             self.displayGlyphset_settingList,
             sizeStyle = "small",
             callback = self._displayGlyphset_setting_callback)
 
         self.glyphset = []
-        self.glyphset_List = List((0,20,165,-200),
+        self.top.glyphset_List = List((0,50,195,-0),
             self.glyphset,
             columnDescriptions = [
                                 {"title": "Char", "width" : 30},
@@ -62,24 +65,54 @@ class GlyphLayers(Group):
 
         self.set_glyphset_List()
 
-        self.layersCanvas = Canvas((165,20,-0,-200), 
+        self.top.layersCanvas = Canvas((195,10,-0,-0), 
             delegate=LayersCanvas(self.ui, self),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
 
+        self.bottom = Group((0, 0, -0, -0))
+
+        self.bottom.layersTextBox = TextBox((0,5,195,20), 
+                'Layers',
+                sizeStyle = "small")
+
+        self.layerList = []
+        self.bottom.layers_list = List((0,25,195,-50), 
+                self.layerList,
+                drawFocusRing = False,
+                selectionCallback = self._layers_list_selectionCallback,
+                editCallback = self._layers_list_editCallback)
+
+        self.bottom.newLayer_Button = SquareButton((0, -50, 30, 30),
+            '+',
+            sizeStyle="small",
+            callback = self._newLayer_Button_callback)
+
+        self.bottom.assignLayerToGlyph_Button = SquareButton((30, -50, 165, 30),
+            'Assign Layer to Glyph ->',
+            sizeStyle="small",
+            callback = self._assignLayerToGlyph_Button_callback)
+
         slider = SliderListCell(minValue = 0, maxValue = 1000)
         self.slidersValuesList = []
-        self.sliderList = List((0,-190,350,-0),self.slidersValuesList,
+        self.bottom.sliderList = List((195,0,-0,-20),self.slidersValuesList,
             columnDescriptions = [{"title": "Layer" }, 
                                     {"title": "Values", "cell": slider}],
             editCallback = self._sliderList_editCallback,
             drawFocusRing = False,
             allowsMultipleSelection = False)
 
-        self.layersPreviewCanvas = Canvas((350,-190,-0,-0), 
-            delegate=LayersPreviewCanvas(self.ui, self),
-            hasHorizontalScroller=False, 
-            hasVerticalScroller=False)
+
+        paneDescriptors = [
+            dict(view=self.top, identifier="top"),
+            dict(view=self.bottom, identifier="bottom"),
+        ]
+
+        self.mainSplitView = SplitView((0, 0, -0, -0), 
+            paneDescriptors,
+            isVertical = False,
+            dividerStyle="thin"
+            )
 
     def getGlyphset(self):
         return [dict(Char=chr(int(name.split("_")[0],16)), Name = name) for name in self.ui.font2Storage[self.ui.font].keys()]
@@ -90,38 +123,138 @@ class GlyphLayers(Group):
             self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             # glyphset = [dict(Char=chr(int(name.split("_")[0],16)), Name = name) for name in self.ui.font2Storage[self.ui.font].keys()]
             self.glyphset = self.getGlyphset()
-            self.glyphset_List.set(self.glyphset)
+            self.top.glyphset_List.set(self.glyphset)
 
     def set_glyphset_List(self):
         if self.ui.font in self.ui.glyphsSetDict and self.displaySettings == 'find Char/Name':
             self.glyphset = self.getGlyphset()
-            self.glyphset_List.set(self.glyphset)
+            self.top.glyphset_List.set(self.glyphset)
+            self.layerList = [layer.name for layer in self.ui.font2Storage[self.ui.font].layers]
+            self.bottom.layers_list.set(self.layerList)
+
 
     def _glyphset_List_selectionCallback(self, sender):
         sel = sender.getSelection()
-        if not sel: return
+        if not sel: 
+            self.storageGlyph = None
+            TesterDeepComponent.translateX = 0
+            TesterDeepComponent.translateY = 0
+            self.ui.w.mainCanvas.update()
+            return
         self.storageFont = self.ui.font2Storage[self.ui.font]
         self.storageGlyphName = sender.get()[sel[0]]["Name"]
         self.storageGlyph = self.ui.font2Storage[self.ui.font][self.storageGlyphName]
 
         self.setSliderList()
 
-        self.layersCanvas.update()
-        self.layersPreviewCanvas.update()
+        self.top.layersCanvas.update()
+        # self.layersPreviewCanvas.update()
 
     def setSliderList(self):
         self.slidersValuesList = [dict(Layer=layerName, Values=0) for layerName in self.storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
-        self.sliderList.set(self.slidersValuesList)
+        self.bottom.sliderList.set(self.slidersValuesList)
 
     def _sliderList_editCallback(self, sender):
         self.slidersValuesList = sender.get()
-        self.layersPreviewCanvas.update()
+        self.ui.w.mainCanvas.update()
+        # self.layersPreviewCanvas.update()
+
+
+
+
+
+
+
+
+
+
+    def _layers_list_editCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        
+        newName = sender.get()[sel[0]]
+        oldName = self.layerList[sel[0]]
+        storageFont = self.ui.font2Storage[self.ui.font]
+
+        for layer in storageFont.layers:
+            if layer.name == oldName:
+                layer.name = newName
+
+        self.layerList = [layer.name for layer in storageFont.layers]
+        self.selectedLayerName = newName
+
+    def _layers_list_selectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+
+        self.selectedLayerName = sender.get()[sel[0]]
+        self.top.layersCanvas.update()
+
+    def _newLayer_Button_callback(self, sender):
+        i=0
+        while True:
+            index = "_%s"%str(i).zfill(2)
+            name = "NewLayer"+index
+            if not name in self.layerList:
+                break
+            i+=1
+
+        storageFont = self.ui.font2Storage[self.ui.font]
+        storageFont.newLayer(name)
+
+        self.layerList.append(name)
+        self.bottom.layers_list.set(self.layerList)
+
+    def _assignLayerToGlyph_Button_callback(self, sender):
+        storageGlyphName = self.storageGlyphName
+        StorageGlyphCurrentLayer = self.StorageGlyphCurrentLayer
+
+        if storageGlyphName is None:
+            message("Warning there is no selected glyph")
+            return
+
+        if not self.selectedLayerName:
+            message("Warning there is no selected layer")
+            return
+
+        storageFont = self.ui.font2Storage[self.ui.font]
+        layer = StorageGlyphCurrentLayer
+
+        if not layer:
+            layer = storageFont[storageGlyphName]
+
+        layer.round()
+        
+        
+        if self.selectedLayerName not in storageFont[storageGlyphName].lib["deepComponentsLayer"]:
+            storageFont.getLayer(self.selectedLayerName).insertGlyph(layer)
+            storageFont[storageGlyphName].lib["deepComponentsLayer"].append(self.selectedLayerName)
+        storageFont[storageGlyphName].update()
+
+        self.top.layersCanvas.update()  
+
+        self.setSliderList()      
+
+        # self.layersPreviewCanvas = Canvas((350,-190,-0,-0), 
+        #     delegate=LayersPreviewCanvas(self.ui, self),
+        #     hasHorizontalScroller=False, 
+        #     hasVerticalScroller=False)
+
+
+
+
+
+
+
+
+
+
 
     def _jumpTo_callback(self, sender):
         string = sender.get()
         if not string:
-            self.glyphset_List.setSelection([])
-            self.glyphset_List.set(self.glyphset)
+            self.top.glyphset_List.setSelection([])
+            self.top.glyphset_List.set(self.glyphset)
             self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             return
 
@@ -138,7 +271,7 @@ class GlyphLayers(Group):
                 else:
                     index = glyphSet.index(string)
 
-                self.glyphset_List.setSelection([index])
+                self.top.glyphset_List.setSelection([index])
 
             elif self.displaySettings == 'Sort by key':
                 glyphSet = [e["Name"] for e in self.glyphset]
@@ -147,6 +280,6 @@ class GlyphLayers(Group):
                     name = string[3:]
                 elif len(string) == 1:
                     name = normalizeUnicode(hex(ord(string))[2:].upper())
-                self.glyphset_List.set([dict(Name = names, Char = chr(int(names.split('_')[0],16))) for names in glyphSet if name in names])
+                self.top.glyphset_List.set([dict(Name = names, Char = chr(int(names.split('_')[0],16))) for names in glyphSet if name in names])
         except:
             pass

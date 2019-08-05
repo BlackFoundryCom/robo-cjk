@@ -133,23 +133,53 @@ def readCurrentProject(self, project):
     self.storageFontsList = []
     self.font2Storage = {}
 
-    for fontPath, storagePath in project["UFOsPaths"].items():
+    if not os.path.exists(self.projectPath + "/Temp"):
+        for fontPath, storagePath in project["UFOsPaths"].items():
 
-        fontName = fontPath.split("/")[-1][:-4]
-        storageFontName = storagePath.split("/")[-1][:-4]
+            fontName = fontPath.split("/")[-1][:-4]
+            storageFontName = storagePath.split("/")[-1][:-4]
 
-        try:
-            font = OpenFont(self.projectPath + fontPath, showUI = False)
-            storageFont = OpenFont(self.projectPath + storagePath, showUI = False)
-            self.font2Storage[font] = storageFont
-            self.fonts[fontName] = font
-            self.storageFonts[storageFontName] = storageFont
-        except:pass 
+            try:
+                font = OpenFont(self.projectPath + fontPath, showUI = False)
+                storageFont = OpenFont(self.projectPath + storagePath, showUI = False)
+                self.font2Storage[font] = storageFont
+                self.fonts[fontName] = font
+                self.storageFonts[storageFontName] = storageFont
+            except:pass 
 
-        self.fontList.append(fontName)
-        self.storageFontsList.append(storageFontName)
-        
+            self.fontList.append(fontName)
+            self.storageFontsList.append(storageFontName)
+            self.collapse = 0
+    else:
+        UFOs = list(filter(lambda x: x.endswith('ufo'), os.listdir(self.projectPath + "/Temp")))
 
+        tempsUFOs = list(filter(lambda x: x.startswith('temp'), UFOs))
+        storageTempsUFOs = list(filter(lambda x: x.startswith('storageTemp'), UFOs))
+
+        """
+        ['temp-2019725_GaëtanBaehr-Regular.ufo', 'temp-2019725_GaëtanBaehr-Bold.ufo', 'storageTemp-2019725_GaëtanBaehr-Bold.ufo', 'storageTemp-2019725_GaëtanBaehr-Regular.ufo']
+        """
+        for fontPath in tempsUFOs:
+            fontName = fontPath[:-4]
+            for storagePath in storageTempsUFOs:
+                if storagePath.endswith(fontPath.split('-')[-1]):
+                    storageFontName = storagePath[:-4]
+
+            try:
+                font = OpenFont(self.projectPath + "/Temp/" + fontPath, showUI = False)
+                storageFont = OpenFont(self.projectPath + "/Temp/"+ storageFontName+".ufo", showUI = False)
+                self.font2Storage[font] = storageFont
+                self.fonts[fontName] = font
+                self.storageFonts[storageFontName] = storageFont
+                self.storageFontsList.append(storageFontName)
+            except:pass 
+
+            self.fontList.append(fontName)
+            self.collapse = 1
+
+    # self.getSubset_UI()
+
+            
     self.glyphsSetDict = {font: [dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in font.lib['public.glyphOrder']] for font in self.fonts.values()}
 
     # print(self.glyphsSetDict)

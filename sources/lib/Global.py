@@ -49,3 +49,14 @@ class fontsList:
     @classmethod
     def reload(cls):
         cls._fonts = None
+
+class roboCJK_Icon:
+    _roboCJK = None
+
+    @classmethod
+    def get(cls):
+        if cls._roboCJK is None:
+            RoboCJKIconPath = os.path.join(rdir, "resources/RoboCJKIcon.xml")
+            with open(RoboCJKIconPath, "r") as file:
+                    cls._roboCJK = file.read()
+        return cls._roboCJK

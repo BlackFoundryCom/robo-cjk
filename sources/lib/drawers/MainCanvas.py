@@ -19,11 +19,14 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from mojo.drawingTools import *
 from mojo.roboFont import *
 from drawers.DesignFrameDrawer import DesignFrameDrawer
+from drawers.ReferenceViewerDrawer import ReferenceViewerDraw
 from mojo.UI import OpenGlyphWindow
 from mojo.events import extractNSEvent
 from ufoLib.glifLib import readGlyphFromString
 from drawers.DeepComponentDrawer import DeepComponentDrawer
+from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
 from Helpers import deepolation
+import Global
 import os
 
 cwd = os.getcwd()
@@ -31,29 +34,54 @@ rdir = os.path.abspath(os.path.join(cwd, os.pardir))
 
 RoboCJKIconPath = os.path.join(rdir, "resources/RoboCJKIcon.xml")
 
-class CurrentGlyphCanvas():
+eps = 1e-10
 
-    def __init__(self, interface, glyphsetGroup):
-        self.gl = glyphsetGroup
+class MainCanvas():
+
+    scale = .32
+    translateX = 330
+    translateY = 420
+
+    def __init__(self, interface):
         self.ui = interface
-        self.scale = .22
+        
         self.canvasWidth = 386
-        self.translateX = 0
-        self.translateY = 0
+        
         self.preview = 0
 
     def mouseDown(self, info):
-        if info.clickCount() == 2:
+        if info.clickCount() == 2 and self.ui.glyph is not None:
             OpenGlyphWindow(self.ui.glyph)
 
     def update(self):
-        self.gl.canvas.update()
+        self.ui.w.mainCanvas.update()
 
     def mouseDragged(self, info):
-        deltaX = info.deltaX()/self.scale
-        deltaY = info.deltaY()/self.scale
-        self.translateX += deltaX
-        self.translateY -= deltaY
+        command = extractNSEvent(info)['commandDown']
+        deltaX = info.deltaX()/(self.scale+eps)
+        deltaY = info.deltaY()/(self.scale+eps)
+        if command:
+            TesterDeepComponent.translateX += deltaX
+            TesterDeepComponent.translateY -= deltaY
+        else:
+            self.translateX += deltaX
+            self.translateY -= deltaY
+        self.update()
+
+    def magnifyWithEvent(self, info):
+        x, y = info.locationInWindow()
+        scale = self.scale
+        oldX, oldY = (self.translateX + x)*self.scale , (self.translateY + y)*self.scale
+        delta = info.deltaZ()
+        sensibility = .002
+        scale += (delta / (abs(delta)+eps) * sensibility) / (self.scale + eps)
+        minScale = .009
+        if scale > minScale:
+            self.scale = scale
+
+        self.translateX -=  (((self.translateX + x)*self.scale - oldX)/2)/self.scale
+        self.translateY -=  (((self.translateY + y)*self.scale - oldY)/2)/self.scale
+
         self.update()
 
     def scrollWheel(self, info):
@@ -62,16 +90,29 @@ class CurrentGlyphCanvas():
         scale = self.scale
         delta = info.deltaY()
         sensibility = .009
-        scale += (delta / abs(delta) * sensibility) / self.scale
+        scale += (delta / (abs(delta)+eps) * sensibility) / (self.scale + eps)
         minScale = .005
         if scale > minScale:
             self.scale = scale
         self.update()
 
     def keyDown(self, info):
-        if info.characters() == " ":
+        char = info.characters()
+        command = extractNSEvent(info)['commandDown']
+
+        if char == " ":
             self.preview = 1
-            self.update()
+            
+        elif char == "+" and command:
+            self.scale += .05
+
+        elif char == "-" and command:
+            scale = self.scale
+            scale -= .05
+            if scale > .05:
+                self.scale = scale
+
+        self.update()
 
     def keyUp(self, info):
         self.preview = 0
@@ -85,8 +126,7 @@ class CurrentGlyphCanvas():
             translate(((self.canvasWidth/self.scale)-1000)*.5, 250)
             translate(self.translateX, self.translateY)
             if g is None: 
-                with open(RoboCJKIconPath, "r") as file:
-                    iconText = file.read()
+                iconText = Global.roboCJK_Icon.get()
                 icon = RGlyph()
                 pen = icon.getPointPen()
                 readGlyphFromString(iconText, icon, pen)
@@ -94,8 +134,7 @@ class CurrentGlyphCanvas():
             else:
                 if not len(g) and not "deepComponentsGlyph" in g.lib and g.unicode and not self.preview:
                     fill(0, 0, 0, .1)
-                    rect(-1000, -1000, 10000, 10000)
-                    # fill(.5, 0, .3, .5)
+                    rect(-10000, -10000, 20000, 20000)
                     fill(0, 0, .8, .2)
                     translate(0, -150)
                     fontSize(1000)
@@ -120,11 +159,22 @@ class CurrentGlyphCanvas():
                             translate_secondLine_Y = self.ui.translate_secondLine_Y,
                             scale = self.scale
                             )
+                    if self.ui.OnOff_referenceViewer and not self.preview:
+                        if self.ui.glyph.name.startswith("uni"):
+                            self.ui.txt = chr(int(self.ui.glyph.name[3:7],16))
+                        elif self.ui.glyph.unicode: 
+                            self.ui.txt = chr(self.ui.glyph.unicode)
+                        else:
+                            self.ui.txt=""
+                        ReferenceViewerDraw(self.ui, self.ui.txt).draw()
+
                     f = self.ui.font2Storage[self.ui.font]
                     fill(.2, 0, 1, .5)
                     if self.preview: 
                         fill(0, 0, 0, 1)
                     DeepComponentDrawer(self.ui, g, f)
+
+                    TesterDeepComponent(self.ui, self.ui.w.deepComponentGroup.creator.storageFont_Glyphset)
             restore()
         except Exception as e:
             print(e)

@@ -28,7 +28,7 @@ class LayersCanvas():
     def __init__(self, interface, glyphLayerGroup):
         self.ui = interface
         self.gl = glyphLayerGroup
-        self.scale = .12
+        self.scale = .08
         self.canvasHeight = 290
         self.canvasWidth = 395
         self.boxHeight = 1250
@@ -65,13 +65,13 @@ class LayersCanvas():
         self.update()
         
     def update(self):
-        self.gl.layersCanvas.update()
+        self.gl.top.layersCanvas.update()
         
     def draw(self):
         self.glyphLocation_in_Window = {}
         try:            
-            self.ui.glyph = self.gl.storageGlyph
-            canvasHeight = (self.canvasHeight / self.scale - self.boxHeight) + self.scroll            
+            self.gl.storageGlyph
+            canvasHeight = 0#(self.canvasHeight / self.scale - self.boxHeight) + self.scroll            
             scale(self.scale, self.scale)
             translate(0, canvasHeight)            
             columnWidth = self.boxWidth
@@ -102,15 +102,15 @@ class LayersCanvas():
                 stroke(None)                
                 if g == self.gl.StorageGlyphCurrentLayer:
                     fill(.9,0,.3,1)                
-                font('Menlo-Regular', fontSize=int(90))                
+                font('Menlo-Regular', fontSize=int(110))                
                 text(str(layerName), (20, self.boxHeight-135))
                 restore()                
                 x, y, w, h = columnWidth-self.boxWidth, lineHeight, self.boxWidth, self.boxHeight
                 self.glyphLocation_in_Window[(x, y, w, h)] = g                
                 #### TRANSLATE ####
                 if (columnWidth + self.boxWidth) * self.scale > self.canvasWidth:                    
-                    lineHeight -= self.boxHeight
-                    translate(-columnWidth + self.boxWidth, -self.boxHeight)                        
+                    lineHeight += self.boxHeight
+                    translate(-columnWidth + self.boxWidth, self.boxHeight)                        
                     columnWidth = 0
                 else:                    
                     translate(self.boxWidth, 0)                

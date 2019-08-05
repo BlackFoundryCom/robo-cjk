@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build_main": "node documentation/index.js diagram.txt",
-    "build_deepcompo": "node documentation/index.js deepcompo.txt"
+    "build_deepcompo": "node documentation/index.js deepcompo.txt",
+    "build_miniFonts": "node documentation/index.js miniFonts.txt"
   },
   "repository": {
     "type": "git",

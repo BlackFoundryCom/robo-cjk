@@ -29,17 +29,17 @@ class ReferenceViewer(Group):
         super(ReferenceViewer, self).__init__(posSize)
         self.ui = interface
 
-        self.OnOff_referenceViewer = 1
+        self.ui.OnOff_referenceViewer = 1
         self.OnOff_referenceViewer_checkBox = CheckBox((10,5,-10,20),
                 'On/Off',
-                value = self.OnOff_referenceViewer,
+                value = self.ui.OnOff_referenceViewer,
                 sizeStyle = "small",
                 callback = self._OnOff_referenceViewer_callback)
 
-        self.drawPreview_referenceViewer = 1
+        self.ui.drawPreview_referenceViewer = 1
         self.drawPreview_referenceViewer_checkBox = CheckBox((10,25,-10,20),
                 'Draw Preview',
-                value = self.drawPreview_referenceViewer,
+                value = self.ui.drawPreview_referenceViewer,
                 sizeStyle = "small",
                 callback = self._drawPreview_referenceViewer_callback)
 
@@ -47,11 +47,11 @@ class ReferenceViewer(Group):
         self.observer()
 
     def _OnOff_referenceViewer_callback(self, sender):
-        self.OnOff_referenceViewer = sender.get()
+        self.ui.OnOff_referenceViewer = sender.get()
         self.ui.updateViews()
 
     def _drawPreview_referenceViewer_callback(self, sender):
-        self.drawPreview_referenceViewer = sender.get()
+        self.ui.drawPreview_referenceViewer = sender.get()
         self.ui.updateViews()
 
     def windowWillClose(self, sender):
@@ -70,13 +70,13 @@ class ReferenceViewer(Group):
     def draw(self, info):
         self.glyph = self.ui.glyph
         if self.glyph is None: return
-        if not self.OnOff_referenceViewer: return
-        if info['notificationName'] == "drawPreview" and not self.drawPreview_referenceViewer: return
+        if not self.ui.OnOff_referenceViewer: return
+        if info['notificationName'] == "drawPreview" and not self.ui.drawPreview_referenceViewer: return
 
         if self.glyph.name.startswith("uni"):
-            txt = chr(int(self.glyph.name[3:7],16))
+            self.ui.txt = chr(int(self.glyph.name[3:7],16))
         elif self.glyph.unicode: 
-            txt = chr(self.glyph.unicode)
+            self.ui.txt = chr(self.glyph.unicode)
         else:
-            txt=""
-        ReferenceViewerDraw(self.ui, txt)
+            self.ui.txt=""
+        ReferenceViewerDraw(self.ui, self.ui.txt).draw()
