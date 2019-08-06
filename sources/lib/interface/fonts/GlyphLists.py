@@ -73,6 +73,7 @@ class GlyphLists(Group):
 
     def set_glyphset_List(self):
         if self.ui.font in self.ui.glyphsSetDict:
+            self.ui.glyphset = self.ui.font.lib['public.glyphOrder']
             glyphset = self.ui.glyphsSetDict[self.ui.font]
             self.glyphset_List.set(glyphset)
 

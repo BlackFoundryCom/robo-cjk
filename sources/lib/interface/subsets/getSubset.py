@@ -70,10 +70,10 @@ class GetSubset_Sheet():
             callback = self._getSubset_Button_callback,
             sizeStyle = "small")
 
-        deepCompoEditorData_path = "/Users/gaetanbaehr/Documents/BlackFoundry/TYPE/OTHER/git/TestRoboCJK2/settings/TEMP_deepComponentAxisCompo2charsAGB1_FULL_Edit.json"
-        self.deepCompoEditorData = json.load(open(deepCompoEditorData_path, "r"))
+        # deepCompoEditorData_path = "/Users/gaetanbaehr/Documents/BlackFoundry/TYPE/OTHER/git/TestRoboCJK2/settings/TEMP_deepComponentAxisCompo2charsAGB1_FULL_Edit.json"
+        # self.deepCompoEditorData = json.load(open(deepCompoEditorData_path, "r"))
         
-        self.selectedSubsetOption = self.deepCompoEditorData
+        # self.selectedSubsetOption = self.deepCompoEditorData
 
         Helpers.setDarkMode(self.w, self.ui.darkMode)
 
@@ -115,9 +115,10 @@ class GetSubset_Sheet():
             message("Warning there is no chosen glyph")
             return
 
-        GetSubset(self.ui, self.selectedGlyphName, self.selectedSubsetOption, self)
-        self.ui.collapse = 1
-        self.ui.getSubset_UI()
+        if self.ui.designStep == 1:
+            GetSubset(self.ui, self.selectedGlyphName, self.ui.deepComponentExtremsData, self)
+            self.ui.collapse = 1
+            self.ui.getSubset_UI()
 
 class GetSubset():
 
@@ -216,8 +217,21 @@ class GetSubset():
             ########################################
 
             for name in tempStorageGlyphSet:
+                glyph = storageFont[name]
+
                 storageTempFont.newGlyph(name)
-                storageTempFont[name] = storageFont[name]
+                storageTempFont[name] = glyph
+
+                for layer in glyph.layers:
+                    if layer.layerName not in [layer.name for layer in storageTempFont.layers]:
+                        storageTempFont.newLayer(layer.layerName)
+                        storageTempFont.getLayer(layer.layerName).insertGlyph(layer)
+
+                if "deepComponentsGlyph" in storageFont.lib:
+                    if "deepComponentsGlyph" not in storageTempFont.lib:
+                        storageTempFont.lib['deepComponentsGlyph'] = {}
+                    for k, v in storageFont.lib['deepComponentsGlyph'].items():
+                        storageTempFont.lib['deepComponentsGlyph'][k] = v
 
             storageTempFont.glyphOrder = tempStorageGlyphSet
 
@@ -252,7 +266,11 @@ class GetSubset():
         stop = time.time()
 
         self.c.w.close()
+
         self.ui._setUI()
+
+        self.ui.glyph = None
+        self.ui.updateViews()
 
         
         # self.ui.w.fontsGroup.fonts_list.setSelection([0])

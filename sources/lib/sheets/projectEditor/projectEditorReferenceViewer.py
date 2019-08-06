@@ -30,6 +30,7 @@ from drawers.ReferenceViewerDrawer import ReferenceViewerDraw
 
 from imp import reload
 import Global
+import Helpers
 reload(Global)
 
 class ReferenceViewer(Group):
@@ -39,43 +40,43 @@ class ReferenceViewer(Group):
         self.ui = interface
         self.s = sheet
 
-        self.FontList_comboBox = ComboBox((10, 10, 130, 18),
+        self.FontList_comboBox = ComboBox((10, 0, 130, 18),
                 Global.fontsList.get(),
                 sizeStyle='small')
         self.FontList_comboBox.set(Global.fontsList.get()[0])
 
-        self.addReferenceFont_button = Button((150, 9, 70, 20), 
+        self.addReferenceFont_button = Button((150, 0, 70, 20), 
                 "Add", 
                 sizeStyle="small",
                 callback = self._addReferenceFont_button_callback)
 
-        self.removeReference_button = Button((225,9,70,20),
+        self.removeReference_button = Button((225,0,70,20),
                 "Remove",
                 sizeStyle="small",
                 callback = self._removeReference_button_callback)
 
         self.s.reference_list_selection = []
-        self.reference_list = List((10,35,285,125),
+        self.reference_list = List((10,25,285,125),
                 self.s.referenceViewerList,
                 columnDescriptions = [{"title": "Font"}],
                 selectionCallback = self._reference_list_selectionCallback,
                 drawFocusRing = False)
 
 
-        self.settings = Group((10,170,295,-0))
+        self.settings = Group((10,160,295,-0))
         self.settings.show(0)
 
-        y = 3
+        y = 0
 
         self.settings.size_title = TextBox((0,y,100,20),
                 "Size (FU)", 
                 sizeStyle = "small")
-        self.settings.size_editText = EditText((-60,y-3,-10,20),
+        self.settings.size_editText = EditText((-60,y,-10,20),
                 "", 
                 sizeStyle = "small",
                 callback = self._size_editText_callback)
 
-        self.settings.size_slider = Slider((90,y-3,-65,20),
+        self.settings.size_slider = Slider((90,y,-65,20),
                 minValue = 0,
                 maxValue = 1000,
                 value = 250,
@@ -90,8 +91,16 @@ class ReferenceViewer(Group):
                 callback=self._color_editText_callback, 
                 color=NSColor.grayColor())
 
-        self.canvas = CanvasGroup((-295,10,-10,-10), 
+        y+=30
+        self.settings.message = Helpers.SmartTextBox((0, y, -10, 50),
+                "To move the selected font in the canvas, press command and drag",
+                blue = 9,
+                green = .7,
+                sizeStyle = 12)
+
+        self.canvas = CanvasGroup((-295,0,-10,-10), 
                 delegate=ProjectCanvas(self.s, "ReferenceViewer", self))
+
 
         self.s.w.bind('close', self.windowWillClose)
         self.observer()
@@ -182,7 +191,7 @@ class ReferenceViewer(Group):
         elif self.s.glyph.unicode: 
             txt = chr(self.s.glyph.unicode)
         else:
-            txt=""
+            txt="a"
         ReferenceViewerDraw(self.s, txt)
 
     def windowWillClose(self, sender):

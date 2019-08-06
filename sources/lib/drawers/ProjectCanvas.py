@@ -31,8 +31,8 @@ class ProjectCanvas():
         self.s = group
         self.name = canvasName
         self.scale = .2
-        self.translateX = 0
-        self.translateY = 0
+        self.translateX = 215
+        self.translateY = 505
 
         canvasWidth = 285
         canvasHeight = 270
@@ -86,27 +86,36 @@ class ProjectCanvas():
 
             if self.name == "ReferenceViewer":
                 save()
+                translate(150,550)
+                save()
                 stroke(0)
                 fill(None)
                 w, h = self.ui.EM_Dimension_X, self.ui.EM_Dimension_Y
-                translateY = -12 * h / 100
-                translate(0,translateY)
-                rect(0,0,w, h)
+                # translateY = 430
+                
+                #673.333333333333 933.3333333333327
+                # print(self.translateX,self.translateY)
+                DesignFrameDrawer(self.ui).draw(glyph = self.ui.glyph, scale = self.scale)
+                # rect(0,0,w, h)
                 restore()
 
-                txt = "a"
                 if self.ui.glyph:
                     if self.ui.glyph.name.startswith("uni"):
                         txt = chr(int(self.ui.glyph.name[3:7],16))
                     elif g.unicode: 
                         txt = chr(self.ui.glyph.unicode)
-                ReferenceViewerDraw(self.ui, txt)
+                    else:
+                        txt = "a"
+                else:
+                    txt = "a"
+                
+                ReferenceViewerDraw(self.ui, txt).draw()
+                restore()
 
             else:
                 fill(0)
                 if self.ui.glyph:
                     drawGlyph(self.ui.glyph)
-                
                 DesignFrameDrawer(self.ui).draw(glyph = self.ui.glyph, scale = self.scale)
 
         except Exception as e:

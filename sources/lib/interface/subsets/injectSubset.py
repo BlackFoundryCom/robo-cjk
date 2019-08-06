@@ -17,6 +17,21 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from vanilla import *
+from vanilla.dialogs import message
+from mojo.glyphPreview import GlyphPreview
+from mojo.roboFont import *
+from mojo.UI import AccordionView
+from AppKit import NSColor
+import shutil
+from imp import reload
+
+import os, json, subprocess, datetime, Helpers, getpass, time
+
+reload(Helpers)
+from Helpers import makepath, GitHelper, unique, deepolation , normalizeUnicode
+
+
 
 class InjectBack():
 
@@ -63,8 +78,8 @@ class InjectBack():
             storageFontPath = self.ui.projectPath + "/Storage/%s.ufo"%storageFontName
             storageFont = OpenFont(storageFontPath, showUI = False)
 
-            for glyph in tempFont:
-                font[glyph.name] = glyph
+            # for glyph in tempFont:
+            #     font[glyph.name] = glyph
 
             for glyph in self.ui.font2Storage[tempFont]:
                 storageFont.newGlyph(glyph.name)
@@ -85,6 +100,8 @@ class InjectBack():
             fonts[fontName] = font
             font2Storage[font] = storageFont
 
+            font.update()
+            storageFont.update()
             font.save()
             storageFont.save()
 
@@ -100,11 +117,15 @@ class InjectBack():
         git.push()
 
         self.ui._setUI()
-        self.ui.w.fontsGroup.fonts_list.setSelection([0])
-        self.ui.w.fontsGroup.injectBack.show(False)
-        self.ui.w.fontsGroup.getMiniFont.show(True)
+        # self.ui.w.fontsGroup.fonts_list.setSelection([0])
+        # self.ui.w.fontsGroup.injectBack.show(False)
+        # self.ui.w.fontsGroup.getMiniFont.show(True)
 
         shutil.rmtree(self.ui.projectPath+'/Temp')
 
         del self.WIP_DCEditor[stamp]
         self.writeJsonFile("WIP_DCEditor")
+
+        self.ui.glyph = None
+        self.ui.updateViews()
+

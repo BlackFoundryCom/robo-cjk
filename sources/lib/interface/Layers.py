@@ -65,7 +65,7 @@
 #         if not sel: return
 
 #         self.selectedLayerName = sender.get()[sel[0]]
-#         self.ui.w.deepComponentsEditorGroup.GlyphLayers.layersCanvas.update()
+#         self.ui.w.deepComponentsEditorGroup.DeepComponentsCreator.layersCanvas.update()
 
 #     def _newLayer_Button_callback(self, sender):
 #         i=0
@@ -83,8 +83,8 @@
 #         self.layers_list.set(self.ui.layerList)
 
 #     def _assignLayerToGlyph_Button_callback(self, sender):
-#         storageGlyphName = self.ui.w.deepComponentsEditorGroup.GlyphLayers.storageGlyphName
-#         StorageGlyphCurrentLayer = self.ui.w.deepComponentsEditorGroup.GlyphLayers.StorageGlyphCurrentLayer
+#         storageGlyphName = self.ui.w.deepComponentsEditorGroup.DeepComponentsCreator.storageGlyphName
+#         StorageGlyphCurrentLayer = self.ui.w.deepComponentsEditorGroup.DeepComponentsCreator.StorageGlyphCurrentLayer
 
 #         if storageGlyphName is None:
 #             message("Warning there is no selected glyph")
@@ -108,6 +108,6 @@
 #             storageFont[storageGlyphName].lib["deepComponentsLayer"].append(self.selectedLayerName)
 #         storageFont[storageGlyphName].update()
 
-#         self.ui.w.deepComponentsEditorGroup.GlyphLayers.layersCanvas.update()  
+#         self.ui.w.deepComponentsEditorGroup.DeepComponentsCreator.layersCanvas.update()  
 
-#         self.ui.w.deepComponentsEditorGroup.GlyphLayers.setSliderList()      
+#         self.ui.w.deepComponentsEditorGroup.DeepComponentsCreator.setSliderList()      

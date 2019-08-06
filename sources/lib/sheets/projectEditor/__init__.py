@@ -37,6 +37,8 @@ from drawers.ProjectCanvas import ProjectCanvas
 from drawers.ReferenceViewerDrawer import ReferenceViewerDraw
 from drawers.DesignFrameDrawer import DesignFrameDrawer
 
+from sheets.projectEditor.projectEditorMasters import Masters
+from sheets.projectEditor.projectEditorDatas import Datas
 from sheets.projectEditor.projectEditorDesignFrame import DesignFrame
 from sheets.projectEditor.projectEditorReferenceViewer import ReferenceViewer
 
@@ -63,11 +65,15 @@ class ProjectEditor():
         self.referenceViewerList = []
         self.calendar = []
         self.glyphCompositionData = []
+        self.deepComponentExtremsData = []
+
+        self.designStep = 0
+        self.fontsInfos = {}
 
         Global.fontsList.reload()
 
         self.ui = interface
-        self.w = Sheet((600,550), self.ui.w)
+        self.w = Sheet((600,500), self.ui.w)
 
         UpdateCurrentGlyphView()
 
@@ -84,57 +90,27 @@ class ProjectEditor():
 
         self.charactersSets_Dict, self.characterSet_list = Global.CharactersSets.get()
 
-        checkBox = CheckBoxListCell()
-        self.w.characterSet_title = TextBox((10, 50, 285, 15), 
-                "Characters Sets", 
-                sizeStyle = "small")
-        self.w.characterSet_list = List((10, 70, 285, 100), 
-                self.characterSet_list, 
-                columnDescriptions = [{"title": "Get", "width":23, "cell": checkBox}, 
-                                    {"title": "CharactersSets", "width":210}, 
-                                    {"title": "Glyphs", "width":60}],
-                editCallback = self._characterSet_list_editCallback,
-                drawFocusRing = False)
 
-        self.w.loadGlyphsCompositionData_button = Button((10,175,285,20),
-                "Load Glyph Composition Data",
-                sizeStyle="small",
-                callback = self._loadGlyphsCompositionData_button_callback)
-
-        self.w.masters_title = TextBox((305, 50, -10, 15), 
-                "Masters", 
-                sizeStyle = "small")
-        self.w.masters_list = List((305, 70, -10, 100), 
-                [],
-                columnDescriptions = [{"title": "FamilyName"}, {"title": "StyleName"}],
-                editCallback = self._master_list_editCallback,
-                drawFocusRing = False)
-        self.w.importMasters_button = Button((305, 175, 95, 20), 
-                "Import",
-                sizeStyle = "small",
-                callback = self._importMasters_button_callback)
-        self.w.createMasters_button = Button((400, 175, 95, 20), 
-                "Create",
-                sizeStyle = "small",
-                callback = self._createMasters_button_callback)
-        self.w.removeMasters_button = Button((495, 175, 95, 20), 
-                "Remove",
-                sizeStyle = "small",
-                callback = self._removeMasters_button_callback)
-
-        segmentedElements = ["Design Frame", "Reference Viewer", "Calendar"]
-        self.w.segmentedButton = SegmentedButton((10,210,-10,20), 
+        segmentedElements = ["Masters", "Datas", "Design Frame", "Reference Viewer", "Calendar"]
+        self.w.segmentedButton = SegmentedButton((10,45,-10,20), 
                 [dict(title=e, width = 576/len(segmentedElements)) for e in segmentedElements],
                 callback = self._segmentedButton_callback)
+        self.w.segmentedButton.set(0)
 
         self.glyph = CurrentGlyph()
         # Design Frame Group
-        self.w.df = DesignFrame((0,230,-0,-30), self.ui, self)
+        self.w.m = Masters((0,80,-0,-40), self.ui, self)
+        # Design Frame Group
+        self.w.d = Datas((0,80,-0,-40), self.ui, self)
+        # Design Frame Group
+        self.w.df = DesignFrame((0,80,-0,-40), self.ui, self)
         # Reference Viewer Group
-        self.w.rv = ReferenceViewer((0,230,-0,-30), self.ui, self)
+        self.w.rv = ReferenceViewer((0,80,-0,-40), self.ui, self)
         # Calendar Group
-        self.w.c = Group((0,230,-0,-30))
+        self.w.c = Group((0,80,-0,-30))
 
+        self.w.m.show(1)
+        self.w.d.show(0)
         self.w.df.show(0)
         self.w.rv.show(0)
         self.w.c.show(0)
@@ -184,77 +160,42 @@ class ProjectEditor():
         self.w.df.horizontalLine_slider.set(self.horizontalLine)
         self.w.df.verticalLine_slider.set(self.verticalLine)
         self.w.df.customsFrames_list.set(self.customsFrames)
+        self.w.d.stepOption_radioGroup.set(self.designStep)
         self.w.rv.reference_list.set(self.referenceViewerList)
-
-    def _characterSet_list_editCallback(self, sender):
-        # Edit selected characters sets
-        self.selectedCharactersSets = [elem["CharactersSets"] for elem in sender.get() if elem["Get"]]
-
-    def _loadGlyphsCompositionData_button_callback(self, sender):
-        getFile(messageText=u"Load Glyph Composition Data",
-                allowsMultipleSelection=False,
-                fileTypes=["json"],
-                parentWindow=self.w,
-                resultCallback=self._loadGlyphsCompositionData_callback)
-    def _loadGlyphsCompositionData_callback(self, path):
-        path = path[0]
-        with open(path, "r") as file:
-            self.glyphCompositionData = json.load(file)
         
     def _projectName_editText_callback(self, sender):
         # Edit project Name
         self.projectName = sender.get()
 
-    def _master_list_editCallback(self, sender):
-        if not sender.getSelection(): return
-        # Edit masters List
-        self.masterslist = sender.get()
-
-    def _importMasters_button_callback(self, sender):
-        # Import UFO(s) file
-        getFile(messageText=u"Add new UFO",
-                allowsMultipleSelection=True,
-                fileTypes=["ufo"],
-                parentWindow=self.w,
-                resultCallback=self._importMasters_callback)
-
-    def _importMasters_callback(self, paths):
-        # Open the UFO(s) and build the masters list
-        self.existingMastersPaths.extend(paths)
-        for path in paths:
-            # Get familyName and styleName from file name
-            familyName, styleName = path.split("/")[-1][:-4].split("-")
-            # Add item to the master list
-            if {"FamilyName": familyName, "StyleName": styleName} not in self.masterslist:
-                self.masterslist.append({"FamilyName": familyName, "StyleName": styleName}) 
-            # Add the list to UI 
-            self.w.masters_list.set(self.masterslist)
-
-    def _createMasters_button_callback(self, sender):
-        # Add item to the master list
-        self.masterslist.append({"FamilyName": self.projectName, "StyleName": "Regular"}) 
-        # Add the list to UI 
-        self.w.masters_list.set(self.masterslist)
-
-    def _removeMasters_button_callback(self, sender):
-        # Get the masters list selection
-        sel = self.w.masters_list.getSelection()
-        if not sel: return
-        # Delete the selection from the masters list
-        self.masterslist = [e for i, e in enumerate(self.masterslist) if i not in sel]
-        self.w.masters_list.set(self.masterslist)
-
     def _segmentedButton_callback(self, sender):
         sel = sender.get()
         if not sel:
-            self.w.df.show(1)
+            self.w.m.show(1)
+            self.w.d.show(0)
+            self.w.df.show(0)
             self.w.rv.show(0)
             self.w.c.show(0)
         elif sel == 1:
+            self.w.m.show(0)
+            self.w.d.show(1)
+            self.w.df.show(0)
+            self.w.rv.show(0)
+            self.w.c.show(0)
+        elif sel == 2:
+            self.w.m.show(0)
+            self.w.d.show(0)
+            self.w.df.show(1)
+            self.w.rv.show(0)
+            self.w.c.show(0)
+        elif sel == 3:
+            self.w.m.show(0)
+            self.w.d.show(0)
             self.w.df.show(0)
             self.w.rv.show(1)
             self.w.c.show(0)
         else:
+            self.w.m.show(0)
+            self.w.d.show(0)
             self.w.df.show(0)
             self.w.rv.show(0)
             self.w.c.show(1)
@@ -360,6 +301,8 @@ class ProjectEditor():
             "ReferenceViewer" : self.referenceViewerSettings,
             "Calendar" : self.calendar,
             "glyphCompositionData": self.glyphCompositionData,
+            "deepComponentExtremsData": self.deepComponentExtremsData,
+            "designStep": self.designStep,
             }
 
         # Write the project file

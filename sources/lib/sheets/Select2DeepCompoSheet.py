@@ -109,7 +109,9 @@ class Select2DeepCompoSheet():
         # f = self.storageFont
      
         if self.selectedLayer not in f.layers:
-            f.newLayer(self.selectedLayer)
+            for storageFont in self.ui.font2Storage.values(): 
+                storageFont.newLayer(self.selectedLayer)
+                storageFont.update()
         
         if self.selectedName not in self.existingName:
             f.newGlyph(self.selectedName)
@@ -158,9 +160,7 @@ class Select2DeepCompoSheet():
             self.ui.glyph.lib["deepComponentsGlyph"] = {}
 
         self.ui.glyph.lib["deepComponentsGlyph"][self.selectedName] = (ID, (0, 0))
-
-        # for c in self.selectedContours:
-        #     self.ui.glyph.removeContour(c)
+        self.ui.glyph.update()
 
         self.ui.glyph.performUndo()
 
@@ -170,6 +170,8 @@ class Select2DeepCompoSheet():
                                             'NewDeepComponents':{},
                                             }
         self.ui.getDeepComponents_FromCurrentGlyph()
+
+
         self.ui.updateViews()
 
         self.w.close()

@@ -42,10 +42,11 @@ from interface.fonts.GlyphLists import GlyphLists
 # from interface.GlyphData import GlyphData
 from interface.DeepComponentsInstantiator import DeepComponentsInstantiator
 # from interface.Layers import Layers
-from interface.GlyphLayers import GlyphLayers
+from interface.DeepComponentsCreator import DeepComponentsCreator
 from interface.accordionView.DesignFrame import DesignFrame
 
 from interface.subsets.getSubset import GetSubset_Sheet
+from interface.subsets.injectSubset import InjectBack
 
 from sheets.Select2DeepCompoSheet import Select2DeepCompoSheet
 # from interface.MainCanvas import MainCanvas
@@ -111,6 +112,8 @@ class RoboCJK():
     referenceViewerSettings = []
     calendar = []
     glyphCompositionData = []
+    deepComponentExtremsData = []
+    designStep = int()
     key2Glyph = {}
 
     def __init__(self):
@@ -235,7 +238,7 @@ class RoboCJK():
 
         self.w.deepComponentGroup.creator = Group((0, 0, -0, -0))
         self.w.deepComponentGroup.creator.show(0)
-        self.w.deepComponentGroup.creator.storageFont_Glyphset = GlyphLayers((0,0,-0,-0), self)
+        self.w.deepComponentGroup.creator.storageFont_Glyphset = DeepComponentsCreator((0,0,-0,-0), self)
 
         paneDescriptors = [
             dict(view=self.w.mainCanvas,
@@ -269,7 +272,7 @@ class RoboCJK():
 
         # self.w.deepComponentsEditorGroup.Layers = Layers((0,150,215,-0), self)
 
-        # self.w.deepComponentsEditorGroup.GlyphLayers = GlyphLayers((225,0,-0,-0), self)
+        # self.w.deepComponentsEditorGroup.DeepComponentsCreator = DeepComponentsCreator((225,0,-0,-0), self)
 
         ####### MINIFONT GROUP #######
         # self.minifonts = MiniFonts((0,0,-0,-0), self)
@@ -383,12 +386,16 @@ class RoboCJK():
         testInstall(self)
 
     def _subsetter_callback(self, sender):
-        self.getSubset_UI()
-        GetSubset_Sheet(self)
-
+        if "temp" in list(self.font2Storage.keys())[0].path:
+            InjectBack(self)
+            self.collapse = 0
+            self.getSubset_UI()
+        else:
+            GetSubset_Sheet(self)
+            self.getSubset_UI()
 
     def getSubset_UI(self):
-        
+
         paneDescriptors = self.w.splitView.__dict__['_identifierToPane']
 
         subPaneDescriptors = paneDescriptors['mainSplitView']['view'].__dict__['_identifierToPane']
@@ -422,8 +429,11 @@ class RoboCJK():
         MainCanvas.translateY = 420*abs(self.collapse-1)
         MainCanvas.translateX = 450 - 120*abs(self.collapse-1)
         MainCanvas.scale = .22 + .1*abs(self.collapse-1)
+        self.w.deepComponentGroup.creator.storageGlyph = None
         self.w.mainCanvas.update()
         self.w.deepComponentGroup.creator.show(self.collapse)
+
+        
 
         # self.collapse = abs(self.collapse-1)
 
@@ -439,7 +449,7 @@ class RoboCJK():
         if not sel:
             glyphset_ListSel = self.w.activeMasterGroup.glyphSet.glyphset_List.getSelection()
         else:
-            glyphset_ListSel = self.w.deepComponentsEditorGroup.GlyphLayers.glyphset_List.getSelection()
+            glyphset_ListSel = self.w.deepComponentsEditorGroup.DeepComponentsCreator.glyphset_List.getSelection()
 
         if glyphset_ListSel:
             name = self.glyphset[glyphset_ListSel[0]]
@@ -452,7 +462,7 @@ class RoboCJK():
             self.getDeepComponents_FromCurrentGlyph()
         else:
             self.glyph = None
-        #     glyphset_ListSel = self.w.deepComponentsEditorGroup.GlyphLayers.glyphset_List.getSelection()
+        #     glyphset_ListSel = self.w.deepComponentsEditorGroup.DeepComponentsCreator.glyphset_List.getSelection()
 
         self.setLayer_List()
 
@@ -465,7 +475,7 @@ class RoboCJK():
         self.w.deepComponentsEditorGroup.Layers.layers_list.set(self.layerList)
         self.w.deepComponentsEditorGroup.Layers.layers_list.setSelection([])
 
-        self.w.deepComponentsEditorGroup.GlyphLayers.set_glyphset_List()
+        self.w.deepComponentsEditorGroup.DeepComponentsCreator.set_glyphset_List()
 
     def observer(self, remove = False):
         if not remove:

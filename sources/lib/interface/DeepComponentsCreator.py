@@ -22,15 +22,15 @@ from mojo.UI import OpenGlyphWindow, CurrentGlyphWindow
 from mojo.canvas import Canvas
 from AppKit import NSAppearance, NSColor
 from drawers.LayersCanvas import LayersCanvas
-from drawers.LayersPreviewCanvas import LayersPreviewCanvas
+# from drawers.LayersPreviewCanvas import LayersPreviewCanvas
 from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
 from lib.cells.colorCell import RFColorCell
 from Helpers import normalizeUnicode
 
-class GlyphLayers(Group):
+class DeepComponentsCreator(Group):
 
     def __init__(self, posSize, interface):
-        super(GlyphLayers, self).__init__(posSize)
+        super(DeepComponentsCreator, self).__init__(posSize)
         self.ui = interface
 
         self.storageGlyph = None
@@ -102,7 +102,6 @@ class GlyphLayers(Group):
             drawFocusRing = False,
             allowsMultipleSelection = False)
 
-
         paneDescriptors = [
             dict(view=self.top, identifier="top"),
             dict(view=self.bottom, identifier="bottom"),
@@ -157,16 +156,6 @@ class GlyphLayers(Group):
     def _sliderList_editCallback(self, sender):
         self.slidersValuesList = sender.get()
         self.ui.w.mainCanvas.update()
-        # self.layersPreviewCanvas.update()
-
-
-
-
-
-
-
-
-
 
     def _layers_list_editCallback(self, sender):
         sel = sender.getSelection()
@@ -174,12 +163,14 @@ class GlyphLayers(Group):
         
         newName = sender.get()[sel[0]]
         oldName = self.layerList[sel[0]]
+        
+
+        for storageFont in self.ui.font2Storage.values():
+            for layer in storageFont.layers:
+                if layer.name == oldName:
+                    layer.name = newName
+
         storageFont = self.ui.font2Storage[self.ui.font]
-
-        for layer in storageFont.layers:
-            if layer.name == oldName:
-                layer.name = newName
-
         self.layerList = [layer.name for layer in storageFont.layers]
         self.selectedLayerName = newName
 
@@ -199,8 +190,9 @@ class GlyphLayers(Group):
                 break
             i+=1
 
-        storageFont = self.ui.font2Storage[self.ui.font]
-        storageFont.newLayer(name)
+        for storageFont in self.ui.font2Storage.values():
+            # storageFont = self.ui.font2Storage[self.ui.font]
+            storageFont.newLayer(name)
 
         self.layerList.append(name)
         self.bottom.layers_list.set(self.layerList)
@@ -225,30 +217,16 @@ class GlyphLayers(Group):
 
         layer.round()
         
-        
-        if self.selectedLayerName not in storageFont[storageGlyphName].lib["deepComponentsLayer"]:
-            storageFont.getLayer(self.selectedLayerName).insertGlyph(layer)
-            storageFont[storageGlyphName].lib["deepComponentsLayer"].append(self.selectedLayerName)
+        for stgFont in self.ui.font2Storage.values():
+            if self.selectedLayerName not in stgFont[storageGlyphName].lib["deepComponentsLayer"]:
+                stgFont.getLayer(self.selectedLayerName).insertGlyph(layer)
+                stgFont[storageGlyphName].lib["deepComponentsLayer"].append(self.selectedLayerName)
+
         storageFont[storageGlyphName].update()
 
         self.top.layersCanvas.update()  
 
         self.setSliderList()      
-
-        # self.layersPreviewCanvas = Canvas((350,-190,-0,-0), 
-        #     delegate=LayersPreviewCanvas(self.ui, self),
-        #     hasHorizontalScroller=False, 
-        #     hasVerticalScroller=False)
-
-
-
-
-
-
-
-
-
-
 
     def _jumpTo_callback(self, sender):
         string = sender.get()

@@ -31,19 +31,8 @@ class TesterDeepComponent():
     def __init__(self, interface, glyphLayerGroup):
         self.ui = interface
         self.gl = glyphLayerGroup
-        # self.translateX, self.translateY = 0,0
         self.scale = .15
         self.draw()
-        
-    # def mouseDragged(self, info):
-    #     deltaX = info.deltaX()/self.scale
-    #     deltaY = info.deltaY()/self.scale
-    #     self.translateX += deltaX
-    #     self.translateY -= deltaY
-    #     self.update()
-        
-    # def update(self):
-    #     self.gl.layersPreviewCanvas.update()
         
     def draw(self):
         try:
@@ -56,11 +45,8 @@ class TesterDeepComponent():
                 rect(0,0,1000,1000)
                 restore()
             else:
-                # scale(self.scale, self.scale)
-                # translate(0,200)
                 save()
                 translate(self.translateX, self.translateY)
-                # DesignFrameDrawer(self.ui).draw(glyph = newGlyph, scale = self.scale)
                 fill(1,0,0,.8)
                 drawGlyph(newGlyph)
                 restore()

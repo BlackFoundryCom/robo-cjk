@@ -32,71 +32,71 @@ class DesignFrame(Group):
         self.ui = interface
         self.s = sheet
 
-        y = 10
-        self.EM_Dimension_title = TextBox((10,y,200,20), 
+        y = 0
+        self.EM_Dimension_title = TextBox((10,y+3,200,20), 
                 "EM Dimension (FU)", 
                 sizeStyle = "small")
-        self.EM_DimensionX_title = TextBox((145,y,20,20), 
+        self.EM_DimensionX_title = TextBox((145,y+3,20,20), 
                 "X:", 
                 sizeStyle = "small")
-        self.EM_DimensionX_editText = EditText((160,y-3,45,20), 
+        self.EM_DimensionX_editText = EditText((160,y,45,20), 
                 self.s.EM_Dimension_X, 
                 callback = self.EM_DimensionX_editText_callback,
                 sizeStyle = "small")
-        self.EM_DimensionY_title = TextBox((235,y,20,20), 
+        self.EM_DimensionY_title = TextBox((235,y+3,20,20), 
                 "Y:", 
                 sizeStyle = "small")
-        self.EM_DimensionY_editText = EditText((250,y-3,45,20), 
+        self.EM_DimensionY_editText = EditText((250,y,45,20), 
                 self.s.EM_Dimension_Y,  
                 callback = self.EM_DimensionY_editText_callback,
                 sizeStyle = "small")
         y += 30
-        self.characterFace_title = TextBox((10,y,200,20), 
+        self.characterFace_title = TextBox((10,y+3,200,20), 
                 "Character Face (EM%)", 
                 sizeStyle = "small")
-        self.characterFacePercent_title = TextBox((208,y,30,20), 
+        self.characterFacePercent_title = TextBox((208,y+3,30,20), 
                 "%", 
                 sizeStyle = "small")
-        self.characterFace_editText = EditText((160,y-3,45,20), 
+        self.characterFace_editText = EditText((160,y,45,20), 
                 self.s.characterFace,
                 callback = self.characterFace_editText_callback,
                 sizeStyle = "small")
         y += 30
-        self.overshoot_title = TextBox((10,y,200,20), 
+        self.overshoot_title = TextBox((10,y+3,200,20), 
                 "Overshoot (FU)", 
                 sizeStyle = "small")
-        self.overshootOutside_title = TextBox((110,y,70,20), 
+        self.overshootOutside_title = TextBox((110,y+3,70,20), 
                 "Outside:", 
                 sizeStyle = "small")
-        self.overshootOutside_editText = EditText((160,y-3,45,20), 
+        self.overshootOutside_editText = EditText((160,y,45,20), 
                 self.s.overshootOutsideValue, 
                 callback = self.overshootOutside_editText_callback,
                 sizeStyle = "small")
-        self.overshootInside_title = TextBox((210,y,60,20), 
+        self.overshootInside_title = TextBox((210,y+3,60,20), 
                 "Inside:", 
                 sizeStyle = "small")
-        self.overshootInside_editText = EditText((250,y-3,45,20), 
+        self.overshootInside_editText = EditText((250,y,45,20), 
                 self.s.overshootInsideValue,  
                 callback = self.overshootInside_editText_callback,
                 sizeStyle = "small")
         y += 30
-        self.horizontalLine_title = TextBox((10,y,140,20), 
+        self.horizontalLine_title = TextBox((10,y+3,140,20), 
                 "Horizontal Line (EM%)", 
                 sizeStyle = "small")
-        self.horizontalLine_slider = Slider((160,y-3 ,135,20), 
+        self.horizontalLine_slider = Slider((160,y ,135,20), 
                 minValue = 0, maxValue = 50, value = 0, 
                 sizeStyle = "small",
                 callback = self._horizontalLine_slider_callback)
         y += 30
-        self.verticalLine_title = TextBox((10,y,140,20), 
+        self.verticalLine_title = TextBox((10,y+3,140,20), 
                 "Vertical Line (EM%)", 
                 sizeStyle = "small")
-        self.verticalLine_slider = Slider((160,y-3 ,135,20), 
+        self.verticalLine_slider = Slider((160,y ,135,20), 
                 minValue = 0, maxValue = 50, value = 0, 
                 sizeStyle = "small",
                 callback = self._verticalLine_slider_callback)
         y += 30
-        self.customsFrames_title = TextBox((10,y,200,20), 
+        self.customsFrames_title = TextBox((10,y+3,200,20), 
                 "Customs Frames (EM%):", 
                 sizeStyle = "small")
         y += 20
@@ -117,7 +117,7 @@ class DesignFrame(Group):
                 callback = self._removeCustomsFrames_button_callback,
                 sizeStyle="small")
         self.s.translateX,self.s.translateY = 0, 0
-        self.canvas = CanvasGroup((-295,10,-10,-10), 
+        self.canvas = CanvasGroup((-295,0,-10,-10), 
                 delegate=ProjectCanvas(self.s, "DesignFrame", self))
 
         self.s.w.bind('close', self.windowWillClose)

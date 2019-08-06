@@ -206,6 +206,10 @@ def readCurrentProject(self, project):
 
     #Glyph composition Data
     self.glyphCompositionData = project["glyphCompositionData"]
+    #Deep Component Extrems Data
+    self.deepComponentExtremsData = project["deepComponentExtremsData"]
+    #Deep Component Extrems Data
+    self.designStep = project["designStep"]
 
     key2Glyph = {}
     for glyphName, keys in self.glyphCompositionData.items():
