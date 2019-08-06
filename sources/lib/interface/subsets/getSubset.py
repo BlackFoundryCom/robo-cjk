@@ -162,7 +162,7 @@ class GetSubset():
 
         self.WIP_DCEditor = json.load(open(WIPPath, "r"))
 
-        if self.characterName in self.WIP_DCEditor:
+        if self.characterName in self.WIP_DCEditor.values():
             message("This glyph is lock, please choose another one")
             return
 
