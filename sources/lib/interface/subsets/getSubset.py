@@ -37,23 +37,15 @@ class GetSubset_Sheet():
         self.ui = interface
         self.w = Sheet((200, 250), self.ui.w)
 
-        self.w.deepComponents_textBox = TextBox((10, 10, -10, 20), 
-            "Deep Components", 
+        self.w.deepComponents_textBox = TextBox((10, 10, -10, 60), 
+            "Subset for Deep Components Creator.\nNeed a key in input", 
             sizeStyle = "regular", 
             alignment = "center")
-
-        
-        # self.w.radioGroup = RadioGroup((10, 40, -10, 20), 
-        #     ["Editor", "Instantiator"],
-        #     isVertical = False,
-        #     sizeStyle="small",
-        #     callback = self._radioGroup_callback)
 
         self.w.searchBox = SearchBox((10, 70, -10, 20),
             placeholder = "Char/Name",
             sizeStyle = "small",
             callback = self._searchBox_callback)
-        # self.w.searchBox.show(0)
 
         self.w.GlyphPreview = GlyphPreview((0, 105, -0, -30))
 
@@ -66,14 +58,9 @@ class GetSubset_Sheet():
             sizeStyle = "small")
 
         self.w.getSubset_Button = Button((50, -30, -10, -10), 
-            "Get Mini Font", 
+            "Get Subset", 
             callback = self._getSubset_Button_callback,
             sizeStyle = "small")
-
-        # deepCompoEditorData_path = "/Users/gaetanbaehr/Documents/BlackFoundry/TYPE/OTHER/git/TestRoboCJK2/settings/TEMP_deepComponentAxisCompo2charsAGB1_FULL_Edit.json"
-        # self.deepCompoEditorData = json.load(open(deepCompoEditorData_path, "r"))
-        
-        # self.selectedSubsetOption = self.deepCompoEditorData
 
         Helpers.setDarkMode(self.w, self.ui.darkMode)
 
@@ -82,16 +69,14 @@ class GetSubset_Sheet():
     def _closeButtonCallback(self, sender):
         self.w.close()
 
-    # def _radioGroup_callback(self, sender):
-    #     self.w.searchBox.show(1)
-    #     if not sender.get():
-    #         self.selectedSubsetOption = self.deepCompoEditorData
-    #     else:
-    #         self.selectedSubsetOption = self.ui.glyphCompositionData
-
     def _searchBox_callback(self, sender):
         string = sender.get()
         if not string: return
+
+        if not self.ui.font:
+            font = list(self.ui.font2Storage.keys())[0]
+        else: font = self.ui.font
+
         try:
             if string.startswith("uni"):
                 self.selectedGlyphName = string
@@ -99,7 +84,7 @@ class GetSubset_Sheet():
             elif len(string) == 1:
                 self.selectedGlyphName = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
 
-            self.selectedGlyph = self.ui.font[self.selectedGlyphName]
+            self.selectedGlyph = font[self.selectedGlyphName]
         except:
             self.selectedGlyph = None
             self.selectedGlyphName = None
@@ -107,18 +92,13 @@ class GetSubset_Sheet():
         self.w.GlyphPreview.setGlyph(self.selectedGlyph)
 
     def _getSubset_Button_callback(self, sender):
-        # if self.selectedSubsetOption is None:
-        #     message("Warning there is no seleted option")
-        #     return
-
         if self.selectedGlyphName is None:
             message("Warning there is no chosen glyph")
             return
 
         if self.ui.designStep == 1:
             GetSubset(self.ui, self.selectedGlyphName, self.ui.deepComponentExtremsData, self)
-            self.ui.collapse = 1
-            self.ui.getSubset_UI()
+            
 
 class GetSubset():
 
@@ -139,7 +119,10 @@ class GetSubset():
         myFile.close()
 
     def makeSubsets(self):
-        f = self.ui.font
+        if not self.ui.font:
+            f = list(self.ui.font2Storage.keys())[0]
+        else: f = self.ui.font
+
         if 'temp' in f.path:
             message("ERROR: you are tring to get mini font over a mini font")
             return
@@ -174,9 +157,6 @@ class GetSubset():
         self.Fonts_Link["font2storage"] = {}
         self.Fonts_Link["linkFontsName"] = {}
 
-        # print(self.characterName)
-        # print(self.database)
-        # print(self.database[chr(int(self.characterName[3:],16))])
         mini_glyphSet = ["uni"+normalizeUnicode(hex(ord(char))[2:].upper()) for variants in self.database[chr(int(self.characterName[3:],16))] for char in variants]        
 
         self.WIP_DCEditor[stamp] = mini_glyphSet
@@ -271,9 +251,8 @@ class GetSubset():
         self.ui._setUI()
 
         self.ui.glyph = None
-        self.ui.updateViews()
 
-        
-        # self.ui.w.fontsGroup.fonts_list.setSelection([0])
-        # self.ui.w.fontsGroup.injectBack.show(True)
-        # self.ui.w.fontsGroup.getSubset.show(False)
+        self.ui.collapse = 1
+        self.ui.getSubset_UI()
+
+        self.ui.updateViews()

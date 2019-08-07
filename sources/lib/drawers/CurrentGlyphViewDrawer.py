@@ -22,13 +22,21 @@ from drawers.DeepComponentDrawer import DeepComponentDrawer
 
 class CurrentGlyphViewDrawer():
 
-	def __init__(self, interface):
-		self.ui = interface
+    def __init__(self, interface):
+        self.ui = interface
 
-	def draw(self, info):
-		g = self.ui.glyph
-		f = self.ui.font2Storage[self.ui.font]
-		fill(.2, 0, 1, .5)
-		if info['notificationName'] == "drawPreview":
-			fill(0, 0, 0, 1)
-		DeepComponentDrawer(self.ui, g, f)
+    def draw(self, info):
+        g = self.ui.glyph
+        f = self.ui.font2Storage[self.ui.font]
+        fill(.2, 0, 1, .5)
+        if info['notificationName'] == "drawPreview":
+            fill(0, 0, 0, 1)
+        DeepComponentDrawer(self.ui, g, f)
+
+        save()
+        if self.ui.stackMasters:
+            fill(0, .3, 1, .3)
+            for f in self.ui.font2Storage:
+                if f[g.name] == g: continue
+                drawGlyph(f[g.name])
+        restore()

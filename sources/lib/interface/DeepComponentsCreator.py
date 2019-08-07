@@ -37,6 +37,10 @@ class DeepComponentsCreator(Group):
         self.storageGlyphName = ""
         self.StorageGlyphCurrentLayer = ""
 
+        self.title = TextBox((10, 5, -10, 20),
+            "Deep Component Creator",
+            alignment = "center")
+
         self.top = Group((0, 0, -0, -0))
 
         self.top.jumpTo = SearchBox((0,30,195,20),
@@ -107,7 +111,7 @@ class DeepComponentsCreator(Group):
             dict(view=self.bottom, identifier="bottom"),
         ]
 
-        self.mainSplitView = SplitView((0, 0, -0, -0), 
+        self.mainSplitView = SplitView((0, 20, -0, -0), 
             paneDescriptors,
             isVertical = False,
             dividerStyle="thin"

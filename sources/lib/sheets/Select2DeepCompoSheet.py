@@ -36,7 +36,11 @@ class Select2DeepCompoSheet():
         self.font = self.ui.font
         # self.storageFont = self.ui.font2Storage[self.font]
         # print(self.ui.glyph)
-        self.w.compositionGlyph_List = List((10, 10, -10, 180),
+        self.w.compositionGlyph_TextBox = TextBox((10, 7, -10, 20), 
+            "Glyph Composition", 
+            sizeStyle = "regular", 
+            alignment = "center")
+        self.w.compositionGlyph_List = List((10, 30, -10, 160),
             self.ui.compositionGlyph,
             columnDescriptions = [
                                 {"title": "Char", "width" : 30},
@@ -47,23 +51,31 @@ class Select2DeepCompoSheet():
 
         self.selectedName = ""
 
-        self.existingName = []#[value["Name"] for value in self.gd.variantsName]
+        self.variantsNames = []#[value["Name"] for value in self.gd.variantsName]
 
-        self.w.existingName_List = List((10, 200, 150, 150),
-            self.existingName,
-            selectionCallback = self._existingName_List_selectionCallback,
+        self.w.variantsNames_TextBox = TextBox((10, 197, 150, 20), 
+            "Variants", 
+            sizeStyle = "regular", 
+            alignment = "center")
+        self.w.variantsNames_List = List((10, 220, 150, 130),
+            self.variantsNames,
+            selectionCallback = self._variantsNames_List_selectionCallback,
             drawFocusRing=False,
             allowsMultipleSelection = False)
-        self.w.existingName_List.setSelection([])
+        self.w.variantsNames_List.setSelection([])
 
         self.w.newName_button = Button((10, 350, 150, 20), 
-            "new Version",
+            "New Variant",
             callback = self._newName_button_callback)
 
         self.selectedLayer = ""
         self.existingLayers = []
 
-        self.w.existingLayers_List = List((170, 200, 150, 150),
+        self.w.existingLayers_TextBox = TextBox((170, 197, 150, 20), 
+            "Layers", 
+            sizeStyle = "regular", 
+            alignment = "center")
+        self.w.existingLayers_List = List((170, 220, 150, 130),
             self.existingLayers,
             selectionCallback = self._existingLayers_List_selectionCallback,
             editCallback = self._existingLayers_List_editCallback,
@@ -72,12 +84,12 @@ class Select2DeepCompoSheet():
             allowsMultipleSelection = False)
 
         self.w.newLayerbutton = Button((170, 350, 150, 20), 
-            "new Layer",
+            "New Layer",
             callback = self._newLayer_button_callback)
         
         self.w.newLayerbutton.show(False)
 
-        self.w.glyphPreview = GlyphPreview((0, 190, -0, -30))
+        self.w.glyphPreview = GlyphPreview((0, -275, -0, -0))
 
         self.w.addButton = Button((110, -30, -10, -10), 
             "add", 
@@ -97,8 +109,8 @@ class Select2DeepCompoSheet():
             return
         self.compositionName = self.ui.compositionGlyph[sel[0]]['Name']
         # self.variantsName = [dict(Sel=name in self.ui.currentGlyph_DeepComponents['NewDeepComponents'], Name = name) for name in list(filter(lambda x: self.ui.selectedCompositionGlyphName["Name"] in x, list(self.storageFont.keys())))]
-        self.existingName = list(filter(lambda x: self.compositionName in x, self.ui.font2Storage[self.font].keys()))
-        self.w.existingName_List.set(self.existingName)
+        self.variantsNames = list(filter(lambda x: self.compositionName in x, self.ui.font2Storage[self.font].keys()))
+        self.w.variantsNames_List.set(self.variantsNames)
 
     def _addButton_callback(self, sender):
         if not self.selectedName:
@@ -113,7 +125,7 @@ class Select2DeepCompoSheet():
                 storageFont.newLayer(self.selectedLayer)
                 storageFont.update()
         
-        if self.selectedName not in self.existingName:
+        if self.selectedName not in self.variantsNames:
             f.newGlyph(self.selectedName)
 
         g = f[self.selectedName].getLayer(self.selectedLayer)
@@ -179,7 +191,7 @@ class Select2DeepCompoSheet():
     def _cancelButton_callback(self, sender):
         self.w.close()
 
-    def _existingName_List_selectionCallback(self, sender):
+    def _variantsNames_List_selectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: 
             self.selectedName = ""
@@ -207,7 +219,7 @@ class Select2DeepCompoSheet():
             self.w.existingLayers_List.setSelection([])
             self.w.existingLayers_List.set(self.existingLayers)
 
-            # self.setGlyphPreview()
+            self.setGlyphPreview()
         except:pass
 
     def _existingLayers_List_selectionCallback(self, sender):
@@ -219,33 +231,26 @@ class Select2DeepCompoSheet():
         self.setGlyphPreview()
 
     def setGlyphPreview(self):
-        # try:
         f = self.ui.font2Storage[self.ui.font]
-        # print(self.ui.font2Storage)
-        # print(self.ui.font)
-        # # f = self.storageFont
-        if self.selectedName and self.selectedLayer and self.selectedName in self.existingName and self.selectedLayer in self.existingLayers:
-            g = f[self.selectedName].getLayer(self.selectedLayer)
+        if f is None:
+            return
+        if self.selectedName and self.selectedLayer and self.selectedName in self.variantsNames and self.selectedLayer in self.existingLayers:
+            g = f[self.selectedName].getLayer(self.selectedLayer).copy()
         else:
             g = None
-            # for c in g:
-            #     print(c)
-        # self.w.glyphPreview.setGlyph(g)
-        # else:
-        #     self.w.GlyphPreview.setGlyph(None)
-        # except:pass
+        self.w.glyphPreview.setGlyph(g)
 
     def _newName_button_callback(self, sender):
         i = 0
         while True:
             index = "_%s"%str(i).zfill(2)
             name =  self.compositionName + index
-            if name not in self.existingName:
+            if name not in self.variantsNames:
                 break
             i += 1
 
-        self.w.existingName_List.append(name)
-        self.w.existingName_List.setSelection([len(self.w.existingName_List.get())-1])
+        self.w.variantsNames_List.append(name)
+        self.w.variantsNames_List.setSelection([len(self.w.variantsNames_List.get())-1])
 
     def _existingLayers_List_editCallback(self, sender):
         sel = sender.getSelection()

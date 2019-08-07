@@ -27,7 +27,7 @@ from AppKit import *
 
 import os, json, Helpers, Global
 
-from sheets.preferences import Preferences
+from sheets.settings import Settings
 from sheets.projectEditor import ProjectEditor
 
 import offTools.PowerRuler as PowerRuler
@@ -37,6 +37,8 @@ from offTools.smartSelector import SmartSelector
 
 # from interface.SmartComponents import SmartComponents
 from interface.accordionView.ReferenceViewer import ReferenceViewer
+from interface.accordionView.DisplayOptions import DisplayOptions
+
 from interface.fonts.Fonts import Fonts
 from interface.fonts.GlyphLists import GlyphLists
 # from interface.GlyphData import GlyphData
@@ -65,12 +67,13 @@ cwd = os.getcwd()
 rdir = os.path.abspath(os.path.join(cwd, os.pardir))
 
 ProjectEditorPDF = os.path.join(rdir, "resources/ProjectEditor.pdf")
-PreferencesPDF = os.path.join(rdir, "resources/Preferences.pdf")
+SettingsPDF = os.path.join(rdir, "resources/Settings.pdf")
 TextCenterPDF = os.path.join(rdir, "resources/TextCenter.pdf")
 MastersOverviewPDF = os.path.join(rdir, "resources/MastersOverview.pdf")
 SavePDF = os.path.join(rdir, "resources/Save.pdf")
 TestInstallPDF = os.path.join(rdir, "resources/TestInstall.pdf")
 SubsetterPDF = os.path.join(rdir, "resources/Subsetter.pdf")
+InjectBackPDF = os.path.join(rdir, "resources/InjectBack.pdf")
 
 
 """
@@ -118,7 +121,10 @@ class RoboCJK():
 
     def __init__(self):
         self.windowWidth, self.windowHeight = 1000,700
-        self.w = Window((self.windowWidth, self.windowHeight), "Robo CJK", minSize = (300,300), maxSize = (2500,2000))
+        self.w = Window((self.windowWidth, self.windowHeight), 
+            "Robo CJK", 
+            minSize = (300,300), 
+            maxSize = (2500,2000))
 
         self.font = CurrentFont()
         self.glyph = CurrentGlyph()
@@ -148,7 +154,11 @@ class RoboCJK():
         self.selectedCompositionGlyphName = ""
         self.selectedVariantName = ""
 
-        toolbarItems = [
+        self.stackMasters = 0
+        self.waterFall = 0
+        
+
+        self.toolbarItems = [
             {   
                 'itemIdentifier': "saveUFO(s)",
                 'label': 'Save UFO(s)',
@@ -192,29 +202,20 @@ class RoboCJK():
                 'imagePath': ProjectEditorPDF
             },
             {
-                'itemIdentifier': "preference",
-                'label': 'Preference',
-                'callback': self._preference_callback,
-                'imagePath': PreferencesPDF,
+                'itemIdentifier': "settings",
+                'label': 'Settings',
+                'callback': self._settings_callback,
+                'imagePath': SettingsPDF,
             },
         ]
-        self.w.addToolbar("RoboCJKToolbar", toolbarItems)
+        self.w.addToolbar("RoboCJKToolbar", self.toolbarItems)
 
         self.project_popUpButton_list = ["Load a project..."]
         self.w.projects_popUpButton = PopUpButton((10,10,-10,20),
                 self.project_popUpButton_list, 
                 callback = self._projects_popUpButton_callback)
 
-        # segmentedElements = ["Active Master", "Deep Components Editor"]
-        # self.w.main_segmentedButton = SegmentedButton((10,40,-180,20), 
-        #         [dict(title=e, width = (self.windowWidth-224)/len(segmentedElements)) for e in segmentedElements],
-        #         callback = self._main_segmentedButton_callback,
-        #         sizeStyle='regular')
-        # self.w.main_segmentedButton.set(0)
-
         self.getCompositionGlyph()
-
-        # self.w.CaGroup = Group(())
 
         self.w.activeMasterGroup = Group((10,70,-205,-20))
         self.w.deepComponentsEditorGroup = Group((10,70,-205,-20))
@@ -222,10 +223,8 @@ class RoboCJK():
 
         self.w.font_Group = Group((10,0,-0,-20))
 
-        ####### FONT GROUP #######
         self.w.font_Group.fonts = Fonts((0,0,-10,110), self)
 
-        ####### GLYPHSET #######
         self.w.font_Group.glyphLists = GlyphLists((0,130,-10,0), self)
 
         self.w.mainCanvas = Canvas((0,0,-0,-0), 
@@ -233,6 +232,7 @@ class RoboCJK():
             canvasSize=(5000, 5000),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
+
 
         self.w.deepComponentGroup = Group((0, 0, -0, -0))
 
@@ -258,40 +258,28 @@ class RoboCJK():
             dividerStyle="thin"
             )
 
-
         self.collapse = 1
 
+        self.displayOption = DisplayOptions((0,0,-0,-0), self)
 
-
-        ####### GLYPHSET #######
-        # self.w.activeMasterGroup.glyphData = GlyphData((0,180,215,-0), self)
-
-        # self.w.activeMasterGroup.DeepComponentsInstantiator = DeepComponentsInstantiator((225,-190,-0,-0), self)
-
-        # self.w.deepComponentsEditorGroup.fontsGroup = Fonts((0,0,215,170), self)
-
-        # self.w.deepComponentsEditorGroup.Layers = Layers((0,150,215,-0), self)
-
-        # self.w.deepComponentsEditorGroup.DeepComponentsCreator = DeepComponentsCreator((225,0,-0,-0), self)
-
-        ####### MINIFONT GROUP #######
-        # self.minifonts = MiniFonts((0,0,-0,-0), self)
-
-        ####### REFERENCE VIEWER #######
         self.referenceViewer = ReferenceViewer((0,0,-0,-0), self)
 
-        ###### DESIGN FRAMES ######
         self.designFrame = DesignFrame((0,0,-0,-0), self)
 
-        ###### ACCORDION VIEW ######
         self.accordionViewDescriptions = [
-                       dict(label="Reference Viewer", 
+                        dict(label="Display Options", 
+                            view=self.displayOption, 
+                            size=55, 
+                            collapsed=True, 
+                            canResize=0),
+
+                        dict(label="Reference Viewer", 
                             view=self.referenceViewer, 
                             size=55, 
                             collapsed=True, 
                             canResize=0),
 
-                       dict(label="Design Frame", 
+                        dict(label="Design Frame", 
                             view=self.designFrame, 
                             size=173, 
                             collapsed=False, 
@@ -305,7 +293,7 @@ class RoboCJK():
         paneDescriptors = [
             dict(view=self.w.font_Group,
                 identifier="fontGroup",
-                size = 215,
+                size = 160,
                 minSize = 90,
                 maxSize = 450,
                 canCollapse = False),
@@ -317,12 +305,11 @@ class RoboCJK():
 
             dict(view=self.w.accordionView,
                 identifier="accordion",
-                size = 200,
+                size = 125,
                 minSize = 30,
                 maxSize = 350,
                 canCollapse = False),
                         ]   
-
 
         self.w.splitView = SplitView((0, 40, -0, -0), 
             paneDescriptors,
@@ -360,7 +347,6 @@ class RoboCJK():
         self.darkMode = sender.get()
         Helpers.setDarkMode(self.w, self.darkMode)
 
-
     def _saveUFOs_callback(self, sender):
         for f1, f2 in self.font2Storage.items():
             f1.save() 
@@ -369,11 +355,9 @@ class RoboCJK():
     def _projectsSettings_callback(self, sender):
         ProjectEditor(self)
 
-    def _preference_callback(self, sender):
-        # self.getSubset_UI()
-        pass
-        # message("Work in Progress...")
-        # Preferences(self)
+    def _settings_callback(self, sender):
+        message("Work in Progress...")
+        Settings(self)
 
     def _textCenter_callback(self, sender):
         if not self.font: 
@@ -394,12 +378,14 @@ class RoboCJK():
             GetSubset_Sheet(self)
             self.getSubset_UI()
 
+
     def getSubset_UI(self):
 
         paneDescriptors = self.w.splitView.__dict__['_identifierToPane']
 
         subPaneDescriptors = paneDescriptors['mainSplitView']['view'].__dict__['_identifierToPane']
-        subPaneDescriptors["deepComponentGroup"]["size"] = 20 + 350*self.collapse
+        subPaneDescriptors["deepComponentGroup"]["size"] = 20 + 350 * self.collapse
+        subPaneDescriptors["deepComponentGroup"]["minSize"] = 20 + 250 * self.collapse
 
         subItems = ["mainCanvas", "deepComponentGroup"]
 
@@ -426,45 +412,26 @@ class RoboCJK():
             )  
         setattr(self.w, "splitView", splitView)
 
-        MainCanvas.translateY = 420*abs(self.collapse-1)
-        MainCanvas.translateX = 450 - 120*abs(self.collapse-1)
-        MainCanvas.scale = .22 + .1*abs(self.collapse-1)
+        MainCanvas.translateY = 420 * abs(self.collapse-1)
+        MainCanvas.translateX = 580 - 120 * abs(self.collapse-1)
+        MainCanvas.scale = .22 + .1 * abs(self.collapse-1)
         self.w.deepComponentGroup.creator.storageGlyph = None
         self.w.mainCanvas.update()
         self.w.deepComponentGroup.creator.show(self.collapse)
 
-        
 
-        # self.collapse = abs(self.collapse-1)
+        itendtifier = "reinjectSubset" * self.collapse + "subsetter" * abs(self.collapse-1)
+        label = "Reinject Subset" * self.collapse + "Subsetter" * abs(self.collapse-1)
+        imagePath = InjectBackPDF * self.collapse + SubsetterPDF * abs(self.collapse-1)
+        subsetter = {
+                    'itemIdentifier': itendtifier,
+                    'label': label,
+                    'callback': self._subsetter_callback,
+                    'imagePath': imagePath
+                    }
 
-    def _main_segmentedButton_callback(self, sender):
-        sel = sender.get()
-        self.activeMaster = abs(sel-1)
-        self.w.activeMasterGroup.show(abs(sel-1))
-        self.w.deepComponentsEditorGroup.show(sel)
-
-        self.w.fontsGroup.getMiniFont.show(self.activeMaster)
-        self.w.fontsGroup.injectBack.show(abs(self.activeMaster-1))
-
-        if not sel:
-            glyphset_ListSel = self.w.activeMasterGroup.glyphSet.glyphset_List.getSelection()
-        else:
-            glyphset_ListSel = self.w.deepComponentsEditorGroup.DeepComponentsCreator.glyphset_List.getSelection()
-
-        if glyphset_ListSel:
-            name = self.glyphset[glyphset_ListSel[0]]
-            self.glyph = self.font[name]
-            self.currentGlyph_DeepComponents = {
-                                            'CurrentDeepComponents':{}, 
-                                            'Existing':{}, 
-                                            'NewDeepComponents':{},
-                                            }
-            self.getDeepComponents_FromCurrentGlyph()
-        else:
-            self.glyph = None
-        #     glyphset_ListSel = self.w.deepComponentsEditorGroup.DeepComponentsCreator.glyphset_List.getSelection()
-
-        self.setLayer_List()
+        self.toolbarItems = [e if i != 2 else subsetter for i, e in enumerate(self.toolbarItems)]
+        self.w.addToolbar("RoboCJKToolbar", self.toolbarItems)
 
     def setLayer_List(self):
 
@@ -628,23 +595,25 @@ class RoboCJK():
 
     def currentGlyphChanged(self, info):
         if self.glyph is None:
-            print(self.glyph)
-            sel = self.w.deepComponentGroup.creator.storageFont_Glyphset.top.glyphset_List.getSelection()
+            sel = self.w.font_Group.glyphLists.glyphset_List.getSelection()
             if sel:
                 name = self.glyphset[sel[0]]
                 self.glyph = self.font[name]
             
-        elif info['glyph'] and self.glyph.name != info['glyph'].name:
+        # elif info['glyph'] and self.glyph.name != info['glyph'].name:
+        else:
+            
             self.glyph = info['glyph']
-            self.currentGlyph_DeepComponents = {
+        self.currentGlyph_DeepComponents = {
                                             'CurrentDeepComponents':{}, 
                                             'Existing':{}, 
                                             'NewDeepComponents':{},
                                             }
         
         self.current_DeepComponent_selection = None 
-        # if not self.w.main_segmentedButton.get():
-        self.getDeepComponents_FromCurrentGlyph()
+        if self.glyph is not None:
+            self.getDeepComponents_FromCurrentGlyph()
+
         self.updateViews()
 
     def getDeepComponents_FromCurrentGlyph(self):
@@ -670,11 +639,8 @@ class RoboCJK():
         CurrentGlyphViewDrawer(self).draw(info)
 
     def _projects_popUpButton_callback(self, sender):
-
         sel = sender.get()
         if sel == len(self.project_popUpButton_list)-1:
-            # self.collapse = 1
-            # self.getSubset_UI()
             getFile(messageText = u"Load a project...",
                 allowsMultipleSelection = False,
                 fileTypes = ["roboCJKproject", "json"],
@@ -683,22 +649,13 @@ class RoboCJK():
         else:
             self.projectName = self.project_popUpButton_list[sel]
             readCurrentProject(self, self.projects[self.projectName])
-            # self.getSubset_UI()
             self._setUI()
         self.updateViews()
-
 
     def _setUI(self):
         # FONT GROUP
         self.getSubset_UI()
         self.w.font_Group.fonts.fonts_list.set(self.fontList)
-        # self.getSubset_UI()
-        # if "temp" in self.fonts[self.fontList[0]].path:
-        #     self.w.fontsGroup.getMiniFont.show(False)
-        #     self.w.fontsGroup.injectBack.show(True)
-        # else:
-        #     self.w.fontsGroup.getMiniFont.show(True)
-        #     self.w.fontsGroup.injectBack.show(False)
 
     def getCompositionGlyph(self):
         self.compositionGlyph = []
@@ -708,7 +665,6 @@ class RoboCJK():
                 self.compositionGlyph = [dict(Char = chr(int(name.split('_')[0],16)), Name = '_'.join(name.split('_')[:2])) for name in self.glyphCompositionData[uni]]
 
     def _importProject_callback(self, projectPath):
-        
         # get the path of .project file
         path = projectPath[0]
         with open(path, "r") as file:
@@ -723,10 +679,7 @@ class RoboCJK():
             self.project_popUpButton_list.insert(0, self.projectName)
             self.w.projects_popUpButton.setItems(self.project_popUpButton_list)
             # Reset all the UI
-            
             self._setUI()
-
-        
 
     ##### CLOSE #####
     def windowWillClose(self, sender):
@@ -736,3 +689,4 @@ class RoboCJK():
 
     def windowDidResize(self, sender):
         _, _, self.windowWidth, self.windowHeight = sender.getPosSize()
+

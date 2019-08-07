@@ -55,14 +55,7 @@ class GlyphLists(Group):
             selectionCallback = self._glyphset_List_selectionCallback,
             doubleClickCallback = self._glyphset_List_doubleClickCallback)
 
-        
-
         self.set_glyphset_List()
-
-        # self.canvas = Canvas((165,20,-0,-0), 
-        #     delegate=MainCanvas(self.ui, self),
-        #     hasHorizontalScroller=False, 
-        #     hasVerticalScroller=False)
 
     def _displayGlyphset_setting_callback(self, sender):
         self.displaySettings = self.displayGlyphset_settingList[sender.get()]
@@ -80,10 +73,10 @@ class GlyphLists(Group):
     def _glyphset_List_selectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        if self.ui.glyphset:
-            name = self.ui.glyphset[sel[0]]
-            self.ui.glyph = self.ui.font[name]
-        
+        # if self.ui.glyphset:
+        name = self.ui.glyphset[sel[0]]
+        self.ui.glyph = self.ui.font[name]
+    
         self.ui.getCompositionGlyph()
         
         self.ui.selectedVariantName = ""
@@ -93,15 +86,6 @@ class GlyphLists(Group):
                                             'NewDeepComponents':{},
                                             }
         self.ui.getDeepComponents_FromCurrentGlyph()                   
-        # self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.setSelection([])
-        # self.ui.w.activeMasterGroup.glyphData.glyphCompositionRules_List.set(self.ui.compositionGlyph)
-        # self.ui.w.activeMasterGroup.glyphData.variants_List.set([])                        
-        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.setSliderList()
-        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.list.set([])
-
-        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.deepCompo_segmentedButton.set(0)
-        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.newDeepCompo.show(0)
-        # self.ui.w.activeMasterGroup.DeepComponentsInstantiator.selectDeepCompo.show(1)
         self.ui.newDeepComponent_active = False
         self.ui.updateViews()
 

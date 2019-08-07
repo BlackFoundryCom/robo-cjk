@@ -150,8 +150,12 @@ class ProjectEditor():
         for e in self.characterSet_list:
             if e["CharactersSets"] in self.selectedCharactersSets:
                 e["Get"] = 1
-        self.w.characterSet_list.set(self.characterSet_list)
-        self.w.masters_list.set(self.masterslist)
+                
+        self.w.m.masters_list.set(self.masterslist)
+
+        self.w.d.characterSet_list.set(self.characterSet_list)
+        self.w.d.stepOption_radioGroup.set(self.designStep)
+        
         self.w.df.EM_DimensionX_editText.set(self.EM_Dimension_X)
         self.w.df.EM_DimensionY_editText.set(self.EM_Dimension_Y)
         self.w.df.characterFace_editText.set(self.characterFace)
@@ -160,7 +164,7 @@ class ProjectEditor():
         self.w.df.horizontalLine_slider.set(self.horizontalLine)
         self.w.df.verticalLine_slider.set(self.verticalLine)
         self.w.df.customsFrames_list.set(self.customsFrames)
-        self.w.d.stepOption_radioGroup.set(self.designStep)
+        
         self.w.rv.reference_list.set(self.referenceViewerList)
         
     def _projectName_editText_callback(self, sender):
@@ -169,37 +173,16 @@ class ProjectEditor():
 
     def _segmentedButton_callback(self, sender):
         sel = sender.get()
-        if not sel:
-            self.w.m.show(1)
-            self.w.d.show(0)
-            self.w.df.show(0)
-            self.w.rv.show(0)
-            self.w.c.show(0)
-        elif sel == 1:
-            self.w.m.show(0)
-            self.w.d.show(1)
-            self.w.df.show(0)
-            self.w.rv.show(0)
-            self.w.c.show(0)
-        elif sel == 2:
-            self.w.m.show(0)
-            self.w.d.show(0)
-            self.w.df.show(1)
-            self.w.rv.show(0)
-            self.w.c.show(0)
-        elif sel == 3:
-            self.w.m.show(0)
-            self.w.d.show(0)
-            self.w.df.show(0)
-            self.w.rv.show(1)
-            self.w.c.show(0)
-        else:
-            self.w.m.show(0)
-            self.w.d.show(0)
-            self.w.df.show(0)
-            self.w.rv.show(0)
-            self.w.c.show(1)
-            message("Work in Progress...")
+        groups = [
+            self.w.m,
+            self.w.d,
+            self.w.df,
+            self.w.rv,
+            self.w.c,
+            ]
+        for i, group in enumerate(groups):
+            if i != sel: group.show(0)
+            else: group.show(1)
 
     def _close_button_callback(self, sender):
         # Close the project editor window

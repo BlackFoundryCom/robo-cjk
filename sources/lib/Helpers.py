@@ -177,9 +177,6 @@ def readCurrentProject(self, project):
             self.fontList.append(fontName)
             self.collapse = 1
 
-    # self.getSubset_UI()
-
-            
     self.glyphsSetDict = {font: [dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in font.lib['public.glyphOrder']] for font in self.fonts.values()}
 
     # print(self.glyphsSetDict)

@@ -21,7 +21,7 @@ from imp import reload
 import Helpers
 reload(Helpers)
 
-class Preferences():
+class Settings():
 
     def __init__(self, interface):
         self.ui = interface
@@ -29,7 +29,6 @@ class Preferences():
         self.w.close_button = Button((-100,-30,-10,-10),
                 'close',
                 callback = self._close_button_callback)
-
 
         Helpers.setDarkMode(self.w, self.ui.darkMode)
         self.w.open()

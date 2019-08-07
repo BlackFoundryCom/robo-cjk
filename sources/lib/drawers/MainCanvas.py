@@ -39,7 +39,7 @@ eps = 1e-10
 class MainCanvas():
 
     scale = .32
-    translateX = 330
+    translateX = 445
     translateY = 420
 
     def __init__(self, interface):
@@ -86,14 +86,18 @@ class MainCanvas():
 
     def scrollWheel(self, info):
         alt = extractNSEvent(info)['optionDown']
-        if not alt: return
-        scale = self.scale
         delta = info.deltaY()
         sensibility = .009
-        scale += (delta / (abs(delta)+eps) * sensibility) / (self.scale + eps)
-        minScale = .005
-        if scale > minScale:
-            self.scale = scale
+
+        if not alt: 
+            self.translateY -= delta/sensibility
+
+        else:
+            scale = self.scale
+            scale += (delta / (abs(delta)+eps) * sensibility) / (self.scale + eps)
+            minScale = .005
+            if scale > minScale:
+                self.scale = scale
         self.update()
 
     def keyDown(self, info):
@@ -146,8 +150,29 @@ class MainCanvas():
                     lineTo((1100, 1100))
                     drawPath()
                 else:
+
                     fill(0, 0, 0, 1)
                     drawGlyph(g)
+
+                    save()
+                    if self.ui.stackMasters and not self.preview:
+                        fill(0, .3, 1, .3)
+                        for f in self.ui.font2Storage:
+                            if f[g.name] == g: continue
+                            drawGlyph(f[g.name])
+                    restore()
+
+                    save()
+                    if self.ui.waterFall and not self.preview:
+                        s = .5
+                        scale(s,s)
+                        translate(0, -self.ui.EM_Dimension_Y - 200)
+                        for i in range(1, 5):
+                            drawGlyph(g)
+                            translate(self.ui.EM_Dimension_X + 150, 0)
+                            scale(s,s)
+                    restore()
+
                     if self.ui.onOff_designFrame and not self.preview:
                         DesignFrameDrawer(self.ui).draw(
                             glyph = g,

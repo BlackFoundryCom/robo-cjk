@@ -28,7 +28,7 @@ class DesignFrame(Group):
     def __init__(self, posSize, interface):
         super(DesignFrame, self).__init__(posSize)
         self.ui = interface
-        self.ui.glyph = self.ui.glyph
+        # self.ui.glyph = self.ui.glyph
 
         self.ui.onOff_designFrame = 1
         self.ui.drawPreview_designFrame = 0
