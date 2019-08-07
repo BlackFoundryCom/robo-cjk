@@ -162,9 +162,10 @@ class GetSubset():
 
         self.WIP_DCEditor = json.load(open(WIPPath, "r"))
 
-        if self.characterName in self.WIP_DCEditor.values():
-            message("This glyph is lock, please choose another one")
-            return
+        for lockedGlyphList in self.WIP_DCEditor.values():
+            if self.characterName in lockedGlyphList:
+                message("This glyph is lock, please choose another one")
+                return
 
         self.Fonts_Link = {}
         fontsLinkPath = os.path.join(self.rdir, "Temp/Fonts_Link.json")
