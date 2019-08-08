@@ -270,3 +270,36 @@ class DeepComponentsCreator(Group):
                 self.top.glyphset_List.set([dict(Name = names, Char = chr(int(names.split('_')[0],16))) for names in glyphSet if name in names])
         except:
             pass
+
+"""
+from AppKit import *
+from vanilla import *
+from fontTools.pens import cocoaPen
+
+ICON_PATH = '/Users/gaetanbaehr/Documents/BlackFoundry/TECH/Git/ROBO-CJK/sources/resources/Settings.pdf'
+g = CurrentGlyph()
+pen = cocoaPen.CocoaPen(g.getParent())
+# path = NSBezierPath.bezierPath()
+newGlyph = RGlyph().draw(pen)
+NSImage.alloc().initWithData_(pen.path)
+
+print(pen.path.fill())
+# class ImageListCellDemo(object):
+
+#     def __init__(self):
+#         self.w = Window((100, 100))
+#         self.w.myList = List((0, 0, -0, -0),
+                    
+#                     [
+#                         # {"image": NSImage.alloc().initByReferencingFile_(ICON_PATH)},
+#                         {"image": NSImage.alloc().initWithData_(pen.path.fill())},
+#                         {"image": NSImage.imageNamed_("NSRefreshTemplate")}
+#                     ],
+#                     columnDescriptions=[
+#                         {"title": "image", "cell": ImageListCell()}
+#                     ],
+#                     rowHeight=30.0,)
+#         self.w.open()
+
+# ImageListCellDemo()
+"""
