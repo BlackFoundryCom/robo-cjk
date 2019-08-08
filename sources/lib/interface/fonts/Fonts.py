@@ -68,6 +68,7 @@ class Fonts(Group):
         
         self.ui.w.font_Group.glyphLists.set_glyphset_List()
         self.ui.w.deepComponentGroup.creator.storageFont_Glyphset.set_glyphset_List()
+        
         # self.ui.setLayer_List()
 
     # def _getMiniFont_callback(self, sender):

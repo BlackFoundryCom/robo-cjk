@@ -38,6 +38,7 @@ from offTools.smartSelector import SmartSelector
 # from interface.SmartComponents import SmartComponents
 from interface.accordionView.ReferenceViewer import ReferenceViewer
 from interface.accordionView.DisplayOptions import DisplayOptions
+from interface.accordionView.Interpolaviour import Interpolaviour
 
 from interface.fonts.Fonts import Fonts
 from interface.fonts.GlyphLists import GlyphLists
@@ -156,7 +157,12 @@ class RoboCJK():
 
         self.stackMasters = 0
         self.waterFall = 0
-        
+
+        self.interpolaviourOnOff = 0
+        self.interpolaviourShowPoints = 0
+        self.interpolaviourShowStartPoints = 0
+        self.interpolaviourShowInterpolation = 1
+        self.interpolaviourInterpolationValue = 500
 
         self.toolbarItems = [
             {   
@@ -266,6 +272,8 @@ class RoboCJK():
 
         self.designFrame = DesignFrame((0,0,-0,-0), self)
 
+        self.interpolaviour = Interpolaviour((0,0,-0,-0), self)
+
         self.accordionViewDescriptions = [
                         dict(label="Display Options", 
                             view=self.displayOption, 
@@ -283,6 +291,12 @@ class RoboCJK():
                             view=self.designFrame, 
                             size=173, 
                             collapsed=False, 
+                            canResize=0),
+
+                        dict(label="Interpolaviour", 
+                            view=self.interpolaviour, 
+                            size=150, 
+                            collapsed=True, 
                             canResize=0),
                        ]
 

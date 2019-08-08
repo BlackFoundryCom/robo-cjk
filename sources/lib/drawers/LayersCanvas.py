@@ -58,7 +58,7 @@ class LayersCanvas():
         pointX, pointY = info.locationInWindow()
         for loc in self.glyphLocation_in_Window:
             x, y, w, h = loc
-            if x < (pointX-400)/self.scale < x+w and y < (pointY-224)/self.scale < y+h:
+            if x < (pointX-380)/self.scale < x+w and y < (pointY-160)/self.scale < y+h:
                 self.gl.StorageGlyphCurrentLayer = self.glyphLocation_in_Window[loc]
                 if info.clickCount() == 2:
                     OpenGlyphWindow(self.gl.StorageGlyphCurrentLayer)

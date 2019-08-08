@@ -133,8 +133,10 @@ class DeepComponentsCreator(Group):
             self.glyphset = self.getGlyphset()
             self.top.glyphset_List.set(self.glyphset)
             self.layerList = [layer.name for layer in self.ui.font2Storage[self.ui.font].layers]
-            self.bottom.layers_list.set(self.layerList)
 
+            self.bottom.layers_list.set(self.layerList)
+            self.setSliderList()
+            self.top.layersCanvas.update()
 
     def _glyphset_List_selectionCallback(self, sender):
         sel = sender.getSelection()
@@ -154,7 +156,10 @@ class DeepComponentsCreator(Group):
         # self.layersPreviewCanvas.update()
 
     def setSliderList(self):
-        self.slidersValuesList = [dict(Layer=layerName, Values=0) for layerName in self.storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+        if self.storageGlyph and 'deepComponentsLayer' in self.storageGlyph.lib:
+            self.slidersValuesList = [dict(Layer=layerName, Values=0) for layerName in self.storageGlyph.lib['deepComponentsLayer'] if layerName != "foreground"]
+        else:
+            self.slidersValuesList = []
         self.bottom.sliderList.set(self.slidersValuesList)
 
     def _sliderList_editCallback(self, sender):

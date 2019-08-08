@@ -25,6 +25,7 @@ from mojo.events import extractNSEvent
 from ufoLib.glifLib import readGlyphFromString
 from drawers.DeepComponentDrawer import DeepComponentDrawer
 from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
+from drawers.InterpolaviourDrawer import InterpolaviourDrawer
 from Helpers import deepolation
 import Global
 import os
@@ -198,7 +199,8 @@ class MainCanvas():
                     if self.preview: 
                         fill(0, 0, 0, 1)
                     DeepComponentDrawer(self.ui, g, f)
-
+                    if self.ui.interpolaviourOnOff:
+                        InterpolaviourDrawer(self.ui).draw(g, self.scale, self.preview)
                     TesterDeepComponent(self.ui, self.ui.w.deepComponentGroup.creator.storageFont_Glyphset)
             restore()
         except Exception as e:
