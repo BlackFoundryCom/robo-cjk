@@ -275,31 +275,57 @@ class DeepComponentsCreator(Group):
 from AppKit import *
 from vanilla import *
 from fontTools.pens import cocoaPen
+import Quartz
 
-ICON_PATH = '/Users/gaetanbaehr/Documents/BlackFoundry/TECH/Git/ROBO-CJK/sources/resources/Settings.pdf'
 g = CurrentGlyph()
-pen = cocoaPen.CocoaPen(g.getParent())
-# path = NSBezierPath.bezierPath()
-newGlyph = RGlyph().draw(pen)
-NSImage.alloc().initWithData_(pen.path)
+f = g.getParent()
+path = NSBezierPath.bezierPath()
+pen = cocoaPen.CocoaPen(f, path)
+g.draw(pen)
+margins = 200
+mediaBox = Quartz.CGRectMake(g.box[0]-margins, g.box[1]-margins, g.box[2]+2*margins, g.box[3]+2*margins)
+pdfData = Quartz.CFDataCreateMutable(None, 0)
+dataConsumer = Quartz.CGDataConsumerCreateWithCFData(pdfData)
+pdfContext = Quartz.CGPDFContextCreate(dataConsumer, mediaBox, None)
 
-print(pen.path.fill())
-# class ImageListCellDemo(object):
+Quartz.CGContextSaveGState(pdfContext)
 
-#     def __init__(self):
-#         self.w = Window((100, 100))
-#         self.w.myList = List((0, 0, -0, -0),
+Quartz.CGContextSetFillColorWithColor(pdfContext, NSColor.blackColor())
+Quartz.CGContextBeginPage(pdfContext, mediaBox)
+
+for i in range(path.elementCount()):
+    instruction, points = path.elementAtIndex_associatedPoints_(i)
+    print(points)
+    if instruction == NSMoveToBezierPathElement:
+        Quartz.CGContextMoveToPoint(pdfContext, points[0].x, points[0].y)
+    elif instruction == NSLineToBezierPathElement:
+        Quartz.CGContextAddLineToPoint(pdfContext, points[0].x, points[0].y)
+    elif instruction == NSCurveToBezierPathElement:
+        Quartz.CGContextAddCurveToPoint(pdfContext, points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y)
+    elif instruction == NSClosePathBezierPathElement:
+        Quartz.CGContextClosePath(pdfContext)
+
+Quartz.CGContextFillPath(pdfContext)
+Quartz.CGContextEndPage(pdfContext)
+Quartz.CGPDFContextClose(pdfContext)
+Quartz.CGContextRestoreGState(pdfContext)
+
+class ImageListCellDemo(object):
+
+    def __init__(self):
+        self.w = Window((100, 300))
+        self.w.myList = List((0, 0, -0, -0),
                     
-#                     [
-#                         # {"image": NSImage.alloc().initByReferencingFile_(ICON_PATH)},
-#                         {"image": NSImage.alloc().initWithData_(pen.path.fill())},
-#                         {"image": NSImage.imageNamed_("NSRefreshTemplate")}
-#                     ],
-#                     columnDescriptions=[
-#                         {"title": "image", "cell": ImageListCell()}
-#                     ],
-#                     rowHeight=30.0,)
-#         self.w.open()
+                    [
+                        # {"image": NSImage.alloc().initByReferencingFile_(ICON_PATH)},
+                        {"image": NSImage.alloc().initWithData_(pdfData)},
+                        {"image": NSImage.imageNamed_("NSRefreshTemplate")}
+                    ],
+                    columnDescriptions=[
+                        {"title": "image", "cell": ImageListCell()}
+                    ],
+                    rowHeight=60.0,)
+        self.w.open()
 
-# ImageListCellDemo()
+ImageListCellDemo()
 """
