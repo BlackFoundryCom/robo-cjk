@@ -245,7 +245,8 @@ class TextCenter():
                 self.selectedGlyph = self.glyphLocation_in_Window[loc]
                 didInside = True
                 if info.clickCount() == 2:
-                    OpenGlyphWindow(self.ui.font[self.selectedGlyph.name])
+                    self.ui.window = OpenGlyphWindow(self.ui.font[self.selectedGlyph.name])
+                    self.ui.windows.add(self.ui.window)
                     
 
         if not didInside:

@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from vanilla import *
 from vanilla.dialogs import getFile, message
 
-from mojo.UI import AccordionView, UpdateCurrentGlyphView
+from mojo.UI import AccordionView, UpdateCurrentGlyphView, CurrentGlyphWindow, AllGlyphWindows
 from mojo.events import addObserver, removeObserver, installTool, uninstallTool, getActiveEventTool, EditingTool
 from mojo.roboFont import *
 
@@ -121,6 +121,8 @@ class RoboCJK():
     key2Glyph = {}
 
     def __init__(self):
+        self.windows = set()
+        self.window = None
         self.windowWidth, self.windowHeight = 1000,700
         self.w = Window((self.windowWidth, self.windowHeight), 
             "Robo CJK", 
@@ -128,6 +130,7 @@ class RoboCJK():
             maxSize = (2500,2000))
 
         self.font = CurrentFont()
+        self.fonts = []
         self.glyph = CurrentGlyph()
         self.glyphset = list()
 
@@ -333,7 +336,9 @@ class RoboCJK():
         
         ###### DARK MODE ######
         self.darkMode = 1
-        Helpers.setDarkMode(self.w, self.darkMode)
+        if self.w:
+            print(self.w)
+            Helpers.setDarkMode(self.w, self.darkMode)
 
         self.w.darkMode_checkBox = CheckBox((10,-20,-10,-0),
             "Dark Mode", 
@@ -351,7 +356,7 @@ class RoboCJK():
 
         ###### OBSERVER ######
         self.observer()
-        self.w.bind('close', self.windowWillClose)
+        self.w.bind('close', self.windowCloses)
         self.w.bind('resize', self.windowDidResize)
 
         ###### LAUNCH WINDOW ######        
@@ -360,6 +365,8 @@ class RoboCJK():
     def _darkMode_checkBox_checkBox(self, sender):
         self.darkMode = sender.get()
         Helpers.setDarkMode(self.w, self.darkMode)
+        for w in self.windows:
+            Helpers.setDarkMode(w, self.darkMode)
 
     def _saveUFOs_callback(self, sender):
         for f1, f2 in self.font2Storage.items():
@@ -479,7 +486,7 @@ class RoboCJK():
         removeObserver(self, "glyphAdditionContextualMenuItems")
 
     def glyphAdditionContextualMenuItems(self, info):
-        info['additionContextualMenuItems'].append(("Selection 2 Deep Component", self.selection2DeepCompo_Callback))
+        info['additionContextualMenuItems'].append(("Selection to Deep Component", self.selection2DeepCompo_Callback))
 
     def selection2DeepCompo_Callback(self, sender):
         selectedContours = [c for c in self.glyph if c.selected or [p for p in c.points if p.selected]]
@@ -487,8 +494,8 @@ class RoboCJK():
         if not selectedContours:
             message("Warning, there is no selectedContours")
             return
-
-        Select2DeepCompoSheet(self, selectedContours)
+        
+        self.dcSheet = Select2DeepCompoSheet(self, self.window.window(), selectedContours)
 
     def mouseDown(self, info):
         self.deepCompoWillDrag = False
@@ -696,10 +703,19 @@ class RoboCJK():
             self._setUI()
 
     ##### CLOSE #####
-    def windowWillClose(self, sender):
+    def killdcSheet(self, sender):
+        del self.dcSheet
+
+    def windowCloses(self, sender):
+        for f in self.fonts.values():
+            f.close()
+        for w in self.windows:
+            print(w.__dict__.keys())
+            w.close()
+        print(CurrentGlyphWindow())
+        self.w = None
         self.observer(remove = True)
         uninstallTool(self.smartSelector)
-        self.updateViews()
 
     def windowDidResize(self, sender):
         _, _, self.windowWidth, self.windowHeight = sender.getPosSize()

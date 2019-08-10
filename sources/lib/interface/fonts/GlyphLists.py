@@ -23,7 +23,7 @@ from mojo.canvas import Canvas
 from AppKit import NSAppearance, NSColor
 # from drawers.MainCanvas import MainCanvas
 from lib.cells.colorCell import RFColorCell
-from Helpers import normalizeUnicode
+import Helpers
 
 class GlyphLists(Group):
 
@@ -93,10 +93,12 @@ class GlyphLists(Group):
         sel = sender.getSelection()
         if not sel: return
         if self.ui.glyph is None: return
-        OpenGlyphWindow(self.ui.glyph)
-        gw = CurrentGlyphWindow()
-        appearance = NSAppearance.appearanceNamed_('NSAppearanceNameVibrantDark')
-        gw.window().getNSWindow().setAppearance_(appearance)
+        self.ui.window = OpenGlyphWindow(self.ui.glyph)
+        Helpers.setDarkMode(self.ui.window, self.ui.darkMode)
+        self.ui.windows.add(self.ui.window)
+        # gw = self.ui.window
+        # appearance = NSAppearance.appearanceNamed_('NSAppearanceNameVibrantDark')
+        # gw.window().getNSWindow().setAppearance_(appearance)
 
     def _jumpTo_callback(self, sender):
         string = sender.get()
@@ -112,7 +114,7 @@ class GlyphLists(Group):
                 if string.startswith("uni"):
                     index = self.ui.glyphset.index(string)
                 elif len(string) == 1:
-                    code = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
+                    code = "uni"+Helpers.normalizeUnicode(hex(ord(string))[2:].upper())
                     index = self.ui.glyphset.index(code)
                 self.glyphset_List.setSelection([index])
 
@@ -121,7 +123,7 @@ class GlyphLists(Group):
                 if string.startswith("uni"):
                     name = string[3:]
                 elif len(string) == 1:
-                    name = normalizeUnicode(hex(ord(string))[2:].upper())
+                    name = Helpers.normalizeUnicode(hex(ord(string))[2:].upper())
                     
                 self.ui.glyphset = self.ui.key2Glyph[name]
                 self.glyphset_List.set([dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in self.ui.glyphset])

@@ -148,6 +148,7 @@ def normalizeUnicode(code):
         return code
 
 def setDarkMode(w, darkMode):
+    if not w: return
     if darkMode:
         appearance = NSAppearance.appearanceNamed_('NSAppearanceNameVibrantDark')
         if hasattr(w, "accordionView"):
@@ -156,9 +157,12 @@ def setDarkMode(w, darkMode):
         appearance = NSAppearance.appearanceNamed_('NSAppearanceNameAqua')
         if hasattr(w, "accordionView"):
             w.accordionView.setBackgroundColor(NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1))
-    w.getNSWindow().setAppearance_(appearance)
-    if CurrentGlyphWindow():
-        CurrentGlyphWindow().window().getNSWindow().setAppearance_(appearance)
+    if hasattr(w, 'w'):
+        w.w.getNSWindow().setAppearance_(appearance)
+    else:
+        w.getNSWindow().setAppearance_(appearance)
+    # if CurrentGlyphWindow():
+    #     CurrentGlyphWindow().window().getNSWindow().setAppearance_(appearance)
 
 def makepath(filepath):
     # Create path if it do not exist
