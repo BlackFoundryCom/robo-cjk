@@ -115,13 +115,12 @@ class RoboCJK():
     customsFrames = []
     referenceViewerSettings = []
     calendar = []
-    glyphCompositionData = []
-    deepComponentExtremsData = []
+    glyphCompositionData = {}
+    deepComponentExtremsData = {}
     designStep = int()
     key2Glyph = {}
 
     def __init__(self):
-        self.windows = set()
         self.window = None
         self.windowWidth, self.windowHeight = 1000,700
         self.w = Window((self.windowWidth, self.windowHeight), 
@@ -220,7 +219,7 @@ class RoboCJK():
         self.w.addToolbar("RoboCJKToolbar", self.toolbarItems)
 
         self.project_popUpButton_list = ["Load a project..."]
-        self.w.projects_popUpButton = PopUpButton((10,10,-10,20),
+        self.w.projects_popUpButton = PopUpButton((10,10,170,20),
                 self.project_popUpButton_list, 
                 callback = self._projects_popUpButton_callback)
 
@@ -335,9 +334,8 @@ class RoboCJK():
             )   
         
         ###### DARK MODE ######
-        self.darkMode = 1
+        self.darkMode = 0
         if self.w:
-            print(self.w)
             Helpers.setDarkMode(self.w, self.darkMode)
 
         self.w.darkMode_checkBox = CheckBox((10,-20,-10,-0),
@@ -365,8 +363,9 @@ class RoboCJK():
     def _darkMode_checkBox_checkBox(self, sender):
         self.darkMode = sender.get()
         Helpers.setDarkMode(self.w, self.darkMode)
-        for w in self.windows:
+        for w in AllGlyphWindows():
             Helpers.setDarkMode(w, self.darkMode)
+        self.w.deepComponentGroup.creator.storageFont_Glyphset.setSliderList()
 
     def _saveUFOs_callback(self, sender):
         for f1, f2 in self.font2Storage.items():
@@ -392,6 +391,7 @@ class RoboCJK():
 
     def _subsetter_callback(self, sender):
         if "temp" in list(self.font2Storage.keys())[0].path:
+            # self.windowCloses(None)
             InjectBack(self)
             self.collapse = 0
             self.getSubset_UI()
@@ -441,11 +441,11 @@ class RoboCJK():
         self.w.deepComponentGroup.creator.show(self.collapse)
 
 
-        itendtifier = "reinjectSubset" * self.collapse + "subsetter" * abs(self.collapse-1)
+        itentifier = "reinjectSubset" * self.collapse + "subsetter" * abs(self.collapse-1)
         label = "Reinject Subset" * self.collapse + "Subsetter" * abs(self.collapse-1)
         imagePath = InjectBackPDF * self.collapse + SubsetterPDF * abs(self.collapse-1)
         subsetter = {
-                    'itemIdentifier': itendtifier,
+                    'itemIdentifier': itentifier,
                     'label': label,
                     'callback': self._subsetter_callback,
                     'imagePath': imagePath
@@ -615,6 +615,7 @@ class RoboCJK():
         self.deepCompoWillDrag = False
 
     def currentGlyphChanged(self, info):
+        if not self.fonts: return
         if self.glyph is None:
             sel = self.w.font_Group.glyphLists.glyphset_List.getSelection()
             if sel:
@@ -684,6 +685,11 @@ class RoboCJK():
             uni = normalizeUnicode(hex(self.glyph.unicode)[2:].upper())
             if uni in self.glyphCompositionData:
                 self.compositionGlyph = [dict(Char = chr(int(name.split('_')[0],16)), Name = '_'.join(name.split('_')[:2])) for name in self.glyphCompositionData[uni]]
+            char = chr(int(uni, 16))
+            name = uni+'_Y'
+            if char in self.deepComponentExtremsData:
+                self.compositionGlyph = [{'Char':char, 'Name':name}]
+
 
     def _importProject_callback(self, projectPath):
         # get the path of .project file
@@ -703,16 +709,12 @@ class RoboCJK():
             self._setUI()
 
     ##### CLOSE #####
-    def killdcSheet(self, sender):
-        del self.dcSheet
-
     def windowCloses(self, sender):
         for f in self.fonts.values():
             f.close()
-        for w in self.windows:
-            print(w.__dict__.keys())
+        self.fonts = {}
+        for w in AllGlyphWindows():
             w.close()
-        print(CurrentGlyphWindow())
         self.w = None
         self.observer(remove = True)
         uninstallTool(self.smartSelector)

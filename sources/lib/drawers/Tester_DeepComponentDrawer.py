@@ -41,13 +41,13 @@ class TesterDeepComponent():
             newGlyph = deepolation(RGlyph(), self.gl.storageGlyph, layersInfo = {e["Layer"]:int(e["Values"]) for e in self.gl.slidersValuesList})
             if not newGlyph:
                 save()
-                fill(.9,0,.3,.4)
-                oval(0,0,1000,1000)
+                fill(.9, 0, .3, .1)
+                oval(0,-120,1000,1000)
                 restore()
             else:
                 save()
                 translate(self.translateX, self.translateY)
-                fill(1,0,0,.8)
+                fill(0, 1, .3, .8)
                 drawGlyph(newGlyph)
                 restore()
 

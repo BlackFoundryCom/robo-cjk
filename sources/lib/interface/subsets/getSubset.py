@@ -38,14 +38,13 @@ class GetSubset_Sheet():
         self.w = Sheet((200, 250), self.ui.w)
 
         self.w.deepComponents_textBox = TextBox((10, 10, -10, 60), 
-            "Subset for Deep Components Creator.\nNeed a key in input", 
+            "Deep Components Creator.\nSelect a Key Glyph to work with", 
             sizeStyle = "regular", 
             alignment = "center")
 
-        self.w.searchBox = SearchBox((10, 70, -10, 20),
-            placeholder = "Char/Name",
-            sizeStyle = "small",
-            callback = self._searchBox_callback)
+        self.w.searchBox = ComboBox((10, 70, -10, 20),
+            self.ui.deepComponentExtremsData.keys(),
+            callback = self._comboBox_callback)
 
         self.w.GlyphPreview = GlyphPreview((0, 105, -0, -30))
 
@@ -58,7 +57,7 @@ class GetSubset_Sheet():
             sizeStyle = "small")
 
         self.w.getSubset_Button = Button((50, -30, -10, -10), 
-            "Get Subset", 
+            "Go Subset", 
             callback = self._getSubset_Button_callback,
             sizeStyle = "small")
 
@@ -69,31 +68,22 @@ class GetSubset_Sheet():
     def _closeButtonCallback(self, sender):
         self.w.close()
 
-    def _searchBox_callback(self, sender):
-        string = sender.get()
-        if not string: return
+    def _comboBox_callback(self, sender):
+        char = sender.get()
+        if not char: return
 
         if not self.ui.font:
             font = list(self.ui.font2Storage.keys())[0]
         else: font = self.ui.font
 
-        try:
-            if string.startswith("uni"):
-                self.selectedGlyphName = string
-
-            elif len(string) == 1:
-                self.selectedGlyphName = "uni"+normalizeUnicode(hex(ord(string))[2:].upper())
-
-            self.selectedGlyph = font[self.selectedGlyphName]
-        except:
-            self.selectedGlyph = None
-            self.selectedGlyphName = None
+        self.selectedGlyphName = "uni"+normalizeUnicode(hex(ord(char[0]))[2:].upper())
+        self.selectedGlyph = font[self.selectedGlyphName]
 
         self.w.GlyphPreview.setGlyph(self.selectedGlyph)
 
     def _getSubset_Button_callback(self, sender):
         if self.selectedGlyphName is None:
-            message("Warning there is no chosen glyph")
+            message("Select a Key Glyph first")
             return
 
         if self.ui.designStep == 1:

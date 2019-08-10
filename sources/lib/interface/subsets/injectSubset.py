@@ -113,15 +113,13 @@ class InjectBack():
 
         self.ui.glyphsSetDict = {font: [dict(Name = name, Char = chr(int(name[3:],16)) if name.startswith('uni') else "") for name in font.lib['public.glyphOrder']] for font in self.ui.fonts.values()}
 
-        git.commit('DONE: ' + stamp)
-        git.push()
-
         self.ui._setUI()
         # self.ui.w.fontsGroup.fonts_list.setSelection([0])
         # self.ui.w.fontsGroup.injectBack.show(False)
         # self.ui.w.fontsGroup.getMiniFont.show(True)
-
-        shutil.rmtree(self.ui.projectPath+'/Temp')
+        tempFolder = os.path.join(self.ui.projectPath, 'Temp')
+        shutil.rmtree(tempFolder)
+        os.mkdir(tempFolder)
 
         del self.WIP_DCEditor[stamp]
         self.writeJsonFile("WIP_DCEditor")
@@ -129,3 +127,5 @@ class InjectBack():
         self.ui.glyph = None
         self.ui.updateViews()
 
+        git.commit('DONE: ' + stamp)
+        git.push()

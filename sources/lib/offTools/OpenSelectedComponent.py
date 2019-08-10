@@ -57,7 +57,6 @@ class OpenSelectedComponent():
         self.oldGlyph = g
 
         self.ui.window = OpenGlyphWindow(f[self.selectedComponentName])
-        self.ui.windows.add(self.ui.window)
 
         self.currentGlyph = CurrentGlyph()
 

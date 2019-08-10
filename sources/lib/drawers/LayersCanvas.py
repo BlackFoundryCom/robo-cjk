@@ -62,7 +62,7 @@ class LayersCanvas():
                 self.gl.StorageGlyphCurrentLayer = self.glyphLocation_in_Window[loc]
                 if info.clickCount() == 2:
                     self.ui.window = OpenGlyphWindow(self.gl.StorageGlyphCurrentLayer)
-                    self.ui.windows.add(self.ui.window)
+                    Helpers.setDarkMode(self.ui.window, self.ui.darkMode)
         self.update()
         
     def update(self):

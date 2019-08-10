@@ -54,7 +54,6 @@ class MainCanvas():
         if info.clickCount() == 2 and self.ui.glyph is not None:
             self.ui.window = OpenGlyphWindow(self.ui.glyph)
             Helpers.setDarkMode(self.ui.window, self.ui.darkMode)
-            self.ui.windows.add(self.ui.window)
 
     def update(self):
         self.ui.w.mainCanvas.update()

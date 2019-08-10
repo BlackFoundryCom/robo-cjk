@@ -95,7 +95,6 @@ class GlyphLists(Group):
         if self.ui.glyph is None: return
         self.ui.window = OpenGlyphWindow(self.ui.glyph)
         Helpers.setDarkMode(self.ui.window, self.ui.darkMode)
-        self.ui.windows.add(self.ui.window)
         # gw = self.ui.window
         # appearance = NSAppearance.appearanceNamed_('NSAppearanceNameVibrantDark')
         # gw.window().getNSWindow().setAppearance_(appearance)

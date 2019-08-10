@@ -48,6 +48,7 @@ class Select2DeepCompoSheet():
                                 ],
             selectionCallback = self._compositionGlyph_List_selectionCallback, 
             drawFocusRing=False)
+        self.sheet.compositionGlyph_List.setSelection([])
 
         self.selectedName = ""
 
@@ -101,7 +102,6 @@ class Select2DeepCompoSheet():
 
         Helpers.setDarkMode(self.sheet, self.ui.darkMode)
 
-        self.sheet.bind('close', self.ui.killdcSheet)
         self.sheet.open()
 
     def _compositionGlyph_List_selectionCallback(self, sender):
@@ -120,7 +120,6 @@ class Select2DeepCompoSheet():
             return
 
         f = self.ui.font2Storage[self.font]
-        # f = self.storageFont
      
         if self.selectedLayer not in f.layers:
             for storageFont in self.ui.font2Storage.values(): 
@@ -152,11 +151,10 @@ class Select2DeepCompoSheet():
             f.lib["deepComponentsGlyph"][self.selectedName] = {}
 
         i = 0
-        while True:
+        ID = self.selectedName + '_00'
+        while ID in f.lib["deepComponentsGlyph"][self.selectedName]:
             index = "_%s"%str(i).zfill(2)
             ID = self.selectedName + index
-            if ID not in f.lib["deepComponentsGlyph"][self.selectedName]:
-                break
             i+=1
 
         if self.selectedLayer == "foreground":
@@ -191,9 +189,7 @@ class Select2DeepCompoSheet():
         self.sheet.close()
 
     def _cancelButton_callback(self, sender):
-        print(self.sheet.__dict__.keys())
         self.sheet.close()
-        print(self.sheet.__dict__.keys())
 
     def _variantsNames_List_selectionCallback(self, sender):
         sel = sender.getSelection()

@@ -37,8 +37,8 @@ class DeepComponentDrawer():
                 save()
                 glyph = desc['Glyph']
                 if not glyph: 
-                    fill(1, 0, .3, .7)
-                    oval(0, 0, 1000, 1000)
+                    fill(1, 0, .3, .1)
+                    oval(0, -120, 1000, 1000)
                 else:
                     ID = desc['ID']
                     offset_X, offset_Y = desc['Offsets']

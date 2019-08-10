@@ -205,7 +205,9 @@ def readCurrentProject(self, project):
     self.storageFontsList = []
     self.font2Storage = {}
 
-    if not os.path.exists(self.projectPath + "/Temp"):
+    tempFolder = os.path.join(self.projectPath, "Temp")
+    tempContents = os.listdir(tempFolder)
+    if not tempContents:
         for fontPath, storagePath in project["UFOsPaths"].items():
 
             fontName = fontPath.split("/")[-1][:-4]
