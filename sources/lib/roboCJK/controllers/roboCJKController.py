@@ -41,6 +41,7 @@ class RoboCJKController(object):
 		self.characterSets = characterSets.sets
 		self.currentFont = None
 		self.allFonts = []
+		self.lockedGlyphs = ['uni4E0D'] #for testing only, remove when WIP set up
 		self.user = git.GitEngine(None).user()
 		self.projectEditorController = projectEditorController.ProjectEditorController(self)
 		self.initialDesignController = initialDesignController.InitialDesignController(self)

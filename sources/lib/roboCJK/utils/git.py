@@ -31,6 +31,16 @@ class GitEngine():
             return False
         return True
 
+    def createGitignore(self):
+        if os.path.isfile(os.path.join(self._path, '.gitignore')): return
+        f = open(os.path.join(self._path, '.gitignore'), 'w')
+        gitignore = '*Temp*'
+        f.write(gitignore)
+        self.commit('add gitignore')
+        self.push()
+        # subprocess.call(['git', 'add' '.', self._path], cwd=self._path)
+        # subprocess.call(['git', 'commit', '-m', 'add gitignore' '.gitignore'], cwd=self._path)
+
     def commit(self, stamp):
         if not self.isInGitRepository(): return False
         comment =  str(stamp)

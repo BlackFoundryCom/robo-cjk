@@ -28,9 +28,10 @@ from utils import files
 from views import tableDelegate
 reload(files)
 
-kMissingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 0, 0, 1)
+kMissingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
 kThereColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 1, 0, 1)
 kEmptyColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
+kLockedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 0, 0, 1)
 
 
 class InitialDesignWindow(BaseWindowController):
@@ -40,15 +41,13 @@ class InitialDesignWindow(BaseWindowController):
         self.RCJKI = self.controller.RCJKI
         self.RCJKI.allFonts = []
         self.selectedGlyph = None
-        self.fontsList = []
-        for name, file in self.RCJKI.project.masterFontsPaths.items():
-            path = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', file)
-            self.RCJKI.allFonts.append({name:OpenFont(path, showInterface=False)})
-            self.fontsList.append(name)
+
+        
+    
         self.w = Window((200, 0, 800, 600), 'Initial Design', minSize = (300,300), maxSize = (2500,2000))
         
         self.w.fontsList = List((0,0,200,85),
-                self.fontsList,
+                [],
                 selectionCallback = self.fontsListSelectionCallback,
                 drawFocusRing = False)
 
@@ -57,13 +56,15 @@ class InitialDesignWindow(BaseWindowController):
                 columnDescriptions = [
                                 {"title": "#", "width" : 20},
                                 {"title": "Char", "width" : 30},
-                                {"title": "Name", "width" : 150}                
+                                {"title": "Name", "width" : 100},
+                                {"title": "MarkColor", "width" : 30, "editable": True}
                                 ],
                 selectionCallback = self.glyphSetListSelectionCallback,
                 doubleClickCallback = self.glyphSetListdoubleClickCallback,
                 showColumnTitles = False,
                 drawFocusRing = False)
 
+        self.controller.loadProjectFonts()
         self.w.fontsList.setSelection([])
 
         self.delegate = tableDelegate.TableDelegate.alloc().initWithMaster(self)
@@ -84,7 +85,7 @@ class InitialDesignWindow(BaseWindowController):
             self.w.glyphSetList.set([])
             self.selectedGlyph = None
             return
-        self.RCJKI.currentFont = self.RCJKI.allFonts[sel[0]][self.fontsList[sel[0]]]
+        self.RCJKI.currentFont = self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]
         self.controller.updateGlyphSetList()
 
     def glyphSetListdoubleClickCallback(self, sender):
@@ -93,6 +94,7 @@ class InitialDesignWindow(BaseWindowController):
         name = self.w.glyphSetList.get()[self.selectedGlyph]['Name']
         if name not in self.RCJKI.currentFont:
             self.RCJKI.currentFont.newGlyph(name)
+            self.RCJKI.currentFont[name].width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
         OpenGlyphWindow(self.RCJKI.currentFont[name])
 
     def glyphSetListSelectionCallback(self, sender):
@@ -116,11 +118,15 @@ class InitialDesignWindow(BaseWindowController):
         uiGlyphName = uiGlyph['Name']
 
         state = 'missing'
+        markColor = None
         if self.RCJKI.currentFont:
             if uiGlyphName in self.RCJKI.currentFont:
                 state = 'there'
+                markColor = self.RCJKI.currentFont[uiGlyphName].markColor
                 if len(self.RCJKI.currentFont[uiGlyphName]) == 0 and not self.RCJKI.currentFont[uiGlyphName].components:
                     state = 'empty'
+        if uiGlyphName in self.RCJKI.lockedGlyphs:
+            state = 'locked'
 
         colID = tableColumn.identifier()
         if colID == '#':
@@ -132,8 +138,17 @@ class InitialDesignWindow(BaseWindowController):
                 cell.setBackgroundColor_(kThereColor)
             elif state == 'empty':
                 cell.setBackgroundColor_(kEmptyColor)
+            elif state == 'locked':
+                cell.setBackgroundColor_(kLockedColor)
             else:
                 cell.setDrawsBackground_(False)
                 cell.setBezeled_(False)
-
+        elif colID == 'MarkColor':
+            cell.setDrawsBackground_(True)
+            cell.setBezeled_(False)
+            if markColor is not None:
+                cell.setBackgroundColor_(NSColor.colorWithCalibratedRed_green_blue_alpha_(markColor[0], markColor[1], markColor[2], markColor[3]))
+            else:
+                cell.setDrawsBackground_(False)
+                cell.setBezeled_(False)
         return cell

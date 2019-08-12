@@ -22,6 +22,7 @@ from vanilla import *
 from mojo.roboFont import *
 from mojo.drawingTools import *
 from mojo.events import extractNSEvent
+from mojo.UI import AllGlyphWindows, CurrentGlyphWindow
 from vanilla.dialogs import getFile
 from mojo.canvas import CanvasGroup
 from AppKit import NSColor
@@ -53,6 +54,8 @@ class ProjectEditorWindow(BaseWindowController):
         self.w.open()
 
     def editProject(self, sender):
+        for i in range(len(AllGlyphWindows())):
+            CurrentGlyphWindow().close()
         EditProjectSheet(self)
 
     def newProject(self, sender):
@@ -343,6 +346,8 @@ class EditProjectSheet():
         self.parent.RCJKI.projectEditorController.updateSheetUI()
         self.getPreviewFont()
         self.getPreviewGlyph()
+        if self.parent.RCJKI.initialDesignController.interface:
+            self.parent.RCJKI.initialDesignController.loadProjectFonts()
 
     def removeMastersButtonCallback(self, sender):
         sel = self.parent.sheet.masterGroup.mastersList.getSelection()
@@ -354,6 +359,8 @@ class EditProjectSheet():
         self.parent.RCJKI.projectEditorController.updateSheetUI()
         self.getPreviewFont()
         self.getPreviewGlyph()
+        if self.parent.RCJKI.initialDesignController.interface:
+            self.parent.RCJKI.initialDesignController.loadProjectFonts()
 
     def scriptsRadioGroupCallback(self, sender):
         script = self.parent.RCJKI.scriptsList[sender.get()]

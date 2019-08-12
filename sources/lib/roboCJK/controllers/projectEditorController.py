@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from imp import reload
 from defcon import *
 from mojo.roboFont import *
-from mojo.UI import PostBannerNotification
+from mojo.UI import PostBannerNotification, AllGlyphWindows, CurrentGlyphWindow
 import json
 import os
 
@@ -43,6 +43,7 @@ class ProjectEditorController(object):
         if not gitEngine.isInGitRepository():
             PostBannerNotification('Impossible', "Project is not is GIT repository")
             return
+        gitEngine.createGitignore()
         gitEngine.pull()
         projectFile = open(self.RCJKI.projectFileLocalPath, 'w')
         d = json.dumps(self.RCJKI.project._toDict, indent=4, separators=(',', ':'))
@@ -78,15 +79,18 @@ class ProjectEditorController(object):
         self.updateUI()
 
     def loadProject(self, path):
+        for i in range(len(AllGlyphWindows())):
+            CurrentGlyphWindow().close()
         self.RCJKI.projectFileLocalPath = path[0]
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         if not gitEngine.isInGitRepository():
             PostBannerNotification('Impossible', "Project is not is GIT repository")
             return
-
+        
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
+        gitEngine.createGitignore()
         gitEngine.pull()
 
         projectFile = open(path[0], 'r')
@@ -101,6 +105,8 @@ class ProjectEditorController(object):
             self.RCJKI.projectFonts[k] = f
 
         self.updateUI()
+        if self.RCJKI.initialDesignController.interface:
+            self.RCJKI.initialDesignController.loadProjectFonts()
 
     def importFontToProject(self, path):
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
@@ -120,6 +126,8 @@ class ProjectEditorController(object):
 
     def launchProjectEditorInterface(self):
         if not self.interface:
+            for i in range(len(AllGlyphWindows())):
+                CurrentGlyphWindow().close()
             self.interface = projectEditorView.ProjectEditorWindow(self.RCJKI)
 
     def updateUI(self):
