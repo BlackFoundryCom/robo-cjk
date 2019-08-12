@@ -26,9 +26,9 @@ class RoboCJKProject(object):
         self.masterFontsPaths = {}
         self.script = 'Hanzi'
         self.settings = {
-            'designFrame': {'em_Dimension':(1000, 1000),
+            'designFrame': {'em_Dimension':[1000, 1000],
                             'characterFace': 90,
-                            'overshoot': (20, 20),
+                            'overshoot': [20, 20],
                             'horizontalLine': 15,
                             'verticalLine': 15,
                             'customsFrames': []
