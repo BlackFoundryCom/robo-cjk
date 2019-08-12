@@ -19,8 +19,10 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 import os
 
 class RoboCJKProject(object):
-    def __init__(self, name):
+    def __init__(self, name, admin):
         self.name = name
+        self.admin = admin
+        self.users = []
         self.masterFontsPaths = {}
         self.script = 'Hanzi'
         self.settings = {
@@ -47,10 +49,10 @@ class RoboCJKProject(object):
         return {e: getattr(self, e) for e in dir(self) if not e.startswith('_')}
 
 
-def testProject(name):
-    project = RoboCJKProject(name)
+def testProject(name, admin):
+    project = RoboCJKProject(name, admin)
     print(project._toDict)
 
 if __name__ == "__main__":
-    testProject('test')
+    testProject('projectName', 'admin')
 

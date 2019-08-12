@@ -21,14 +21,13 @@ from mojo.roboFont import *
 
 class ReferenceViewerDraw():
 
-    def __init__(self, interface, text):
-        self.ui = interface
+    def __init__(self, controller, text):
+        self.c = controller
         self.t = text
-        # self.draw()
 
     def draw(self):
         save()
-        for settings in self.ui.referenceViewerSettings:
+        for settings in self.c.project.settings['referenceViewer']:
             fontFamily = settings['font']
             size = settings['size']
             color = settings['color']

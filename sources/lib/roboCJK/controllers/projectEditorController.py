@@ -26,40 +26,68 @@ import os
 from models import roboCJKProject
 from views import projectEditorView
 from utils import files
+from utils import git
 reload(roboCJKProject)
 reload(projectEditorView)
 reload(files)
+reload(git)
 
 class ProjectEditorController(object):
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.interface = None
 
-    def makeProject(self, name):
-        return roboCJKProject.RoboCJKProject(name)
-
     def updateProject(self):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        if not gitEngine.isInGitRepository():
+            PostBannerNotification('Impossible', "Project is not is GIT repository")
+            return
+        gitEngine.pull()
         projectFile = open(self.RCJKI.projectFileLocalPath, 'w')
         d = json.dumps(self.RCJKI.project._toDict, indent=4, separators=(',', ':'))
         projectFile.write(d)
         projectFile.close()
+        PostBannerNotification("Project '%s' Saved" % self.RCJKI.project.name, self.RCJKI.projectFileLocalPath)
+        stamp = "Project '%s' Saved" % self.RCJKI.project.name
+        gitEngine.commit(stamp)
+        gitEngine.push()
+        PostBannerNotification('Git Push', stamp)
         self.updateUI()
 
     def saveProject(self, path):
         name = os.path.split(path)[1].split('.')[0]
-        self.RCJKI.project = self.makeProject("Untitled")
+        rootfolder = os.path.split(path)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        if not gitEngine.isInGitRepository():
+            PostBannerNotification('Impossible', "Project is not is GIT repository")
+            return
+        gitEngine.pull()
+        self.RCJKI.project = roboCJKProject.RoboCJKProject(name, gitEngine.user())
         self.RCJKI.projectFileLocalPath = path
+        
         projectFile = open(path, 'w')
         d = json.dumps(self.RCJKI.project._toDict, indent=4, separators=(',', ':'))
         projectFile.write(d)
         projectFile.close()
+        PostBannerNotification("Project '%s' Saved" % self.RCJKI.project.name, self.RCJKI.projectFileLocalPath)
+        stamp = "Project '%s' Saved" % self.RCJKI.project.name
+        gitEngine.commit(stamp)
+        gitEngine.push()
+        PostBannerNotification('Git Push', stamp)
         self.updateUI()
 
     def loadProject(self, path):
         self.RCJKI.projectFileLocalPath = path[0]
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        if not gitEngine.isInGitRepository():
+            PostBannerNotification('Impossible', "Project is not is GIT repository")
+            return
+
         projectFile = open(path[0], 'r')
         d = json.load(projectFile)
-        self.RCJKI.project = roboCJKProject.RoboCJKProject(d['name'])
+        self.RCJKI.project = roboCJKProject.RoboCJKProject(d['name'], d['admin'])
         self.RCJKI.project._initWithDict(d)
 
         for path in self.RCJKI.project.masterFontsPaths.values():
@@ -87,8 +115,10 @@ class ProjectEditorController(object):
             self.interface = projectEditorView.ProjectEditorWindow(self.RCJKI)
 
     def updateUI(self):
+        # rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        # gitEngine = git.GitEngine(rootfolder)
         self.interface.w.projectNameTextBox.set(self.RCJKI.project.name)
-        self.interface.w.editProjectButton.enable(self.RCJKI.project!=None)
+        self.interface.w.editProjectButton.enable((self.RCJKI.project!=None and self.RCJKI.project.admin==self.RCJKI.user))
         self.RCJKI.interface.w.initialDesignEditorButton.enable(self.RCJKI.project!=None)
         self.RCJKI.interface.w.deepComponentEditorButton.enable(self.RCJKI.project!=None)
         

@@ -17,12 +17,18 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from imp import reload
+import os
+
 from views import roboCJKView
 from controllers import projectEditorController
 from resources import characterSets
+from utils import git
+
 reload(projectEditorController)
 reload(roboCJKView)
 reload(characterSets)
+reload(git)
+
 
 class RoboCJKController(object):
 	def __init__(self):
@@ -32,5 +38,6 @@ class RoboCJKController(object):
 		self.projectFonts = {}
 		self.scriptsList = ['Hanzi', 'Hangul']
 		self.characterSets = characterSets.sets
+		self.user = git.GitEngine(None).user()
 	def launchInterface(self):
 		self.interface = roboCJKView.RoboCJKWindow(self)

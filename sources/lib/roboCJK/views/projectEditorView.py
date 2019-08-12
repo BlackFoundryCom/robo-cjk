@@ -24,13 +24,17 @@ from mojo.drawingTools import *
 from mojo.events import extractNSEvent
 from vanilla.dialogs import getFile
 from mojo.canvas import CanvasGroup
+from AppKit import NSColor
 import os
 import random
 
 from views import designFrameDrawer
 from views import referenceViewDrawer
+from utils import files
 reload(designFrameDrawer)
 reload(referenceViewDrawer)
+reload(files)
+
 
 class ProjectEditorWindow(BaseWindowController):
     def __init__(self, RCJKI):
@@ -71,7 +75,7 @@ class EditProjectSheet():
 
         self.parent.sheet.projectNameEditText = EditText((10, 10, -10, 20), self.parent.RCJKI.project.name, callback=self.projectNameEditTextCallback)
 
-        segmentedElements = ["Masters", "Design Frame"]#, "Reference Viewer"]
+        segmentedElements = ["Masters", "Design Frame", "Reference Viewer"]
         self.parent.sheet.projectSectionsSegmentedButton = SegmentedButton((10,40,-10,20), 
                 [dict(title=e, width=577/len(segmentedElements)) for e in segmentedElements],
                 callback = self.projectSectionsSegmentedButtonCallback)
@@ -98,6 +102,8 @@ class EditProjectSheet():
 
         self.parent.sheet.masterGroup.scriptsRadioGroup = RadioGroup((10, 190, 200, 40), self.parent.RCJKI.scriptsList, callback=self.scriptsRadioGroupCallback)
         self.parent.sheet.masterGroup.scriptsRadioGroup.set(self.parent.RCJKI.scriptsList.index(self.parent.RCJKI.project.script))
+
+
 
         self.parent.sheet.designFrameGroup = Group((0,60,-0,-30))
 
@@ -154,6 +160,8 @@ class EditProjectSheet():
         self.parent.sheet.designFrameGroup.horizontalLine_slider = Slider((160,100,135,20), 
                 minValue = 0, maxValue = 50, value = self.parent.RCJKI.project.settings['designFrame']['horizontalLine'], 
                 sizeStyle = "small",
+                stopOnTickMarks = True,
+                tickMarkCount = 26,
                 callback = self._horizontalLine_slider_callback)
 
         self.parent.sheet.designFrameGroup.verticalLine_title = TextBox((10,133,140,20), 
@@ -162,13 +170,15 @@ class EditProjectSheet():
         self.parent.sheet.designFrameGroup.verticalLine_slider = Slider((160,130,135,20), 
                 minValue = 0, maxValue = 50, value = self.parent.RCJKI.project.settings['designFrame']['verticalLine'], 
                 sizeStyle = "small",
+                stopOnTickMarks = True,
+                tickMarkCount = 26,
                 callback = self._verticalLine_slider_callback)
 
         self.parent.sheet.designFrameGroup.customsFrames_title = TextBox((10,163,200,20), 
                 "Customs Frames (EM%):", 
                 sizeStyle = "small")
 
-        slider = SliderListCell()
+        slider = SliderListCell(tickMarkCount=26, stopOnTickMarks=True)
 
         self.parent.sheet.designFrameGroup.customsFrames_list = List((10,193,285,-30),
                 self.parent.RCJKI.project.settings['designFrame']['customsFrames'],
@@ -198,10 +208,79 @@ class EditProjectSheet():
         self.parent.sheet.designFrameGroup.canvas = CanvasGroup((-295,0,-10,-10), 
                 delegate=ProjectCanvas("DesignFrame", self))
 
-        # self.sheet.referenceViewer = ReferenceViewer((0,20,-0,-20), self)
+
+        ####
+
+        self.parent.sheet.referenceViewerGroup = Group((0,60,-0,-30))
+
+        self.parent.sheet.referenceViewerGroup.FontList_comboBox = ComboBox((10, 10, 130, 18),
+                files.fontsList.get(),
+                sizeStyle='small')
+        self.parent.sheet.referenceViewerGroup.FontList_comboBox.set(files.fontsList.get()[0])
+
+        self.parent.sheet.referenceViewerGroup.addReferenceFont_button = Button((150, 10, 70, 20), 
+                "Add", 
+                sizeStyle="small",
+                callback = self._addReferenceFont_button_callback)
+
+        self.parent.sheet.referenceViewerGroup.removeReference_button = Button((225,10,70,20),
+                "Remove",
+                sizeStyle="small",
+                callback = self._removeReference_button_callback)
+
+        l = [{"Font": e['font']} for e in self.parent.RCJKI.project.settings['referenceViewer']]
+        self.parent.sheet.referenceViewerGroup.reference_list = List((10,35,285,125),
+                l,
+                columnDescriptions = [{"title": "Font"}],
+                selectionCallback = self._reference_list_selectionCallback,
+                drawFocusRing = False)
+
+
+        self.parent.sheet.referenceViewerGroup.settings = Group((10,160,295,-0))
+        self.parent.sheet.referenceViewerGroup.settings.show(0)
+
+        y = 0
+
+        self.parent.sheet.referenceViewerGroup.settings.size_title = TextBox((0,y,100,20),
+                "Size (FU)", 
+                sizeStyle = "small")
+        self.parent.sheet.referenceViewerGroup.settings.size_editText = EditText((-60,y,-10,20),
+                "", 
+                sizeStyle = "small",
+                callback = self._size_editText_callback)
+
+        self.parent.sheet.referenceViewerGroup.settings.size_slider = Slider((90,y,-65,20),
+                minValue = 0,
+                maxValue = 1000,
+                value = 250,
+                sizeStyle = "small",
+                callback = self._size_slider_callback)
+
+        y += 30
+        self.parent.sheet.referenceViewerGroup.settings.color_title = TextBox((0,y,100,20),
+                "Color (FU)", 
+                sizeStyle = "small")
+        self.parent.sheet.referenceViewerGroup.settings.color_colorWell = ColorWell((90,y-3,-10,20),
+                callback=self._color_editText_callback, 
+                color=NSColor.grayColor())
+
+        y+=30
+        # self.parent.sheet.referenceViewerGroup.settings.message = Helpers.SmartTextBox((0, y, -10, 50),
+        #         "To move the selected font in the canvas, press command and drag",
+        #         blue = 9,
+        #         green = .7,
+        #         sizeStyle = 12)
+
+        self.parent.sheet.referenceViewerGroup.canvas = CanvasGroup((-295,0,-10,-10), 
+                delegate=ProjectCanvas("ReferenceViewer", self))
+
+
+        ###
+
 
         self.parent.sheet.masterGroup.show(1)
         self.parent.sheet.designFrameGroup.show(0)
+        self.parent.sheet.referenceViewerGroup.show(0)
 
         self.parent.sheet.saveButton = Button((-160,-30, 150, 20), 'Save', callback=self.saveSheet)
         self.parent.sheet.closeButton = Button((-320,-30, 150, 20), 'Close', callback=self.closeSheet)
@@ -232,7 +311,7 @@ class EditProjectSheet():
         groups = [
             self.parent.sheet.masterGroup,
             self.parent.sheet.designFrameGroup,
-            # self.sheet.referenceViewerGroup
+            self.parent.sheet.referenceViewerGroup
             ]
         for i, e in enumerate(groups):
             if i != sel: 
@@ -345,6 +424,83 @@ class EditProjectSheet():
         self.parent.sheet.designFrameGroup.customsFrames_list.set(self.parent.RCJKI.project.settings['designFrame']['customsFrames'])
         self.parent.sheet.designFrameGroup.canvas.update()
 
+    ###
+
+    def _addReferenceFont_button_callback(self, sender):
+        font = self.parent.sheet.referenceViewerGroup.FontList_comboBox.get()
+        if font is None or font == "": return
+        # Default values
+        elem = {
+            "font": font,
+            "size": 400,
+            "x": -500,
+            "y": 40,
+            "color": (0, 0, 0, .56)
+        }
+
+        self.parent.RCJKI.project.settings['referenceViewer'].append(elem)
+        l = [{"Font": e['font']} for e in self.parent.RCJKI.project.settings['referenceViewer']]
+        self.parent.sheet.referenceViewerGroup.reference_list.set(l)
+        self.parent.sheet.referenceViewerGroup.reference_list.setSelection([len(self.parent.sheet.referenceViewerGroup.reference_list) - 1])
+        self.parent.sheet.referenceViewerGroup.canvas.update()
+
+    def _removeReference_button_callback(self, sender):
+        sel = self.parent.sheet.referenceViewerGroup.reference_list.getSelection()
+        if sel is None: return
+
+        def remove(l):
+            return [e for i, e in enumerate(l) if i not in sel]
+
+        self.parent.RCJKI.project.settings['referenceViewer'] = remove(self.parent.RCJKI.project.settings['referenceViewer'])
+        self.parent.sheet.referenceViewerGroup.reference_list.set({"Font": e['font'] for e in self.parent.RCJKI.project.settings['referenceViewer']})
+
+        # self.reference_list.setSelection([len(self.s.referenceViewerList) - 1])
+        self.parent.sheet.referenceViewerGroup.canvas.update()
+
+    def _reference_list_selectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            return
+        self.parent.sheet.referenceViewerGroup.settings.show(1)
+        settings = self.parent.RCJKI.project.settings['referenceViewer'][sel[0]]
+        self.parent.sheet.referenceViewerGroup.settings.size_editText.set(settings["size"])
+        self.parent.sheet.referenceViewerGroup.settings.size_slider.set(settings["size"])
+        colors = settings["color"]
+        color = NSColor.colorWithCalibratedRed_green_blue_alpha_(
+            colors[0], colors[1], colors[2], colors[3])
+        self.parent.sheet.referenceViewerGroup.settings.color_colorWell.set(color)
+
+    def _size_editText_callback(self, sender):
+        sel = self.parent.sheet.referenceViewerGroup.reference_list.getSelection()
+        if not sel: return
+        size = self.parent.RCJKI.project.settings['referenceViewer'][sel[0]]["size"]
+        try: 
+            size = int(sender.get())
+        except: 
+            sender.set(size)
+        self.parent.RCJKI.project.settings['referenceViewer'][sel[0]]["size"] = size
+        self.parent.sheet.referenceViewerGroup.settings.size_slider.set(size)
+        self.parent.sheet.referenceViewerGroup.canvas.update()
+
+    def _size_slider_callback(self, sender):
+        sel = self.parent.sheet.referenceViewerGroup.reference_list.getSelection()
+        if not sel: return
+        self.parent.RCJKI.project.settings['referenceViewer'][sel[0]]["size"] = int(sender.get())
+        self.parent.sheet.referenceViewerGroup.settings.size_editText.set(self.parent.RCJKI.project.settings['referenceViewer'][sel[0]]["size"])
+        self.parent.sheet.referenceViewerGroup.canvas.update()
+
+    def _color_editText_callback(self, sender):
+        sel = self.parent.sheet.referenceViewerGroup.reference_list.getSelection()
+        if not sel: return
+        color = sender.get()
+        self.parent.RCJKI.project.settings['referenceViewer'][sel[0]]["color"] = (
+            color.redComponent(),
+            color.greenComponent(),
+            color.blueComponent(),
+            color.alphaComponent(),
+        )
+        self.parent.sheet.referenceViewerGroup.canvas.update()
+
 
 class ProjectCanvas():
     def __init__(self, name, parent):
@@ -369,7 +525,7 @@ class ProjectCanvas():
 
     def update(self):
         if self.name == "ReferenceViewer":
-            self.parent.parent.sheet.designFrameGroup.canvas.update()
+            self.parent.parent.sheet.referenceViewerGroup.canvas.update()
         else:
             self.parent.parent.sheet.designFrameGroup.canvas.update()
 
@@ -390,8 +546,8 @@ class ProjectCanvas():
         if not command:
             self.translateX += deltaX
             self.translateY -= deltaY
-        elif self.parent.reference_list_selection and self.name == "ReferenceViewer":
-            currentSetting = self.ui.referenceViewerSettings[self.parent.reference_list_selection[0]]
+        elif self.parent.parent.sheet.referenceViewerGroup.reference_list.getSelection() and self.name == "ReferenceViewer":
+            currentSetting = self.parent.parent.RCJKI.project.settings['referenceViewer'][self.parent.parent.sheet.referenceViewerGroup.reference_list.getSelection()[0]]
             currentSetting["x"] += deltaX
             currentSetting["y"] -= deltaY
         self.update()
@@ -420,8 +576,8 @@ class ProjectCanvas():
                 save()
                 stroke(0)
                 fill(None)
-                w = self.parent.parent.RCJKI.project.settings['designFrame]']['em_Dimension'][0]
-                h = self.parent.parent.RCJKI.project.settings['designFrame]']['em_Dimension'][0]
+                w = self.parent.parent.RCJKI.project.settings['designFrame']['em_Dimension'][0]
+                h = self.parent.parent.RCJKI.project.settings['designFrame']['em_Dimension'][0]
                 
                 designFrameDrawer.DesignFrameDrawer(self.parent.parent.RCJKI).draw(glyph = self.previewGlyph, scale = self.scale)
                 

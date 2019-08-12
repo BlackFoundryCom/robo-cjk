@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import os
+import Cocoa
 from pathlib import Path
 
 def makepath(filepath):
@@ -34,3 +35,18 @@ def makepath(filepath):
         if not Path(os.path.join(head, tail)).is_dir():
             os.mkdir(os.path.join(head, tail))
             head = os.path.join(head, tail)
+
+
+class fontsList():
+    _fonts = None
+
+    @classmethod
+    def get(cls):
+        if cls._fonts is None:
+            manager = Cocoa.NSFontManager.sharedFontManager()
+            cls._fonts = list(manager.availableFontFamilies())
+        return cls._fonts
+
+    @classmethod
+    def reload(cls):
+        cls._fonts = None
