@@ -22,8 +22,8 @@ from vanilla import *
 import os
 import json
 
-from controllers import roboCJKController
-reload(roboCJKController)
+from controllers import initialDesignController
+reload(initialDesignController)
 
 
 class RoboCJKWindow(BaseWindowController):
@@ -42,17 +42,19 @@ class RoboCJKWindow(BaseWindowController):
         self.w.open()
 
     def openProjectEditor(self, sender):
-    	self.RCJKI.projectEditorController.launchProjectEditorInterface()
+        self.RCJKI.projectEditorController.launchProjectEditorInterface()
+
+    def openInitialDesignEditor(self, sender):
+        self.RCJKI.initialDesignController.launchInitialDesignInterface()
 
     def openDeepComponentEditor(self, sender):
         print(self.RCJKI.characterSets[self.RCJKI.project.script]['DeepComponentKeys'])
-
-    def openInitialDesignEditor(self, sender):
-        print(self.RCJKI.characterSets[self.RCJKI.project.script]['Basic'])
 
     def openSettings(self, sender):
         pass
 
     def windowCloses(self, sender):
-    	if self.RCJKI.projectEditorController.interface:
-    		self.RCJKI.projectEditorController.interface.w.close()
+        if self.RCJKI.projectEditorController.interface:
+            self.RCJKI.projectEditorController.interface.w.close()
+        if self.RCJKI.initialDesignController.interface:
+            self.RCJKI.initialDesignController.interface.w.close()

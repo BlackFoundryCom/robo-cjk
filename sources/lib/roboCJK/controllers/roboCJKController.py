@@ -21,10 +21,12 @@ import os
 
 from views import roboCJKView
 from controllers import projectEditorController
+from controllers import initialDesignController
 from resources import characterSets
 from utils import git
 
 reload(projectEditorController)
+reload(initialDesignController)
 reload(roboCJKView)
 reload(characterSets)
 reload(git)
@@ -34,10 +36,14 @@ class RoboCJKController(object):
 	def __init__(self):
 		self.project = None
 		self.projectFileLocalPath = None
-		self.projectEditorController = projectEditorController.ProjectEditorController(self)
 		self.projectFonts = {}
 		self.scriptsList = ['Hanzi', 'Hangul']
 		self.characterSets = characterSets.sets
+		self.currentFont = None
+		self.allFonts = []
 		self.user = git.GitEngine(None).user()
+		self.projectEditorController = projectEditorController.ProjectEditorController(self)
+		self.initialDesignController = initialDesignController.InitialDesignController(self)
+		
 	def launchInterface(self):
 		self.interface = roboCJKView.RoboCJKWindow(self)

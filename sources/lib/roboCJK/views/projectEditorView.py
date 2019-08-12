@@ -40,7 +40,7 @@ class ProjectEditorWindow(BaseWindowController):
     def __init__(self, RCJKI):
         super(ProjectEditorWindow, self).__init__()
         self.RCJKI = RCJKI
-        self.w = Window((200, 80), 'Project Editor')
+        self.w = Window((200, 0, 200, 80), 'Project Editor')
         name = 'No Open Project'
         if self.RCJKI.project:
             name = self.RCJKI.project.name
@@ -50,8 +50,6 @@ class ProjectEditorWindow(BaseWindowController):
         self.w.openProjectButton = Button((0,60,200,20), 'Open', callback=self.openProject)
         self.w.bind('close', self.windowCloses)
         self.w.editProjectButton.enable(self.RCJKI.project!=None)
-
-        self.w.center()
         self.w.open()
 
     def editProject(self, sender):

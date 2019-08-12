@@ -36,17 +36,20 @@ def makepath(filepath):
             os.mkdir(os.path.join(head, tail))
             head = os.path.join(head, tail)
 
-
 class fontsList():
     _fonts = None
-
     @classmethod
     def get(cls):
         if cls._fonts is None:
             manager = Cocoa.NSFontManager.sharedFontManager()
             cls._fonts = list(manager.availableFontFamilies())
         return cls._fonts
-
     @classmethod
     def reload(cls):
         cls._fonts = None
+
+def normalizeUnicode(code):
+    if len(code) < 4:
+        return '0'*(4-len(code)) + code
+    else:
+        return code

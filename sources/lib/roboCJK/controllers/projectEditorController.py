@@ -85,11 +85,16 @@ class ProjectEditorController(object):
             PostBannerNotification('Impossible', "Project is not is GIT repository")
             return
 
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
+
         projectFile = open(path[0], 'r')
         d = json.load(projectFile)
         self.RCJKI.project = roboCJKProject.RoboCJKProject(d['name'], d['admin'])
         self.RCJKI.project._initWithDict(d)
 
+        self.RCJKI.projectFonts = {}
         for path in self.RCJKI.project.masterFontsPaths.values():
             f = Font(os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', path))
             k = f.info.familyName+'-'+f.info.styleName
@@ -98,17 +103,20 @@ class ProjectEditorController(object):
         self.updateUI()
 
     def importFontToProject(self, path):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
         f = Font(path)
         k = f.info.familyName+'-'+f.info.styleName
         if k not in self.RCJKI.project.masterFontsPaths:
             UFOName = os.path.split(path)[1]
             savePath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', UFOName)
             files.makepath(savePath)
-            PostBannerNotification('Importing Font', UFOName)
             f.save(savePath)
             self.RCJKI.project.masterFontsPaths[k] = UFOName
             self.RCJKI.projectFonts[k] = f
         self.updateSheetUI()
+        self.updateProject()
 
     def launchProjectEditorInterface(self):
         if not self.interface:
