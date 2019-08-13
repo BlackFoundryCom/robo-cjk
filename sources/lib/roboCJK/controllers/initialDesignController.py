@@ -33,8 +33,9 @@ class InitialDesignController(object):
 
     def launchInitialDesignInterface(self):
         self.characterSet = self.RCJKI.characterSets[self.RCJKI.project.script]['Basic']
-        self.interface = initialDesignView.InitialDesignWindow(self)
-        self.loadProjectFonts()
+        if not self.interface:
+            self.interface = initialDesignView.InitialDesignWindow(self)
+            self.loadProjectFonts()
 
     def loadProjectFonts(self):
         self.fontsList = []

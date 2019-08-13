@@ -163,19 +163,19 @@ class ProjectEditorController(object):
         collabFile.write(d)
         collabFile.close()
         
-    def saveAndCommitProjectAndCollab(self):
-        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
-        gitEngine = git.GitEngine(rootfolder)
-        gitEngine.pull()
-        stamp = "Project and Collab '%s' Saved" % self.RCJKI.project.name
-        gitEngine.commit(stamp)
-        gitEngine.push()
-        PostBannerNotification('Git Push', stamp)
+    # def saveAndCommitProjectAndCollab(self):
+    #     rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+    #     gitEngine = git.GitEngine(rootfolder)
+    #     gitEngine.pull()
+    #     stamp = "Project and Collab '%s' Saved" % self.RCJKI.project.name
+    #     gitEngine.commit(stamp)
+    #     gitEngine.push()
+    #     PostBannerNotification('Git Push', stamp)
 
-    def pullAndRefresh(self):
+    def pushRefresh(self):
+
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
-        gitEngine.pull()
 
         head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
         title, ext = tail.split('.')
@@ -195,8 +195,14 @@ class ProjectEditorController(object):
             self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
             self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
 
-        message = 'Refresh %s'% self.RCJKI.project.name
-        PostBannerNotification('Git Pull', message)
+        message = 'Pull Push Refresh %s'% self.RCJKI.project.name
+        PostBannerNotification('Refresh', message)
+        
+        stamp = "Project and Collab '%s' Refreshed" % self.RCJKI.project.name
+        gitEngine.commit(stamp)
+        gitEngine.push()
+
+        
 
     def launchProjectEditorInterface(self):
         if not self.interface:

@@ -25,8 +25,10 @@ from vanilla import *
 import os
 
 from utils import files
+from utils import git
 from views import tableDelegate
 reload(files)
+reload(git)
 
 kMissingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
 kThereColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 1, 0, 1)
@@ -65,8 +67,8 @@ class InitialDesignWindow(BaseWindowController):
                 showColumnTitles = False,
                 drawFocusRing = False)
 
-        self.w.pullAndRefreshButton = Button((0,-40,200,20), 'Pull and Refresh', callback=self.pullAndRefreshButtonCallback)
-        self.w.saveAndCommitButton = Button((0,-20,200,20), 'Save, Commit and Push', callback=self.saveAndCommitButtonCallback)
+        # self.w.pullAndRefreshButton = Button((0,-40,200,20), 'Pull and Refresh', callback=self.pullAndRefreshButtonCallback)
+        # self.w.saveAndCommitButton = Button((0,-20,200,20), 'Save, Commit and Push', callback=self.saveAndCommitButtonCallback)
 
         self.controller.loadProjectFonts()
         self.w.fontsList.setSelection([])
@@ -82,12 +84,12 @@ class InitialDesignWindow(BaseWindowController):
         self.w.open()
 
 
-    def pullAndRefreshButtonCallback(self, sender):
-        self.RCJKI.projectEditorController.pullAndRefresh()
-        self.controller.updateGlyphSetList()
+    # def pullAndRefreshButtonCallback(self, sender):
+    #     self.RCJKI.projectEditorController.pullPushRefresh()
+    #     self.controller.updateGlyphSetList()
 
-    def saveAndCommitButtonCallback(self, sender):
-        self.RCJKI.projectEditorController.saveAndCommitProjectAndCollab()
+    # def saveAndCommitButtonCallback(self, sender):
+    #     self.RCJKI.projectEditorController.saveAndCommitProjectAndCollab()
 
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()
@@ -101,7 +103,10 @@ class InitialDesignWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def glyphSetListEditCallback(self, sender):
-        # self.RCJKI.projectEditorController.pullAndRefresh()
+        if not sender.getSelection(): return
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
 
         reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 1]
         freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 0]
@@ -115,6 +120,8 @@ class InitialDesignWindow(BaseWindowController):
             myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
 
         self.RCJKI.projectEditorController.saveCollab()
+
+        self.RCJKI.projectEditorController.pushRefresh()
 
     def glyphSetListdoubleClickCallback(self, sender):
         if not sender.getSelection(): return

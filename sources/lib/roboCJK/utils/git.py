@@ -53,7 +53,7 @@ class GitEngine():
 
     def pull(self):
         if not self.isInGitRepository(): return False
-        subprocess.call(['git', 'pull'], cwd=self._path)
+        subprocess.call(['git', 'pull', '-s', 'resolve'], cwd=self._path)
         return True
 
     def user(self):
