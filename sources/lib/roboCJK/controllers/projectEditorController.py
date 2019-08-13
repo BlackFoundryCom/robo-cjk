@@ -123,13 +123,16 @@ class ProjectEditorController(object):
         self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
         self.RCJKI.collab._addLocker(self.RCJKI.user)
         for lck in d['lockers']:
-            locker = self.RCJKI.collab._addLocker(lck['user'])
+            self.RCJKI.collab._addLocker(lck['user'])
+        for lck in d['lockers']:
+            locker = self.RCJKI.collab._userLocker(lck['user'])
             locker._addGlyphs(lck['glyphs'])
         if self.RCJKI.collab._userLocker(self.RCJKI.user):
-            self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
             self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
+            self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
 
         self.updateUI()
+
         if self.RCJKI.initialDesignController.interface:
             self.RCJKI.initialDesignController.loadProjectFonts()
 
@@ -168,6 +171,32 @@ class ProjectEditorController(object):
         gitEngine.commit(stamp)
         gitEngine.push()
         PostBannerNotification('Git Push', stamp)
+
+    def pullAndRefresh(self):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
+
+        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+        title, ext = tail.split('.')
+        tail = title + '.roboCJKCollab'
+        collabFilePath = os.path.join(head, tail)
+
+        collabFile = open(collabFilePath, 'r')
+        d = json.load(collabFile)
+        self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
+        self.RCJKI.collab._addLocker(self.RCJKI.user)
+        for lck in d['lockers']:
+            self.RCJKI.collab._addLocker(lck['user'])
+        for lck in d['lockers']:
+            locker = self.RCJKI.collab._userLocker(lck['user'])
+            locker._addGlyphs(lck['glyphs'])
+        if self.RCJKI.collab._userLocker(self.RCJKI.user):
+            self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
+            self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
+
+        message = 'Refresh %s'% self.RCJKI.project.name
+        PostBannerNotification('Git Pull', message)
 
     def launchProjectEditorInterface(self):
         if not self.interface:

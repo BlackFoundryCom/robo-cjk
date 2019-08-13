@@ -53,14 +53,14 @@ class Locker(object):
     def _allOtherLockedGlyphs(self):
         s = set()
         for locker in self._controller._lockers:
-            s |= locker._glyphs
+            for glyph in locker._glyphs:
+                s.add(glyph)
         s -= self._glyphs
         return s
     
     @property
     def glyphs(self):
         return list(self._glyphs)
-    
 
     def _addGlyphs(self, glyphs):
         for glyph in glyphs:
@@ -83,12 +83,13 @@ def testCollab(users):
     for user in users:
         collab._addLocker(user)
     for locker in collab.lockers:
-        locker._addGlyphs(['glyph_%s'%random.randint(0, 3) for i in range(3)])
+        l = ['glyph_%s'%random.randint(0, 10) for i in range(3)]
+        locker._addGlyphs(l)
     for locker in collab.lockers:
-        print(locker._toDict)
+        print(locker.user, 'locked:', locker._allOtherLockedGlyphs)
 
     print(collab._toDict)
 
 if __name__ == "__main__":
-    testCollab(['user1', 'user2'])
+    testCollab(['user1', 'user2', 'user3'])
 

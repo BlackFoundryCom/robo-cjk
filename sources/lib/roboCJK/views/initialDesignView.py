@@ -50,7 +50,7 @@ class InitialDesignWindow(BaseWindowController):
                 selectionCallback = self.fontsListSelectionCallback,
                 drawFocusRing = False)
 
-        self.w.glyphSetList = List((0,85,200,-20),
+        self.w.glyphSetList = List((0,85,200,-40),
                 [],
                 columnDescriptions = [
                                 {"title": "Reserved", "cell": CheckBoxListCell(), "width" : 20, "editable": True},
@@ -65,7 +65,8 @@ class InitialDesignWindow(BaseWindowController):
                 showColumnTitles = False,
                 drawFocusRing = False)
 
-        self.w.saveAndCommitButton = Button((0,-20,200,20), 'Save and Commit', callback=self.saveAndCommitButtonCallback)
+        self.w.pullAndRefreshButton = Button((0,-40,200,20), 'Pull and Refresh', callback=self.pullAndRefreshButtonCallback)
+        self.w.saveAndCommitButton = Button((0,-20,200,20), 'Save, Commit and Push', callback=self.saveAndCommitButtonCallback)
 
         self.controller.loadProjectFonts()
         self.w.fontsList.setSelection([])
@@ -79,6 +80,11 @@ class InitialDesignWindow(BaseWindowController):
 
         self.w.bind('close', self.windowCloses)
         self.w.open()
+
+
+    def pullAndRefreshButtonCallback(self, sender):
+        self.RCJKI.projectEditorController.pullAndRefresh()
+        self.controller.updateGlyphSetList()
 
     def saveAndCommitButtonCallback(self, sender):
         self.RCJKI.projectEditorController.saveAndCommitProjectAndCollab()
@@ -95,6 +101,8 @@ class InitialDesignWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def glyphSetListEditCallback(self, sender):
+        # self.RCJKI.projectEditorController.pullAndRefresh()
+
         reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 1]
         freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 0]
         myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
@@ -105,6 +113,7 @@ class InitialDesignWindow(BaseWindowController):
             self.RCJKI.reservedGlyphs = myLocker.glyphs
         else:
             myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
+
         self.RCJKI.projectEditorController.saveCollab()
 
     def glyphSetListdoubleClickCallback(self, sender):
@@ -178,7 +187,7 @@ class InitialDesignWindow(BaseWindowController):
             else:
                 cell.setDrawsBackground_(False)
                 cell.setBezeled_(False)
-        elif colID == 'Locked':
+        elif colID == 'Reserved':
             if locked:
                 cell = self.dummyCell
         return cell
