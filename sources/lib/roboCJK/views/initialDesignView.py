@@ -110,7 +110,7 @@ class InitialDesignWindow(BaseWindowController):
 
         myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
         if myLocker:
-
+            print('update boxes view')
             reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 1 and d['Name'] not in myLocker._allOtherLockedGlyphs]
             freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 0 or d['Name'] in myLocker._allOtherLockedGlyphs]
         
