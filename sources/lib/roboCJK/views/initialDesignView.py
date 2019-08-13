@@ -108,10 +108,12 @@ class InitialDesignWindow(BaseWindowController):
         gitEngine = git.GitEngine(rootfolder)
         gitEngine.pull()
 
-        reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 1]
-        freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 0]
         myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
         if myLocker:
+
+            reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 1 and d['Name'] not in myLocker._allOtherLockedGlyphs]
+            freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 0 or d['Name'] in myLocker._allOtherLockedGlyphs]
+        
             myLocker._addGlyphs(reservedGlyphs)
             myLocker._removeGlyphs(freeGlyphs)
             self.RCJKI.lockedGlyphs = myLocker._allOtherLockedGlyphs
