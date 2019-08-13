@@ -36,12 +36,14 @@ class RoboCJKController(object):
 	def __init__(self):
 		self.project = None
 		self.projectFileLocalPath = None
+		self.collab = None
 		self.projectFonts = {}
 		self.scriptsList = ['Hanzi', 'Hangul']
 		self.characterSets = characterSets.sets
 		self.currentFont = None
 		self.allFonts = []
-		self.lockedGlyphs = ['uni4E0D'] #for testing only, remove when WIP set up
+		self.lockedGlyphs = []
+		self.reservedGlyphs = []
 		self.user = git.GitEngine(None).user()
 		self.projectEditorController = projectEditorController.ProjectEditorController(self)
 		self.initialDesignController = initialDesignController.InitialDesignController(self)

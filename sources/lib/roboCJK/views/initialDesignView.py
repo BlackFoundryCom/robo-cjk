@@ -32,7 +32,8 @@ kMissingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
 kThereColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 1, 0, 1)
 kEmptyColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
 kLockedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 0, 0, 1)
-
+kFreeColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
+kReservedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
 
 class InitialDesignWindow(BaseWindowController):
     def __init__(self, controller):
@@ -41,8 +42,6 @@ class InitialDesignWindow(BaseWindowController):
         self.RCJKI = self.controller.RCJKI
         self.RCJKI.allFonts = []
         self.selectedGlyph = None
-
-        
     
         self.w = Window((200, 0, 800, 600), 'Initial Design', minSize = (300,300), maxSize = (2500,2000))
         
@@ -51,18 +50,22 @@ class InitialDesignWindow(BaseWindowController):
                 selectionCallback = self.fontsListSelectionCallback,
                 drawFocusRing = False)
 
-        self.w.glyphSetList = List((0,85,200,-0),
+        self.w.glyphSetList = List((0,85,200,-20),
                 [],
                 columnDescriptions = [
+                                {"title": "Reserved", "cell": CheckBoxListCell(), "width" : 20, "editable": True},
                                 {"title": "#", "width" : 20},
-                                {"title": "Char", "width" : 30},
-                                {"title": "Name", "width" : 100},
-                                {"title": "MarkColor", "width" : 30, "editable": True}
+                                {"title": "Char", "width" : 30, 'editable':False},
+                                {"title": "Name", "width" : 80, 'editable':False},
+                                {"title": "MarkColor", "width" : 30}
                                 ],
                 selectionCallback = self.glyphSetListSelectionCallback,
                 doubleClickCallback = self.glyphSetListdoubleClickCallback,
+                editCallback = self.glyphSetListEditCallback,
                 showColumnTitles = False,
                 drawFocusRing = False)
+
+        self.w.saveAndCommitButton = Button((0,-20,200,20), 'Save and Commit', callback=self.saveAndCommitButtonCallback)
 
         self.controller.loadProjectFonts()
         self.w.fontsList.setSelection([])
@@ -77,6 +80,9 @@ class InitialDesignWindow(BaseWindowController):
         self.w.bind('close', self.windowCloses)
         self.w.open()
 
+    def saveAndCommitButtonCallback(self, sender):
+        self.RCJKI.projectEditorController.saveAndCommitProjectAndCollab()
+
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
@@ -87,6 +93,19 @@ class InitialDesignWindow(BaseWindowController):
             return
         self.RCJKI.currentFont = self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]
         self.controller.updateGlyphSetList()
+
+    def glyphSetListEditCallback(self, sender):
+        reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 1]
+        freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 0]
+        myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
+        if myLocker:
+            myLocker._addGlyphs(reservedGlyphs)
+            myLocker._removeGlyphs(freeGlyphs)
+            self.RCJKI.lockedGlyphs = myLocker._allOtherLockedGlyphs
+            self.RCJKI.reservedGlyphs = myLocker.glyphs
+        else:
+            myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
+        self.RCJKI.projectEditorController.saveCollab()
 
     def glyphSetListdoubleClickCallback(self, sender):
         if not sender.getSelection(): return
@@ -116,8 +135,11 @@ class InitialDesignWindow(BaseWindowController):
             return cell
         uiGlyph  = self.w.glyphSetList[row]
         uiGlyphName = uiGlyph['Name']
+        uiGlyphReserved = uiGlyph['Reserved']
 
         state = 'missing'
+        locked = False
+        reserved = False
         markColor = None
         if self.RCJKI.currentFont:
             if uiGlyphName in self.RCJKI.currentFont:
@@ -126,7 +148,7 @@ class InitialDesignWindow(BaseWindowController):
                 if len(self.RCJKI.currentFont[uiGlyphName]) == 0 and not self.RCJKI.currentFont[uiGlyphName].components:
                     state = 'empty'
         if uiGlyphName in self.RCJKI.lockedGlyphs:
-            state = 'locked'
+            locked = True
 
         colID = tableColumn.identifier()
         if colID == '#':
@@ -138,11 +160,16 @@ class InitialDesignWindow(BaseWindowController):
                 cell.setBackgroundColor_(kThereColor)
             elif state == 'empty':
                 cell.setBackgroundColor_(kEmptyColor)
-            elif state == 'locked':
-                cell.setBackgroundColor_(kLockedColor)
             else:
                 cell.setDrawsBackground_(False)
                 cell.setBezeled_(False)
+        elif colID == 'Name' or colID == 'Char':
+            if locked:
+                cell.setTextColor_(kLockedColor)
+            elif uiGlyphReserved == 1:
+                cell.setTextColor_(kReservedColor)
+            else:
+                cell.setTextColor_(kFreeColor)
         elif colID == 'MarkColor':
             cell.setDrawsBackground_(True)
             cell.setBezeled_(False)
@@ -151,4 +178,8 @@ class InitialDesignWindow(BaseWindowController):
             else:
                 cell.setDrawsBackground_(False)
                 cell.setBezeled_(False)
+        elif colID == 'Locked':
+            if locked:
+                cell = self.dummyCell
         return cell
+

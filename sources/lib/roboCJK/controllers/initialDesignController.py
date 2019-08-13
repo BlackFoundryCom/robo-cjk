@@ -41,7 +41,7 @@ class InitialDesignController(object):
         self.RCJKI.allFonts = []
         for name, file in self.RCJKI.project.masterFontsPaths.items():
             path = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', file)
-            initialDesignSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'InitialDesign', file)
+            initialDesignSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'InitialDesign', self.RCJKI.project.script, file)
             if not os.path.isdir(initialDesignSavepath):
                 files.makepath(initialDesignSavepath)
                 f = OpenFont(path, showInterface=False)
@@ -68,5 +68,5 @@ class InitialDesignController(object):
             for c in self.characterSet:
                 name = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
                 code = c
-                l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+                l.append(({'Reserved':name in self.RCJKI.reservedGlyphs, '#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
         self.interface.w.glyphSetList.set(l)

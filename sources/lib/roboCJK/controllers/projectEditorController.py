@@ -24,10 +24,12 @@ import json
 import os
 
 from models import roboCJKProject
+from models import roboCJKCollab
 from views import projectEditorView
 from utils import files
 from utils import git
 reload(roboCJKProject)
+reload(roboCJKCollab)
 reload(projectEditorView)
 reload(files)
 reload(git)
@@ -66,12 +68,15 @@ class ProjectEditorController(object):
         gitEngine.pull()
         self.RCJKI.project = roboCJKProject.RoboCJKProject(name, gitEngine.user())
         self.RCJKI.projectFileLocalPath = path
-        
         projectFile = open(path, 'w')
         d = json.dumps(self.RCJKI.project._toDict, indent=4, separators=(',', ':'))
         projectFile.write(d)
         projectFile.close()
         PostBannerNotification("Project '%s' Saved" % self.RCJKI.project.name, self.RCJKI.projectFileLocalPath)
+
+        self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
+        self.saveCollab()
+
         stamp = "Project '%s' Saved" % self.RCJKI.project.name
         gitEngine.commit(stamp)
         gitEngine.push()
@@ -93,7 +98,7 @@ class ProjectEditorController(object):
         gitEngine.createGitignore()
         gitEngine.pull()
 
-        projectFile = open(path[0], 'r')
+        projectFile = open(self.RCJKI.projectFileLocalPath, 'r')
         d = json.load(projectFile)
         self.RCJKI.project = roboCJKProject.RoboCJKProject(d['name'], d['admin'])
         self.RCJKI.project._initWithDict(d)
@@ -103,6 +108,26 @@ class ProjectEditorController(object):
             f = Font(os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', path))
             k = f.info.familyName+'-'+f.info.styleName
             self.RCJKI.projectFonts[k] = f
+
+        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+        title, ext = tail.split('.')
+        tail = title + '.roboCJKCollab'
+        collabFilePath = os.path.join(head, tail)
+
+        if not os.path.isfile(collabFilePath):
+            self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
+            self.saveCollab()
+
+        collabFile = open(collabFilePath, 'r')
+        d = json.load(collabFile)
+        self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
+        self.RCJKI.collab._addLocker(self.RCJKI.user)
+        for lck in d['lockers']:
+            locker = self.RCJKI.collab._addLocker(lck['user'])
+            locker._addGlyphs(lck['glyphs'])
+        if self.RCJKI.collab._userLocker(self.RCJKI.user):
+            self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
+            self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
 
         self.updateUI()
         if self.RCJKI.initialDesignController.interface:
@@ -123,6 +148,26 @@ class ProjectEditorController(object):
             self.RCJKI.projectFonts[k] = f
         self.updateSheetUI()
         self.updateProject()
+
+    def saveCollab(self):
+        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+        title, ext = tail.split('.')
+        tail = title + '.roboCJKCollab'
+        path = os.path.join(head, tail)
+        self.RCJKI.collabFileLocalPath = path
+        collabFile = open(path, 'w')
+        d = json.dumps(self.RCJKI.collab._toDict, indent=4, separators=(',', ':'))
+        collabFile.write(d)
+        collabFile.close()
+        
+    def saveAndCommitProjectAndCollab(self):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
+        stamp = "Project and Collab '%s' Saved" % self.RCJKI.project.name
+        gitEngine.commit(stamp)
+        gitEngine.push()
+        PostBannerNotification('Git Push', stamp)
 
     def launchProjectEditorInterface(self):
         if not self.interface:

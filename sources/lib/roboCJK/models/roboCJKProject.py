@@ -22,7 +22,6 @@ class RoboCJKProject(object):
     def __init__(self, name, admin):
         self.name = name
         self.admin = admin
-        self.users = []
         self.masterFontsPaths = {}
         self.script = 'Hanzi'
         self.settings = {
