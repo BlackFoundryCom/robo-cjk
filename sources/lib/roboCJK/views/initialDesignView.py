@@ -106,7 +106,21 @@ class InitialDesignWindow(BaseWindowController):
         if not sender.getSelection(): return
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
+        stamp = "Pre-pull '%s' Commit" % self.RCJKI.project.name
+        gitEngine.commit(stamp)
         gitEngine.pull()
+        
+        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+        title, ext = tail.split('.')
+        tail = title + '.roboCJKCollab'
+        collabFilePath = os.path.join(head, tail)
+        collabFile = open(collabFilePath, 'r')
+        d = json.load(collabFile)
+        for lck in d['lockers']:
+            self.RCJKI.collab._addLocker(lck['user'])
+        for lck in d['lockers']:
+            locker = self.RCJKI.collab._userLocker(lck['user'])
+            locker._addGlyphs(lck['glyphs'])
 
         myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
         if myLocker:
