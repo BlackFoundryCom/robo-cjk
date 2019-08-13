@@ -41,6 +41,7 @@ kReservedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
 class InitialDesignWindow(BaseWindowController):
     def __init__(self, controller):
         super(InitialDesignWindow, self).__init__()
+        self.lock = False
         self.controller = controller
         self.RCJKI = self.controller.RCJKI
         self.RCJKI.allFonts = []
@@ -104,7 +105,8 @@ class InitialDesignWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def glyphSetListEditCallback(self, sender):
-        if not sender.getSelection(): return
+        if not sender.getSelection() or self.lock: return
+        self.lock = True
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         stamp = "Pre-pull '%s' Commit" % self.RCJKI.project.name
@@ -126,8 +128,14 @@ class InitialDesignWindow(BaseWindowController):
         myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
         if myLocker:
             print('update boxes view')
-            reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 1 and d['Name'] not in myLocker._allOtherLockedGlyphs]
-            freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == 0 or d['Name'] in myLocker._allOtherLockedGlyphs]
+            for d in sender.get():
+                if d['Name'] in myLocker.glyphs:
+                    d['Reserved'] = True
+                if d['Name'] in myLocker._allOtherLockedGlyphs:
+                    d['Reserved'] = False
+
+            reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == True and d['Name'] not in myLocker._allOtherLockedGlyphs]
+            freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == False or d['Name'] in myLocker._allOtherLockedGlyphs]
         
             myLocker._addGlyphs(reservedGlyphs)
             myLocker._removeGlyphs(freeGlyphs)
@@ -137,8 +145,9 @@ class InitialDesignWindow(BaseWindowController):
             myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
 
         self.RCJKI.projectEditorController.saveCollab()
-
         self.RCJKI.projectEditorController.pushRefresh()
+        self.lock = False
+
 
     def glyphSetListdoubleClickCallback(self, sender):
         if not sender.getSelection(): return
