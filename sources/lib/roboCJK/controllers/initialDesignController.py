@@ -63,11 +63,29 @@ class InitialDesignController(object):
         if self.interface:
             self.interface.w.fontsList.set(self.fontsList)
 
+    def refreshCollabFromFile(self):
+        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+        title, ext = tail.split('.')
+        tail = title + '.roboCJKCollab'
+        collabFilePath = os.path.join(head, tail)
+        collabFile = open(collabFilePath, 'r')
+        d = json.load(collabFile)
+        for lck in d['lockers']:
+            self.RCJKI.collab._addLocker(lck['user'])
+        for lck in d['lockers']:
+            locker = self.RCJKI.collab._userLocker(lck['user'])
+            locker._addGlyphs(lck['glyphs'])
+
     def updateGlyphSetList(self):
         l = []
         if self.RCJKI.currentFont is not None:
+            later = []
             for c in self.characterSet:
                 name = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
                 code = c
-                l.append(({'Reserved':name in self.RCJKI.reservedGlyphs, '#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+                if name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs:
+                    l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+                else:
+                    later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+            l += later
         self.interface.w.glyphSetList.set(l)

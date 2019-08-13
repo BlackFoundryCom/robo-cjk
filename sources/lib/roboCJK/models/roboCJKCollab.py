@@ -27,7 +27,7 @@ class RoboCJKCollab(object):
     
     def _userLocker(self, user):
         l = [locker for locker in self._lockers if locker.user == user]
-        if not l: return
+        if not l: return False
         return l[0]
 
     def _addLocker(self, user):
@@ -66,6 +66,9 @@ class Locker(object):
         for glyph in glyphs:
             if glyph not in self._allOtherLockedGlyphs:
                 self._glyphs.add(glyph)
+
+    def _clearGlyphs(self):
+        self._glyphs = set()
 
     def _removeGlyphs(self, glyphs):
         for glyph in glyphs:

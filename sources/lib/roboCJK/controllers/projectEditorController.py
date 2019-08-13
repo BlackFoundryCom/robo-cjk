@@ -66,6 +66,7 @@ class ProjectEditorController(object):
             PostBannerNotification('Impossible', "Project is not is GIT repository")
             return
         gitEngine.pull()
+
         self.RCJKI.project = roboCJKProject.RoboCJKProject(name, gitEngine.user())
         self.RCJKI.projectFileLocalPath = path
         projectFile = open(path, 'w')
@@ -75,7 +76,7 @@ class ProjectEditorController(object):
         PostBannerNotification("Project '%s' Saved" % self.RCJKI.project.name, self.RCJKI.projectFileLocalPath)
 
         self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
-        self.saveCollab()
+        # self.saveCollabToFile()
 
         stamp = "Project '%s' Saved" % self.RCJKI.project.name
         gitEngine.commit(stamp)
@@ -109,24 +110,27 @@ class ProjectEditorController(object):
             k = f.info.familyName+'-'+f.info.styleName
             self.RCJKI.projectFonts[k] = f
 
-        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
-        title, ext = tail.split('.')
-        tail = title + '.roboCJKCollab'
-        collabFilePath = os.path.join(head, tail)
+        # head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+        # title, ext = tail.split('.')
+        # tail = title + '.roboCJKCollab'
+        # collabFilePath = os.path.join(head, tail)
 
-        if not os.path.isfile(collabFilePath):
-            self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
-            self.saveCollab()
+        # if not os.path.isfile(collabFilePath):
+        #     self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
+        #     self.saveCollabToFile()
 
-        collabFile = open(collabFilePath, 'r')
-        d = json.load(collabFile)
+        # collabFile = open(collabFilePath, 'r')
+        # d = json.load(collabFile)
+
         self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
         self.RCJKI.collab._addLocker(self.RCJKI.user)
+        d = self.RCJKI.project.usersLockers
         for lck in d['lockers']:
             self.RCJKI.collab._addLocker(lck['user'])
         for lck in d['lockers']:
             locker = self.RCJKI.collab._userLocker(lck['user'])
             locker._addGlyphs(lck['glyphs'])
+
         if self.RCJKI.collab._userLocker(self.RCJKI.user):
             self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
             self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
@@ -152,16 +156,16 @@ class ProjectEditorController(object):
         self.updateSheetUI()
         self.updateProject()
 
-    def saveCollab(self):
-        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
-        title, ext = tail.split('.')
-        tail = title + '.roboCJKCollab'
-        path = os.path.join(head, tail)
-        self.RCJKI.collabFileLocalPath = path
-        collabFile = open(path, 'w')
-        d = json.dumps(self.RCJKI.collab._toDict, indent=4, separators=(',', ':'))
-        collabFile.write(d)
-        collabFile.close()
+    # def saveCollabToFile(self):
+    #     head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+    #     title, ext = tail.split('.')
+    #     tail = title + '.roboCJKCollab'
+    #     path = os.path.join(head, tail)
+    #     self.RCJKI.collabFileLocalPath = path
+    #     collabFile = open(path, 'w')
+    #     d = json.dumps(self.RCJKI.collab._toDict, indent=4, separators=(',', ':'))
+    #     collabFile.write(d)
+    #     collabFile.close()
         
     # def saveAndCommitProjectAndCollab(self):
     #     rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
@@ -172,37 +176,35 @@ class ProjectEditorController(object):
     #     gitEngine.push()
     #     PostBannerNotification('Git Push', stamp)
 
-    def pushRefresh(self):
+    # def pushRefresh(self):
 
-        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
-        gitEngine = git.GitEngine(rootfolder)
+    #     rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+    #     gitEngine = git.GitEngine(rootfolder)
 
-        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
-        title, ext = tail.split('.')
-        tail = title + '.roboCJKCollab'
-        collabFilePath = os.path.join(head, tail)
+    #     head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
+    #     title, ext = tail.split('.')
+    #     tail = title + '.roboCJKCollab'
+    #     collabFilePath = os.path.join(head, tail)
 
-        collabFile = open(collabFilePath, 'r')
-        d = json.load(collabFile)
-        self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
-        self.RCJKI.collab._addLocker(self.RCJKI.user)
-        for lck in d['lockers']:
-            self.RCJKI.collab._addLocker(lck['user'])
-        for lck in d['lockers']:
-            locker = self.RCJKI.collab._userLocker(lck['user'])
-            locker._addGlyphs(lck['glyphs'])
-        if self.RCJKI.collab._userLocker(self.RCJKI.user):
-            self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
-            self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
+    #     collabFile = open(collabFilePath, 'r')
+    #     d = json.load(collabFile)
+    #     self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
+    #     self.RCJKI.collab._addLocker(self.RCJKI.user)
+    #     for lck in d['lockers']:
+    #         self.RCJKI.collab._addLocker(lck['user'])
+    #     for lck in d['lockers']:
+    #         locker = self.RCJKI.collab._userLocker(lck['user'])
+    #         locker._addGlyphs(lck['glyphs'])
+    #     if self.RCJKI.collab._userLocker(self.RCJKI.user):
+    #         self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
+    #         self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
 
-        message = 'Pull Push Refresh %s'% self.RCJKI.project.name
-        PostBannerNotification('Refresh', message)
-        
-        stamp = "Project and Collab '%s' Refreshed" % self.RCJKI.project.name
-        gitEngine.commit(stamp)
-        gitEngine.push()
+    #     message = 'Pull Push Refresh %s'% self.RCJKI.project.name
+    #     PostBannerNotification('Refresh', message)
 
-        
+    #     stamp = "Project and Collab '%s' Refreshed" % self.RCJKI.project.name
+    #     gitEngine.commit(stamp)
+    #     gitEngine.push()
 
     def launchProjectEditorInterface(self):
         if not self.interface:
@@ -211,8 +213,6 @@ class ProjectEditorController(object):
             self.interface = projectEditorView.ProjectEditorWindow(self.RCJKI)
 
     def updateUI(self):
-        # rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
-        # gitEngine = git.GitEngine(rootfolder)
         self.interface.w.projectNameTextBox.set(self.RCJKI.project.name)
         self.interface.w.editProjectButton.enable((self.RCJKI.project!=None and self.RCJKI.project.admin==self.RCJKI.user))
         self.RCJKI.interface.w.initialDesignEditorButton.enable(self.RCJKI.project!=None)

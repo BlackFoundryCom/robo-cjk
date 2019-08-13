@@ -22,6 +22,7 @@ class RoboCJKProject(object):
     def __init__(self, name, admin):
         self.name = name
         self.admin = admin
+        self.usersLockers = {'lockers':[]}
         self.masterFontsPaths = {}
         self.script = 'Hanzi'
         self.settings = {

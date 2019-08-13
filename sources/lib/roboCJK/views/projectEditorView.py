@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
+#coding=utf-8
 from imp import reload
 from defconAppKit.windows.baseWindow import BaseWindowController
 from vanilla import *
@@ -76,7 +77,7 @@ class EditProjectSheet():
 
         self.parent.sheet.projectNameEditText = EditText((10, 10, -10, 20), self.parent.RCJKI.project.name, callback=self.projectNameEditTextCallback)
 
-        segmentedElements = ["Masters", "Design Frame", "Reference Viewer"]
+        segmentedElements = ["Masters", "Lockers", "Design Frame", "Reference Viewer"]
         self.parent.sheet.projectSectionsSegmentedButton = SegmentedButton((10,40,-10,20), 
                 [dict(title=e, width=577/len(segmentedElements)) for e in segmentedElements],
                 callback = self.projectSectionsSegmentedButtonCallback)
@@ -105,6 +106,18 @@ class EditProjectSheet():
         self.parent.sheet.masterGroup.scriptsRadioGroup.set(self.parent.RCJKI.scriptsList.index(self.parent.RCJKI.project.script))
 
 
+        ###
+        self.parent.sheet.lockerGroup = Group((0,60,-0,-30))
+
+        
+        self.parent.sheet.lockerGroup.usersList = List((10, 10, 280, 65),
+                [d['user'] for d in self.parent.RCJKI.project.usersLockers['lockers']],
+                selectionCallback = self.usersListSelectionCallback,
+                drawFocusRing = False
+                )
+        self.parent.sheet.lockerGroup.charactersTextEditor = TextEditor((10, 85, -10, -40),
+                                    callback=self.charactersTextEditorCallback)
+        ###
 
         self.parent.sheet.designFrameGroup = Group((0,60,-0,-30))
 
@@ -198,6 +211,12 @@ class EditProjectSheet():
                 callback = self._removeCustomsFrames_button_callback,
                 sizeStyle="small")
 
+        self.parent.sheet.designFrameGroup.changeFontButton = Button((-295,-30,145,-10), 
+            'Change Font', callback=self.changeFontButtonCallBack, sizeStyle="small")
+
+        self.parent.sheet.designFrameGroup.changeGlyphButton = Button((-150,-30,145,-10), 
+            'Change Glyph', callback=self.changeGlyphButtonCallBack, sizeStyle="small")
+
         self.fontNames = list(self.parent.RCJKI.project.masterFontsPaths.keys())
         self.selectedFontIndex = 0
         if self.fontNames:
@@ -206,7 +225,7 @@ class EditProjectSheet():
         else:
             self.previewGlyph = None
 
-        self.parent.sheet.designFrameGroup.canvas = CanvasGroup((-295,0,-10,-10), 
+        self.parent.sheet.designFrameGroup.canvas = CanvasGroup((-295,0,-10,-30), 
                 delegate=ProjectCanvas("DesignFrame", self))
 
 
@@ -280,6 +299,7 @@ class EditProjectSheet():
 
 
         self.parent.sheet.masterGroup.show(1)
+        self.parent.sheet.lockerGroup.show(0)
         self.parent.sheet.designFrameGroup.show(0)
         self.parent.sheet.referenceViewerGroup.show(0)
 
@@ -305,12 +325,33 @@ class EditProjectSheet():
                 self.previewGlyph = self.previewFont[glyphName]
         else:
             self.previewGlyph = None
-        
+    
+    def usersListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        user = sender.get()[sel[0]]
+        userLocker = self.parent.RCJKI.collab._addLocker(user)
+        glyphs = userLocker.glyphs
+        chars = [chr(int(glyph[3:], 16)) for glyph in glyphs]
+        chars.sort()
+        self.parent.sheet.lockerGroup.charactersTextEditor.set(''.join(chars))
+
+    def charactersTextEditorCallback(self, sender):
+        chars = sender.get()
+        sel = self.parent.sheet.lockerGroup.usersList.getSelection()
+        if not sel: return
+        user = self.parent.sheet.lockerGroup.usersList.get()[sel[0]]
+        userLocker = self.parent.RCJKI.collab._addLocker(user)
+        glyphs = ['uni'+files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in chars]
+        userLocker._clearGlyphs()
+        userLocker._addGlyphs(glyphs)
+        self.parent.RCJKI.project.usersLockers = self.parent.RCJKI.collab._toDict
 
     def projectSectionsSegmentedButtonCallback(self, sender):
         sel = sender.get()
         groups = [
             self.parent.sheet.masterGroup,
+            self.parent.sheet.lockerGroup,
             self.parent.sheet.designFrameGroup,
             self.parent.sheet.referenceViewerGroup
             ]
@@ -429,6 +470,14 @@ class EditProjectSheet():
         self.parent.sheet.designFrameGroup.customsFrames_list.set(self.parent.RCJKI.project.settings['designFrame']['customsFrames'])
         self.parent.sheet.designFrameGroup.canvas.update()
 
+    def changeFontButtonCallBack(self, sender):
+        self.getPreviewFont()
+        self.getPreviewGlyph()
+        self.parent.sheet.designFrameGroup.canvas.getNSView()._delegate.update()
+
+    def changeGlyphButtonCallBack(self, sender):
+        self.getPreviewGlyph()
+        self.parent.sheet.designFrameGroup.canvas.getNSView()._delegate.update()
     ###
 
     def _addReferenceFont_button_callback(self, sender):
@@ -529,20 +578,11 @@ class ProjectCanvas():
             self.translateY = ((canvasHeight/self.scale-(self.previewGlyph.bounds[3]-self.previewGlyph.bounds[1]))*.5 )
 
     def update(self):
+        self.previewGlyph = self.parent.previewGlyph
         if self.name == "ReferenceViewer":
             self.parent.parent.sheet.referenceViewerGroup.canvas.update()
         else:
             self.parent.parent.sheet.designFrameGroup.canvas.update()
-
-    def mouseDown(self, info):
-        if info.clickCount() == 2:
-            self.parent.getPreviewFont()
-            self.parent.getPreviewGlyph()
-            self.previewGlyph = self.parent.previewGlyph
-        if info.clickCount() == 1:
-            self.parent.getPreviewGlyph()
-            self.previewGlyph = self.parent.previewGlyph
-        self.update()
 
     def mouseDragged(self, info):
         command = extractNSEvent(info)['commandDown']

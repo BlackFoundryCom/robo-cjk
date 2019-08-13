@@ -41,7 +41,6 @@ kReservedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
 class InitialDesignWindow(BaseWindowController):
     def __init__(self, controller):
         super(InitialDesignWindow, self).__init__()
-        self.lock = False
         self.controller = controller
         self.RCJKI = self.controller.RCJKI
         self.RCJKI.allFonts = []
@@ -57,7 +56,6 @@ class InitialDesignWindow(BaseWindowController):
         self.w.glyphSetList = List((0,85,200,-40),
                 [],
                 columnDescriptions = [
-                                {"title": "Reserved", "cell": CheckBoxListCell(), "width" : 20, "editable": True},
                                 {"title": "#", "width" : 20},
                                 {"title": "Char", "width" : 30, 'editable':False},
                                 {"title": "Name", "width" : 80, 'editable':False},
@@ -105,48 +103,18 @@ class InitialDesignWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def glyphSetListEditCallback(self, sender):
-        if not sender.getSelection() or self.lock: return
-        self.lock = True
-        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
-        gitEngine = git.GitEngine(rootfolder)
-        stamp = "Pre-pull '%s' Commit" % self.RCJKI.project.name
-        gitEngine.commit(stamp)
-        gitEngine.pull()
-        
-        head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
-        title, ext = tail.split('.')
-        tail = title + '.roboCJKCollab'
-        collabFilePath = os.path.join(head, tail)
-        collabFile = open(collabFilePath, 'r')
-        d = json.load(collabFile)
-        for lck in d['lockers']:
-            self.RCJKI.collab._addLocker(lck['user'])
-        for lck in d['lockers']:
-            locker = self.RCJKI.collab._userLocker(lck['user'])
-            locker._addGlyphs(lck['glyphs'])
+        if not sender.getSelection(): return
 
         myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
         if myLocker:
-            print('update boxes view')
-            for d in sender.get():
-                if d['Name'] in myLocker.glyphs:
-                    d['Reserved'] = True
-                if d['Name'] in myLocker._allOtherLockedGlyphs:
-                    d['Reserved'] = False
-
-            reservedGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == True and d['Name'] not in myLocker._allOtherLockedGlyphs]
-            freeGlyphs = [d['Name'] for d in sender.get() if d['Reserved'] == False or d['Name'] in myLocker._allOtherLockedGlyphs]
-        
-            myLocker._addGlyphs(reservedGlyphs)
-            myLocker._removeGlyphs(freeGlyphs)
             self.RCJKI.lockedGlyphs = myLocker._allOtherLockedGlyphs
             self.RCJKI.reservedGlyphs = myLocker.glyphs
         else:
             myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
 
-        self.RCJKI.projectEditorController.saveCollab()
-        self.RCJKI.projectEditorController.pushRefresh()
-        self.lock = False
+        # self.RCJKI.projectEditorController.saveCollabToFile()
+        # self.RCJKI.projectEditorController.pushRefresh()
+        
 
 
     def glyphSetListdoubleClickCallback(self, sender):
@@ -177,7 +145,7 @@ class InitialDesignWindow(BaseWindowController):
             return cell
         uiGlyph  = self.w.glyphSetList[row]
         uiGlyphName = uiGlyph['Name']
-        uiGlyphReserved = uiGlyph['Reserved']
+        uiGlyphReserved = uiGlyphName in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
 
         state = 'missing'
         locked = False
@@ -208,7 +176,7 @@ class InitialDesignWindow(BaseWindowController):
         elif colID == 'Name' or colID == 'Char':
             if locked:
                 cell.setTextColor_(kLockedColor)
-            elif uiGlyphReserved == 1:
+            elif uiGlyphReserved == True:
                 cell.setTextColor_(kReservedColor)
             else:
                 cell.setTextColor_(kFreeColor)
@@ -220,8 +188,5 @@ class InitialDesignWindow(BaseWindowController):
             else:
                 cell.setDrawsBackground_(False)
                 cell.setBezeled_(False)
-        elif colID == 'Reserved':
-            if locked:
-                cell = self.dummyCell
         return cell
 
