@@ -23,6 +23,7 @@ from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow
 from mojo.roboFont import *
 from vanilla import *
 import os
+import json
 
 from utils import files
 from utils import git
