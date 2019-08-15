@@ -38,6 +38,7 @@ class RoboCJKWindow(BaseWindowController):
         self.w.settingsButton = Button((0,-20,200,20), 'Settings', callback=self.openSettings)
         self.w.initialDesignEditorButton.enable(False)
         self.w.deepComponentEditorButton.enable(False)
+        self.RCJKI.toggleObservers()
         self.w.bind('close', self.windowCloses)
         self.w.open()
 
@@ -54,6 +55,7 @@ class RoboCJKWindow(BaseWindowController):
         pass
 
     def windowCloses(self, sender):
+        self.RCJKI.toggleObservers(forceKill=True)
         if self.RCJKI.projectEditorController.interface:
             self.RCJKI.projectEditorController.interface.w.close()
         if self.RCJKI.initialDesignController.interface:

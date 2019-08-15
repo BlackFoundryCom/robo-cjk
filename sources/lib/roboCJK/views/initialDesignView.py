@@ -21,6 +21,7 @@ from AppKit import NSCell, NSColor
 from defconAppKit.windows.baseWindow import BaseWindowController
 from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow
 from mojo.roboFont import *
+from mojo.canvas import *
 from vanilla import *
 import os
 import json
@@ -28,8 +29,10 @@ import json
 from utils import files
 from utils import git
 from views import tableDelegate
+from views import mainCanvas
 reload(files)
 reload(git)
+reload(mainCanvas)
 
 kMissingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
 kThereColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 1, 0, 1)
@@ -69,6 +72,12 @@ class InitialDesignWindow(BaseWindowController):
 
         # self.w.pullAndRefreshButton = Button((0,-40,200,20), 'Pull and Refresh', callback=self.pullAndRefreshButtonCallback)
         # self.w.saveAndCommitButton = Button((0,-20,200,20), 'Save, Commit and Push', callback=self.saveAndCommitButtonCallback)
+
+        self.w.mainCanvas = Canvas((200,0,-0,-40), 
+            delegate=mainCanvas.MainCanvas(self.RCJKI),
+            canvasSize=(5000, 5000),
+            hasHorizontalScroller=False, 
+            hasVerticalScroller=False)
 
         self.controller.loadProjectFonts()
         self.w.fontsList.setSelection([])
@@ -119,21 +128,24 @@ class InitialDesignWindow(BaseWindowController):
 
     def glyphSetListdoubleClickCallback(self, sender):
         if not sender.getSelection(): return
-        self.selectedGlyph = sender.getSelection()[0]
-        name = self.w.glyphSetList.get()[self.selectedGlyph]['Name']
-        if name not in self.RCJKI.currentFont:
-            self.RCJKI.currentFont.newGlyph(name)
-            self.RCJKI.currentFont[name].width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
-        OpenGlyphWindow(self.RCJKI.currentFont[name])
+        if self.selectedGlyphName not in self.RCJKI.currentFont:
+            self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedGlyphName)
+            self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
+        OpenGlyphWindow(self.RCJKI.currentGlyph)
 
     def glyphSetListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        self.selectedGlyph = sel[0]
+        self.selectedGlyphName = sender.get()[sel[0]]['Name']
+        if self.selectedGlyphName in self.RCJKI.currentFont:
+            self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
+        else:
+            self.RCJKI.currentGlyph = None
+        self.controller.interface.w.mainCanvas.update()
 
     def windowCloses(self, sender):
-        for i in range(len(AllGlyphWindows())):
-            CurrentGlyphWindow().close()
+        # for i in range(len(AllGlyphWindows())):
+        #     CurrentGlyphWindow().close()
         self.RCJKI.initialDesignController.interface = None
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):

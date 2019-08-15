@@ -55,8 +55,8 @@ class ProjectEditorWindow(BaseWindowController):
         self.w.open()
 
     def editProject(self, sender):
-        for i in range(len(AllGlyphWindows())):
-            CurrentGlyphWindow().close()
+        # for i in range(len(AllGlyphWindows())):
+        #     CurrentGlyphWindow().close()
         EditProjectSheet(self)
 
     def newProject(self, sender):

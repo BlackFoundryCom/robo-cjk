@@ -85,8 +85,8 @@ class ProjectEditorController(object):
         self.updateUI()
 
     def loadProject(self, path):
-        for i in range(len(AllGlyphWindows())):
-            CurrentGlyphWindow().close()
+        # for i in range(len(AllGlyphWindows())):
+        #     CurrentGlyphWindow().close()
         self.RCJKI.projectFileLocalPath = path[0]
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
@@ -208,8 +208,8 @@ class ProjectEditorController(object):
 
     def launchProjectEditorInterface(self):
         if not self.interface:
-            for i in range(len(AllGlyphWindows())):
-                CurrentGlyphWindow().close()
+            # for i in range(len(AllGlyphWindows())):
+            #     CurrentGlyphWindow().close()
             self.interface = projectEditorView.ProjectEditorWindow(self.RCJKI)
 
     def updateUI(self):
