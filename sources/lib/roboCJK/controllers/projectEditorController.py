@@ -47,6 +47,9 @@ class ProjectEditorController(object):
             return
         gitEngine.createGitignore()
         gitEngine.pull()
+
+        self.RCJKI.project.usersLockers = self.RCJKI.collab._toDict
+
         projectFile = open(self.RCJKI.projectFileLocalPath, 'w')
         d = json.dumps(self.RCJKI.project._toDict, indent=4, separators=(',', ':'))
         projectFile.write(d)
@@ -76,7 +79,18 @@ class ProjectEditorController(object):
         PostBannerNotification("Project '%s' Saved" % self.RCJKI.project.name, self.RCJKI.projectFileLocalPath)
 
         self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
-        # self.saveCollabToFile()
+        self.RCJKI.collab._addLocker(gitEngine.user())
+        d = self.RCJKI.project.usersLockers
+        for lck in d['lockers']:
+            self.RCJKI.collab._addLocker(lck['user'])
+        for lck in d['lockers']:
+            locker = self.RCJKI.collab._userLocker(lck['user'])
+            locker._addGlyphs(lck['glyphs'])
+
+        if self.RCJKI.collab._userLocker(self.RCJKI.user):
+            self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
+            self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
+
 
         stamp = "Project '%s' Saved" % self.RCJKI.project.name
         gitEngine.commit(stamp)
@@ -110,20 +124,8 @@ class ProjectEditorController(object):
             k = f.info.familyName+'-'+f.info.styleName
             self.RCJKI.projectFonts[k] = f
 
-        # head, tail = os.path.split(self.RCJKI.projectFileLocalPath)
-        # title, ext = tail.split('.')
-        # tail = title + '.roboCJKCollab'
-        # collabFilePath = os.path.join(head, tail)
-
-        # if not os.path.isfile(collabFilePath):
-        #     self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
-        #     self.saveCollabToFile()
-
-        # collabFile = open(collabFilePath, 'r')
-        # d = json.load(collabFile)
-
         self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
-        self.RCJKI.collab._addLocker(self.RCJKI.user)
+        self.RCJKI.collab._addLocker(gitEngine.user())
         d = self.RCJKI.project.usersLockers
         for lck in d['lockers']:
             self.RCJKI.collab._addLocker(lck['user'])
