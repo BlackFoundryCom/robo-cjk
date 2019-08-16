@@ -30,10 +30,12 @@ class RoboCJKCollab(object):
         if not l: return False
         return l[0]
 
-    def _addLocker(self, user):
+    def _addLocker(self, user, glyphs=[]):
         if user not in [locker.user for locker in self._lockers]:
             locker = Locker(self, user)
-            self._lockers.append(Locker(self, user))
+            l = Locker(self, user)
+            l._addGlyphs(glyphs)
+            self._lockers.append(l)
         else:
             locker = self._userLocker(user)
         return locker
@@ -42,6 +44,10 @@ class RoboCJKCollab(object):
     def _toDict(self):
         return {e: [l._toDict for l in getattr(self, e)] for e in dir(self) if not e.startswith('_')}
 
+    def _fromDict(self, d):
+        lockers = d['lockers']
+        for locker in lockers:
+            self._addLocker(locker['user'], glyphs=locker['glyphs'])
 
 class Locker(object):
     def __init__(self, controller, user):

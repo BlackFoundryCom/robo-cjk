@@ -128,13 +128,14 @@ class ProjectEditorController(object):
             self.RCJKI.projectFonts[k] = f
 
         self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
+        self.RCJKI.collab._fromDict(self.RCJKI.project.usersLockers)
         self.RCJKI.collab._addLocker(gitEngine.user())
-        d = self.RCJKI.project.usersLockers
-        for lck in d['lockers']:
-            self.RCJKI.collab._addLocker(lck['user'])
-        for lck in d['lockers']:
-            locker = self.RCJKI.collab._userLocker(lck['user'])
-            locker._addGlyphs(lck['glyphs'])
+        # d = self.RCJKI.project.usersLockers
+        # for lck in d['lockers']:
+        #     self.RCJKI.collab._addLocker(lck['user'])
+        # for lck in d['lockers']:
+        #     locker = self.RCJKI.collab._userLocker(lck['user'])
+        #     locker._addGlyphs(lck['glyphs'])
 
         if self.RCJKI.collab._userLocker(self.RCJKI.user):
             self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
