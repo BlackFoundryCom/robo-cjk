@@ -47,9 +47,10 @@ class ProjectEditorController(object):
             return
         gitEngine.createGitignore()
         gitEngine.pull()
+        PostBannerNotification('Git Pull', self.RCJKI.project.name)
 
         self.RCJKI.project.usersLockers = self.RCJKI.collab._toDict
-
+        print(self.RCJKI.project._toDict)
         projectFile = open(self.RCJKI.projectFileLocalPath, 'w')
         d = json.dumps(self.RCJKI.project._toDict, indent=4, separators=(',', ':'))
         projectFile.write(d)
@@ -111,7 +112,9 @@ class ProjectEditorController(object):
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         gitEngine.createGitignore()
-        gitEngine.pull()
+        # gitEngine.pull()
+
+        PostBannerNotification('Git Pull', path[0])
 
         projectFile = open(self.RCJKI.projectFileLocalPath, 'r')
         d = json.load(projectFile)
