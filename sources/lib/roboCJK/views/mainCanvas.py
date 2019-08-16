@@ -54,6 +54,8 @@ class MainCanvas():
         self.RCJKI = RCJKI
         self.canvasWidth = 386
         self.preview = 0
+        self.dfv = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
+        self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.RCJKI)
 
     def mouseDown(self, info):
         if info.clickCount() == 2 and self.RCJKI.currentGlyph is not None:
@@ -185,7 +187,7 @@ class MainCanvas():
                     # restore()
 
                     # if self.ui.onOff_designFrame and not self.preview:
-                    designFrameDrawer.DesignFrameDrawer(self.RCJKI).draw(
+                    self.dfv.draw(
                         glyph = g,
                         mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
                         secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
@@ -202,7 +204,7 @@ class MainCanvas():
                         char = chr(g.unicode)
                     else:
                         char = ""
-                    referenceViewDrawer.ReferenceViewerDraw(self.RCJKI, char).draw()
+                    self.rvd.draw(char)
 
                     # f = self.ui.font2Storage[self.ui.font]
                     fill(.2, 0, 1, .5)

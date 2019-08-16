@@ -16,9 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
+from imp import reload
 from mojo.drawingTools import *
 from mojo.roboFont import *
+from views import designFrameDrawer
+from views import referenceViewDrawer
 # from views.DeepComponentDrawer import DeepComponentDrawer
+reload(designFrameDrawer)
+reload(referenceViewDrawer)
 
 class CurrentGlyphViewDrawer():
 
@@ -28,14 +33,36 @@ class CurrentGlyphViewDrawer():
         for t in self.RCJKI.allFonts:
             for _ , f in t.items():
                 self.fonts.append(f)
+        self.dfd = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
+        self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.RCJKI)
 
     def draw(self, info):
         g = self.RCJKI.currentGlyph
         f = self.RCJKI.currentFont
+        self.scale = info['scale']
         fill(.2, 0, 1, .5)
         if info['notificationName'] == "drawPreview":
             fill(0, 0, 0, 1)
         # DeepComponentDrawer(self.ui, g, f)
+        self.dfd.draw(
+            glyph = g,
+            mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
+            secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
+            customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
+            proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
+            translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
+            translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
+            scale = self.scale
+            )
+
+        if g.name.startswith("uni"):
+            char = chr(int(g.name[3:7],16))
+        elif g.unicode: 
+            char = chr(g.unicode)
+        else:
+            char = ""
+            
+        self.rvd.draw(char)
 
         save()
         if self.RCJKI.settings['stackMasters']:
