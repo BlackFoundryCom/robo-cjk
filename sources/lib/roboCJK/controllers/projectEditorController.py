@@ -135,7 +135,7 @@ class ProjectEditorController(object):
             self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
             self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
 
-        self.saveProject(path)
+        self.saveProject(self.RCJKI.projectFileLocalPath)
         
         self.updateUI()
 
