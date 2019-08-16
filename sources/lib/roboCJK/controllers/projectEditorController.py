@@ -112,7 +112,7 @@ class ProjectEditorController(object):
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         gitEngine.createGitignore()
-        # gitEngine.pull()
+        gitEngine.pull()
 
         PostBannerNotification('Git Pull', path[0])
 
