@@ -564,7 +564,8 @@ class ProjectCanvas():
         self.translateX = 215
         self.translateY = 505
         self.previewGlyph = self.parent.previewGlyph
-
+        self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.parent.parent.RCJKI)
+        self.dfv = designFrameDrawer.DesignFrameDrawer(self.parent.parent.RCJKI)
         canvasWidth = 285
         canvasHeight = 270
         
@@ -638,14 +639,14 @@ class ProjectCanvas():
                 else:
                     txt = "a"
                 
-                referenceViewDrawer.ReferenceViewerDraw(self.parent.parent.RCJKI, txt).draw()
+                self.rvd.draw(txt)
                 restore()
 
             else:
                 fill(.3)
                 if self.previewGlyph:
                     drawGlyph(self.previewGlyph)
-                designFrameDrawer.DesignFrameDrawer(self.parent.parent.RCJKI).draw(glyph = self.previewGlyph, scale = self.scale)
+                self.dfv.draw(glyph = self.previewGlyph, scale = self.scale)
 
         except Exception as e:
             print(e)
