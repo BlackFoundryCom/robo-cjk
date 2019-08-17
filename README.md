@@ -1,6 +1,5 @@
 # robo-cjk
 RoboFont extension for CJK font development
-Code re-organisation happening in branch 'Architecturing'
 
 ![Icon](/documentation/icon.png)
 
