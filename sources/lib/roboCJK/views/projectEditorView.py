@@ -47,9 +47,9 @@ class ProjectEditorWindow(BaseWindowController):
         if self.RCJKI.project:
             name = self.RCJKI.project.name
         self.w.projectNameTextBox = TextBox((0,0,200,20), name, alignment='center')
-        self.w.editProjectButton = Button((0,20,200,20), 'Edit', callback=self.editProject)
+        self.w.openProjectButton = Button((0,20,200,20), 'Open', callback=self.openProject)
         self.w.newProjectButton = Button((0,40,200,20), 'New', callback=self.newProject)
-        self.w.openProjectButton = Button((0,60,200,20), 'Open', callback=self.openProject)
+        self.w.editProjectButton = Button((0,60,200,20), 'Edit', callback=self.editProject)
         self.w.bind('close', self.windowCloses)
         self.w.editProjectButton.enable(self.RCJKI.project!=None)
         self.w.open()
