@@ -20,6 +20,8 @@ from imp import reload
 import os
 
 from mojo.events import addObserver, removeObserver
+from mojo.roboFont import *
+from mojo.UI import PostBannerNotification
 from views import roboCJKView
 from views import currentGlyphViewDrawer
 from controllers import projectEditorController
@@ -79,3 +81,36 @@ class RoboCJKController(object):
     def drawInGlyphWindow(self, info):
         if self.currentGlyph is None: return
         currentGlyphViewDrawer.CurrentGlyphViewDrawer(self).draw(info)
+
+    def injectGlyphsBack(self, glyphs, user):
+        for d in self.allFonts:
+            for name, subsetFont in d.items():
+                if name in self.projectFonts:
+                    f = self.projectFonts[name]
+                    for glyphName in glyphs:
+                        if glyphName in self.reservedGlyphs:
+                            f.insertGlyph(subsetFont[glyphName].naked())
+                    f.save()
+
+    def pullMastersGlyphs(self, glyphs):
+        for d in self.allFonts:
+            for name, subsetFont in d.items():
+                if name in self.projectFonts:
+                    f = self.projectFonts[name]
+                    for glyphName in glyphs: 
+                        if glyphName not in self.reservedGlyphs:
+                            subsetFont[glyphName] = RGlyph(f[glyphName])
+                    subsetFont.save()
+
+    def saveProjectFonts(self):
+        rootfolder = os.path.split(self.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
+        for name in self.projectFonts:
+            f = self.projectFonts[name]
+            f.save()
+        stamp = "Masters Fonts Saved"
+        gitEngine.commit(stamp)
+        gitEngine.push()
+        PostBannerNotification('Git Push', stamp)
+

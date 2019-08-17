@@ -163,8 +163,12 @@ class MainCanvas():
                     lineTo((1100, 1100))
                     drawPath()
                 else:
-
-                    fill(0, 0, 0, 1)
+                    if g.name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs:
+                        fill(0, 0, 0, 1)
+                    elif g.name in self.RCJKI.lockedGlyphs:
+                        fill(1, 0, 0, 1)
+                    else:
+                        fill(0, 0, 0, .5)
                     drawGlyph(g)
 
                     # save()

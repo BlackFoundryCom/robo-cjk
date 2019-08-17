@@ -32,7 +32,7 @@ class RoboCJKWindow(BaseWindowController):
         self.RCJKI = RCJKI
         self.w = Window((0, 0, 200, 100), 'Robo-CJK')
         self.w.userTextBox = TextBox((0,0, 200, 20), self.RCJKI.user,alignment='center')
-        self.w.projectEditorButton = Button((0,20,200,20), 'Project Editor', callback=self.openProjectEditor)
+        self.w.projectEditorButton = Button((0,20,200,20), 'Project', callback=self.openProjectEditor)
         self.w.initialDesignEditorButton = Button((0,40,200,20), 'Initial Design', callback=self.openInitialDesignEditor)
         self.w.deepComponentEditorButton = Button((0,60,200,20), 'Deep Component Editor', callback=self.openDeepComponentEditor)
         self.w.settingsButton = Button((0,-20,200,20), 'Settings', callback=self.openSettings)

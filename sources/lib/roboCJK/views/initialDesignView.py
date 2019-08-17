@@ -56,28 +56,34 @@ class InitialDesignWindow(BaseWindowController):
                 selectionCallback = self.fontsListSelectionCallback,
                 drawFocusRing = False)
 
-        self.w.glyphSetList = List((0,85,200,-40),
+        self.w.glyphSetList = List((0,85,200,-60),
                 [],
                 columnDescriptions = [
-                                {"title": "#", "width" : 20},
+                                {"title": "#", "width" : 20, 'editable':False},
                                 {"title": "Char", "width" : 30, 'editable':False},
                                 {"title": "Name", "width" : 80, 'editable':False},
-                                {"title": "MarkColor", "width" : 30}
+                                {"title": "MarkColor", "width" : 30, 'editable':False}
                                 ],
                 selectionCallback = self.glyphSetListSelectionCallback,
                 doubleClickCallback = self.glyphSetListdoubleClickCallback,
-                editCallback = self.glyphSetListEditCallback,
+                # editCallback = self.glyphSetListEditCallback,
                 showColumnTitles = False,
                 drawFocusRing = False)
 
-        # self.w.pullAndRefreshButton = Button((0,-40,200,20), 'Pull and Refresh', callback=self.pullAndRefreshButtonCallback)
-        # self.w.saveAndCommitButton = Button((0,-20,200,20), 'Save, Commit and Push', callback=self.saveAndCommitButtonCallback)
+        self.w.saveLocalFontButton = Button((0,-60,200,20), 'Save Fonts', callback=self.saveLocalFontButtonCallback)
+        self.w.pullMasterGlyphsButton = Button((0,-40,200,20), 'Pull Masters Glyphs', callback=self.pullMasterGlyphsButtonCallback)
+        self.w.pushBackButton = Button((0,-20,200,20), 'Push Glyphs to Masters', callback=self.pushBackButtonCallback)
+        
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
             delegate=mainCanvas.MainCanvas(self.RCJKI),
             canvasSize=(5000, 5000),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
+
+        self.w.colorPicker = ColorWell((200,-60,20,20),
+                callback=self.colorPickerCallback, 
+                color=NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 0))
 
         self.controller.loadProjectFonts()
         self.w.fontsList.setSelection([])
@@ -93,12 +99,31 @@ class InitialDesignWindow(BaseWindowController):
         self.w.open()
 
 
-    # def pullAndRefreshButtonCallback(self, sender):
-    #     self.RCJKI.projectEditorController.pullPushRefresh()
-    #     self.controller.updateGlyphSetList()
+    def saveLocalFontButtonCallback(self, sender):
+        self.RCJKI.initialDesignController.saveSubsetFonts()
+        self.w.mainCanvas.update()
+        
+    def pullMasterGlyphsButtonCallback(self, sender):
+        self.RCJKI.initialDesignController.pullMastersGlyphs()
+        self.w.mainCanvas.update()
 
-    # def saveAndCommitButtonCallback(self, sender):
-    #     self.RCJKI.projectEditorController.saveAndCommitProjectAndCollab()
+    def pushBackButtonCallback(self, sender):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        user = gitEngine.user()
+        glyphsList = self.RCJKI.collab._userLocker(user).glyphs
+        self.RCJKI.initialDesignController.injectGlyphsBack(glyphsList, user)
+
+    def colorPickerCallback(self, sender):
+        if self.RCJKI.currentGlyph is None: return
+        color = sender.get()
+        r = color.redComponent()
+        g = color.greenComponent()
+        b = color.blueComponent()
+        a = color.alphaComponent()
+    
+        self.RCJKI.currentGlyph.markColor = (r, g, b, a)
+        self.controller.updateGlyphSetList()
 
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()
@@ -111,19 +136,18 @@ class InitialDesignWindow(BaseWindowController):
         self.RCJKI.currentFont = self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]
         self.controller.updateGlyphSetList()
 
-    def glyphSetListEditCallback(self, sender):
-        if not sender.getSelection(): return
+    # def glyphSetListEditCallback(self, sender):
+    #     if not sender.getSelection(): return
 
-        myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
-        if myLocker:
-            self.RCJKI.lockedGlyphs = myLocker._allOtherLockedGlyphs
-            self.RCJKI.reservedGlyphs = myLocker.glyphs
-        else:
-            myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
+    #     myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
+    #     if myLocker:
+    #         self.RCJKI.lockedGlyphs = myLocker._allOtherLockedGlyphs
+    #         self.RCJKI.reservedGlyphs = myLocker.glyphs
+    #     else:
+    #         myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
 
         # self.RCJKI.projectEditorController.saveCollabToFile()
         # self.RCJKI.projectEditorController.pushRefresh()
-        
 
 
     def glyphSetListdoubleClickCallback(self, sender):
@@ -139,9 +163,11 @@ class InitialDesignWindow(BaseWindowController):
         self.selectedGlyphName = sender.get()[sel[0]]['Name']
         if self.selectedGlyphName in self.RCJKI.currentFont:
             self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
+            r, g, b, a = self.RCJKI.currentGlyph.markColor
+            self.w.colorPicker.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a))
         else:
             self.RCJKI.currentGlyph = None
-        self.controller.interface.w.mainCanvas.update()
+        self.w.mainCanvas.update()
 
     def windowCloses(self, sender):
         # for i in range(len(AllGlyphWindows())):

@@ -42,7 +42,7 @@ class ProjectEditorWindow(BaseWindowController):
     def __init__(self, RCJKI):
         super(ProjectEditorWindow, self).__init__()
         self.RCJKI = RCJKI
-        self.w = Window((200, 0, 200, 80), 'Project Editor')
+        self.w = Window((200, 0, 200, 80), 'Project')
         name = 'No Open Project'
         if self.RCJKI.project:
             name = self.RCJKI.project.name

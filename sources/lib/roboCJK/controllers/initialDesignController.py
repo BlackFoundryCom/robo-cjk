@@ -21,8 +21,10 @@ import os
 from mojo.roboFont import *
 from views import initialDesignView
 from utils import files
+from utils import git
 reload(initialDesignView)
 reload(files)
+reload(git)
 
 class InitialDesignController(object):
     def __init__(self, RCJKI):
@@ -89,3 +91,22 @@ class InitialDesignController(object):
                     later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
             l += later
         self.interface.w.glyphSetList.set(l)
+
+    def saveSubsetFonts(self):
+        for d in self.RCJKI.allFonts:
+            for name, f in d.items():
+                f.save()
+
+    def injectGlyphsBack(self, glyphs, user):
+        self.RCJKI.injectGlyphsBack(glyphs, user)
+        self.RCJKI.saveProjectFonts()
+
+    def pullMastersGlyphs(self):
+        glyphs = []
+        for c in self.characterSet:
+            glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+            if glyphName not in self.RCJKI.reservedGlyphs:
+                glyphs.append(glyphName)
+
+        self.RCJKI.pullMastersGlyphs(glyphs)
+

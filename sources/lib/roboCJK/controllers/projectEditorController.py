@@ -50,7 +50,6 @@ class ProjectEditorController(object):
         PostBannerNotification('Git Pull', self.RCJKI.project.name)
 
         self.RCJKI.project.usersLockers = self.RCJKI.collab._toDict
-        print(self.RCJKI.project._toDict)
         projectFile = open(self.RCJKI.projectFileLocalPath, 'w')
         d = json.dumps(self.RCJKI.project._toDict, indent=4, separators=(',', ':'))
         projectFile.write(d)
