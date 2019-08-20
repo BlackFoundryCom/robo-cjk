@@ -223,6 +223,7 @@ class ProjectEditorController(object):
         self.interface.w.projectNameTextBox.set(self.RCJKI.project.name)
         self.interface.w.editProjectButton.enable((self.RCJKI.project!=None and self.RCJKI.project.admin==self.RCJKI.user))
         self.RCJKI.interface.w.initialDesignEditorButton.enable(self.RCJKI.project!=None)
+        self.RCJKI.interface.w.textCenterButton.enable(self.RCJKI.project!=None)
         self.RCJKI.interface.w.deepComponentEditorButton.enable(self.RCJKI.project!=None)
         
     def updateSheetUI(self):

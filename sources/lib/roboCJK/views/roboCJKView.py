@@ -30,17 +30,23 @@ class RoboCJKWindow(BaseWindowController):
     def __init__(self, RCJKI):
         super(RoboCJKWindow, self).__init__()
         self.RCJKI = RCJKI
-        self.w = Window((0, 0, 200, 100), 'Robo-CJK')
+        self.w = Window((0, 0, 200, 120), 'Robo-CJK')
         self.w.userTextBox = TextBox((0,0, 200, 20), self.RCJKI.user,alignment='center')
         self.w.projectEditorButton = Button((0,20,200,20), 'Project', callback=self.openProjectEditor)
         self.w.initialDesignEditorButton = Button((0,40,200,20), 'Initial Design', callback=self.openInitialDesignEditor)
         self.w.deepComponentEditorButton = Button((0,60,200,20), 'Deep Component Editor', callback=self.openDeepComponentEditor)
+        self.w.textCenterButton = Button((0,80,200,20), 'Text Center', callback=self.openTextCenter)
         self.w.settingsButton = Button((0,-20,200,20), 'Settings', callback=self.openSettings)
         self.w.initialDesignEditorButton.enable(False)
         self.w.deepComponentEditorButton.enable(False)
+        self.w.textCenterButton.enable(False)
         self.RCJKI.toggleObservers()
         self.w.bind('close', self.windowCloses)
         self.w.open()
+
+    def openTextCenter(self, sender):
+        if self.RCJKI.currentFont:
+            self.RCJKI.launchTextCenterInterface()
 
     def openProjectEditor(self, sender):
         self.RCJKI.projectEditorController.launchProjectEditorInterface()
@@ -60,3 +66,5 @@ class RoboCJKWindow(BaseWindowController):
             self.RCJKI.projectEditorController.interface.w.close()
         if self.RCJKI.initialDesignController.interface:
             self.RCJKI.initialDesignController.interface.w.close()
+        if self.RCJKI.textCenterInterface:
+            self.RCJKI.textCenterInterface.w.close()

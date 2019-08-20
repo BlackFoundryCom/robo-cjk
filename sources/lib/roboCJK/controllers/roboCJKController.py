@@ -24,14 +24,17 @@ from mojo.roboFont import *
 from mojo.UI import PostBannerNotification
 from views import roboCJKView
 from views import currentGlyphViewDrawer
+from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
 from resources import characterSets
 from utils import git
 
+reload(roboCJKView)
+reload(currentGlyphViewDrawer)
+reload(textCenterView)
 reload(projectEditorController)
 reload(initialDesignController)
-reload(roboCJKView)
 reload(characterSets)
 reload(git)
 
@@ -52,6 +55,7 @@ class RoboCJKController(object):
         self.reservedGlyphs = []
         self.user = git.GitEngine(None).user()
         self.settings = {
+            'showDesignFrame':True,
             'designFrame':{'showMainFrames': True,
                             'showSecondLines': True,
                             'showCustomsFrames': True,
@@ -63,7 +67,8 @@ class RoboCJKController(object):
         }
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
-    
+        self.textCenterInterface = None
+        
     def toggleObservers(self, forceKill=False):
         if self.observers or forceKill:
             removeObserver(self, "draw")
@@ -77,6 +82,10 @@ class RoboCJKController(object):
 
     def launchInterface(self):
         self.interface = roboCJKView.RoboCJKWindow(self)
+
+    def launchTextCenterInterface(self):
+        if self.textCenterInterface is None:
+            self.textCenterInterface = textCenterView.TextCenterWindow(self)
 
     def drawInGlyphWindow(self, info):
         if self.currentGlyph is None: return
