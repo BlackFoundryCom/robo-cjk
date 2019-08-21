@@ -104,7 +104,7 @@ class RoboCJKController(object):
     def pullMastersGlyphs(self, glyphs):
         rootfolder = os.path.split(self.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
-        self.projectEditorController.loadProject(self.RCJKI.projectFileLocalPath)
+        self.projectEditorController.loadProject(self.projectFileLocalPath)
         for d in self.allFonts:
             for name, subsetFont in d.items():
                 if name in self.projectFonts:
