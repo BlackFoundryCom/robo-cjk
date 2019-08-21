@@ -97,7 +97,7 @@ class ProjectEditorController(object):
         gitEngine.push()
         PostBannerNotification('Git Push', stamp)
         self.updateUI()
-
+        
     def loadProject(self, path):
         # for i in range(len(AllGlyphWindows())):
         #     CurrentGlyphWindow().close()
