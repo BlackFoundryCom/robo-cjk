@@ -102,7 +102,7 @@ class RoboCJKController(object):
                     f.save()
 
     def pullMastersGlyphs(self, glyphs):
-        self.projectEditorController.loadProject(self.projectFileLocalPath)
+        self.projectEditorController.loadProject([self.projectFileLocalPath])
         for d in self.allFonts:
             for name, subsetFont in d.items():
                 if name in self.projectFonts:
