@@ -68,7 +68,7 @@ class RoboCJKController(object):
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
         self.textCenterInterface = None
-        
+
     def toggleObservers(self, forceKill=False):
         if self.observers or forceKill:
             removeObserver(self, "draw")
@@ -102,6 +102,9 @@ class RoboCJKController(object):
                     f.save()
 
     def pullMastersGlyphs(self, glyphs):
+        rootfolder = os.path.split(self.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
         for d in self.allFonts:
             for name, subsetFont in d.items():
                 if name in self.projectFonts:
