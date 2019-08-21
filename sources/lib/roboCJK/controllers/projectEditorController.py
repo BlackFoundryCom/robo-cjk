@@ -97,7 +97,7 @@ class ProjectEditorController(object):
         gitEngine.push()
         PostBannerNotification('Git Push', stamp)
         self.updateUI()
-        
+
     def loadProject(self, path):
         # for i in range(len(AllGlyphWindows())):
         #     CurrentGlyphWindow().close()
@@ -220,11 +220,13 @@ class ProjectEditorController(object):
             self.interface = projectEditorView.ProjectEditorWindow(self.RCJKI)
 
     def updateUI(self):
-        self.interface.w.projectNameTextBox.set(self.RCJKI.project.name)
-        self.interface.w.editProjectButton.enable((self.RCJKI.project!=None and self.RCJKI.project.admin==self.RCJKI.user))
-        self.RCJKI.interface.w.initialDesignEditorButton.enable(self.RCJKI.project!=None)
-        self.RCJKI.interface.w.textCenterButton.enable(self.RCJKI.project!=None)
-        self.RCJKI.interface.w.deepComponentEditorButton.enable(self.RCJKI.project!=None)
+        if self.interface:
+            self.interface.w.projectNameTextBox.set(self.RCJKI.project.name)
+            self.interface.w.editProjectButton.enable((self.RCJKI.project!=None and self.RCJKI.project.admin==self.RCJKI.user))
+        if self.RCJKI.interface:
+            self.RCJKI.interface.w.initialDesignEditorButton.enable(self.RCJKI.project!=None)
+            self.RCJKI.interface.w.textCenterButton.enable(self.RCJKI.project!=None)
+            self.RCJKI.interface.w.deepComponentEditorButton.enable(self.RCJKI.project!=None)
         
     def updateSheetUI(self):
         l = [{'FamilyName':e.split('-')[0], 'StyleName':e.split('-')[1]} for e in list(self.RCJKI.project.masterFontsPaths.keys())]
