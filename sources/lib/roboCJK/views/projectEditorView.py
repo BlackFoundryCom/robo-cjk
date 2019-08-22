@@ -92,12 +92,17 @@ class EditProjectSheet():
                 columnDescriptions = [{"title": "FamilyName"}, {"title": "StyleName"}],
                 drawFocusRing = False)
 
-        self.parent.sheet.masterGroup.importMastersButton = Button((10, 155, 290, 20), 
+        self.parent.sheet.masterGroup.importMastersButton = Button((10, 155, 190, 20), 
                 "Import",
                 sizeStyle = "small",
                 callback = self.importMastersButtonCallback)
 
-        self.parent.sheet.masterGroup.removeMastersButton = Button((300, 155, 290, 20), 
+        self.parent.sheet.masterGroup.createMastersButton = Button((205, 155, 190, 20), 
+                "Create",
+                sizeStyle = "small",
+                callback = self.createMastersButtonCallback)
+
+        self.parent.sheet.masterGroup.removeMastersButton = Button((400, 155, -10, 20), 
                 "Remove",
                 sizeStyle = "small",
                 callback = self.removeMastersButtonCallback)
@@ -384,6 +389,19 @@ class EditProjectSheet():
             self.parent.RCJKI.projectEditorController.importFontToProject(path)
         
         self.fontNames = list(self.parent.RCJKI.project.masterFontsPaths.keys())
+        self.parent.RCJKI.projectEditorController.updateSheetUI()
+        self.getPreviewFont()
+        self.getPreviewGlyph()
+        if self.parent.RCJKI.initialDesignController.interface:
+            self.parent.RCJKI.initialDesignController.loadProjectFonts()
+
+    def createMastersButtonCallback(self, sender):
+        familyName = self.parent.RCJKI.project.name
+        styleName = "Regular"
+
+        self.parent.RCJKI.projectEditorController.createFontToProject(familyName, styleName)
+        self.fontNames.append("%s-%s"%(familyName, styleName))
+
         self.parent.RCJKI.projectEditorController.updateSheetUI()
         self.getPreviewFont()
         self.getPreviewGlyph()

@@ -155,11 +155,39 @@ class ProjectEditorController(object):
         k = f.info.familyName+'-'+f.info.styleName
         if k not in self.RCJKI.project.masterFontsPaths:
             UFOName = os.path.split(path)[1]
-            savePath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', UFOName)
+            savePath = os.path.join(rootfolder, 'Masters', UFOName)
             files.makepath(savePath)
             f.save(savePath)
             self.RCJKI.project.masterFontsPaths[k] = UFOName
             self.RCJKI.projectFonts[k] = f
+
+        self.updateSheetUI()
+        self.updateProject()
+
+    def createFontToProject(self, familyName, styleName):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+
+        f = NewFont(
+            familyName = familyName, 
+            styleName = styleName, 
+            showInterface = False
+            )
+        f.info.unitsPerEm = 1000
+        fontName = "%s-%s"%(familyName, styleName)
+
+        characterSet = self.RCJKI.characterSets[self.RCJKI.project.script]['Full']
+        glyphOrder = ["uni" + files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in characterSet]
+        f.glyphOrder = glyphOrder
+
+        if fontName not in self.RCJKI.project.masterFontsPaths:
+            UFOName = "%s.ufo"%fontName
+            savePath = os.path.join(rootfolder, 'Masters', UFOName)
+            files.makepath(savePath)
+            f.save(savePath)
+
+            self.RCJKI.project.masterFontsPaths[fontName] = UFOName
+            self.RCJKI.projectFonts[fontName] = f
+
         self.updateSheetUI()
         self.updateProject()
 
