@@ -107,7 +107,7 @@ class EditProjectSheet():
                 sizeStyle = "small",
                 callback = self.removeMastersButtonCallback)
 
-        self.parent.sheet.masterGroup.scriptsRadioGroup = RadioGroup((10, 190, 200, 40), self.parent.RCJKI.scriptsList, callback=self.scriptsRadioGroupCallback)
+        self.parent.sheet.masterGroup.scriptsRadioGroup = RadioGroup((10, 190, 200, 60), self.parent.RCJKI.scriptsList, callback=self.scriptsRadioGroupCallback)
         self.parent.sheet.masterGroup.scriptsRadioGroup.set(self.parent.RCJKI.scriptsList.index(self.parent.RCJKI.project.script))
 
 
@@ -647,7 +647,7 @@ class ProjectCanvas():
                 if self.previewGlyph:
                     if self.previewGlyph.name.startswith("uni"):
                         txt = chr(int(self.previewGlyph.name[3:7],16))
-                    elif g.unicode: 
+                    elif self.previewGlyph.unicode: 
                         txt = chr(self.previewGlyph.unicode)
                     else:
                         txt = "a"

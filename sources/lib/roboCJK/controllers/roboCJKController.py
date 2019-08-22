@@ -22,6 +22,7 @@ import os
 from mojo.events import addObserver, removeObserver
 from mojo.roboFont import *
 from mojo.UI import PostBannerNotification
+from AppKit import NSColor
 from views import roboCJKView
 from views import currentGlyphViewDrawer
 from views import textCenterView
@@ -48,7 +49,7 @@ class RoboCJKController(object):
         self.projectFileLocalPath = None
         self.collab = None
         self.projectFonts = {}
-        self.scriptsList = ['Hanzi', 'Hangul']
+        self.scriptsList = ['Hanzi', 'Hangul', 'Kana']
         self.characterSets = characterSets.sets
         self.currentFont = None
         self.currentGlyph = None
@@ -71,6 +72,7 @@ class RoboCJKController(object):
                             'showStartPoints': False,
                             'showInterpolation': True,
                             'interpolationValue': .5,
+                            'interpolationColor': NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1),
                             },
         }
         self.projectEditorController = projectEditorController.ProjectEditorController(self)

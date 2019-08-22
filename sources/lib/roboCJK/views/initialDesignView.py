@@ -179,7 +179,10 @@ class InitialDesignWindow(BaseWindowController):
         self.selectedGlyphName = sender.get()[sel[0]]['Name']
         if self.selectedGlyphName in self.RCJKI.currentFont:
             self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
-            r, g, b, a = self.RCJKI.currentGlyph.markColor
+            if self.RCJKI.currentGlyph.markColor is None:
+                r, g, b, a = 0, 0, 0, 0
+            else: 
+                r, g, b, a = self.RCJKI.currentGlyph.markColor
             self.w.colorPicker.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a))
         else:
             self.RCJKI.currentGlyph = None

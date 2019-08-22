@@ -76,7 +76,12 @@ class InterpolaviourDrawer():
             if g == glyph: continue
             if self.RCJKI.settings["interpolaviour"]["showInterpolation"]:
                 save()
-                fill(0, 0, 1*abs(preview-1), 1)
+                interpolationColor = self.RCJKI.settings["interpolaviour"]["interpolationColor"]
+                red = interpolationColor.redComponent() 
+                green = interpolationColor.greenComponent()
+                glue = interpolationColor.blueComponent() 
+                alpha = interpolationColor.alphaComponent()
+                fill(red, green, glue*abs(preview-1), alpha)
                 translate(x = 5 * (self.RCJKI.project.settings['designFrame']['em_Dimension'][0] * .25))
                 scale(.5, .5)
                 tempFont = NewFont(showUI = False)

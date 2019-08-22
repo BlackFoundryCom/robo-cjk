@@ -73,5 +73,5 @@ class RoboCJKWindow(BaseWindowController):
         if self.RCJKI.textCenterInterface:
             self.RCJKI.textCenterInterface.w.close()
 
-        if self.RCJKI.toolsBoxController:
+        if self.RCJKI.toolsBoxController.interface:
             self.RCJKI.toolsBoxController.interface.w.close()
