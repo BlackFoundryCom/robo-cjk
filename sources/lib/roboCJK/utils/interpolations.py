@@ -96,41 +96,40 @@ def deepCompatible(masterGlyph, layersNames):
             if len(c1) != len(c2):
                 return False
     return True
-    
+
 def deepolation(newGlyph, masterGlyph, layersInfo = {}):
-    
+
     if not deepCompatible(masterGlyph, list(layersInfo.keys())):
         return False
-    
+
     pen = PointToSegmentPen(newGlyph.getPen())
-    
+
     for contourIndex, contour in enumerate(masterGlyph):
-        
+
         pen.beginPath()
-        
+
         for pointIndex, point in enumerate(contour.points):
-            
+
             px, py = point.x, point.y
             ptype = point.type if point.type != 'offcurve' else None
-            
-            points = [(px, py)]
+
+            deltaX, deltaY = 0.0, 0.0
             for layerName, value in layersInfo.items():
-                
-                ratio = value / 1000 * (len(layersInfo) + 1)
+
+                ratio = value / 1000.0
                 layerGlyph = masterGlyph.getLayer(layerName)
-                
+
                 pI = layerGlyph[contourIndex].points[pointIndex]
                 pxI, pyI = pI.x, pI.y
-                
-                newPx = px + (pxI - px) * ratio
-                newPy = py + (pyI - py) * ratio
-                
-                points.append((newPx, newPy))
-                
-            newX = int(sum(p[0] for p in points) / len(points))
-            newY = int(sum(p[1] for p in points) / len(points))
+
+                deltaX += ratio * (pxI-px)
+                deltaY += ratio * (pyI-py)
+
+            newX = int(px + deltaX)
+            newY = int(py + deltaY)
+
             pen.addPoint((newX, newY), ptype)
-            
+
         pen.endPath()
-        
+
     return newGlyph
