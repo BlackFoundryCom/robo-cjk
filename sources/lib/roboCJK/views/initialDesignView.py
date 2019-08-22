@@ -169,7 +169,6 @@ class InitialDesignWindow(BaseWindowController):
         currentGlyphWindow = CurrentGlyphWindow()
         if currentGlyphWindow:
             currentGlyphWindow.setGlyph(self.RCJKI.currentGlyph)
-            currentGlyphWindow.isVisible(True)
         else:
             OpenGlyphWindow(self.RCJKI.currentGlyph)
 

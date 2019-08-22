@@ -33,10 +33,11 @@ import random
 from views import designFrameDrawer
 from views import referenceViewDrawer
 from utils import files
+from resources import characterSets
 reload(designFrameDrawer)
 reload(referenceViewDrawer)
 reload(files)
-
+reload(characterSets)
 
 class ProjectEditorWindow(BaseWindowController):
     def __init__(self, RCJKI):
@@ -324,10 +325,16 @@ class EditProjectSheet():
             self.previewGlyph = None
             return
         self.previewGlyph = RGlyph()
+        self.characterSets = characterSets.sets
+        characterSet = self.characterSets[self.parent.RCJKI.project.script]
+        
         if self.previewFont.glyphOrder:
-            while len(self.previewGlyph)==0:
-                glyphName = random.choice(self.previewFont.glyphOrder) 
-                self.previewGlyph = self.previewFont[glyphName]
+                while len(self.previewGlyph)==0:
+
+                    glyphName = random.choice(self.previewFont.glyphOrder) 
+                    glyph = self.previewFont[glyphName]
+                    self.previewGlyph = glyph
+                
         else:
             self.previewGlyph = None
     
