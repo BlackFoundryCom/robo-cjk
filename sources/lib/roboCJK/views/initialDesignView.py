@@ -49,7 +49,10 @@ class InitialDesignWindow(BaseWindowController):
         self.RCJKI.allFonts = []
         self.selectedGlyph = None
     
-        self.w = Window((200, 0, 800, 600), 'Initial Design', minSize = (300,300), maxSize = (2500,2000))
+        self.w = Window((200, 0, 800, 600), 
+                'Initial Design', 
+                minSize = (300,300), 
+                maxSize = (2500,2000))
         
         self.w.fontsList = List((0,0,200,85),
                 [],
@@ -70,9 +73,17 @@ class InitialDesignWindow(BaseWindowController):
                 showColumnTitles = False,
                 drawFocusRing = False)
 
-        self.w.saveLocalFontButton = Button((0,-60,200,20), 'Save Fonts', callback=self.saveLocalFontButtonCallback)
-        self.w.pullMasterGlyphsButton = Button((0,-40,200,20), 'Pull & Reload', callback=self.pullMasterGlyphsButtonCallback)
-        self.w.pushBackButton = Button((0,-20,200,20), 'Push Glyphs to Masters', callback=self.pushBackButtonCallback)
+        self.w.saveLocalFontButton = Button((0,-60,200,20), 
+            'Save Fonts', 
+            callback=self.saveLocalFontButtonCallback)
+
+        self.w.pullMasterGlyphsButton = Button((0,-40,200,20), 
+            'Pull & Reload', 
+            callback=self.pullMasterGlyphsButtonCallback)
+
+        self.w.pushBackButton = Button((0,-20,200,20), 
+            'Push Glyphs to Masters', 
+            callback=self.pushBackButtonCallback)
         
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
@@ -155,7 +166,12 @@ class InitialDesignWindow(BaseWindowController):
         if self.selectedGlyphName not in self.RCJKI.currentFont:
             self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedGlyphName)
             self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
-        OpenGlyphWindow(self.RCJKI.currentGlyph)
+        currentGlyphWindow = CurrentGlyphWindow()
+        if currentGlyphWindow:
+            currentGlyphWindow.setGlyph(self.RCJKI.currentGlyph)
+            currentGlyphWindow.isVisible(True)
+        else:
+            OpenGlyphWindow(self.RCJKI.currentGlyph)
 
     def glyphSetListSelectionCallback(self, sender):
         sel = sender.getSelection()

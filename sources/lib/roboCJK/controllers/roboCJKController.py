@@ -27,6 +27,7 @@ from views import currentGlyphViewDrawer
 from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
+from controllers import toolsBoxController
 from resources import characterSets
 from utils import git
 
@@ -35,6 +36,7 @@ reload(currentGlyphViewDrawer)
 reload(textCenterView)
 reload(projectEditorController)
 reload(initialDesignController)
+reload(toolsBoxController)
 reload(characterSets)
 reload(git)
 
@@ -63,10 +65,18 @@ class RoboCJKController(object):
                             'translate_secondLine_X': True,
                             'translate_secondLine_Y': True
                             },
-            'stackMasters': True
+            'stackMasters': True,
+            'interpolaviour':{'onOff': False,
+                            'showPoints': False,
+                            'showStartPoints': False,
+                            'showInterpolation': True,
+                            'interpolationValue': .5,
+                            },
         }
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
+        self.toolsBoxController = toolsBoxController.toolsBoxController(self)
+
         self.textCenterInterface = None
 
     def toggleObservers(self, forceKill=False):
@@ -82,6 +92,13 @@ class RoboCJKController(object):
 
     def launchInterface(self):
         self.interface = roboCJKView.RoboCJKWindow(self)
+        self.updateUI()
+
+    def updateUI(self):
+        self.interface.w.initialDesignEditorButton.enable(self.project!=None)
+        self.interface.w.textCenterButton.enable(self.project!=None)
+        self.interface.w.deepComponentEditorButton.enable(self.project!=None)
+        self.interface.w.toolsBoxButton.enable(self.project!=None)
 
     def launchTextCenterInterface(self):
         if self.textCenterInterface is None:

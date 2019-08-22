@@ -30,16 +30,14 @@ class RoboCJKWindow(BaseWindowController):
     def __init__(self, RCJKI):
         super(RoboCJKWindow, self).__init__()
         self.RCJKI = RCJKI
-        self.w = Window((0, 0, 200, 120), 'Robo-CJK')
+        self.w = Window((0, 0, 200, 140), 'Robo-CJK')
         self.w.userTextBox = TextBox((0,0, 200, 20), self.RCJKI.user,alignment='center')
         self.w.projectEditorButton = Button((0,20,200,20), 'Project', callback=self.openProjectEditor)
         self.w.initialDesignEditorButton = Button((0,40,200,20), 'Initial Design', callback=self.openInitialDesignEditor)
         self.w.deepComponentEditorButton = Button((0,60,200,20), 'Deep Component Editor', callback=self.openDeepComponentEditor)
         self.w.textCenterButton = Button((0,80,200,20), 'Text Center', callback=self.openTextCenter)
+        self.w.toolsBoxButton = Button((0,100,200,20), 'Tools Box', callback=self.openToolsBox)
         self.w.settingsButton = Button((0,-20,200,20), 'Settings', callback=self.openSettings)
-        self.w.initialDesignEditorButton.enable(False)
-        self.w.deepComponentEditorButton.enable(False)
-        self.w.textCenterButton.enable(False)
         self.RCJKI.toggleObservers()
         self.w.bind('close', self.windowCloses)
         self.w.open()
@@ -60,11 +58,20 @@ class RoboCJKWindow(BaseWindowController):
     def openSettings(self, sender):
         pass
 
+    def openToolsBox(self, sender):
+        self.RCJKI.toolsBoxController.launchToolsBoxInterface()
+
     def windowCloses(self, sender):
         self.RCJKI.toggleObservers(forceKill=True)
+
         if self.RCJKI.projectEditorController.interface:
             self.RCJKI.projectEditorController.interface.w.close()
+
         if self.RCJKI.initialDesignController.interface:
             self.RCJKI.initialDesignController.interface.w.close()
+
         if self.RCJKI.textCenterInterface:
             self.RCJKI.textCenterInterface.w.close()
+
+        if self.RCJKI.toolsBoxController:
+            self.RCJKI.toolsBoxController.interface.w.close()

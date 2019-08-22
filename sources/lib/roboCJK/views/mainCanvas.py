@@ -20,14 +20,13 @@ from imp import reload
 
 from mojo.drawingTools import *
 from mojo.roboFont import *
-from views import designFrameDrawer
-from views import referenceViewDrawer
+from views import designFrameDrawer, interpolaviourDrawer, referenceViewDrawer
 from utils import robocjk
 # from drawers.DeepComponentDrawer import DeepComponentDrawer
 # from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
 # from drawers.InterpolaviourDrawer import InterpolaviourDrawer
 
-from mojo.UI import OpenGlyphWindow
+from mojo.UI import OpenGlyphWindow, CurrentGlyphWindow
 from mojo.events import extractNSEvent
 from ufoLib.glifLib import readGlyphFromString
 
@@ -35,6 +34,7 @@ import os
 
 reload(designFrameDrawer)
 reload(referenceViewDrawer)
+reload(interpolaviourDrawer)
 reload(robocjk)
 
 cwd = os.getcwd()
@@ -56,10 +56,15 @@ class MainCanvas():
         self.preview = 0
         self.dfv = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
         self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.RCJKI)
+        self.interpolaviourDrawer = interpolaviourDrawer.InterpolaviourDrawer(self.RCJKI)
 
     def mouseDown(self, info):
         if info.clickCount() == 2 and self.RCJKI.currentGlyph is not None:
-            OpenGlyphWindow(self.RCJKI.currentGlyph)
+            currentGlyphWindow = CurrentGlyphWindow()
+            if currentGlyphWindow:
+                currentGlyphWindow.setGlyph(self.RCJKI.currentGlyph)
+            else:
+                OpenGlyphWindow(self.RCJKI.currentGlyph)
             # Helpers.setDarkMode(self.ui.window, self.ui.darkMode)
 
     def update(self):
@@ -215,6 +220,8 @@ class MainCanvas():
                     if self.preview: 
                         fill(0, 0, 0, 1)
                     # DeepComponentDrawer(self.ui, g, f)
+                    if self.RCJKI.settings["interpolaviour"]["onOff"]:
+                        self.interpolaviourDrawer.draw(g, self.scale, self.preview)
                     # if self.ui.interpolaviourOnOff:
                     #     InterpolaviourDrawer(self.ui).draw(g, self.scale, self.preview)
                     # TesterDeepComponent(self.ui, self.ui.w.deepComponentGroup.creator.storageFont_Glyphset)

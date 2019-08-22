@@ -361,11 +361,8 @@ class EditProjectSheet():
             self.parent.sheet.referenceViewerGroup
             ]
         for i, e in enumerate(groups):
-            if i != sel: 
-                e.show(0)
-            else: 
-                e.show(1)
-            
+            e.show(i == sel)
+
         self.parent.RCJKI.projectEditorController.updateSheetUI()
 
     def projectNameEditTextCallback(self, sender):

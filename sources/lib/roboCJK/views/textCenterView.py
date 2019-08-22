@@ -95,7 +95,9 @@ class TextCenterWindow():
 
         self.w.canvas = Canvas((0, 60, -0, -20), 
             delegate = self, 
-            canvasSize=(10000, 10000))
+            canvasSize=(10000, 10000),
+            hasHorizontalScroller=False, 
+            hasVerticalScroller=False)
 
         # Helpers.setDarkMode(self.w, self.ui.darkMode)
         self.w.bind('resize', self.windowDidResize)
