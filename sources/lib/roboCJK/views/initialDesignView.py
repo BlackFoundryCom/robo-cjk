@@ -167,8 +167,9 @@ class InitialDesignWindow(BaseWindowController):
             self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedGlyphName)
             self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
         currentGlyphWindow = CurrentGlyphWindow()
-        if currentGlyphWindow:
+        if currentGlyphWindow is not None:
             currentGlyphWindow.setGlyph(self.RCJKI.currentGlyph)
+            currentGlyphWindow.w.getNSWindow().makeKeyAndOrderFront_(self)
         else:
             OpenGlyphWindow(self.RCJKI.currentGlyph)
 
@@ -188,8 +189,8 @@ class InitialDesignWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def windowCloses(self, sender):
-        # for i in range(len(AllGlyphWindows())):
-        #     CurrentGlyphWindow().close()
+        if CurrentGlyphWindow() is not None:
+            CurrentGlyphWindow().close()
         self.RCJKI.initialDesignController.interface = None
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):

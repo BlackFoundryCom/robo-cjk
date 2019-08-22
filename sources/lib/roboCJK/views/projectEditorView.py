@@ -327,16 +327,12 @@ class EditProjectSheet():
         self.previewGlyph = RGlyph()
         self.characterSets = characterSets.sets
         characterSet = ""
+
         for charset in self.characterSets[self.parent.RCJKI.project.script].values():
             characterSet += charset
-        if self.previewFont.glyphOrder:
-            while len(self.previewGlyph)==0:
-                glyphName = "uni"+files.normalizeUnicode(hex(ord(random.choice(list(characterSet))))[2:].upper())
-                glyph = self.previewFont[glyphName]
-                self.previewGlyph = glyph
-            
-        else:
-            self.previewGlyph = None
+
+        glyphNames = ["uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) for c in characterSet if "uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) in self.previewFont.keys()]
+        self.previewGlyph = self.previewFont[random.choice(glyphNames)]
     
     def usersListSelectionCallback(self, sender):
         sel = sender.getSelection()
