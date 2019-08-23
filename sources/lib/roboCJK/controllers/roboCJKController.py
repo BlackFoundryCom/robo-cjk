@@ -63,8 +63,9 @@ class RoboCJKController(object):
                             'showSecondLines': True,
                             'showCustomsFrames': True,
                             'showproximityPoints': True,
-                            'translate_secondLine_X': True,
-                            'translate_secondLine_Y': True
+                            'translate_secondLine_X': 0,
+                            'translate_secondLine_Y': 0,
+                            'drawPreview': False,
                             },
 
             'stackMasters': True,
@@ -125,7 +126,7 @@ class RoboCJKController(object):
         if self.currentGlyph is None: return
         if extractNSEvent(info)['commandDown'] and info["event"].characters() == "s":
             self.initialDesignController.saveSubsetFonts()
-            PostBannerNotification("fonts Did Save", "")
+            
 
     def injectGlyphsBack(self, glyphs, user):
         for d in self.allFonts:

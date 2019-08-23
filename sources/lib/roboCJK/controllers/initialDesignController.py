@@ -19,6 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from imp import reload
 import os
 from mojo.roboFont import *
+from mojo.UI import PostBannerNotification
 from views import initialDesignView
 from utils import files
 from utils import git
@@ -96,6 +97,7 @@ class InitialDesignController(object):
         for d in self.RCJKI.allFonts:
             for name, f in d.items():
                 f.save()
+        PostBannerNotification("fonts Did Save", "")
 
     def injectGlyphsBack(self, glyphs, user):
         self.RCJKI.injectGlyphsBack(glyphs, user)

@@ -69,12 +69,3 @@ class CurrentGlyphViewDrawer():
         if self.RCJKI.settings["stackMasters"]:
             self.stackMaster.draw(g, preview = info['notificationName'] == "drawPreview")
 
-        # save()
-        # if self.RCJKI.settings['stackMasters']:
-        #     fill(0, .3, 1, .3)
-        #     for font in self.fonts:
-        #         if g is None: continue
-        #         if g.name not in font: continue
-        #         if font[g.name] == g: continue
-        #         drawGlyph(font[g.name])
-        # restore()

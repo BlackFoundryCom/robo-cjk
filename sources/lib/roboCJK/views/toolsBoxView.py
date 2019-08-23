@@ -38,13 +38,15 @@ class ToolsBoxWindow():
 
         # self.referenceViewer = Group((0,0,-0,-0))
 
-        self.designFrame = Group((0,0,-0,-0))
+
 
         self.interpolaviour = Interpolaviour((0,0,-0,-0), self.RCJKI)
 
         self.displayOption = DisplayOptions((0,0,-0,-0), self.RCJKI)
 
         self.referenceViewer = ReferenceViewer((0,0,-0,-0), self.RCJKI)
+
+        self.designFrame = DesignFrame((0,0,-0,-0), self.RCJKI)
 
         self.accordionViewDescriptions = [
                         dict(label="Interpolaviour", 
@@ -196,4 +198,111 @@ class ReferenceViewer(Group):
         self.RCJKI.settings["referenceViewer"]["drawPreview"] = sender.get()
         self.RCJKI.toolsBoxController.updateViews()
 
+
+class DesignFrame(Group):
+
+    def __init__(self, posSize, RCJKI):
+        super(DesignFrame, self).__init__(posSize)
+        self.RCJKI = RCJKI
+
+        if self.RCJKI.currentGlyph is not None:
+            if "DesignFrame" in self.RCJKI.currentGlyph.lib:
+                self.RCJKI.settings["designFrame"]["translate_secondLine_X"] = self.RCJKI.currentGlyph.lib["DesignFrame"]["secondeLines"][0]
+                self.RCJKI.settings["designFrame"]["translate_secondLine_Y"] = self.RCJKI.currentGlyph.lib["DesignFrame"]["secondeLines"][1]
+
+        y = 5
+        self.onOff_checkBox = CheckBox((10,y,-10,20),
+                "On/Off",
+                value = self.RCJKI.settings["showDesignFrame"],
+                sizeStyle = "small",
+                callback = self._onOff_checkBox_callback)
+        y += 20
+        self.drawPreview_designFrame_checkBox = CheckBox((10,y,-10,20),
+                'Draw Preview',
+                value = self.RCJKI.settings["designFrame"]["drawPreview"],
+                sizeStyle = "small",
+                callback = self._drawPreview_designFrame_checkBox_callback)
+        y += 20
+        self.showMainFrames_checkBox = CheckBox((10,y,-10,20),
+                "Main Frames",
+                value = self.RCJKI.settings["designFrame"]["showMainFrames"],
+                sizeStyle = "small",
+                callback = self._showMainFrames_checkBox_callback)
+        y += 20
+        self.showproximityPoints_checkBox = CheckBox((10,y,-10,20),
+                "Proximity Points",
+                value = self.RCJKI.settings["designFrame"]["showproximityPoints"],
+                sizeStyle = "small",
+                callback = self._showproximityPoints_checkBox_callback)
+        y += 20
+        self.showSecondLines_checkBox = CheckBox((10,y,-10,20),
+                "Second Lines",
+                value = self.RCJKI.settings["designFrame"]["showSecondLines"],
+                sizeStyle = "small",
+                callback = self._showSecondLines_checkBox_callback)
+        
+        y += 20
+        self.translate_secondLine_X_slider = Slider((25,y,-10,20),
+                minValue = -500,
+                maxValue = 500,
+                value = self.RCJKI.settings["designFrame"]["translate_secondLine_X"],
+                sizeStyle = "small",
+                callback = self._translate_secondLine_X_slider_callback)
+        y += 20
+        self.translate_secondLine_Y_slider = Slider((25,y,-10,20),
+                minValue = -500,
+                maxValue = 500,
+                value = self.RCJKI.settings["designFrame"]["translate_secondLine_Y"],
+                sizeStyle = "small",
+                callback = self._translate_secondLine_Y_slider_callback)
+        y += 20
+        self.showCustomsFrames_checkBox = CheckBox((10,y,-10,20),
+                "Customs Frames",
+                value = self.RCJKI.settings["designFrame"]["showCustomsFrames"],
+                sizeStyle = "small",
+                callback = self._showCustomsFrames_checkBox_callback)
+
+    def _onOff_checkBox_callback(self, sender):
+        self.RCJKI.settings["showDesignFrame"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _drawPreview_designFrame_checkBox_callback(self, sender):
+        self.RCJKI.settings["designFrame"]["drawPreview"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _showMainFrames_checkBox_callback(self, sender):
+        self.RCJKI.settings["designFrame"]["showMainFrames"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _showproximityPoints_checkBox_callback(self, sender):
+        self.RCJKI.settings["designFrame"]["showproximityPoints"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _showSecondLines_checkBox_callback(self, sender):
+        self.RCJKI.settings["designFrame"]["showSecondLines"] = sender.get()
+        self.translate_secondLine_X_slider.show(self.RCJKI.settings["designFrame"]["showSecondLines"])
+        self.translate_secondLine_Y_slider.show(self.RCJKI.settings["designFrame"]["showSecondLines"])
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _showCustomsFrames_checkBox_callback(self, sender):
+        self.RCJKI.settings["designFrame"]["showCustomsFrames"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _translate_secondLine_X_slider_callback(self, sender):
+        self.RCJKI.settings["designFrame"]["translate_secondLine_X"] = int(sender.get())
+        self.set_DesignFrame_GlyphLib_Data()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _translate_secondLine_Y_slider_callback(self, sender):
+        self.RCJKI.settings["designFrame"]["translate_secondLine_Y"] = int(sender.get())
+        self.set_DesignFrame_GlyphLib_Data()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def set_DesignFrame_GlyphLib_Data(self):
+        if self.RCJKI.currentGlyphh is not None:
+            if "DesignFrame" in self.RCJKI.currentGlyphh.lib:
+                self.RCJKI.currentGlyphh.lib["DesignFrame"]["secondeLines"][0] = self.RCJKI.settings["designFrame"]["translate_secondLine_X"]
+                self.RCJKI.currentGlyphh.lib["DesignFrame"]["secondeLines"][1] = self.RCJKI.settings["designFrame"]["translate_secondLine_Y"]
+            else:
+                self.RCJKI.currentGlyphh.lib["DesignFrame"] = {"secondeLines":[self.RCJKI.settings["designFrame"]["translate_secondLine_X"], self.RCJKI.settings["designFrame"]["translate_secondLine_Y"]]}
 
