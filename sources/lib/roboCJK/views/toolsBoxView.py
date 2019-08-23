@@ -28,17 +28,10 @@ class ToolsBoxWindow():
             'Tools',
             closable = False,
             textured = True,
-            miniaturizable = False)
-
-        # self.displayOption = DisplayOptions((0,0,-0,-0), self)
-
-  #       self.referenceViewer = ReferenceViewer((0,0,-0,-0), self)
-
-  #       self.designFrame = DesignFrame((0,0,-0,-0), self)
-
-        # self.referenceViewer = Group((0,0,-0,-0))
-
-
+            miniaturizable = False,
+            minSize = (200, 200),
+            maxSize = (200, 1000),
+            fullScreenMode = None)
 
         self.interpolaviour = Interpolaviour((0,0,-0,-0), self.RCJKI)
 
@@ -240,7 +233,6 @@ class DesignFrame(Group):
                 value = self.RCJKI.settings["designFrame"]["showSecondLines"],
                 sizeStyle = "small",
                 callback = self._showSecondLines_checkBox_callback)
-        
         y += 20
         self.translate_secondLine_X_slider = Slider((25,y,-10,20),
                 minValue = -500,

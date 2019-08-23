@@ -21,7 +21,7 @@ import os
 
 from mojo.events import addObserver, removeObserver, extractNSEvent
 from mojo.roboFont import *
-from mojo.UI import PostBannerNotification
+from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow
 from AppKit import NSColor
 from views import roboCJKView
 from views.drawers import currentGlyphViewDrawer
@@ -160,4 +160,12 @@ class RoboCJKController(object):
         gitEngine.commit(stamp)
         gitEngine.push()
         PostBannerNotification('Git Push', stamp)
+
+    def openGlyphWindow(self, glyph):
+        currentGlyphWindow = CurrentGlyphWindow()
+        if currentGlyphWindow is not None:
+            currentGlyphWindow.setGlyph(glyph)
+            currentGlyphWindow.w.getNSWindow().makeKeyAndOrderFront_(self)
+        else:
+            OpenGlyphWindow(glyph)
 

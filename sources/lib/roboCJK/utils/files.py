@@ -53,3 +53,5 @@ def normalizeUnicode(code):
         return '0'*(4-len(code)) + code
     else:
         return code
+
+    

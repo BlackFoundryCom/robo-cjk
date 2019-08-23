@@ -63,12 +63,7 @@ class MainCanvas():
 
     def mouseDown(self, info):
         if info.clickCount() == 2 and self.RCJKI.currentGlyph is not None:
-            currentGlyphWindow = CurrentGlyphWindow()
-            if currentGlyphWindow is not None:
-                currentGlyphWindow.setGlyph(self.RCJKI.currentGlyph)
-                currentGlyphWindow.w.getNSWindow().makeKeyAndOrderFront_(self)
-            else:
-                OpenGlyphWindow(self.RCJKI.currentGlyph)
+            self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
             # Helpers.setDarkMode(self.ui.window, self.ui.darkMode)
 
     def update(self):
