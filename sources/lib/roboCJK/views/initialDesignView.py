@@ -77,13 +77,13 @@ class InitialDesignWindow(BaseWindowController):
             'Save Fonts', 
             callback=self.saveLocalFontButtonCallback)
 
-        self.w.pullMasterGlyphsButton = Button((0,-40,200,20), 
-            'Pull & Reload', 
-            callback=self.pullMasterGlyphsButtonCallback)
-
-        self.w.pushBackButton = Button((0,-20,200,20), 
+        self.w.pushBackButton = Button((0,-40,200,20), 
             'Push Glyphs to Masters', 
             callback=self.pushBackButtonCallback)
+
+        self.w.pullMasterGlyphsButton = Button((0,-20,200,20), 
+            'Pull & Reload', 
+            callback=self.pullMasterGlyphsButtonCallback)
         
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
