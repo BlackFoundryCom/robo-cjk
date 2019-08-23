@@ -21,6 +21,7 @@ from defconAppKit.windows.baseWindow import BaseWindowController
 from vanilla import *
 import os
 import json
+from mojo.UI import PostBannerNotification
 
 from controllers import initialDesignController
 from controllers import textCenterController
@@ -46,6 +47,9 @@ class RoboCJKWindow(BaseWindowController):
         self.w.open()
 
     def openTextCenter(self, sender):
+        if self.RCJKI.currentFont is None:
+            PostBannerNotification("Warning", "There is no current font")
+            return
         self.RCJKI.textCenterController.launchTextCenterInterface()
 
     def openProjectEditor(self, sender):
