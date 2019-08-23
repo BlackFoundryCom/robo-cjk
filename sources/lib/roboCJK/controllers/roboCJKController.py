@@ -29,6 +29,7 @@ from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
 from controllers import toolsBoxController
+from controllers import textCenterController
 from resources import characterSets
 from utils import git
 
@@ -38,6 +39,7 @@ reload(textCenterView)
 reload(projectEditorController)
 reload(initialDesignController)
 reload(toolsBoxController)
+reload(textCenterController)
 reload(characterSets)
 reload(git)
 
@@ -88,6 +90,7 @@ class RoboCJKController(object):
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
         self.toolsBoxController = toolsBoxController.toolsBoxController(self)
+        self.textCenterController = textCenterController.textCenterController(self)
 
         self.textCenterInterface = None
 

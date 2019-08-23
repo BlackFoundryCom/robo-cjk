@@ -23,7 +23,10 @@ import os
 import json
 
 from controllers import initialDesignController
+from controllers import textCenterController
+
 reload(initialDesignController)
+reload(textCenterController)
 
 
 class RoboCJKWindow(BaseWindowController):
@@ -43,8 +46,7 @@ class RoboCJKWindow(BaseWindowController):
         self.w.open()
 
     def openTextCenter(self, sender):
-        if self.RCJKI.currentFont:
-            self.RCJKI.launchTextCenterInterface()
+        self.RCJKI.textCenterController.launchTextCenterInterface()
 
     def openProjectEditor(self, sender):
         self.RCJKI.projectEditorController.launchProjectEditorInterface()
@@ -75,3 +77,7 @@ class RoboCJKWindow(BaseWindowController):
 
         if self.RCJKI.toolsBoxController.interface:
             self.RCJKI.toolsBoxController.interface.w.close()
+
+        if self.RCJKI.textCenterController.interface:
+            self.RCJKI.textCenterController.interface.w.close()
+
