@@ -175,26 +175,6 @@ class MainCanvas():
                         fill(0, 0, 0, .5)
                     drawGlyph(g)
 
-                    # save()
-                    # if self.ui.stackMasters and not self.preview:
-                    #     fill(0, .3, 1, .3)
-                    #     for f in self.ui.font2Storage:
-                    #         if f[g.name] == g: continue
-                    #         drawGlyph(f[g.name])
-                    # restore()
-
-                    # save()
-                    # if self.ui.waterFall and not self.preview:
-                    #     s = .5
-                    #     scale(s,s)
-                    #     translate(0, -self.ui.EM_Dimension_Y - 200)
-                    #     for i in range(1, 5):
-                    #         drawGlyph(g)
-                    #         translate(self.ui.EM_Dimension_X + 150, 0)
-                    #         scale(s,s)
-                    # restore()
-
-                    # if self.ui.onOff_designFrame and not self.preview:
                     if self.RCJKI.settings["showDesignFrame"]:
                         if not self.preview or self.preview == self.RCJKI.settings["designFrame"]["drawPreview"]:
                             self.dfv.draw(
