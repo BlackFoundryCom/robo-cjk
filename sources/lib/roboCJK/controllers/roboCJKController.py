@@ -19,12 +19,12 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from imp import reload
 import os
 
-from mojo.events import addObserver, removeObserver
+from mojo.events import addObserver, removeObserver, extractNSEvent
 from mojo.roboFont import *
 from mojo.UI import PostBannerNotification
 from AppKit import NSColor
 from views import roboCJKView
-from views import currentGlyphViewDrawer
+from views.drawers import currentGlyphViewDrawer
 from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
@@ -66,7 +66,12 @@ class RoboCJKController(object):
                             'translate_secondLine_X': True,
                             'translate_secondLine_Y': True
                             },
+
             'stackMasters': True,
+            'stackMastersColor': NSColor.colorWithCalibratedRed_green_blue_alpha_(0, .3, 1, .3),
+            'waterFall': False,
+            'waterFallColor': NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1),
+
             'interpolaviour':{'onOff': False,
                             'showPoints': False,
                             'showStartPoints': False,
@@ -74,6 +79,10 @@ class RoboCJKController(object):
                             'interpolationValue': .5,
                             'interpolationColor': NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1),
                             },
+            'referenceViewer' : {
+                            'onOff': True,
+                            'drawPreview': False,
+                            }
         }
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
@@ -86,10 +95,12 @@ class RoboCJKController(object):
             removeObserver(self, "draw")
             removeObserver(self, "drawPreview")
             removeObserver(self, "drawInactive")
+            removeObserver(self, "keyDown")
         else:
             addObserver(self, "drawInGlyphWindow", "draw")
             addObserver(self, "drawInGlyphWindow", "drawPreview")
             addObserver(self, "drawInGlyphWindow", "drawInactive")
+            addObserver(self, "keyDownInGlyphWindow", "keyDown")
         self.observers = not self.observers
 
     def launchInterface(self):
@@ -109,6 +120,12 @@ class RoboCJKController(object):
     def drawInGlyphWindow(self, info):
         if self.currentGlyph is None: return
         currentGlyphViewDrawer.CurrentGlyphViewDrawer(self).draw(info)
+
+    def keyDownInGlyphWindow(self, info):
+        if self.currentGlyph is None: return
+        if extractNSEvent(info)['commandDown'] and info["event"].characters() == "s":
+            self.initialDesignController.saveSubsetFonts()
+            PostBannerNotification("fonts Did Save", "")
 
     def injectGlyphsBack(self, glyphs, user):
         for d in self.allFonts:

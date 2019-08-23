@@ -36,19 +36,20 @@ class ToolsBoxWindow():
 
   #       self.designFrame = DesignFrame((0,0,-0,-0), self)
 
-        
-        self.displayOption = Group((0,0,-0,-0))
-
-        self.referenceViewer = Group((0,0,-0,-0))
+        # self.referenceViewer = Group((0,0,-0,-0))
 
         self.designFrame = Group((0,0,-0,-0))
 
         self.interpolaviour = Interpolaviour((0,0,-0,-0), self.RCJKI)
 
+        self.displayOption = DisplayOptions((0,0,-0,-0), self.RCJKI)
+
+        self.referenceViewer = ReferenceViewer((0,0,-0,-0), self.RCJKI)
+
         self.accordionViewDescriptions = [
                         dict(label="Interpolaviour", 
                             view=self.interpolaviour, 
-                            size=150, 
+                            size=160, 
                             collapsed=False, 
                             canResize=0),
 
@@ -142,4 +143,57 @@ class Interpolaviour(Group):
 
     def _deduce_button_callback(self, sender):
         pass
+
+class DisplayOptions(Group):
+
+    def __init__(self, posSize, RCJKI):
+        super(DisplayOptions, self).__init__(posSize)
+        self.RCJKI = RCJKI
         
+        self.stackMasters_CheckBox = CheckBox((10,5,-10,20), 
+            "Stack Masters",
+            value = self.RCJKI.settings["stackMasters"],
+            sizeStyle = "small", 
+            callback = self._stackMasters_CheckBox_callback)
+
+        self.waterFall_CheckBox = CheckBox((10,25,-10,20), 
+            "Water Fall",
+            value = self.RCJKI.settings["waterFall"],
+            sizeStyle = "small", 
+            callback = self._waterFall_CheckBox_callback)
+
+    def _stackMasters_CheckBox_callback(self, sender):
+        self.RCJKI.settings["stackMasters"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _waterFall_CheckBox_callback(self, sender):
+        self.RCJKI.settings["waterFall"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+class ReferenceViewer(Group):
+
+    def __init__(self, posSize, RCJKI):
+        super(ReferenceViewer, self).__init__(posSize)
+        self.RCJKI = RCJKI
+        
+        self.OnOff_referenceViewer_checkBox = CheckBox((10,5,-10,20),
+                'On/Off',
+                value = self.RCJKI.settings["referenceViewer"]["onOff"],
+                sizeStyle = "small",
+                callback = self._OnOff_referenceViewer_callback)
+
+        self.drawPreview_referenceViewer_checkBox = CheckBox((10,25,-10,20),
+                'Draw Preview',
+                value = self.RCJKI.settings["referenceViewer"]["drawPreview"],
+                sizeStyle = "small",
+                callback = self._drawPreview_referenceViewer_callback)
+
+    def _OnOff_referenceViewer_callback(self, sender):
+        self.RCJKI.settings["referenceViewer"]["onOff"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+    def _drawPreview_referenceViewer_callback(self, sender):
+        self.RCJKI.settings["referenceViewer"]["drawPreview"] = sender.get()
+        self.RCJKI.toolsBoxController.updateViews()
+
+

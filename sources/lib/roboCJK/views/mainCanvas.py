@@ -20,7 +20,7 @@ from imp import reload
 
 from mojo.drawingTools import *
 from mojo.roboFont import *
-from views import designFrameDrawer, interpolaviourDrawer, referenceViewDrawer
+from views.drawers import interpolaviourDrawer, displayOptionsDrawer, referenceViewDrawer, designFrameDrawer
 from utils import robocjk
 # from drawers.DeepComponentDrawer import DeepComponentDrawer
 # from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
@@ -35,6 +35,7 @@ import os
 reload(designFrameDrawer)
 reload(referenceViewDrawer)
 reload(interpolaviourDrawer)
+reload(displayOptionsDrawer)
 reload(robocjk)
 
 cwd = os.getcwd()
@@ -57,6 +58,8 @@ class MainCanvas():
         self.dfv = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
         self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.RCJKI)
         self.interpolaviourDrawer = interpolaviourDrawer.InterpolaviourDrawer(self.RCJKI)
+        self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI)
+        self.waterFall = displayOptionsDrawer.WaterFallDrawer(self.RCJKI)
 
     def mouseDown(self, info):
         if info.clickCount() == 2 and self.RCJKI.currentGlyph is not None:
@@ -208,14 +211,18 @@ class MainCanvas():
                         scale = self.scale
                         )
                     # if self.ui.OnOff_referenceViewer and not self.preview:
-                    if g.name.startswith("uni"):
-                        char = chr(int(g.name[3:7],16))
-                    elif g.unicode: 
-                        char = chr(g.unicode)
-                    else:
-                        char = ""
-                    self.rvd.draw(char)
+                    if self.RCJKI.settings["referenceViewer"]["onOff"]:
 
+                        if g.name.startswith("uni"):
+                            char = chr(int(g.name[3:7],16))
+                        elif g.unicode: 
+                            char = chr(g.unicode)
+                        else:
+                            char = ""
+
+                        if not self.preview or self.preview == self.RCJKI.settings["referenceViewer"]["drawPreview"]:
+                            self.rvd.draw(char)
+                        
                     # f = self.ui.font2Storage[self.ui.font]
                     fill(.2, 0, 1, .5)
                     if self.preview: 
@@ -223,6 +230,13 @@ class MainCanvas():
                     # DeepComponentDrawer(self.ui, g, f)
                     if self.RCJKI.settings["interpolaviour"]["onOff"]:
                         self.interpolaviourDrawer.draw(g, self.scale, self.preview)
+
+                    if self.RCJKI.settings["stackMasters"]:
+                        self.stackMaster.draw(g, self.preview)
+
+                    if self.RCJKI.settings["waterFall"]:
+                        self.waterFall.draw(g, self.preview)
+                        
                     # if self.ui.interpolaviourOnOff:
                     #     InterpolaviourDrawer(self.ui).draw(g, self.scale, self.preview)
                     # TesterDeepComponent(self.ui, self.ui.w.deepComponentGroup.creator.storageFont_Glyphset)

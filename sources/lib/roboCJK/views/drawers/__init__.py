@@ -16,24 +16,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-from imp import reload
-from views import toolsBoxView
-from mojo.UI import UpdateCurrentGlyphView
-reload(toolsBoxView)
-
-class toolsBoxController(object):
-    def __init__(self, RCJKI):
-        self.RCJKI = RCJKI
-        self.interface = None
-
-    def launchToolsBoxInterface(self):
-        if not self.interface:
-            self.interface = toolsBoxView.ToolsBoxWindow(self.RCJKI)
-        else:
-            self.interface.w.close()
-            self.interface = None
-
-    def updateViews(self):
-        self.RCJKI.initialDesignController.interface.w.mainCanvas.update()
-        UpdateCurrentGlyphView()
-        

@@ -30,8 +30,8 @@ from AppKit import NSColor
 import os
 import random
 
-from views import designFrameDrawer
-from views import referenceViewDrawer
+from views.drawers import designFrameDrawer
+from views.drawers import referenceViewDrawer
 from utils import files
 from resources import characterSets
 reload(designFrameDrawer)

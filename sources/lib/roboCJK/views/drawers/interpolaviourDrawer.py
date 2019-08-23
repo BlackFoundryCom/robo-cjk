@@ -79,9 +79,9 @@ class InterpolaviourDrawer():
                 interpolationColor = self.RCJKI.settings["interpolaviour"]["interpolationColor"]
                 red = interpolationColor.redComponent() 
                 green = interpolationColor.greenComponent()
-                glue = interpolationColor.blueComponent() 
+                blue = interpolationColor.blueComponent() 
                 alpha = interpolationColor.alphaComponent()
-                fill(red, green, glue*abs(preview-1), alpha)
+                fill(red, green, blue*abs(preview-1), alpha)
                 translate(x = 5 * (self.RCJKI.project.settings['designFrame']['em_Dimension'][0] * .25))
                 scale(.5, .5)
                 tempFont = NewFont(showUI = False)

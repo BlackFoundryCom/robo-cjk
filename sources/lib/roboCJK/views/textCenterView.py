@@ -25,7 +25,7 @@ from mojo.events import extractNSEvent
 from lib.UI.spaceCenter.glyphSequenceEditText import splitText
 from mojo.UI import OpenGlyphWindow
 
-from views import designFrameDrawer
+from views.drawers import designFrameDrawer
 # from Helpers import deepolation
 # import Helpers
 reload(designFrameDrawer)
