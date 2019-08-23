@@ -97,7 +97,7 @@ class InitialDesignController(object):
         for d in self.RCJKI.allFonts:
             for name, f in d.items():
                 f.save()
-        PostBannerNotification("fonts Did Save", "")
+        PostBannerNotification("Fonts saved", "")
 
     def injectGlyphsBack(self, glyphs, user):
         self.RCJKI.injectGlyphsBack(glyphs, user)

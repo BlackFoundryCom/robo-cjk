@@ -299,10 +299,10 @@ class DesignFrame(Group):
         self.RCJKI.toolsBoxController.updateViews()
 
     def set_DesignFrame_GlyphLib_Data(self):
-        if self.RCJKI.currentGlyphh is not None:
-            if "DesignFrame" in self.RCJKI.currentGlyphh.lib:
-                self.RCJKI.currentGlyphh.lib["DesignFrame"]["secondeLines"][0] = self.RCJKI.settings["designFrame"]["translate_secondLine_X"]
-                self.RCJKI.currentGlyphh.lib["DesignFrame"]["secondeLines"][1] = self.RCJKI.settings["designFrame"]["translate_secondLine_Y"]
+        if self.RCJKI.currentGlyph is not None:
+            if "DesignFrame" in self.RCJKI.currentGlyph.lib:
+                self.RCJKI.currentGlyph.lib["DesignFrame"]["secondeLines"][0] = self.RCJKI.settings["designFrame"]["translate_secondLine_X"]
+                self.RCJKI.currentGlyph.lib["DesignFrame"]["secondeLines"][1] = self.RCJKI.settings["designFrame"]["translate_secondLine_Y"]
             else:
-                self.RCJKI.currentGlyphh.lib["DesignFrame"] = {"secondeLines":[self.RCJKI.settings["designFrame"]["translate_secondLine_X"], self.RCJKI.settings["designFrame"]["translate_secondLine_Y"]]}
+                self.RCJKI.currentGlyph.lib["DesignFrame"] = {"secondeLines":[self.RCJKI.settings["designFrame"]["translate_secondLine_X"], self.RCJKI.settings["designFrame"]["translate_secondLine_Y"]]}
 

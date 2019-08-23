@@ -46,16 +46,17 @@ class CurrentGlyphViewDrawer():
         if info['notificationName'] == "drawPreview":
             fill(0, 0, 0, 1)
         # DeepComponentDrawer(self.ui, g, f)
-        self.dfd.draw(
-            glyph = g,
-            mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
-            secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
-            customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
-            proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
-            translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
-            translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
-            scale = self.scale
-            )
+        if self.RCJKI.settings["showDesignFrame"]:
+            self.dfd.draw(
+                glyph = g,
+                mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
+                secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
+                customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
+                proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
+                translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
+                translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
+                scale = self.scale
+                )
             
         if self.RCJKI.settings["referenceViewer"]["onOff"]:
             if g.name.startswith("uni"):

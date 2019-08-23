@@ -200,16 +200,17 @@ class MainCanvas():
                     # restore()
 
                     # if self.ui.onOff_designFrame and not self.preview:
-                    self.dfv.draw(
-                        glyph = g,
-                        mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
-                        secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
-                        customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
-                        proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
-                        translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
-                        translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
-                        scale = self.scale
-                        )
+                    if self.RCJKI.settings["showDesignFrame"]:
+                        self.dfv.draw(
+                            glyph = g,
+                            mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
+                            secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
+                            customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
+                            proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
+                            translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
+                            translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
+                            scale = self.scale
+                            )
                     # if self.ui.OnOff_referenceViewer and not self.preview:
                     if self.RCJKI.settings["referenceViewer"]["onOff"]:
 
