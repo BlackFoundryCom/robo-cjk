@@ -80,18 +80,18 @@ class TextCenterWindow():
             callback = self._verticalMode_checkBox_callback)
 
         self.lineHeight = 1000
-        self.w.lineHeight_Slider = Slider((-220, -20, -120, -0),
+        self.w.lineHeight_Slider = Slider((-220, -20, -10, -0),
             minValue = 1000,
             maxValue = 2000,
             value = self.lineHeight,
             callback = self._lineHeight_Slider_callback,
             sizeStyle = "small")
 
-        self.w.displayDesignFrame_checkBox = CheckBox((-110, -20, -10, -0),  
-            "Design Frame", 
-            value = self.RCJKI.settings['showDesignFrame'],
-            sizeStyle = "small",
-            callback = self._displayDesignFrame_checkBox_callback)
+        # self.w.displayDesignFrame_checkBox = CheckBox((-110, -20, -10, -0),  
+        #     "Design Frame", 
+        #     value = self.RCJKI.settings['showDesignFrame'],
+        #     sizeStyle = "small",
+        #     callback = self._displayDesignFrame_checkBox_callback)
 
         self.w.canvas = Canvas((0, 60, -0, -20), 
             delegate = self, 
@@ -117,9 +117,9 @@ class TextCenterWindow():
         self.verticalMode = sender.get()
         self.w.canvas.update()
 
-    def _displayDesignFrame_checkBox_callback(self, sender):
-        self.RCJKI.settings['showDesignFrame'] = sender.get()
-        self.w.canvas.update()
+    # def _displayDesignFrame_checkBox_callback(self, sender):
+    #     self.RCJKI.settings['showDesignFrame'] = sender.get()
+    #     self.w.canvas.update()
 
     def _lineHeight_Slider_callback(self, sender):
         self.lineHeight = sender.get()

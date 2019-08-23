@@ -29,9 +29,7 @@ class toolsBoxController(object):
     def launchToolsBoxInterface(self):
         if not self.interface:
             self.interface = toolsBoxView.ToolsBoxWindow(self.RCJKI)
-        else:
-            self.interface.w.close()
-            self.interface = None
+
 
     def updateViews(self):
         self.RCJKI.initialDesignController.interface.w.mainCanvas.update()

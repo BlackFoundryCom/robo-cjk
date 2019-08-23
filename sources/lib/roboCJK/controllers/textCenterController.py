@@ -29,8 +29,5 @@ class textCenterController(object):
     def launchTextCenterInterface(self):
         if not self.interface:
             self.interface = textCenterView.TextCenterWindow(self.RCJKI)
-        else:
-            self.interface.w.close()
-            self.interface = None
-
+ 
     

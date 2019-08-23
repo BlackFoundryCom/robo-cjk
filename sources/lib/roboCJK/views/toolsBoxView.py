@@ -26,12 +26,8 @@ class ToolsBoxWindow():
         self.RCJKI = RCJKI
         self.w = Window((-200, 0, -0, 400),
             'Tools',
-            closable = False,
-            textured = True,
-            miniaturizable = False,
             minSize = (200, 200),
-            maxSize = (200, 1000),
-            fullScreenMode = None)
+            maxSize = (200, 1000))
 
         self.interpolaviour = Interpolaviour((0,0,-0,-0), self.RCJKI)
 
@@ -70,8 +66,11 @@ class ToolsBoxWindow():
         self.w.accordionView = AccordionView((0, 0, -0, -0),
             self.accordionViewDescriptions,
             )
-
+        self.w.bind('close', self.windowCloses)
         self.w.open()
+
+    def windowCloses(self, sender):
+        self.RCJKI.toolsBoxController.interface = None
 
 class Interpolaviour(Group):
 
