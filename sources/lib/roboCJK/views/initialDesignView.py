@@ -74,15 +74,15 @@ class InitialDesignWindow(BaseWindowController):
                 drawFocusRing = False)
 
         self.w.saveLocalFontButton = Button((0,-60,200,20), 
-            'Save Fonts', 
+            'Save', 
             callback=self.saveLocalFontButtonCallback)
 
         self.w.pushBackButton = Button((0,-40,200,20), 
-            'Push Glyphs to Masters', 
+            'Push', 
             callback=self.pushBackButtonCallback)
 
         self.w.pullMasterGlyphsButton = Button((0,-20,200,20), 
-            'Pull & Reload', 
+            'Pull', 
             callback=self.pullMasterGlyphsButtonCallback)
         
 
@@ -107,6 +107,7 @@ class InitialDesignWindow(BaseWindowController):
         self.dummyCell.setImage_(None)
 
         self.w.bind('close', self.windowCloses)
+        self.w.bind("became main", self.windowBecameMain)
         self.w.open()
 
 
@@ -193,6 +194,18 @@ class InitialDesignWindow(BaseWindowController):
         if CurrentGlyphWindow() is not None:
             CurrentGlyphWindow().close()
         self.RCJKI.initialDesignController.interface = None
+
+    def windowBecameMain(self, sender):
+        sel = self.w.glyphSetList.getSelection()
+        if not sel: return
+        self.selectedGlyphName = self.w.glyphSetList.get()[sel[0]]['Name']
+        if self.selectedGlyphName in self.RCJKI.currentFont:
+            self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
+        else:
+            self.RCJKI.currentGlyph = None
+        self.RCJKI.toolsBoxController.updateViews()
+        self.w.mainCanvas.update()
+
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
         if tableColumn is None: return None

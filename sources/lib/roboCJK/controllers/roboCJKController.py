@@ -100,12 +100,18 @@ class RoboCJKController(object):
             removeObserver(self, "drawPreview")
             removeObserver(self, "drawInactive")
             removeObserver(self, "keyDown")
+            # removeObserver(self, "viewWillChangeGlyph")
         else:
             addObserver(self, "drawInGlyphWindow", "draw")
             addObserver(self, "drawInGlyphWindow", "drawPreview")
             addObserver(self, "drawInGlyphWindow", "drawInactive")
             addObserver(self, "keyDownInGlyphWindow", "keyDown")
+            # addObserver(self, "viewWillChangeGlyph", "viewWillChangeGlyph")
+
         self.observers = not self.observers
+
+    # def viewWillChangeGlyph(self, info):
+    #     print(info)
 
     def launchInterface(self):
         self.interface = roboCJKView.RoboCJKWindow(self)
@@ -171,4 +177,11 @@ class RoboCJKController(object):
             currentGlyphWindow.w.getNSWindow().makeKeyAndOrderFront_(self)
         else:
             OpenGlyphWindow(glyph)
+        CurrentGlyphWindow().w.bind("became main", self.glyphWindowBecameMain)
+
+    def glyphWindowBecameMain(self, sender):
+        # print(self.currentGlyph)
+        self.currentGlyph = self.currentFont[CurrentGlyphWindow().getGlyph().name]
+        # print(self.currentGlyph)
+        self.toolsBoxController.updateViews()
 

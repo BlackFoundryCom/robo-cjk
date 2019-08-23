@@ -245,7 +245,9 @@ class TextCenterWindow():
                 self.selectedGlyph = self.glyphLocation_in_Window[loc]
                 didInside = True
                 if info.clickCount() == 2:
-                    self.RCJKI.openGlyphWindow(self.RCJKI.currentFont[self.selectedGlyph.name])
+                    self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyph.name]
+                    self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
+
                     # OpenGlyphWindow(self.RCJKI.currentFont[self.selectedGlyph.name])
                     
 
