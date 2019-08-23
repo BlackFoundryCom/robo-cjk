@@ -110,7 +110,7 @@ class Interpolaviour(Group):
         y+=22
         self.interpolationValue_Slider = Slider((10, y, -10, 20),
             minValue = 0,
-            maxValue = 1000,
+            maxValue = 1,
             value = self.RCJKI.settings["interpolaviour"]["interpolationValue"],
             sizeStyle = "small",
             callback = self._interpolationValue_Slider_callback)
