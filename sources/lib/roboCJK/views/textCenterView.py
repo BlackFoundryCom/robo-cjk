@@ -105,7 +105,7 @@ class TextCenterWindow():
         self.w.open()
 
     def windowCloses(self, sender):
-        self.RCJKI.textCenterInterface = None
+        self.RCJKI.textCenterController.interface = None
 
     def windowDidResize(self, sender):
         _, _, self.windowWidth, self.windowHeight = sender.getPosSize()
@@ -308,11 +308,11 @@ class TextCenterWindow():
                         self.dfd.draw(
                             glyph = glyph,
                             mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
-                            secondLines = False, #self.ui.showSecondLines, 
-                            customsFrames = False, #self.ui.showCustomsFrames, 
-                            proximityPoints = False, #self.ui.showproximityPoints,
-                            translate_secondLine_X = False, #self.ui.translate_secondLine_X, 
-                            translate_secondLine_Y = False, #self.ui.translate_secondLine_Y,
+                            secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
+                            customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
+                            proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
+                            translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
+                            translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
                             scale = self.scale,
                             inverse = self.inverse
                             )

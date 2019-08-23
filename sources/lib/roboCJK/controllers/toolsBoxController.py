@@ -35,5 +35,7 @@ class toolsBoxController(object):
 
     def updateViews(self):
         self.RCJKI.initialDesignController.interface.w.mainCanvas.update()
+        if self.RCJKI.textCenterController.interface:
+            self.RCJKI.textCenterController.interface.w.canvas.update()
         UpdateCurrentGlyphView()
         

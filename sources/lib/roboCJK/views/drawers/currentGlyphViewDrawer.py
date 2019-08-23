@@ -47,16 +47,17 @@ class CurrentGlyphViewDrawer():
             fill(0, 0, 0, 1)
         # DeepComponentDrawer(self.ui, g, f)
         if self.RCJKI.settings["showDesignFrame"]:
-            self.dfd.draw(
-                glyph = g,
-                mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
-                secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
-                customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
-                proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
-                translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
-                translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
-                scale = self.scale
-                )
+            if not (info['notificationName'] == "drawPreview") or (info['notificationName'] == "drawPreview") == self.RCJKI.settings["designFrame"]["drawPreview"]:
+                self.dfd.draw(
+                    glyph = g,
+                    mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
+                    secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
+                    customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
+                    proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
+                    translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
+                    translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
+                    scale = self.scale
+                    )
             
         if self.RCJKI.settings["referenceViewer"]["onOff"]:
             if g.name.startswith("uni"):
@@ -65,7 +66,8 @@ class CurrentGlyphViewDrawer():
                 char = chr(g.unicode)
             else:
                 char = ""
-            self.rvd.draw(char)
+            if not (info['notificationName'] == "drawPreview") or (info['notificationName'] == "drawPreview") == self.RCJKI.settings["referenceViewer"]["drawPreview"]:
+                self.rvd.draw(char) 
 
         if self.RCJKI.settings["stackMasters"]:
             self.stackMaster.draw(g, preview = info['notificationName'] == "drawPreview")
