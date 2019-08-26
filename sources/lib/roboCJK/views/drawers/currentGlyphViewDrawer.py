@@ -19,12 +19,13 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from imp import reload
 from mojo.drawingTools import *
 from mojo.roboFont import *
-from views.drawers import interpolaviourDrawer, displayOptionsDrawer, referenceViewDrawer, designFrameDrawer
+from views.drawers import interpolaviourDrawer, displayOptionsDrawer, referenceViewDrawer, designFrameDrawer, powerRulerDrawer
 # from views.DeepComponentDrawer import DeepComponentDrawer
 reload(designFrameDrawer)
 reload(referenceViewDrawer)
 reload(interpolaviourDrawer)
 reload(displayOptionsDrawer)
+reload(powerRulerDrawer)
 
 class CurrentGlyphViewDrawer():
 
@@ -37,6 +38,7 @@ class CurrentGlyphViewDrawer():
         self.dfd = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
         self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.RCJKI)
         self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI)
+        self.powerRuler = powerRulerDrawer.PowerRulerDrawer(self.RCJKI)
 
     def draw(self, info):
         g = self.RCJKI.currentGlyph
@@ -71,4 +73,6 @@ class CurrentGlyphViewDrawer():
 
         if self.RCJKI.settings["stackMasters"]:
             self.stackMaster.draw(g, preview = info['notificationName'] == "drawPreview")
+
+        self.powerRuler.draw()
 

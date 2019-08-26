@@ -21,15 +21,16 @@ import os
 
 from mojo.events import addObserver, removeObserver, extractNSEvent
 from mojo.roboFont import *
-from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow
+from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow, UpdateCurrentGlyphView
 from AppKit import NSColor
 from views import roboCJKView
 from views.drawers import currentGlyphViewDrawer
 from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
-from controllers import toolsBoxController
+from controllers import inspectorController
 from controllers import textCenterController
+from tools import powerRuler
 from resources import characterSets
 from utils import git
 
@@ -38,10 +39,11 @@ reload(currentGlyphViewDrawer)
 reload(textCenterView)
 reload(projectEditorController)
 reload(initialDesignController)
-reload(toolsBoxController)
+reload(inspectorController)
 reload(textCenterController)
 reload(characterSets)
 reload(git)
+reload(powerRuler)
 
 
 class RoboCJKController(object):
@@ -89,8 +91,9 @@ class RoboCJKController(object):
         }
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
-        self.toolsBoxController = toolsBoxController.toolsBoxController(self)
+        self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
+        self.powerRuler = powerRuler.Ruler(self)
 
         self.textCenterInterface = None
 
@@ -100,12 +103,16 @@ class RoboCJKController(object):
             removeObserver(self, "drawPreview")
             removeObserver(self, "drawInactive")
             removeObserver(self, "keyDown")
+            removeObserver(self, "keyUp")
+            removeObserver(self, "mouseMoved")
             # removeObserver(self, "viewWillChangeGlyph")
         else:
             addObserver(self, "drawInGlyphWindow", "draw")
             addObserver(self, "drawInGlyphWindow", "drawPreview")
             addObserver(self, "drawInGlyphWindow", "drawInactive")
             addObserver(self, "keyDownInGlyphWindow", "keyDown")
+            addObserver(self, "keyUpInGlyphWindow", "keyUp")
+            addObserver(self, "mouseMovedInGlyphWindow", "mouseMoved")
             # addObserver(self, "viewWillChangeGlyph", "viewWillChangeGlyph")
 
         self.observers = not self.observers
@@ -113,15 +120,24 @@ class RoboCJKController(object):
     # def viewWillChangeGlyph(self, info):
     #     print(info)
 
+    def updateViews(self):
+        UpdateCurrentGlyphView()
+        if self.initialDesignController.interface:
+            self.initialDesignController.interface.w.mainCanvas.update()
+        if self.textCenterController.interface:
+            self.textCenterController.interface.w.canvas.update()
+        
+
     def launchInterface(self):
         self.interface = roboCJKView.RoboCJKWindow(self)
+        self.powerRuler = powerRuler.Ruler(self)
         self.updateUI()
 
     def updateUI(self):
         self.interface.w.initialDesignEditorButton.enable(self.project!=None)
         self.interface.w.textCenterButton.enable(self.project!=None)
         self.interface.w.deepComponentEditorButton.enable(self.project!=None)
-        self.interface.w.toolsBoxButton.enable(self.project!=None)
+        self.interface.w.inspectorButton.enable(self.project!=None)
 
     def launchTextCenterInterface(self):
         if self.textCenterInterface is None:
@@ -133,8 +149,26 @@ class RoboCJKController(object):
 
     def keyDownInGlyphWindow(self, info):
         if self.currentGlyph is None: return
-        if extractNSEvent(info)['commandDown'] and info["event"].characters() == "s":
+
+        modifier = extractNSEvent(info)
+        commandDown = modifier['commandDown']
+
+        character = info["event"].characters()
+
+        if commandDown and character == "s":
             self.initialDesignController.saveSubsetFonts()
+
+        if commandDown and character == "r":
+            self.powerRuler.killPowerRuler()
+
+        elif character == "r":
+            self.powerRuler.launchPowerRuler()
+
+    def keyUpInGlyphWindow(self, info):
+        self.powerRuler.keyUp()
+
+    def mouseMovedInGlyphWindow(self, info):
+        self.powerRuler.mouseMoved(info['point'].x, info['point'].y)
             
 
     def injectGlyphsBack(self, glyphs, user):
@@ -184,7 +218,7 @@ class RoboCJKController(object):
         # print(self.currentGlyph)
         self.currentGlyph = self.currentFont[self.currentGlyphWindow.getGlyph().name]
         # print(self.currentGlyph)
-        self.toolsBoxController.updateViews()
+        self.inspectorController.updateViews()
 
     def glyphWindowCloses(self, sender):
         self.currentGlyphWindow = None

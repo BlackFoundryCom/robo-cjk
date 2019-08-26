@@ -40,7 +40,7 @@ class RoboCJKWindow(BaseWindowController):
         self.w.initialDesignEditorButton = Button((0,40,200,20), 'Initial Design', callback=self.openInitialDesignEditor)
         self.w.deepComponentEditorButton = Button((0,60,200,20), 'Deep Component Editor', callback=self.openDeepComponentEditor)
         self.w.textCenterButton = Button((0,80,200,20), 'Text Center', callback=self.openTextCenter)
-        self.w.toolsBoxButton = Button((0,100,200,20), 'Tools Box', callback=self.openToolsBox)
+        self.w.inspectorButton = Button((0,100,200,20), 'Inspector', callback=self.openInspector)
         self.w.settingsButton = Button((0,-20,200,20), 'Settings', callback=self.openSettings)
         self.RCJKI.toggleObservers()
         self.w.bind('close', self.windowCloses)
@@ -64,8 +64,8 @@ class RoboCJKWindow(BaseWindowController):
     def openSettings(self, sender):
         pass
 
-    def openToolsBox(self, sender):
-        self.RCJKI.toolsBoxController.launchToolsBoxInterface()
+    def openInspector(self, sender):
+        self.RCJKI.inspectorController.launchInspectorInterface()
 
     def windowCloses(self, sender):
         self.RCJKI.toggleObservers(forceKill=True)
@@ -79,8 +79,8 @@ class RoboCJKWindow(BaseWindowController):
         if self.RCJKI.textCenterInterface:
             self.RCJKI.textCenterInterface.w.close()
 
-        if self.RCJKI.toolsBoxController.interface:
-            self.RCJKI.toolsBoxController.interface.w.close()
+        if self.RCJKI.inspectorController.interface:
+            self.RCJKI.inspectorController.interface.w.close()
 
         if self.RCJKI.textCenterController.interface:
             self.RCJKI.textCenterController.interface.w.close()

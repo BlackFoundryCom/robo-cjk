@@ -17,18 +17,18 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from imp import reload
-from views import toolsBoxView
+from views import inspectorView
 from mojo.UI import UpdateCurrentGlyphView
-reload(toolsBoxView)
+reload(inspectorView)
 
-class toolsBoxController(object):
+class inspectorController(object):
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.interface = None
 
-    def launchToolsBoxInterface(self):
+    def launchInspectorInterface(self):
         if not self.interface:
-            self.interface = toolsBoxView.ToolsBoxWindow(self.RCJKI)
+            self.interface = inspectorView.Inspector(self.RCJKI)
 
 
     def updateViews(self):

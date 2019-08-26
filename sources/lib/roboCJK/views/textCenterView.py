@@ -18,7 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from imp import reload
 from vanilla import *
-from mojo.canvas import Canvas
+from mojo.canvas import CanvasGroup
 from mojo.roboFont import *
 from mojo.drawingTools import *
 from mojo.events import extractNSEvent
@@ -93,11 +93,12 @@ class TextCenterWindow():
         #     sizeStyle = "small",
         #     callback = self._displayDesignFrame_checkBox_callback)
 
-        self.w.canvas = Canvas((0, 60, -0, -20), 
+        self.w.canvas = CanvasGroup((0, 60, -0, -20), 
             delegate = self, 
-            canvasSize=(10000, 10000),
-            hasHorizontalScroller=False, 
-            hasVerticalScroller=False)
+            # canvasSize=(10000, 10000),
+            # hasHorizontalScroller=False, 
+            # hasVerticalScroller=False
+            )
 
         # Helpers.setDarkMode(self.w, self.ui.darkMode)
         self.w.bind('resize', self.windowDidResize)
@@ -204,6 +205,7 @@ class TextCenterWindow():
         self.w.canvas.update()
 
     def scrollWheel(self, info):
+        print(info)
         alt = extractNSEvent(info)['optionDown']
         deltaY = info.deltaY()
 
