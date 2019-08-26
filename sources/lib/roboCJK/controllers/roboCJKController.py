@@ -171,17 +171,21 @@ class RoboCJKController(object):
         PostBannerNotification('Git Push', stamp)
 
     def openGlyphWindow(self, glyph):
-        currentGlyphWindow = CurrentGlyphWindow()
-        if currentGlyphWindow is not None:
-            currentGlyphWindow.setGlyph(glyph)
-            currentGlyphWindow.w.getNSWindow().makeKeyAndOrderFront_(self)
+        self.currentGlyphWindow = CurrentGlyphWindow()
+        if self.currentGlyphWindow is not None:
+            self.currentGlyphWindow.setGlyph(glyph)
+            self.currentGlyphWindow.w.getNSWindow().makeKeyAndOrderFront_(self)
         else:
-            OpenGlyphWindow(glyph)
-        CurrentGlyphWindow().w.bind("became main", self.glyphWindowBecameMain)
+            self.currentGlyphWindow = OpenGlyphWindow(glyph)
+            self.currentGlyphWindow.w.bind("became main", self.glyphWindowBecameMain)
+            self.currentGlyphWindow.w.bind("close", self.glyphWindowCloses)
 
     def glyphWindowBecameMain(self, sender):
         # print(self.currentGlyph)
-        self.currentGlyph = self.currentFont[CurrentGlyphWindow().getGlyph().name]
+        self.currentGlyph = self.currentFont[self.currentGlyphWindow.getGlyph().name]
         # print(self.currentGlyph)
         self.toolsBoxController.updateViews()
+
+    def glyphWindowCloses(self, sender):
+        self.currentGlyphWindow = None
 

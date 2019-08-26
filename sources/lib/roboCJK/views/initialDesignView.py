@@ -168,12 +168,6 @@ class InitialDesignWindow(BaseWindowController):
             self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedGlyphName)
             self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
         self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
-        # currentGlyphWindow = CurrentGlyphWindow()
-        # if currentGlyphWindow is not None:
-        #     currentGlyphWindow.setGlyph(self.RCJKI.currentGlyph)
-        #     currentGlyphWindow.w.getNSWindow().makeKeyAndOrderFront_(self)
-        # else:
-        #     OpenGlyphWindow(self.RCJKI.currentGlyph)
 
     def glyphSetListSelectionCallback(self, sender):
         sel = sender.getSelection()
@@ -191,8 +185,8 @@ class InitialDesignWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def windowCloses(self, sender):
-        if CurrentGlyphWindow() is not None:
-            CurrentGlyphWindow().close()
+        if self.RCJKI.currentGlyphWindow is not None:
+            self.RCJKI.currentGlyphWindow.close()
         self.RCJKI.initialDesignController.interface = None
 
     def windowBecameMain(self, sender):

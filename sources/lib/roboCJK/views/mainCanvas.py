@@ -26,7 +26,7 @@ from utils import robocjk
 # from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
 # from drawers.InterpolaviourDrawer import InterpolaviourDrawer
 
-from mojo.UI import OpenGlyphWindow, CurrentGlyphWindow
+from mojo.UI import OpenGlyphWindow
 from mojo.events import extractNSEvent
 from ufoLib.glifLib import readGlyphFromString
 

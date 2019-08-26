@@ -23,7 +23,7 @@ from vanilla import *
 from mojo.roboFont import *
 from mojo.drawingTools import *
 from mojo.events import extractNSEvent
-from mojo.UI import AllGlyphWindows, CurrentGlyphWindow
+from mojo.UI import AllGlyphWindows
 from vanilla.dialogs import getFile
 from mojo.canvas import CanvasGroup
 from AppKit import NSColor
@@ -56,8 +56,6 @@ class ProjectEditorWindow(BaseWindowController):
         self.w.open()
 
     def editProject(self, sender):
-        # for i in range(len(AllGlyphWindows())):
-        #     CurrentGlyphWindow().close()
         EditProjectSheet(self)
 
     def newProject(self, sender):
