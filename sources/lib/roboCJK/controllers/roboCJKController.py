@@ -28,7 +28,7 @@ from views.drawers import currentGlyphViewDrawer
 from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
-from controllers import toolsBoxController
+from controllers import inspectorController
 from controllers import textCenterController
 from tools import powerRuler
 from resources import characterSets
@@ -39,7 +39,7 @@ reload(currentGlyphViewDrawer)
 reload(textCenterView)
 reload(projectEditorController)
 reload(initialDesignController)
-reload(toolsBoxController)
+reload(inspectorController)
 reload(textCenterController)
 reload(characterSets)
 reload(git)
@@ -91,7 +91,7 @@ class RoboCJKController(object):
         }
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
-        self.toolsBoxController = toolsBoxController.toolsBoxController(self)
+        self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
         
 
@@ -125,7 +125,7 @@ class RoboCJKController(object):
         self.interface.w.initialDesignEditorButton.enable(self.project!=None)
         self.interface.w.textCenterButton.enable(self.project!=None)
         self.interface.w.deepComponentEditorButton.enable(self.project!=None)
-        self.interface.w.toolsBoxButton.enable(self.project!=None)
+        self.interface.w.inspectorButton.enable(self.project!=None)
 
     def launchTextCenterInterface(self):
         if self.textCenterInterface is None:
@@ -194,7 +194,7 @@ class RoboCJKController(object):
         # print(self.currentGlyph)
         self.currentGlyph = self.currentFont[self.currentGlyphWindow.getGlyph().name]
         # print(self.currentGlyph)
-        self.toolsBoxController.updateViews()
+        self.inspectorController.updateViews()
 
     def glyphWindowCloses(self, sender):
         self.currentGlyphWindow = None

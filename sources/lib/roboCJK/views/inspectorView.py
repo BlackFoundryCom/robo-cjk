@@ -20,12 +20,12 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from vanilla import *
 from mojo.UI import AccordionView
 
-class ToolsBoxWindow():
+class Inspector():
 
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.w = Window((-200, 0, -0, 400),
-            'Tools',
+            'Inspector',
             minSize = (200, 200),
             maxSize = (200, 1000))
 
@@ -70,7 +70,7 @@ class ToolsBoxWindow():
         self.w.open()
 
     def windowCloses(self, sender):
-        self.RCJKI.toolsBoxController.interface = None
+        self.RCJKI.inspectorController.interface = None
 
 class Interpolaviour(Group):
 
@@ -117,23 +117,23 @@ class Interpolaviour(Group):
 
     def _onOff_checkBox_callback(self, sender): 
         self.RCJKI.settings["interpolaviour"]["onOff"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
         
     def _points_checkBox_callback(self, sender): 
         self.RCJKI.settings["interpolaviour"]["showPoints"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _startPoints_checkBox_callback(self, sender): 
         self.RCJKI.settings["interpolaviour"]["showStartPoints"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _interpolation_checkBox_callback(self, sender): 
         self.RCJKI.settings["interpolaviour"]["showInterpolation"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _interpolationValue_Slider_callback(self, sender): 
         self.RCJKI.settings["interpolaviour"]["interpolationValue"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _deduce_button_callback(self, sender):
         pass
@@ -158,11 +158,11 @@ class DisplayOptions(Group):
 
     def _stackMasters_CheckBox_callback(self, sender):
         self.RCJKI.settings["stackMasters"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _waterFall_CheckBox_callback(self, sender):
         self.RCJKI.settings["waterFall"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
 class ReferenceViewer(Group):
 
@@ -184,11 +184,11 @@ class ReferenceViewer(Group):
 
     def _OnOff_referenceViewer_callback(self, sender):
         self.RCJKI.settings["referenceViewer"]["onOff"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _drawPreview_referenceViewer_callback(self, sender):
         self.RCJKI.settings["referenceViewer"]["drawPreview"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
 
 class DesignFrame(Group):
@@ -255,39 +255,39 @@ class DesignFrame(Group):
 
     def _onOff_checkBox_callback(self, sender):
         self.RCJKI.settings["showDesignFrame"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _drawPreview_designFrame_checkBox_callback(self, sender):
         self.RCJKI.settings["designFrame"]["drawPreview"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _showMainFrames_checkBox_callback(self, sender):
         self.RCJKI.settings["designFrame"]["showMainFrames"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _showproximityPoints_checkBox_callback(self, sender):
         self.RCJKI.settings["designFrame"]["showproximityPoints"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _showSecondLines_checkBox_callback(self, sender):
         self.RCJKI.settings["designFrame"]["showSecondLines"] = sender.get()
         self.translate_secondLine_X_slider.show(self.RCJKI.settings["designFrame"]["showSecondLines"])
         self.translate_secondLine_Y_slider.show(self.RCJKI.settings["designFrame"]["showSecondLines"])
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _showCustomsFrames_checkBox_callback(self, sender):
         self.RCJKI.settings["designFrame"]["showCustomsFrames"] = sender.get()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _translate_secondLine_X_slider_callback(self, sender):
         self.RCJKI.settings["designFrame"]["translate_secondLine_X"] = int(sender.get())
         self.set_DesignFrame_GlyphLib_Data()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def _translate_secondLine_Y_slider_callback(self, sender):
         self.RCJKI.settings["designFrame"]["translate_secondLine_Y"] = int(sender.get())
         self.set_DesignFrame_GlyphLib_Data()
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
 
     def set_DesignFrame_GlyphLib_Data(self):
         if self.RCJKI.currentGlyph is not None:

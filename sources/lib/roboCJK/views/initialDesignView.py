@@ -197,7 +197,7 @@ class InitialDesignWindow(BaseWindowController):
             self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
         else:
             self.RCJKI.currentGlyph = None
-        self.RCJKI.toolsBoxController.updateViews()
+        self.RCJKI.inspectorController.updateViews()
         self.w.mainCanvas.update()
 
 
