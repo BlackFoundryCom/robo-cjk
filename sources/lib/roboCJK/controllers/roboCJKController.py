@@ -30,6 +30,7 @@ from controllers import projectEditorController
 from controllers import initialDesignController
 from controllers import toolsBoxController
 from controllers import textCenterController
+from tools import powerRuler
 from resources import characterSets
 from utils import git
 
@@ -42,6 +43,7 @@ reload(toolsBoxController)
 reload(textCenterController)
 reload(characterSets)
 reload(git)
+reload(powerRuler)
 
 
 class RoboCJKController(object):
@@ -91,6 +93,7 @@ class RoboCJKController(object):
         self.initialDesignController = initialDesignController.InitialDesignController(self)
         self.toolsBoxController = toolsBoxController.toolsBoxController(self)
         self.textCenterController = textCenterController.textCenterController(self)
+        
 
         self.textCenterInterface = None
 
@@ -115,6 +118,7 @@ class RoboCJKController(object):
 
     def launchInterface(self):
         self.interface = roboCJKView.RoboCJKWindow(self)
+        self.powerRuler = powerRuler.Ruler(self)
         self.updateUI()
 
     def updateUI(self):
@@ -133,7 +137,13 @@ class RoboCJKController(object):
 
     def keyDownInGlyphWindow(self, info):
         if self.currentGlyph is None: return
-        if extractNSEvent(info)['commandDown'] and info["event"].characters() == "s":
+
+        modifier = extractNSEvent(info)
+        commandDown = modifier['commandDown']
+
+        character = info["event"].characters()
+
+        if commandDown and character == "s":
             self.initialDesignController.saveSubsetFonts()
             
 
