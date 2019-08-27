@@ -89,6 +89,7 @@ class RoboCJKController(object):
                             'drawPreview': False,
                             }
         }
+        self.properties = ""
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
         self.inspectorController = inspectorController.inspectorController(self)
@@ -126,7 +127,6 @@ class RoboCJKController(object):
             self.initialDesignController.interface.w.mainCanvas.update()
         if self.textCenterController.interface:
             self.textCenterController.interface.w.canvas.update()
-        
 
     def launchInterface(self):
         self.interface = roboCJKView.RoboCJKWindow(self)
@@ -164,12 +164,16 @@ class RoboCJKController(object):
         elif character == "r":
             self.powerRuler.launchPowerRuler()
 
+        self.updateViews()
+
     def keyUpInGlyphWindow(self, info):
         self.powerRuler.keyUp()
+        self.updateViews()
 
     def mouseMovedInGlyphWindow(self, info):
-        self.powerRuler.mouseMoved(info['point'].x, info['point'].y)
-            
+        x, y = info['point'].x, info['point'].y
+        self.powerRuler.mouseMoved(x, y)
+        self.updateViews()
 
     def injectGlyphsBack(self, glyphs, user):
         for d in self.allFonts:
@@ -215,9 +219,7 @@ class RoboCJKController(object):
             self.currentGlyphWindow.w.bind("close", self.glyphWindowCloses)
 
     def glyphWindowBecameMain(self, sender):
-        # print(self.currentGlyph)
         self.currentGlyph = self.currentFont[self.currentGlyphWindow.getGlyph().name]
-        # print(self.currentGlyph)
         self.inspectorController.updateViews()
 
     def glyphWindowCloses(self, sender):

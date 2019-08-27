@@ -29,6 +29,8 @@ class Inspector():
             minSize = (200, 200),
             maxSize = (200, 1000))
 
+        self.properties = Properties((0,0,-0,-0), self.RCJKI)
+
         self.interpolaviour = Interpolaviour((0,0,-0,-0), self.RCJKI)
 
         self.displayOption = DisplayOptions((0,0,-0,-0), self.RCJKI)
@@ -38,6 +40,13 @@ class Inspector():
         self.designFrame = DesignFrame((0,0,-0,-0), self.RCJKI)
 
         self.accordionViewDescriptions = [
+
+                        dict(label="Properties", 
+                            view=self.properties, 
+                            size=55, 
+                            collapsed=False, 
+                            canResize=0),
+
                         dict(label="Interpolaviour", 
                             view=self.interpolaviour, 
                             size=160, 
@@ -71,6 +80,18 @@ class Inspector():
 
     def windowCloses(self, sender):
         self.RCJKI.inspectorController.interface = None
+
+class Properties(Group):
+
+    def __init__(self, posSize, RCJKI):
+        super(Properties, self).__init__(posSize)
+        self.RCJKI = RCJKI
+
+        self.properties_textBox = TextBox((10, 10, -10, 20),
+            "",
+            sizeStyle = "small",
+            alignment = "center")
+        self.RCJKI.inspectorController.setProperties()
 
 class Interpolaviour(Group):
 

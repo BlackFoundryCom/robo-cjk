@@ -41,16 +41,13 @@ class Ruler():
 
     def keyUp(self):
         self.keydidUp = 1
-        self.RCJKI.updateViews()
 
     def launchPowerRuler(self):
         self.activDraw = 1
         self.keydidUp = 0
-        self.RCJKI.updateViews()
 
     def killPowerRuler(self):
         self.activDraw = 0
-        self.RCJKI.updateViews()
 
     def mouseMoved(self, x, y):
         if not self.activDraw: return
@@ -59,7 +56,6 @@ class Ruler():
         self.pen = ClosestPointPen(self.mousePt, self.RCJKI.currentGlyph.getParent())
         self.RCJKI.currentGlyph.draw(self.pen)
         self.closest, self.ortho = self.pen.getClosestData()
-        self.RCJKI.updateViews()
 
 class ClosestPointPen(BasePen):
     def __init__(self, point, font):

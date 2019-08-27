@@ -32,12 +32,12 @@ class PowerRulerDrawer():
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
 
-    def draw(self):
+    def draw(self, scale = 1):
         if not self.RCJKI.powerRuler.activDraw: return
 
         if self.RCJKI.powerRuler.closest and self.RCJKI.powerRuler.ortho:
             p = self.RCJKI.powerRuler.closest[0], self.RCJKI.powerRuler.closest[1]
-            s = 1.5
+            s = scale
             r = 2.5*s
             rOutline = 5*s
             rOutline2 = 8*s

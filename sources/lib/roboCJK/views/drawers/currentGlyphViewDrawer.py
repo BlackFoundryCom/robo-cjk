@@ -74,5 +74,8 @@ class CurrentGlyphViewDrawer():
         if self.RCJKI.settings["stackMasters"]:
             self.stackMaster.draw(g, preview = info['notificationName'] == "drawPreview")
 
-        self.powerRuler.draw()
+        self.powerRuler.draw(self.scale)
 
+        if self.RCJKI.inspectorController.interface is not None:
+            self.RCJKI.inspectorController.setProperties()
+            
