@@ -72,6 +72,11 @@ class TextCenterWindow():
             sizeStyle = "small",
             callback = self._rightInputText_EditText_callback)
 
+        self.w.setSelection_Button = Button((10, 35, 150, 20),
+            'Set Selection',
+            sizeStyle = 'small',
+            callback = self._setSelection_Button_callback)
+
         self.verticalMode = 0
         self.w.verticalMode_checkBox = CheckBox((10, -20, 150, -0),  
             "Vertical Mode", 
@@ -101,6 +106,8 @@ class TextCenterWindow():
             )
 
         # Helpers.setDarkMode(self.w, self.ui.darkMode)
+
+        self.setStringFromSelection()
         self.w.bind('resize', self.windowDidResize)
         self.w.bind('close', self.windowCloses)
         self.w.open()
@@ -121,6 +128,20 @@ class TextCenterWindow():
     # def _displayDesignFrame_checkBox_callback(self, sender):
     #     self.RCJKI.settings['showDesignFrame'] = sender.get()
     #     self.w.canvas.update()
+
+    def _setSelection_Button_callback(self, sender):
+        self.setStringFromSelection()
+
+    def setStringFromSelection(self):
+        glyphsetList = self.RCJKI.initialDesignController.interface.w.glyphSetList
+        string = ""
+        for index in glyphsetList.getSelection():
+            string += "/%s"%glyphsetList.get()[index]["Name"]
+        self.mainInputString = string
+        self.w.mainInputText_EditText.set(self.mainInputString)
+        self.getGlyphsFromString()
+        self.w.canvas.update()
+
 
     def _lineHeight_Slider_callback(self, sender):
         self.lineHeight = sender.get()
