@@ -57,6 +57,7 @@ class RoboCJKController(object):
         self.characterSets = characterSets.sets
         self.currentFont = None
         self.currentGlyph = None
+        self.currentGlyphWindow = None
         self.allFonts = []
         self.lockedGlyphs = []
         self.reservedGlyphs = []

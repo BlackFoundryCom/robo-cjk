@@ -173,7 +173,7 @@ class ProjectEditorController(object):
         f.info.unitsPerEm = 1000
         fontName = "%s-%s"%(familyName, styleName)
 
-        characterSet = self.RCJKI.characterSets[self.RCJKI.project.script]['Full']
+        characterSet = "".join([self.RCJKI.characterSets[key]['Full'] for key in self.RCJKI.project.script])
         glyphOrder = ["uni" + files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in characterSet]
         f.glyphOrder = glyphOrder
 

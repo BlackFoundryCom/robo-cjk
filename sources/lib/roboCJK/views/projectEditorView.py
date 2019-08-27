@@ -106,8 +106,22 @@ class EditProjectSheet():
                 sizeStyle = "small",
                 callback = self.removeMastersButtonCallback)
 
-        self.parent.sheet.masterGroup.scriptsRadioGroup = RadioGroup((10, 190, 200, 60), self.parent.RCJKI.scriptsList, callback=self.scriptsRadioGroupCallback)
-        self.parent.sheet.masterGroup.scriptsRadioGroup.set(self.parent.RCJKI.scriptsList.index(self.parent.RCJKI.project.script))
+        x, y = 10, 190
+        for index, script in enumerate(self.parent.RCJKI.scriptsList):
+            checkBox = CheckBox(
+                (x, y, 150, 20), 
+                script, 
+                value = script in self.parent.RCJKI.project.script,
+                sizeStyle = "small",
+                callback = self.scriptsCheckBoxCallback
+                )
+            y += 25
+            if index != 0 and not index % 5:
+                x += 200
+                y = 190
+            setattr(self.parent.sheet.masterGroup, "%sCheckBox"%script, checkBox)
+        # self.parent.sheet.masterGroup.scriptsRadioGroup = RadioGroup((10, 190, 200, 60), self.parent.RCJKI.scriptsList, callback=self.scriptsRadioGroupCallback)
+        # self.parent.sheet.masterGroup.scriptsRadioGroup.set(self.parent.RCJKI.scriptsList.index(self.parent.RCJKI.project.script))
 
 
         ###
@@ -326,7 +340,7 @@ class EditProjectSheet():
         self.characterSets = characterSets.sets
         characterSet = ""
 
-        for charset in self.characterSets[self.parent.RCJKI.project.script].values():
+        for charset in "".join([self.RCJKI.characterSets[key].values() for key in self.RCJKI.project.script]):
             characterSet += charset
 
         glyphNames = ["uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) for c in characterSet if "uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) in self.previewFont.keys()]
@@ -387,11 +401,7 @@ class EditProjectSheet():
             self.parent.RCJKI.projectEditorController.importFontToProject(path)
         
         self.fontNames = list(self.parent.RCJKI.project.masterFontsPaths.keys())
-        self.parent.RCJKI.projectEditorController.updateSheetUI()
-        self.getPreviewFont()
-        self.getPreviewGlyph()
-        if self.parent.RCJKI.initialDesignController.interface:
-            self.parent.RCJKI.initialDesignController.loadProjectFonts()
+        self.getFonts()
 
     def createMastersButtonCallback(self, sender):
         familyName = self.parent.RCJKI.project.name
@@ -399,12 +409,7 @@ class EditProjectSheet():
 
         self.parent.RCJKI.projectEditorController.createFontToProject(familyName, styleName)
         self.fontNames.append("%s-%s"%(familyName, styleName))
-
-        self.parent.RCJKI.projectEditorController.updateSheetUI()
-        self.getPreviewFont()
-        self.getPreviewGlyph()
-        if self.parent.RCJKI.initialDesignController.interface:
-            self.parent.RCJKI.initialDesignController.loadProjectFonts()
+        self.getFonts()
 
     def removeMastersButtonCallback(self, sender):
         sel = self.parent.sheet.masterGroup.mastersList.getSelection()
@@ -413,15 +418,35 @@ class EditProjectSheet():
             d = self.parent.sheet.masterGroup.mastersList.get()[s]
             e = d['FamilyName']+'-'+d['StyleName']
             del self.parent.RCJKI.project.masterFontsPaths[e]
+        self.getFonts()
+
+    def getFonts(self):
         self.parent.RCJKI.projectEditorController.updateSheetUI()
         self.getPreviewFont()
         self.getPreviewGlyph()
         if self.parent.RCJKI.initialDesignController.interface:
             self.parent.RCJKI.initialDesignController.loadProjectFonts()
 
-    def scriptsRadioGroupCallback(self, sender):
-        script = self.parent.RCJKI.scriptsList[sender.get()]
-        self.parent.RCJKI.project.script = script
+    # def scriptsRadioGroupCallback(self, sender):
+    #     script = self.parent.RCJKI.scriptsList[sender.get()]
+    #     self.parent.RCJKI.project.script = script
+
+    def scriptsCheckBoxCallback(self, sender):
+        scripts = []
+        for script in self.parent.RCJKI.scriptsList:
+            if getattr(self.parent.sheet.masterGroup, "%sCheckBox"%script).get():
+                scripts.append(script)
+        self.parent.RCJKI.project.script = scripts
+        if self.parent.RCJKI.initialDesignController.interface:
+            self.parent.RCJKI.initialDesignController.setCharacterSet()
+        self.getFonts()
+        # self.getFonts()
+
+        # self.parent.RCJKI.projectEditorController.updateSheetUI()
+        # self.getPreviewFont()
+        # self.getPreviewGlyph()
+        # if self.parent.RCJKI.initialDesignController.interface:
+        #     self.parent.RCJKI.initialDesignController.loadProjectFonts()
 
     ###
 

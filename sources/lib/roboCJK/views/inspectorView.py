@@ -89,8 +89,9 @@ class Properties(Group):
 
         self.properties_textBox = TextBox((10, 10, -10, 20),
             "",
-            sizeStyle = "small",
+            sizeStyle = "mini",
             alignment = "center")
+        
         self.RCJKI.inspectorController.setProperties()
 
 class Interpolaviour(Group):

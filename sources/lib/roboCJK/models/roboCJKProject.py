@@ -24,7 +24,7 @@ class RoboCJKProject(object):
         self.admin = admin
         self.usersLockers = {'lockers':[]}
         self.masterFontsPaths = {}
-        self.script = 'Hanzi'
+        self.script = ['Hanzi']
         self.settings = {
             'designFrame': {'em_Dimension':[1000, 1000],
                             'characterFace': 90,

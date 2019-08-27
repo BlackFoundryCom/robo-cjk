@@ -35,17 +35,20 @@ class InitialDesignController(object):
         self.fontsList = []
 
     def launchInitialDesignInterface(self):
-        self.characterSet = self.RCJKI.characterSets[self.RCJKI.project.script]['Basic']
+        self.setCharacterSet()
         if not self.interface:
             self.interface = initialDesignView.InitialDesignWindow(self)
             self.loadProjectFonts()
+
+    def setCharacterSet(self):
+        self.characterSet = "".join([self.RCJKI.characterSets[key]['Basic'] for key in self.RCJKI.project.script])
 
     def loadProjectFonts(self):
         self.fontsList = []
         self.RCJKI.allFonts = []
         for name, file in self.RCJKI.project.masterFontsPaths.items():
             path = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', file)
-            initialDesignSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'InitialDesign', self.RCJKI.project.script, file)
+            initialDesignSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'InitialDesign', "".join(self.RCJKI.project.script), file)
             if not os.path.isdir(initialDesignSavepath):
                 files.makepath(initialDesignSavepath)
                 f = OpenFont(path, showInterface=False)
@@ -60,6 +63,14 @@ class InitialDesignController(object):
                 self.fontsList.append(name)
             else:
                 f = OpenFont(initialDesignSavepath, showInterface=False)
+                
+                glyph0rder = []
+                for c in self.characterSet:
+                    glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+                    glyph0rder.append(glyphName)
+                f.glyphOrder = glyph0rder
+                f.save()
+
                 self.RCJKI.allFonts.append({name:f})
                 self.fontsList.append(name)
 
