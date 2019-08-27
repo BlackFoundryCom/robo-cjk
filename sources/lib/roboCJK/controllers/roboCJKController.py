@@ -88,7 +88,9 @@ class RoboCJKController(object):
             'referenceViewer' : {
                             'onOff': True,
                             'drawPreview': False,
-                            }
+                            },
+            'previousGlyph' : "k",
+            'nextGlyph' : "l",
         }
         self.properties = ""
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
@@ -164,6 +166,17 @@ class RoboCJKController(object):
 
         elif character == "r":
             self.powerRuler.launchPowerRuler()
+
+        if character in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
+
+            glyphsetList = self.initialDesignController.interface.w.glyphSetList
+            if character == self.settings['previousGlyph']:
+                sel = glyphsetList.getSelection()[0]-1 if glyphsetList.getSelection()[0] != 0 else len(glyphsetList)-1
+            else:
+                sel = glyphsetList.getSelection()[0]+1 if glyphsetList.getSelection()[0] != len(glyphsetList)-1 else 0
+            self.currentGlyph = self.currentFont[glyphsetList.get()[sel]["Name"]]
+            glyphsetList.setSelection([sel])
+            self.openGlyphWindow(self.currentGlyph)
 
         self.updateViews()
 
