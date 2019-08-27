@@ -181,13 +181,13 @@ class RoboCJKController(object):
         if inputKey == self.settings['saveFonts']:
             self.initialDesignController.saveSubsetFonts()
 
-        if inputKey == self.settings['unactivePowerRuler']:
+        elif inputKey == self.settings['unactivePowerRuler']:
             self.powerRuler.killPowerRuler()
 
         elif inputKey == self.settings['activePowerRuler']:
             self.powerRuler.launchPowerRuler()
 
-        if inputKey in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
+        elif inputKey in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
 
             glyphsetList = self.initialDesignController.interface.w.glyphSetList
             if inputKey == self.settings['previousGlyph']:
