@@ -49,7 +49,7 @@ class Inspector():
 
                         dict(label="Interpolaviour", 
                             view=self.interpolaviour, 
-                            size=160, 
+                            size=130, 
                             collapsed=False, 
                             canResize=0),
 
@@ -91,7 +91,7 @@ class Properties(Group):
             "",
             sizeStyle = "mini",
             alignment = "center")
-        
+
         self.RCJKI.inspectorController.setProperties()
 
 class Interpolaviour(Group):
@@ -131,11 +131,11 @@ class Interpolaviour(Group):
             value = self.RCJKI.settings["interpolaviour"]["interpolationValue"],
             sizeStyle = "small",
             callback = self._interpolationValue_Slider_callback)
-        y+=30
-        self.deduce_button = SquareButton((0, y, -0, 30),
-            'Deduce',
-            sizeStyle = "small",
-            callback = self._deduce_button_callback)
+        # y+=30
+        # self.deduce_button = SquareButton((0, y, -0, 30),
+        #     'Deduce',
+        #     sizeStyle = "small",
+        #     callback = self._deduce_button_callback)
 
     def _onOff_checkBox_callback(self, sender): 
         self.RCJKI.settings["interpolaviour"]["onOff"] = sender.get()
@@ -157,8 +157,8 @@ class Interpolaviour(Group):
         self.RCJKI.settings["interpolaviour"]["interpolationValue"] = sender.get()
         self.RCJKI.inspectorController.updateViews()
 
-    def _deduce_button_callback(self, sender):
-        pass
+    # def _deduce_button_callback(self, sender):
+    #     pass
 
 class DisplayOptions(Group):
 
