@@ -89,8 +89,14 @@ class RoboCJKController(object):
                             'onOff': True,
                             'drawPreview': False,
                             },
-            'previousGlyph' : "k",
-            'nextGlyph' : "l",
+
+            'previousGlyph' : [0, "k"],
+            'nextGlyph' : [0, "l"],
+
+            'activePowerRuler' : [0, "r"],
+            'unactivePowerRuler' : [1048576, "r"],
+
+            'saveFonts' : [1048576, "s"]
         }
         self.properties = ""
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
@@ -153,24 +159,30 @@ class RoboCJKController(object):
     def keyDownInGlyphWindow(self, info):
         if self.currentGlyph is None: return
 
-        modifier = extractNSEvent(info)
-        commandDown = modifier['commandDown']
+        event = extractNSEvent(info)
+        modifiers = sum([
+            event['shiftDown'], 
+            event['capLockDown'],
+            event['optionDown'],
+            event['controlDown'],
+            event['commandDown'],
+            ])
 
         character = info["event"].characters()
 
-        if commandDown and character == "s":
+        if [modifiers, character] == self.settings['saveFonts']:
             self.initialDesignController.saveSubsetFonts()
 
-        if commandDown and character == "r":
+        if [modifiers, character] == self.settings['unactivePowerRuler']:
             self.powerRuler.killPowerRuler()
 
-        elif character == "r":
+        elif [modifiers, character] == self.settings['activePowerRuler']:
             self.powerRuler.launchPowerRuler()
 
-        if character in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
+        if [modifiers, character] in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
 
             glyphsetList = self.initialDesignController.interface.w.glyphSetList
-            if character == self.settings['previousGlyph']:
+            if [modifiers, character] == self.settings['previousGlyph']:
                 sel = glyphsetList.getSelection()[0]-1 if glyphsetList.getSelection()[0] != 0 else len(glyphsetList)-1
             else:
                 sel = glyphsetList.getSelection()[0]+1 if glyphsetList.getSelection()[0] != len(glyphsetList)-1 else 0
