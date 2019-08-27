@@ -46,6 +46,13 @@ reload(git)
 reload(powerRuler)
 
 
+commandDown = 1048576
+shiftDown = 131072
+capLockDown = 65536
+controlDown = 262144
+optionDown = 524288
+
+
 class RoboCJKController(object):
     def __init__(self):
         self.observers = False
@@ -94,9 +101,9 @@ class RoboCJKController(object):
             'nextGlyph' : [0, "l"],
 
             'activePowerRuler' : [0, "r"],
-            'unactivePowerRuler' : [1048576, "r"],
+            'unactivePowerRuler' : [commandDown, "r"],
 
-            'saveFonts' : [1048576, "s"]
+            'saveFonts' : [commandDown, "s"]
         }
         self.properties = ""
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
@@ -169,20 +176,21 @@ class RoboCJKController(object):
             ])
 
         character = info["event"].characters()
+        inputKey = [modifiers, character]
 
-        if [modifiers, character] == self.settings['saveFonts']:
+        if inputKey == self.settings['saveFonts']:
             self.initialDesignController.saveSubsetFonts()
 
-        if [modifiers, character] == self.settings['unactivePowerRuler']:
+        if inputKey == self.settings['unactivePowerRuler']:
             self.powerRuler.killPowerRuler()
 
-        elif [modifiers, character] == self.settings['activePowerRuler']:
+        elif inputKey == self.settings['activePowerRuler']:
             self.powerRuler.launchPowerRuler()
 
-        if [modifiers, character] in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
+        if inputKey in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
 
             glyphsetList = self.initialDesignController.interface.w.glyphSetList
-            if [modifiers, character] == self.settings['previousGlyph']:
+            if inputKey == self.settings['previousGlyph']:
                 sel = glyphsetList.getSelection()[0]-1 if glyphsetList.getSelection()[0] != 0 else len(glyphsetList)-1
             else:
                 sel = glyphsetList.getSelection()[0]+1 if glyphsetList.getSelection()[0] != len(glyphsetList)-1 else 0
