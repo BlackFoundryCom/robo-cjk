@@ -340,7 +340,7 @@ class EditProjectSheet():
         self.characterSets = characterSets.sets
         characterSet = ""
 
-        for charset in "".join([self.RCJKI.characterSets[key].values() for key in self.RCJKI.project.script]):
+        for charset in "".join([d['Basic'] for d in [self.parent.RCJKI.characterSets[key] for key in self.parent.RCJKI.project.script]]):
             characterSet += charset
 
         glyphNames = ["uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) for c in characterSet if "uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) in self.previewFont.keys()]
