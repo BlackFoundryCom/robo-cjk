@@ -19,9 +19,9 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from imp import reload
 import os
 
-from mojo.events import addObserver, removeObserver, extractNSEvent
+from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, setToolOrder, getToolOrder
 from mojo.roboFont import *
-from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow, UpdateCurrentGlyphView
+from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow, UpdateCurrentGlyphView, setMaxAmountOfVisibleTools
 from AppKit import NSColor
 from views import roboCJKView
 from views.drawers import currentGlyphViewDrawer
@@ -31,6 +31,8 @@ from controllers import initialDesignController
 from controllers import inspectorController
 from controllers import textCenterController
 from tools import powerRuler
+from tools.externalTools import shapeTool
+from tools.externalTools import scalingEditTool
 from resources import characterSets
 from utils import git
 
@@ -44,6 +46,8 @@ reload(textCenterController)
 reload(characterSets)
 reload(git)
 reload(powerRuler)
+reload(shapeTool)
+reload(scalingEditTool)
 
 
 commandDown = 1048576
@@ -111,6 +115,16 @@ class RoboCJKController(object):
         self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
         self.powerRuler = powerRuler.Ruler(self)
+        self.shapeTool = installTool(shapeTool.ShapeTool(self))
+        self.scalingEditTool = installTool(scalingEditTool.RCJKScalingEditTool(self))
+
+        toolOrder = getToolOrder()
+        toolOrder.remove('ShapeTool')
+        toolOrder.insert(4, 'ShapeTool')
+        toolOrder.remove('RCJKScalingEditTool')
+        toolOrder.insert(5, 'RCJKScalingEditTool')
+        setToolOrder(toolOrder)
+        setMaxAmountOfVisibleTools(6)
 
         self.textCenterInterface = None
 
@@ -251,6 +265,7 @@ class RoboCJKController(object):
             self.currentGlyphWindow = OpenGlyphWindow(glyph)
             self.currentGlyphWindow.w.bind("became main", self.glyphWindowBecameMain)
             self.currentGlyphWindow.w.bind("close", self.glyphWindowCloses)
+
 
     def glyphWindowBecameMain(self, sender):
         self.currentGlyph = self.currentFont[self.currentGlyphWindow.getGlyph().name]

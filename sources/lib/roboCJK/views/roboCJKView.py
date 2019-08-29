@@ -21,13 +21,19 @@ from defconAppKit.windows.baseWindow import BaseWindowController
 from vanilla import *
 import os
 import json
-from mojo.UI import PostBannerNotification
+from mojo.UI import PostBannerNotification, setMaxAmountOfVisibleTools
+from mojo.events import uninstallTool
 
 from controllers import initialDesignController
 from controllers import textCenterController
 
+from tools.externalTools import shapeTool
+from tools.externalTools import scalingEditTool
+
 reload(initialDesignController)
 reload(textCenterController)
+reload(shapeTool)
+reload(scalingEditTool)
 
 
 class RoboCJKWindow(BaseWindowController):
@@ -84,4 +90,8 @@ class RoboCJKWindow(BaseWindowController):
 
         if self.RCJKI.textCenterController.interface:
             self.RCJKI.textCenterController.interface.w.close()
+
+        setMaxAmountOfVisibleTools(14)
+        uninstallTool(shapeTool.ShapeTool(self.RCJKI))
+        uninstallTool(scalingEditTool.RCJKScalingEditTool(self.RCJKI))
 
