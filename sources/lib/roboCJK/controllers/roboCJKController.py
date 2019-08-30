@@ -28,6 +28,7 @@ from views.drawers import currentGlyphViewDrawer
 from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
+from controllers import deepComponentEditionController
 from controllers import inspectorController
 from controllers import textCenterController
 from tools import powerRuler
@@ -41,6 +42,7 @@ reload(currentGlyphViewDrawer)
 reload(textCenterView)
 reload(projectEditorController)
 reload(initialDesignController)
+reload(deepComponentEditionController)
 reload(inspectorController)
 reload(textCenterController)
 reload(characterSets)
@@ -112,6 +114,7 @@ class RoboCJKController(object):
         self.properties = ""
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
+        self.deepComponentEditionController = deepComponentEditionController.DeepComponentEditionController(self)
         self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
         self.powerRuler = powerRuler.Ruler(self)
@@ -155,8 +158,8 @@ class RoboCJKController(object):
         UpdateCurrentGlyphView()
         if self.initialDesignController.interface:
             self.initialDesignController.interface.w.mainCanvas.update()
-        if self.textCenterController.interface:
-            self.textCenterController.interface.w.canvas.update()
+        # if self.textCenterController.interface:
+        #     self.textCenterController.interface.w.canvas.update()
 
     def launchInterface(self):
         self.interface = roboCJKView.RoboCJKWindow(self)
@@ -166,7 +169,7 @@ class RoboCJKController(object):
     def updateUI(self):
         self.interface.w.initialDesignEditorButton.enable(self.project!=None)
         self.interface.w.textCenterButton.enable(self.project!=None)
-        self.interface.w.deepComponentEditorButton.enable(self.project!=None)
+        self.interface.w.deepComponentEditionButton.enable(self.project!=None)
         self.interface.w.inspectorButton.enable(self.project!=None)
 
     def launchTextCenterInterface(self):

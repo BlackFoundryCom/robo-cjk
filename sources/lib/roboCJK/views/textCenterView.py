@@ -109,6 +109,7 @@ class TextCenterWindow():
 
         self.setStringFromSelection()
         self.w.bind('resize', self.windowDidResize)
+        self.w.bind('became main', self.windowBecameMain)
         self.w.bind('close', self.windowCloses)
         self.w.open()
 
@@ -117,6 +118,9 @@ class TextCenterWindow():
 
     def windowDidResize(self, sender):
         _, _, self.windowWidth, self.windowHeight = sender.getPosSize()
+        self.w.canvas.update()
+
+    def windowBecameMain(self, sender):
         self.w.canvas.update()
 
     def _verticalMode_checkBox_callback(self, sender):
