@@ -54,7 +54,7 @@ class InitialDesignController(object):
                 f = OpenFont(path, showInterface=False)
                 nf = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
                 for c in self.characterSet:
-                    glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+                    glyphName = files.unicodeName(c)
                     if glyphName in f:
                         nf.insertGlyph(f[glyphName])
                 f.close()
@@ -66,7 +66,7 @@ class InitialDesignController(object):
                 
                 glyph0rder = []
                 for c in self.characterSet:
-                    glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+                    glyphName = files.unicodeName(c)
                     glyph0rder.append(glyphName)
                 f.glyphOrder = glyph0rder
                 f.save()
@@ -95,7 +95,7 @@ class InitialDesignController(object):
         if self.RCJKI.currentFont is not None:
             later = []
             for c in self.characterSet:
-                name = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+                name = files.unicodeName(c)
                 code = c
                 if name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs['_initialDesign_glyphs']:
                     l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
@@ -117,7 +117,7 @@ class InitialDesignController(object):
     def pullMastersGlyphs(self):
         glyphs = []
         for c in self.characterSet:
-            glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+            glyphName = files.unicodeName(c)
             if glyphName not in self.RCJKI.reservedGlyphs['_initialDesign_glyphs']:
                 glyphs.append(glyphName)
 

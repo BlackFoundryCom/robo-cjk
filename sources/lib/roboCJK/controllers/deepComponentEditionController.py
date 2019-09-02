@@ -49,7 +49,7 @@ class DeepComponentEditionController(object):
         if self.RCJKI.currentFont is not None:
             later = []
             for c in self.characterSet:
-                name = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+                name = files.unicodeName(c)
                 code = c
                 if name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs['_deepComponentsEdition_glyphs']:
                     l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
@@ -69,7 +69,7 @@ class DeepComponentEditionController(object):
                 f = OpenFont(path, showInterface=False)
                 nf = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
                 for c in self.characterSet:
-                    glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+                    glyphName = files.unicodeName(c)
                     if glyphName in f:
                         nf.insertGlyph(f[glyphName])
                 f.close()
@@ -81,7 +81,7 @@ class DeepComponentEditionController(object):
                 
                 glyph0rder = []
                 for c in self.characterSet:
-                    glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
+                    glyphName = files.unicodeName(c)
                     glyph0rder.append(glyphName)
                 f.glyphOrder = glyph0rder
                 f.save()

@@ -54,4 +54,6 @@ def normalizeUnicode(code):
     else:
         return code
 
+def unicodeName(char):
+    return "uni" + normalizeUnicode(hex(ord(char))[2:].upper())
     

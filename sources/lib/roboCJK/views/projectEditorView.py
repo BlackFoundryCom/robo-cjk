@@ -106,7 +106,7 @@ class LockerGroup(Group):
         sel = self.usersList.getSelection()
         if not sel: return
         userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
-        glyphs = ['uni'+files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in chars]
+        glyphs = [files.unicodeName(char) for char in chars]
         userLocker._setAttr(self.step)
         userLocker._clearGlyphs()
         userLocker._addGlyphs(glyphs)
@@ -398,7 +398,7 @@ class EditProjectSheet():
         for charset in "".join([d['Basic'] for d in [self.parent.RCJKI.characterSets[key] for key in self.parent.RCJKI.project.script]]):
             characterSet += charset
 
-        glyphNames = ["uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) for c in characterSet if "uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) in self.previewFont.keys()]
+        glyphNames = [files.unicodeName(c) for c in characterSet if "uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) in self.previewFont.keys()]
         self.previewGlyph = self.previewFont[random.choice(glyphNames)]
     
     # def usersListSelectionCallback(self, sender):

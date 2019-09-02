@@ -174,7 +174,7 @@ class ProjectEditorController(object):
         fontName = "%s-%s"%(familyName, styleName)
 
         characterSet = "".join([self.RCJKI.characterSets[key]['Full'] for key in self.RCJKI.project.script])
-        glyphOrder = ["uni" + files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in characterSet]
+        glyphOrder = [files.unicodeName(char) for char in characterSet]
         f.glyphOrder = glyphOrder
 
         if fontName not in self.RCJKI.project.masterFontsPaths:
