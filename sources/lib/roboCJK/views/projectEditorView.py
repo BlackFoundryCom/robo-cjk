@@ -127,13 +127,22 @@ class EditProjectSheet():
         ###
         self.parent.sheet.lockerGroup = Group((0,60,-0,-30))
 
+        segmentedElements = ["Initial Design", "Deep Component Edition"]
+        self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton = SegmentedButton((10, 10, -10, 20),
+            [dict(title=e, width=577/len(segmentedElements)) for e in segmentedElements],
+            callback = self.lockerDesignStepSegmentedButtonCallback,
+            )
+        self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton.set(0)
+
+        self.parent.sheet.lockerGroup.initialDesign = Group((0, 0, -0, -0))
+        self.parent.sheet.lockerGroup.deepComponentEdition = Group((0, 0, -0, -0))
         
-        self.parent.sheet.lockerGroup.usersList = List((10, 10, 280, 65),
+        self.parent.sheet.lockerGroup.usersList = List((10, 40, 280, 65),
                 [d['user'] for d in self.parent.RCJKI.project.usersLockers['lockers']],
                 selectionCallback = self.usersListSelectionCallback,
                 drawFocusRing = False
                 )
-        self.parent.sheet.lockerGroup.charactersTextEditor = TextEditor((10, 85, -10, -40),
+        self.parent.sheet.lockerGroup.charactersTextEditor = TextEditor((10, 125, -10, -40),
                                     callback=self.charactersTextEditorCallback)
         ###
 
@@ -374,6 +383,17 @@ class EditProjectSheet():
             self.parent.sheet.lockerGroup,
             self.parent.sheet.designFrameGroup,
             self.parent.sheet.referenceViewerGroup
+            ]
+        for i, e in enumerate(groups):
+            e.show(i == sel)
+
+        self.parent.RCJKI.projectEditorController.updateSheetUI()
+
+    def lockerDesignStepSegmentedButtonCallback(self, sender):
+        sel = sender.get()
+        groups = [
+            self.parent.sheet.lockerGroup.initialDesign,
+            self.parent.sheet.lockerGroup.deepComponentEdition
             ]
         for i, e in enumerate(groups):
             e.show(i == sel)

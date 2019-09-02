@@ -84,6 +84,9 @@ class RoboCJKWindow(BaseWindowController):
 
         if self.RCJKI.initialDesignController.interface:
             self.RCJKI.initialDesignController.interface.w.close()
+            
+        if self.RCJKI.deepComponentEditionController.interface:
+            self.RCJKI.deepComponentEditionController.interface.w.close()
 
         if self.RCJKI.textCenterInterface:
             self.RCJKI.textCenterInterface.w.close()

@@ -22,7 +22,7 @@ import os
 from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, setToolOrder, getToolOrder
 from mojo.roboFont import *
 from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow, UpdateCurrentGlyphView, setMaxAmountOfVisibleTools
-from AppKit import NSColor
+from AppKit import NSColor, NSCell
 from views import roboCJKView
 from views.drawers import currentGlyphViewDrawer
 from views import textCenterView
@@ -36,6 +36,7 @@ from tools.externalTools import shapeTool
 from tools.externalTools import scalingEditTool
 from resources import characterSets
 from utils import git
+from views import tableDelegate
 
 reload(roboCJKView)
 reload(currentGlyphViewDrawer)
@@ -57,6 +58,14 @@ shiftDown = 131072
 capLockDown = 65536
 controlDown = 262144
 optionDown = 524288
+
+
+kMissingColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
+kThereColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 1, 0, 1)
+kEmptyColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
+kLockedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 0, 0, 1)
+kFreeColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
+kReservedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
 
 
 class RoboCJKController(object):
@@ -276,4 +285,60 @@ class RoboCJKController(object):
 
     def glyphWindowCloses(self, sender):
         self.currentGlyphWindow = None
+
+    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, window):
+        if tableColumn is None: return None
+        cell = tableColumn.dataCell()
+        if window is None:
+            return cell
+        if (row < 0) or (row >= len(window.glyphSetList)):
+            return cell
+        uiGlyph  = window.glyphSetList[row]
+        uiGlyphName = uiGlyph['Name']
+        uiGlyphReserved = uiGlyphName in self.collab._userLocker(self.user).glyphs
+
+        state = 'missing'
+        locked = False
+        reserved = False
+        markColor = None
+        if self.currentFont:
+            if uiGlyphName in self.currentFont:
+                state = 'there'
+                markColor = self.currentFont[uiGlyphName].markColor
+                if len(self.currentFont[uiGlyphName]) == 0 and not self.currentFont[uiGlyphName].components:
+                    state = 'empty'
+        if uiGlyphName in self.lockedGlyphs:
+            locked = True
+
+        colID = tableColumn.identifier()
+        if colID == '#':
+            cell.setDrawsBackground_(True)
+            cell.setBezeled_(False)
+            if state == 'missing':
+                cell.setBackgroundColor_(kMissingColor)
+            elif state == 'there':
+                cell.setBackgroundColor_(kThereColor)
+            elif state == 'empty':
+                cell.setBackgroundColor_(kEmptyColor)
+            else:
+                cell.setDrawsBackground_(False)
+                cell.setBezeled_(False)
+        elif colID == 'Name' or colID == 'Char':
+            if locked:
+                cell.setTextColor_(kLockedColor)
+            elif uiGlyphReserved == True:
+                cell.setTextColor_(kReservedColor)
+            else:
+                cell.setTextColor_(kFreeColor)
+        elif colID == 'MarkColor':
+            cell.setDrawsBackground_(True)
+            cell.setBezeled_(False)
+            if markColor is not None:
+                cell.setBackgroundColor_(NSColor.colorWithCalibratedRed_green_blue_alpha_(markColor[0], markColor[1], markColor[2], markColor[3]))
+            else:
+                cell.setDrawsBackground_(False)
+                cell.setBezeled_(False)
+        return cell
+
+
 
