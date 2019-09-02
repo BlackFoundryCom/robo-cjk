@@ -57,7 +57,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                 selectionCallback = self.fontsListSelectionCallback,
                 drawFocusRing = False)
 
-        self.w.glyphSetList = List((0,85,200,-60),
+        self.w.glyphSetList = List((0,85,200,230),
                 [],
                 columnDescriptions = [
                                 {"title": "#", "width" : 20, 'editable':False},
@@ -66,7 +66,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                                 {"title": "MarkColor", "width" : 30, 'editable':False}
                                 ],
                 selectionCallback = self.glyphSetListSelectionCallback,
-                doubleClickCallback = self.glyphSetListdoubleClickCallback,
+                # doubleClickCallback = self.glyphSetListdoubleClickCallback,
                 # editCallback = self.glyphSetListEditCallback,
                 showColumnTitles = False,
                 drawFocusRing = False)
@@ -104,8 +104,8 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
 
-    def glyphSetListdoubleClickCallback(self, sender):
-        return
+    # def glyphSetListdoubleClickCallback(self, sender):
+    #     return
         # if not sender.getSelection(): return
         # if self.selectedGlyphName not in self.RCJKI.currentFont:
         #     self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedGlyphName)

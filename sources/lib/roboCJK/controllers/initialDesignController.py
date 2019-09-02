@@ -97,7 +97,7 @@ class InitialDesignController(object):
             for c in self.characterSet:
                 name = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
                 code = c
-                if name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs:
+                if name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs['_initialDesign_glyphs']:
                     l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
                 else:
                     later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
