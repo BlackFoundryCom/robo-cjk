@@ -90,6 +90,7 @@ class LockerGroup(Group):
     def usersListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
+        self.user = sender.get()[sel[0]]
         self.charactersTextEditor.set(self.charactersTextEditorText)
 
     @property
