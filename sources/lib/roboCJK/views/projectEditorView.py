@@ -67,6 +67,50 @@ class ProjectEditorWindow(BaseWindowController):
     def windowCloses(self, sender):
         self.RCJKI.projectEditorController.interface = None
 
+class LockerGroup(Group):
+
+    def __init__(self, posSize, controller, step):
+        super(LockerGroup, self).__init__(posSize)
+        self.c = controller
+        self.step = step
+
+        usersList = [d['user'] for d in self.c.parent.RCJKI.project.usersLockers['lockers']]
+        self.user = usersList[0]
+
+        self.usersList = List((10, 40, 280, 65),
+                usersList,
+                selectionCallback = self.usersListSelectionCallback,
+                drawFocusRing = False
+                )        
+
+        self.charactersTextEditor = TextEditor((10, 125, -10, -40),
+                self.charactersTextEditorText,
+                callback=self.charactersTextEditorCallback)
+
+    def usersListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        self.charactersTextEditor.set(self.charactersTextEditorText)
+
+    @property
+    def charactersTextEditorText(self):
+        userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
+        glyphs = userLocker.glyphs[self.step]
+        chars = [chr(int(glyph[3:], 16)) for glyph in glyphs]
+        chars.sort()
+        return ''.join(chars)
+
+    def charactersTextEditorCallback(self, sender):
+        chars = sender.get()
+        sel = self.usersList.getSelection()
+        if not sel: return
+        userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
+        glyphs = ['uni'+files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in chars]
+        userLocker._setAttr(self.step)
+        userLocker._clearGlyphs()
+        userLocker._addGlyphs(glyphs)
+        self.c.parent.RCJKI.project.usersLockers = self.c.parent.RCJKI.collab._toDict
+
 class EditProjectSheet():
     def __init__(self, parent):
         self.previewFont = None
@@ -134,16 +178,17 @@ class EditProjectSheet():
             )
         self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton.set(0)
 
-        self.parent.sheet.lockerGroup.initialDesign = Group((0, 0, -0, -0))
-        self.parent.sheet.lockerGroup.deepComponentEdition = Group((0, 0, -0, -0))
+        self.parent.sheet.lockerGroup.initialDesign = LockerGroup((0, 0, -0, -0), self, "_initialDesign_glyphs")
+        self.parent.sheet.lockerGroup.deepComponentEdition = LockerGroup((0, 0, -0, -0), self, "_deepComponentsEdition_glyphs")
+        self.parent.sheet.lockerGroup.deepComponentEdition.show(0)
         
-        self.parent.sheet.lockerGroup.usersList = List((10, 40, 280, 65),
-                [d['user'] for d in self.parent.RCJKI.project.usersLockers['lockers']],
-                selectionCallback = self.usersListSelectionCallback,
-                drawFocusRing = False
-                )
-        self.parent.sheet.lockerGroup.charactersTextEditor = TextEditor((10, 125, -10, -40),
-                                    callback=self.charactersTextEditorCallback)
+        # self.parent.sheet.lockerGroup.usersList = List((10, 40, 280, 65),
+        #         [d['user'] for d in self.parent.RCJKI.project.usersLockers['lockers']],
+        #         selectionCallback = self.usersListSelectionCallback,
+        #         drawFocusRing = False
+        #         )
+        # self.parent.sheet.lockerGroup.charactersTextEditor = TextEditor((10, 125, -10, -40),
+        #                             callback=self.charactersTextEditorCallback)
         ###
 
         self.parent.sheet.designFrameGroup = Group((0,60,-0,-30))
@@ -355,26 +400,28 @@ class EditProjectSheet():
         glyphNames = ["uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) for c in characterSet if "uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) in self.previewFont.keys()]
         self.previewGlyph = self.previewFont[random.choice(glyphNames)]
     
-    def usersListSelectionCallback(self, sender):
-        sel = sender.getSelection()
-        if not sel: return
-        user = sender.get()[sel[0]]
-        userLocker = self.parent.RCJKI.collab._addLocker(user)
-        glyphs = userLocker.glyphs
-        chars = [chr(int(glyph[3:], 16)) for glyph in glyphs]
-        chars.sort()
-        self.parent.sheet.lockerGroup.charactersTextEditor.set(''.join(chars))
+    # def usersListSelectionCallback(self, sender):
+    #     sel = sender.getSelection()
+    #     if not sel: return
+    #     user = sender.get()[sel[0]]
+    #     userLocker = self.parent.RCJKI.collab._addLocker(user)
+    #     glyphs = userLocker.glyphs['_DCE_glyphs']
+    #     chars = [chr(int(glyph[3:], 16)) for glyph in glyphs]
+    #     chars.sort()
+    #     self.parent.sheet.lockerGroup.charactersTextEditor.set(''.join(chars))
 
-    def charactersTextEditorCallback(self, sender):
-        chars = sender.get()
-        sel = self.parent.sheet.lockerGroup.usersList.getSelection()
-        if not sel: return
-        user = self.parent.sheet.lockerGroup.usersList.get()[sel[0]]
-        userLocker = self.parent.RCJKI.collab._addLocker(user)
-        glyphs = ['uni'+files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in chars]
-        userLocker._clearGlyphs()
-        userLocker._addGlyphs(glyphs)
-        self.parent.RCJKI.project.usersLockers = self.parent.RCJKI.collab._toDict
+    # def charactersTextEditorCallback(self, sender):
+    #     chars = sender.get()
+    #     sel = self.parent.sheet.lockerGroup.usersList.getSelection()
+    #     if not sel: return
+    #     user = self.parent.sheet.lockerGroup.usersList.get()[sel[0]]
+    #     userLocker = self.parent.RCJKI.collab._addLocker(user)
+    #     glyphs = ['uni'+files.normalizeUnicode(hex(ord(char))[2:].upper()) for char in chars]
+    #     userLocker._setAttr("_DCE_glyphs")
+    #     userLocker._clearGlyphs()
+    #     userLocker._addGlyphs(glyphs)
+    #     self.parent.RCJKI.project.usersLockers = self.parent.RCJKI.collab._toDict
+        # print(userLocker.__dict__)
 
     def projectSectionsSegmentedButtonCallback(self, sender):
         sel = sender.get()

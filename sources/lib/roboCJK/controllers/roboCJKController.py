@@ -286,7 +286,7 @@ class RoboCJKController(object):
     def glyphWindowCloses(self, sender):
         self.currentGlyphWindow = None
 
-    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, window):
+    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, window, step):
         if tableColumn is None: return None
         cell = tableColumn.dataCell()
         if window is None:
@@ -295,7 +295,7 @@ class RoboCJKController(object):
             return cell
         uiGlyph  = window.glyphSetList[row]
         uiGlyphName = uiGlyph['Name']
-        uiGlyphReserved = uiGlyphName in self.collab._userLocker(self.user).glyphs
+        uiGlyphReserved = uiGlyphName in self.collab._userLocker(self.user).glyphs[step]
 
         state = 'missing'
         locked = False

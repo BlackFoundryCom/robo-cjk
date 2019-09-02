@@ -145,4 +145,4 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.RCJKI.deepComponentEditionController.interface = None
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
-        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w)
+        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, '_deepComponentsEdition_glyphs')

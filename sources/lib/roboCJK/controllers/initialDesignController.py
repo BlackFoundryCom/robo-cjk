@@ -85,7 +85,7 @@ class InitialDesignController(object):
         collabFile = open(collabFilePath, 'r')
         d = json.load(collabFile)
         for lck in d['lockers']:
-            self.RCJKI.collab._addLocker(lck['user'])
+            self.RCJKI.collab._addLocker(lck['user'], "_initialDesign_glyphs")
         for lck in d['lockers']:
             locker = self.RCJKI.collab._userLocker(lck['user'])
             locker._addGlyphs(lck['glyphs'])
@@ -118,7 +118,7 @@ class InitialDesignController(object):
         glyphs = []
         for c in self.characterSet:
             glyphName = 'uni' + files.normalizeUnicode(hex(ord(c))[2:].upper())
-            if glyphName not in self.RCJKI.reservedGlyphs:
+            if glyphName not in self.RCJKI.reservedGlyphs['_initialDesign_glyphs']:
                 glyphs.append(glyphName)
 
         self.RCJKI.pullMastersGlyphs(glyphs)
