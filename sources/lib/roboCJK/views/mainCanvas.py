@@ -51,7 +51,7 @@ class MainCanvas():
     translateX = 300
     translateY = 280
 
-    def __init__(self, RCJKI):
+    def __init__(self, RCJKI, step):
         self.RCJKI = RCJKI
         self.canvasWidth = 386
         self.preview = 0
@@ -60,6 +60,7 @@ class MainCanvas():
         self.interpolaviourDrawer = interpolaviourDrawer.InterpolaviourDrawer(self.RCJKI)
         self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI)
         self.waterFall = displayOptionsDrawer.WaterFallDrawer(self.RCJKI)
+        self.step = step
 
     def mouseDown(self, info):
         if info.clickCount() == 2 and self.RCJKI.currentGlyph is not None:
@@ -167,7 +168,7 @@ class MainCanvas():
                     lineTo((1100, 1100))
                     drawPath()
                 else:
-                    if g.name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs:
+                    if g.name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.step]:
                         fill(0, 0, 0, 1)
                     elif g.name in self.RCJKI.lockedGlyphs:
                         fill(1, 0, 0, 1)
