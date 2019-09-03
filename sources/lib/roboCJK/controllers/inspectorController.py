@@ -54,7 +54,7 @@ class inspectorController(object):
 
     def getSelected(self):
         if self.RCJKI.currentGlyph == None:
-            return
+            return (0, 0, 0, 0, 0, None)
         nbContours = 0
         nbON = 0
         nbOFF = 0
