@@ -81,6 +81,7 @@ class RoboCJKController(object):
         self.currentGlyph = None
         self.currentGlyphWindow = None
         self.allFonts = []
+        self.fonts2DCFonts = {}
         self.lockedGlyphs = []
         self.reservedGlyphs = []
         self.user = git.GitEngine(None).user()

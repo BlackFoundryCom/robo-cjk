@@ -36,6 +36,15 @@ class DeepComponentEditionController(object):
         self.characterSet = None
         self.fontsList = []
 
+        """
+        MASTER FONTS
+        MASTER DEEP COMPONENTS FONTS (with all dc keys)
+
+        MINI UNICODE DEEP COMPONENTS FONTS (with unicode characters from locker list, and associated extrems versions) -> KeyAndExtremeCharacters
+        MINI DEEP COMPONENTS FONTS (with DCNamed glyphs from locker list) -> DeepComponentsGlyphs -> only these glyphs will be injected back
+
+        """
+
     def launchDeepComponentEditionInterface(self):
         self.setCharacterSet()
         if not self.interface:
@@ -68,55 +77,82 @@ class DeepComponentEditionController(object):
 
             path = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', file)
 
-            deepComponentGlyphsEditionSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'DeepComponents', 'Edition', "".join(self.RCJKI.project.script), "KeyAndExtremeCharacters", file)
-            deepComponentGlyphsKeysSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', "".join(self.RCJKI.project.script), file)
+            deepComponentGlyphsKeyAndXtremSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'DeepComponents', 'Edition', "".join(self.RCJKI.project.script), "KeyAndExtremeCharacters", file)
+            deepComponentGlyphsSubsetSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'DeepComponents', 'Edition', "".join(self.RCJKI.project.script), "DeepComponentsGlyphs", file)
+            deepComponentGlyphsMasterSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', "".join(self.RCJKI.project.script), file)
 
             f = OpenFont(path, showInterface=False)
 
-            if not os.path.isdir(deepComponentGlyphsKeysSavepath):
-                files.makepath(deepComponentGlyphsKeysSavepath)
+            #### MASTER DEEP COMPONENTS FONT -> DeepComponents/*script*/*.ufo
+            if not os.path.isdir(deepComponentGlyphsMasterSavepath):
+                files.makepath(deepComponentGlyphsMasterSavepath)
 
-                dcf = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
+                masterDeepComponentsGlyphs = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
 
-                dcKeys = "".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script])
-                for dcKey in dcKeys:
-                    glyphName = "DC_"+files.normalizeUnicode(hex(ord(dcKey))[2:].upper())
+                masterDCFonts = "".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script])
+                for masterDCFont in masterDCFonts:
+                    glyphName = "DC_"+files.normalizeUnicode(hex(ord(masterDCFont))[2:].upper())
 
-                    if dcKey in deepCompoMasters_AGB1_FULL.deepCompoMasters[self.RCJKI.project.script[0]]:
-                        for i in range(len(deepCompoMasters_AGB1_FULL.deepCompoMasters[self.RCJKI.project.script[0]][dcKey])):
-                            dcf.newGlyph(glyphName + "_%s"%str(i).zfill(2))
+                    for script in self.RCJKI.project.script:
+                        if masterDCFont in deepCompoMasters_AGB1_FULL.deepCompoMasters[script]:
+                            for i in range(len(deepCompoMasters_AGB1_FULL.deepCompoMasters[script][masterDCFont])):
+                                masterDeepComponentsGlyphs.newGlyph(glyphName + "_%s"%str(i).zfill(2))
 
-                dcf.save(deepComponentGlyphsKeysSavepath)
+                masterDeepComponentsGlyphs.save(deepComponentGlyphsMasterSavepath)
+            else:
+                masterDeepComponentsGlyphs = OpenFont(deepComponentGlyphsMasterSavepath, showInterface = False)
 
-            if not os.path.isdir(deepComponentGlyphsEditionSavepath):
-                files.makepath(deepComponentGlyphsEditionSavepath)
+            #### KEYS AND EXTREMES CHARACTERS -> Temp/DeepComponents/Edition/*script*/KeyAndExtremeCharacters/*.ufo
+            if not os.path.isdir(deepComponentGlyphsKeyAndXtremSavepath):
+                files.makepath(deepComponentGlyphsKeyAndXtremSavepath)
                 
-                nf = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
+                keyAndXtremChars = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
                 
                 for c in self.characterSet:
                     glyphName = files.unicodeName(c)
                     if glyphName in f:
-                        nf.insertGlyph(f[glyphName])
+                        keyAndXtremChars.insertGlyph(f[glyphName])
 
-                nf.save(deepComponentGlyphsEditionSavepath)
-
-                self.RCJKI.allFonts.append({name:nf})
-                self.fontsList.append(name)
-
+                keyAndXtremChars.save(deepComponentGlyphsKeyAndXtremSavepath)
             else:
-                nf = OpenFont(deepComponentGlyphsEditionSavepath, showInterface=False)
+                keyAndXtremChars = OpenFont(deepComponentGlyphsKeyAndXtremSavepath, showInterface=False)
                 
                 glyph0rder = []
                 for c in self.characterSet:
                     glyphName = files.unicodeName(c)
                     glyph0rder.append(glyphName)
-                nf.glyphOrder = glyph0rder
-                nf.save()
+                keyAndXtremChars.glyphOrder = glyph0rder
+                keyAndXtremChars.save()
 
-                self.RCJKI.allFonts.append({name:nf})
-                self.fontsList.append(name)
+            self.RCJKI.allFonts.append({name:keyAndXtremChars})
+            self.fontsList.append(name)
+
+            #### DEEP COMPONENTS GLYPHS -> Temp/DeepComponents/Edition/*script*/DeepComponentsGlyphs/*.ufo
+            if not os.path.isdir(deepComponentGlyphsSubsetSavepath):
+                files.makepath(deepComponentGlyphsSubsetSavepath)
+
+                deepComponentsGlyphs = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
+
+                for layer in masterDeepComponentsGlyphs.layers:
+                    deepComponentsGlyphs.newLayer(layer.name)
+
+                DCGlyphsSet = []
+                lockerGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
+                for char in lockerGlyphs:
+                    DCGlyphsSet.extend(list(filter(lambda x: char[3:] in x, list(masterDeepComponentsGlyphs.keys()))))
+
+                for glyphName in DCGlyphsSet:
+                    for layer in masterDeepComponentsGlyphs.layers:
+                        deepComponentsGlyphs.getLayer(layer.name).insertGlyph(masterDeepComponentsGlyphs[glyphName].getLayer(layer.name))
+                
+                deepComponentsGlyphs.save(deepComponentGlyphsSubsetSavepath)
+            else:
+                deepComponentsGlyphs = OpenFont(deepComponentGlyphsSubsetSavepath, showInterface=False)
+
+            self.RCJKI.fonts2DCFonts[keyAndXtremChars] = deepComponentsGlyphs
 
             f.close()
+            masterDeepComponentsGlyphs.close()
 
         if self.interface:
             self.interface.w.fontsList.set(self.fontsList)
