@@ -31,7 +31,8 @@ class inspectorController(object):
             self.interface = inspectorView.Inspector(self.RCJKI)
 
     def updateViews(self):
-        self.RCJKI.initialDesignController.interface.w.mainCanvas.update()
+        if self.RCJKI.initialDesignController.interface:
+            self.RCJKI.initialDesignController.interface.w.mainCanvas.update()
         if self.RCJKI.textCenterController.interface:
             self.RCJKI.textCenterController.interface.w.canvas.update()
         UpdateCurrentGlyphView()

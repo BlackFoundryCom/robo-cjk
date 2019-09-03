@@ -80,7 +80,7 @@ class InitialDesignWindow(BaseWindowController):
         
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
-            delegate=mainCanvas.MainCanvas(self.RCJKI, "_initialDesign_glyphs"),
+            delegate=mainCanvas.MainCanvas(self.RCJKI, self, "_initialDesign_glyphs"),
             canvasSize=(5000, 5000),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
@@ -178,8 +178,9 @@ class InitialDesignWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def windowCloses(self, sender):
-        if self.RCJKI.currentGlyphWindow is not None:
-            self.RCJKI.currentGlyphWindow.close()
+        if CurrentGlyphWindow() is not None:
+            CurrentGlyphWindow().close()
+        self.RCJKI.currentGlyphWindow = None
         self.RCJKI.initialDesignController.interface = None
 
     def windowBecameMain(self, sender):

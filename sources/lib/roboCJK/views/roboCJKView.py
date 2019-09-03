@@ -67,7 +67,7 @@ class RoboCJKWindow(BaseWindowController):
         self.RCJKI.initialDesignController.launchInitialDesignInterface()
 
     def openDeepComponentEdition(self, sender):
-        print("".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script]))
+        # print("".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script]))
         self.RCJKI.deepComponentEditionController.launchDeepComponentEditionInterface()
 
     def openSettings(self, sender):

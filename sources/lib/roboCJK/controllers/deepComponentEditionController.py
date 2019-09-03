@@ -70,6 +70,21 @@ class DeepComponentEditionController(object):
             l += later
         self.interface.w.glyphSetList.set(l)
 
+    def updateDeepComponentsSetList(self, glyphName):
+        l = []
+        if self.RCJKI.currentFont is not None:
+            
+            dcset = list(filter(lambda x: glyphName[3:] in x, list(self.RCJKI.currentFont.keys())))
+            for name in sorted(dcset):
+                code = chr(int(name.split('_')[1],16))
+                l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+        self.interface.w.deepComponentsSetList.set(l)
+
+    def saveSubsetFonts(self):
+        for f in self.RCJKI.fonts2DCFonts.values():
+            f.save()
+        PostBannerNotification("Fonts saved", "")
+
     def loadProjectFonts(self):
         self.fontsList = []
         self.RCJKI.allFonts = []
@@ -138,8 +153,8 @@ class DeepComponentEditionController(object):
 
                 DCGlyphsSet = []
                 lockerGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
-                for char in lockerGlyphs:
-                    DCGlyphsSet.extend(list(filter(lambda x: char[3:] in x, list(masterDeepComponentsGlyphs.keys()))))
+                for glyphName in lockerGlyphs:
+                    DCGlyphsSet.extend(list(filter(lambda x: glyphName[3:] in x, list(masterDeepComponentsGlyphs.keys()))))
 
                 for glyphName in DCGlyphsSet:
                     for layer in masterDeepComponentsGlyphs.layers:

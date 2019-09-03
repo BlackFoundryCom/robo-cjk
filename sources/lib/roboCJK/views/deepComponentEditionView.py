@@ -71,9 +71,36 @@ class DeepComponentEditionWindow(BaseWindowController):
                 showColumnTitles = False,
                 drawFocusRing = False)
 
+        self.w.deepComponentsSetList = List((0, 315, 200, 200),
+                [],
+                columnDescriptions = [
+                                {"title": "#", "width" : 20, 'editable':False},
+                                {"title": "Char", "width" : 30, 'editable':False},
+                                {"title": "Name", "width" : 80, 'editable':False},
+                                {"title": "MarkColor", "width" : 30, 'editable':False}
+                                ],
+                selectionCallback = self.deepComponentsSetListSelectionCallback,
+                doubleClickCallback = self.deepComponentsSetListDoubleClickCallback,
+                # editCallback = self.glyphSetListEditCallback,
+                showColumnTitles = False,
+                drawFocusRing = False
+            )
+
+        self.w.saveLocalFontButton = Button((0,-60,200,20), 
+            'Save', 
+            callback=self.saveLocalFontButtonCallback)
+
+        self.w.pushBackButton = Button((0,-40,200,20), 
+            'Push', 
+            callback=self.pushBackButtonCallback)
+
+        self.w.pullMasterGlyphsButton = Button((0,-20,200,20), 
+            'Pull', 
+            callback=self.pullMasterGlyphsButtonCallback)
+
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
-            delegate=mainCanvas.MainCanvas(self.RCJKI, '_deepComponentsEdition_glyphs'),
+            delegate=mainCanvas.MainCanvas(self.RCJKI, self, '_deepComponentsEdition_glyphs'),
             canvasSize=(5000, 5000),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
@@ -93,6 +120,23 @@ class DeepComponentEditionWindow(BaseWindowController):
 
         self.w.open()
 
+    def saveLocalFontButtonCallback(self, sender):
+        self.RCJKI.deepComponentEditionController.saveSubsetFonts()
+        self.w.mainCanvas.update()
+        
+    def pullMasterGlyphsButtonCallback(self, sender):
+        return
+        self.RCJKI.initialDesignController.pullMastersGlyphs()
+        self.w.mainCanvas.update()
+
+    def pushBackButtonCallback(self, sender):
+        return
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        user = gitEngine.user()
+        glyphsList = self.RCJKI.collab._userLocker(user).glyphs
+        self.RCJKI.initialDesignController.injectGlyphsBack(glyphsList, user)
+
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
@@ -101,7 +145,8 @@ class DeepComponentEditionWindow(BaseWindowController):
             self.w.glyphSetList.set([])
             self.selectedGlyph = None
             return
-        self.RCJKI.currentFont = self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]
+        self.RCJKI.currentFont = self.RCJKI.fonts2DCFonts[self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]]
+        print(self.RCJKI.currentFont)
         self.controller.updateGlyphSetList()
 
 
@@ -118,8 +163,16 @@ class DeepComponentEditionWindow(BaseWindowController):
         sel = sender.getSelection()
         if not sel: return
         self.selectedGlyphName = sender.get()[sel[0]]['Name']
-        if self.selectedGlyphName in self.RCJKI.currentFont:
-            self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
+        self.controller.updateDeepComponentsSetList(self.selectedGlyphName)
+        self.w.mainCanvas.update()
+
+    def deepComponentsSetListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        self.selectedDeepComponentGlyphName = sender.get()[sel[0]]['Name']
+        
+        if self.selectedDeepComponentGlyphName in self.RCJKI.currentFont:
+            self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
             if self.RCJKI.currentGlyph.markColor is None:
                 r, g, b, a = 0, 0, 0, 0
             else: 
@@ -128,6 +181,14 @@ class DeepComponentEditionWindow(BaseWindowController):
         else:
             self.RCJKI.currentGlyph = None
         self.w.mainCanvas.update()
+
+    def deepComponentsSetListDoubleClickCallback(self, sender):
+        if not sender.getSelection(): return
+        
+        if self.selectedDeepComponentGlyphName not in self.RCJKI.currentFont:
+            self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedDeepComponentGlyphName)
+            self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
+        self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
 
     def colorPickerCallback(self, sender):
         if self.RCJKI.currentGlyph is None: return
@@ -141,8 +202,9 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def windowCloses(self, sender):
-        if self.RCJKI.currentGlyphWindow is not None:
-            self.RCJKI.currentGlyphWindow.close()
+        if CurrentGlyphWindow() is not None:
+            CurrentGlyphWindow().close()
+        self.RCJKI.currentGlyphWindow = None
         self.RCJKI.deepComponentEditionController.interface = None
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):

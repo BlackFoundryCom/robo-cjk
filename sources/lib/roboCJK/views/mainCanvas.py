@@ -51,8 +51,9 @@ class MainCanvas():
     translateX = 300
     translateY = 280
 
-    def __init__(self, RCJKI, step):
+    def __init__(self, RCJKI, controller, step):
         self.RCJKI = RCJKI
+        self.controller = controller
         self.canvasWidth = 386
         self.preview = 0
         self.dfv = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
@@ -68,7 +69,7 @@ class MainCanvas():
             # Helpers.setDarkMode(self.ui.window, self.ui.darkMode)
 
     def update(self):
-        self.RCJKI.initialDesignController.interface.w.mainCanvas.update()
+        self.controller.w.mainCanvas.update()
 
     def mouseDragged(self, info):
         command = extractNSEvent(info)['commandDown']
