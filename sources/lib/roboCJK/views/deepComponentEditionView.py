@@ -134,8 +134,8 @@ class DeepComponentEditionWindow(BaseWindowController):
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         user = gitEngine.user()
-        glyphsList = self.RCJKI.collab._userLocker(user).glyphs
-        self.RCJKI.initialDesignController.injectGlyphsBack(glyphsList, user)
+        glyphsList = self.RCJKI.collab._userLocker(user).glyphs['_deepComponentsEdition_glyphs']
+        self.RCJKI.deepComponentEditionController.injectGlyphsBack(glyphsList, user)
 
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()

@@ -116,7 +116,7 @@ class InitialDesignWindow(BaseWindowController):
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         user = gitEngine.user()
-        glyphsList = self.RCJKI.collab._userLocker(user).glyphs
+        glyphsList = self.RCJKI.collab._userLocker(user).glyphs['_initialDesign_glyphs']
         self.RCJKI.initialDesignController.injectGlyphsBack(glyphsList, user)
 
     def colorPickerCallback(self, sender):

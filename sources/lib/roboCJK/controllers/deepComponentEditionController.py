@@ -73,10 +73,10 @@ class DeepComponentEditionController(object):
     def updateDeepComponentsSetList(self, glyphName):
         l = []
         if self.RCJKI.currentFont is not None:
-            
             dcset = list(filter(lambda x: glyphName[3:] in x, list(self.RCJKI.currentFont.keys())))
             for name in sorted(dcset):
-                code = chr(int(name.split('_')[1],16))
+                _, gname, index = name.split("_")
+                code = deepCompoMasters_AGB1_FULL.deepCompoMasters["Hanzi"][chr(int(gname,16))][int(index)][0]
                 l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
         self.interface.w.deepComponentsSetList.set(l)
 
@@ -84,6 +84,10 @@ class DeepComponentEditionController(object):
         for f in self.RCJKI.fonts2DCFonts.values():
             f.save()
         PostBannerNotification("Fonts saved", "")
+
+    def injectGlyphsBack(self, glyphs, user):
+        self.RCJKI.injectGlyphsBack(glyphs, user)
+        self.RCJKI.saveProjectFonts()
 
     def loadProjectFonts(self):
         self.fontsList = []
