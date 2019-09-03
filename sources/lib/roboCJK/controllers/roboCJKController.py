@@ -206,7 +206,12 @@ class RoboCJKController(object):
         inputKey = [modifiers, character]
 
         if inputKey == self.settings['saveFonts']:
-            self.initialDesignController.saveSubsetFonts()
+            if self.initialDesignController.interface:
+                self.initialDesignController.saveSubsetFonts()
+
+            elif self.deepComponentEditionController.interface:
+                self.deepComponentEditionController.saveSubsetFonts()
+
 
         elif inputKey == self.settings['unactivePowerRuler']:
             self.powerRuler.killPowerRuler()
