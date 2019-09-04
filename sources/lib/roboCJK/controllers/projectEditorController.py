@@ -138,9 +138,9 @@ class ProjectEditorController(object):
             self.RCJKI.reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs
             self.RCJKI.lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs
 
-        # self.updateProject()
+        self.updateProject()
 
-        gitEngine.push()
+        # gitEngine.push()
         self.updateUI()
 
         if self.RCJKI.initialDesignController.interface:
