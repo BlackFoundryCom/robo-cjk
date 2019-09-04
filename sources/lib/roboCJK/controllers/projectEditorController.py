@@ -140,6 +140,7 @@ class ProjectEditorController(object):
 
         # self.updateProject()
 
+        gitEngine.push()
         self.updateUI()
 
         if self.RCJKI.initialDesignController.interface:
