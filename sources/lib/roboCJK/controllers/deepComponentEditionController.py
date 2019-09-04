@@ -110,6 +110,9 @@ class DeepComponentEditionController(object):
 
                 masterDeepComponentsGlyphs = NewFont(familyName=f.info.familyName, styleName=f.info.styleName, showInterface=False)
 
+                for i in range(30):
+                    masterDeepComponentsGlyphs.newLayer(str(i))
+
                 masterDCFonts = "".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script])
                 for masterDCFont in masterDCFonts:
                     glyphName = "DC_"+files.normalizeUnicode(hex(ord(masterDCFont))[2:].upper())
@@ -117,7 +120,13 @@ class DeepComponentEditionController(object):
                     for script in self.RCJKI.project.script:
                         if masterDCFont in deepCompoMasters_AGB1_FULL.deepCompoMasters[script]:
                             for i in range(len(deepCompoMasters_AGB1_FULL.deepCompoMasters[script][masterDCFont])):
-                                masterDeepComponentsGlyphs.newGlyph(glyphName + "_%s"%str(i).zfill(2))
+                                gname = glyphName + "_%s"%str(i).zfill(2)
+                                masterDeepComponentsGlyphs.newGlyph(gname)
+                                masterDeepComponentsGlyphs[gname].width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
+                for glyph in masterDeepComponentsGlyphs:
+                    for i in range(30):
+                        masterDeepComponentsGlyphs.getLayer(str(i)).insertGlyph(glyph)
+                        masterDeepComponentsGlyphs.getLayer(str(i))[glyph.name].width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
 
                 masterDeepComponentsGlyphs.save(deepComponentGlyphsMasterSavepath)
             else:
