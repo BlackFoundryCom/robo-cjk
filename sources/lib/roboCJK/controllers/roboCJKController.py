@@ -284,10 +284,16 @@ class RoboCJKController(object):
             self.currentGlyphWindow.w.bind("became main", self.glyphWindowBecameMain)
         self.currentGlyphWindow.w.bind("close", self.glyphWindowCloses)
 
+    @property
+    def getCurrentGlyph(self):
+        if CurrentGlyphWindow() is not None:
+            doodleGlyph = self.currentGlyphWindow.getGlyph()
+            layerName = doodleGlyph.layer.name
+            self.currentGlyph = self.currentFont[doodleGlyph.name].getLayer(layerName)
+        return self.currentGlyph
+
     def glyphWindowBecameMain(self, sender):
-        self.currentGlyph = self.currentFont[self.currentGlyphWindow.getGlyph().name]
-        # glyph = CurrentGlyphWindow().getGlyph()
-        # self.currentGlyph = glyph.getParent()[glyph.name]
+        self.getCurrentGlyph
         self.inspectorController.updateViews()
 
     def glyphWindowCloses(self, sender):

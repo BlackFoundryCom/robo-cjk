@@ -22,7 +22,7 @@ from defconAppKit.windows.baseWindow import BaseWindowController
 
 from AppKit import NSCell, NSColor
 
-from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow
+from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow, PostBannerNotification
 from mojo.roboFont import *
 from mojo.canvas import *
 
@@ -125,17 +125,50 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.w.mainCanvas.update()
         
     def pullMasterGlyphsButtonCallback(self, sender):
+        # print(list(self.RCJKI.fonts2DCFonts.values()))
         return
         self.RCJKI.initialDesignController.pullMastersGlyphs()
         self.w.mainCanvas.update()
 
     def pushBackButtonCallback(self, sender):
-        return
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
-        user = gitEngine.user()
-        glyphsList = self.RCJKI.collab._userLocker(user).glyphs['_deepComponentsEdition_glyphs']
-        self.RCJKI.deepComponentEditionController.injectGlyphsBack(glyphsList, user)
+        gitEngine.pull()
+
+        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', "".join(self.RCJKI.project.script))
+
+        for DCMasterPath in os.listdir(DCMasterPaths):
+            if not DCMasterPath.endswith('.ufo'): continue
+
+            DCM = OpenFont(os.path.join(DCMasterPaths, DCMasterPath), showInterface = False)
+
+            for font in list(self.RCJKI.fonts2DCFonts.values()):
+                if font.path.split("/")[-1] == DCMasterPath:
+                    DCG = font
+
+            fontLayers = lambda font: [l.name for l in font.layers]
+
+            for layer in fontLayers(DCG):
+                if layer not in fontLayers(DCM):
+                    DCM.newLayer(layer)
+
+            for glyph in DCG:
+                for layer in fontLayers(DCG):
+                    DCM.getLayer(layer).insertGlyph(DCG[glyph.name].getLayer(layer))
+
+            DCM.save()
+            DCM.close()
+
+        stamp = "Masters Fonts Saved"
+        gitEngine.commit(stamp)
+        gitEngine.push()
+        PostBannerNotification('Git Push', stamp)
+
+        return
+        
+        # user = gitEngine.user()
+        # glyphsList = self.RCJKI.collab._userLocker(user).glyphs['_deepComponentsEdition_glyphs']
+        # self.RCJKI.deepComponentEditionController.injectGlyphsBack(glyphsList, user)
 
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()

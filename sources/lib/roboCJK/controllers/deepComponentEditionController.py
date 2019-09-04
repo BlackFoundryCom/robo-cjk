@@ -92,6 +92,8 @@ class DeepComponentEditionController(object):
     def loadProjectFonts(self):
         self.fontsList = []
         self.RCJKI.allFonts = []
+        self.RCJKI.fonts2DCFonts = {}
+
         for name, file in self.RCJKI.project.masterFontsPaths.items():
 
             path = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', file)

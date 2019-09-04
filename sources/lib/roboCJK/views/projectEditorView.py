@@ -75,7 +75,11 @@ class LockerGroup(Group):
         self.step = step
 
         usersList = [d['user'] for d in self.c.parent.RCJKI.project.usersLockers['lockers']]
-        self.user = usersList[0]
+        print(usersList)
+        if usersList:
+        #     self.user = None
+        # else:
+            self.user = usersList[0]
 
         self.usersList = List((10, 40, 280, 65),
                 usersList,
@@ -95,10 +99,12 @@ class LockerGroup(Group):
 
     @property
     def charactersTextEditorText(self):
-        userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
-        glyphs = userLocker.glyphs[self.step]
-        chars = [chr(int(glyph[3:], 16)) for glyph in glyphs]
-        chars.sort()
+        if hasattr(self, "user"):
+            userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
+            glyphs = userLocker.glyphs[self.step]
+            chars = [chr(int(glyph[3:], 16)) for glyph in glyphs]
+            chars.sort()
+        else: chars = []
         return ''.join(chars)
 
     def charactersTextEditorCallback(self, sender):
