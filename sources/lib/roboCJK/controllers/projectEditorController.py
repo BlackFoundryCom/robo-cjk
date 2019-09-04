@@ -127,9 +127,9 @@ class ProjectEditorController(object):
         self.RCJKI.collab = roboCJKCollab.RoboCJKCollab()
         self.RCJKI.collab._fromDict(self.RCJKI.project.usersLockers)
         self.RCJKI.collab._addLocker(gitEngine.user())
-        # d = self.RCJKI.project.usersLockers
-        # for lck in d['lockers']:
-        #     self.RCJKI.collab._addLocker(lck['user'])
+        d = self.RCJKI.project.usersLockers
+        for lck in d['lockers']:
+            self.RCJKI.collab._addLocker(lck['user'])
         # for lck in d['lockers']:
         #     locker = self.RCJKI.collab._userLocker(lck['user'])
         #     locker._addGlyphs(lck['glyphs'])
