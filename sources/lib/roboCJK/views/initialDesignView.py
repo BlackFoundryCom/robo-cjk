@@ -195,4 +195,4 @@ class InitialDesignWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
-        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, "_initialDesign_glyphs")
+        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, "_initialDesign_glyphs", self.RCJKI.currentFont)

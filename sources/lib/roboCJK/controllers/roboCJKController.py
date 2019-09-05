@@ -299,7 +299,7 @@ class RoboCJKController(object):
     def glyphWindowCloses(self, sender):
         self.currentGlyphWindow = None
 
-    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, window, step):
+    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, window, step, font):
         if tableColumn is None: return None
         cell = tableColumn.dataCell()
         if window is None:
@@ -314,11 +314,11 @@ class RoboCJKController(object):
         locked = False
         reserved = False
         markColor = None
-        if self.currentFont:
-            if uiGlyphName in self.currentFont:
+        if font:
+            if uiGlyphName in font:
                 state = 'there'
-                markColor = self.currentFont[uiGlyphName].markColor
-                if len(self.currentFont[uiGlyphName]) == 0 and not self.currentFont[uiGlyphName].components:
+                markColor = font[uiGlyphName].markColor
+                if len(font[uiGlyphName]) == 0 and not font[uiGlyphName].components:
                     state = 'empty'
         if uiGlyphName in self.lockedGlyphs:
             locked = True

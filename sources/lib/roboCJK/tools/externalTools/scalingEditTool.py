@@ -162,7 +162,7 @@ class RCJKScalingEditTool(EditingTool):
         self.currentGlyphChanged()
 
     def currentGlyphChanged(self):
-        self.glyph = self.RCJKI.currentGlyph
+        self.glyph = self.RCJKI.getCurrentGlyph
         self.buildScaleDataList()
 
     def mouseDown(self, point, clickCount):

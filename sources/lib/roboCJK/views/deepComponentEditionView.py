@@ -125,7 +125,29 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.w.mainCanvas.update()
         
     def pullMasterGlyphsButtonCallback(self, sender):
-        # print(list(self.RCJKI.fonts2DCFonts.values()))
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
+
+        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', "".join(self.RCJKI.project.script))
+
+        for DCMasterPath in os.listdir(DCMasterPaths):
+            if not DCMasterPath.endswith('.ufo'): continue
+
+            DCM = OpenFont(os.path.join(DCMasterPaths, DCMasterPath), showInterface = False)
+
+            for font in list(self.RCJKI.fonts2DCFonts.values()):
+                if font.path.split("/")[-1] == DCMasterPath:
+                    DCG = font
+
+            fontLayers = lambda font: [l.name for l in font.layers]
+            glyphsLocker = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
+
+            for name in DCM.keys():
+                if name not in glyphsLocker:
+                    for layer in fontLayers(DCM):
+                        DCG.getLayer(layer).insertGlyph(DCM[name].getLayer(layer))
+
         return
         self.RCJKI.initialDesignController.pullMastersGlyphs()
         self.w.mainCanvas.update()
@@ -148,13 +170,19 @@ class DeepComponentEditionWindow(BaseWindowController):
 
             fontLayers = lambda font: [l.name for l in font.layers]
 
-            for layer in fontLayers(DCG):
-                if layer not in fontLayers(DCM):
-                    DCM.newLayer(layer)
-
-            for glyph in DCG:
+            # for layer in fontLayers(DCG):
+            #     if layer not in fontLayers(DCM):
+            #         DCM.newLayer(layer)
+            glyphsLocker = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
+            for name in glyphsLocker:
                 for layer in fontLayers(DCG):
-                    DCM.getLayer(layer).insertGlyph(DCG[glyph.name].getLayer(layer))
+                    DCM.getLayer(layer).insertGlyph(DCG[name].getLayer(layer))
+
+            for name in DCM.keys():
+                if name not in glyphsLocker:
+                    for layer in fontLayers(DCM):
+                        DCG.getLayer(layer).insertGlyph(DCM[name].getLayer(layer))
+
 
             DCM.save()
             DCM.close()
@@ -179,7 +207,6 @@ class DeepComponentEditionWindow(BaseWindowController):
             self.selectedGlyph = None
             return
         self.RCJKI.currentFont = self.RCJKI.fonts2DCFonts[self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]]
-        print(self.RCJKI.currentFont)
         self.controller.updateGlyphSetList()
 
 
@@ -241,4 +268,4 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.RCJKI.deepComponentEditionController.interface = None
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
-        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, '_deepComponentsEdition_glyphs')
+        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, '_deepComponentsEdition_glyphs', self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont])
