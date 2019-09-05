@@ -76,7 +76,8 @@ class DeepComponentEditionController(object):
             dcset = list(filter(lambda x: glyphName[3:] in x, list(self.RCJKI.currentFont.keys())))
             for name in sorted(dcset):
                 _, gname, index = name.split("_")
-                code = deepCompoMasters_AGB1_FULL.deepCompoMasters["Hanzi"][chr(int(gname,16))][int(index)][0]
+                script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+                code = deepCompoMasters_AGB1_FULL.deepCompoMasters[script][chr(int(gname,16))][int(index)][0]
                 l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
         self.interface.w.deepComponentsSetList.set(l)
 
@@ -93,14 +94,16 @@ class DeepComponentEditionController(object):
         self.fontsList = []
         self.RCJKI.allFonts = []
         self.RCJKI.fonts2DCFonts = {}
+        # print(self.RCJKI.collab._userLocker(self.RCJKI.user).script)
 
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
         for name, file in self.RCJKI.project.masterFontsPaths.items():
 
             path = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', file)
 
-            deepComponentGlyphsKeyAndXtremSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'DeepComponents', 'Edition', "".join(self.RCJKI.project.script), "KeyAndExtremeCharacters", file)
-            deepComponentGlyphsSubsetSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'DeepComponents', 'Edition', "".join(self.RCJKI.project.script), "DeepComponentsGlyphs", file)
-            deepComponentGlyphsMasterSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', "".join(self.RCJKI.project.script), file)
+            deepComponentGlyphsKeyAndXtremSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'DeepComponents', 'Edition', script, "KeyAndExtremeCharacters", file)
+            deepComponentGlyphsSubsetSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'DeepComponents', 'Edition', script, "DeepComponentsGlyphs", file)
+            deepComponentGlyphsMasterSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', script, file)
 
             f = OpenFont(path, showInterface=False)
 

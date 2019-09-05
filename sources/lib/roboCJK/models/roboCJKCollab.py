@@ -23,6 +23,8 @@ steps = [
 "_deepComponentsEdition_glyphs",
 ]
 
+scriptFallback = "Hanzi"
+
 class RoboCJKCollab(object):
     def __init__(self):
         self._lockers = []
@@ -68,6 +70,7 @@ class Locker(object):
     def __init__(self, controller, user):
         self._controller = controller
         self.user = user
+        self.script = scriptFallback
         for step in steps:
             setattr(self, step, set())
 
@@ -101,6 +104,9 @@ class Locker(object):
 
     def _setAttr(self, attr):
         self._step = attr
+
+    def _setScript(self, script):
+        self.script = script
 
     @property
     def _toDict(self):

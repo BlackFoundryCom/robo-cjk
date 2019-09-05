@@ -75,10 +75,7 @@ class LockerGroup(Group):
         self.step = step
 
         usersList = [d['user'] for d in self.c.parent.RCJKI.project.usersLockers['lockers']]
-        print(usersList)
         if usersList:
-        #     self.user = None
-        # else:
             self.user = usersList[0]
 
         self.usersList = List((10, 40, 280, 65),
@@ -91,11 +88,41 @@ class LockerGroup(Group):
                 self.charactersTextEditorText,
                 callback=self.charactersTextEditorCallback)
 
+        self.script = "Hanzi"
+        self.setScript()
+
+    def setScript(self):
+        if hasattr(self, 'scriptsRadioGroup'):
+            delattr(self, 'scriptsRadioGroup')
+
+        if len(self.c.parent.RCJKI.project.script) == 1:
+            self.script = self.c.parent.RCJKI.project.script[0]
+
+        elif len(self.c.parent.RCJKI.project.script) > 1:
+            self.scriptsRadioGroup = RadioGroup(
+                (300, 40, 200, 20*len(self.c.parent.RCJKI.project.script)), 
+                self.c.parent.RCJKI.project.script,
+                sizeStyle = "small",
+                callback = self.scriptsRadioGroupCallback
+                )
+            self.scriptsRadioGroup.set(self.c.parent.RCJKI.project.script.index(self.script))
+
+        self.setScriptInLocker()
+
     def usersListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
         self.user = sender.get()[sel[0]]
         self.charactersTextEditor.set(self.charactersTextEditorText)
+
+    def scriptsRadioGroupCallback(self, sender):
+        self.script = self.c.parent.RCJKI.project.script[sender.get()]
+        self.setScriptInLocker()
+
+    def setScriptInLocker(self):
+        if hasattr(self, "user"):
+            userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
+            userLocker._setScript(self.script)
 
     @property
     def charactersTextEditorText(self):
@@ -116,6 +143,7 @@ class LockerGroup(Group):
         userLocker._setAttr(self.step)
         userLocker._clearGlyphs()
         userLocker._addGlyphs(glyphs)
+        userLocker._setScript(self.script)
         self.c.parent.RCJKI.project.usersLockers = self.c.parent.RCJKI.collab._toDict
 
 class EditProjectSheet():
@@ -451,7 +479,6 @@ class EditProjectSheet():
             ]
         for i, e in enumerate(groups):
             e.show(i == sel)
-
         self.parent.RCJKI.projectEditorController.updateSheetUI()
 
     def projectNameEditTextCallback(self, sender):
@@ -514,6 +541,9 @@ class EditProjectSheet():
         if self.parent.RCJKI.initialDesignController.interface:
             self.parent.RCJKI.initialDesignController.setCharacterSet()
         self.getFonts()
+
+        self.parent.sheet.lockerGroup.initialDesign.setScript()
+        self.parent.sheet.lockerGroup.deepComponentEdition.setScript()
         # self.getFonts()
 
         # self.parent.RCJKI.projectEditorController.updateSheetUI()
