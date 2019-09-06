@@ -171,7 +171,7 @@ class MainCanvas():
                 else:
                     if g.name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.step]:
                         fill(0, 0, 0, 1)
-                    elif g.name in self.RCJKI.lockedGlyphs:
+                    elif g.name in self.RCJKI.lockedGlyphs[self.step]:
                         fill(1, 0, 0, 1)
                     else:
                         fill(0, 0, 0, .5)

@@ -80,6 +80,8 @@ class DeepComponentEditionController(object):
                 code = deepCompoMasters_AGB1_FULL.deepCompoMasters[script][chr(int(gname,16))][int(index)][0]
                 l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
         self.interface.w.deepComponentsSetList.set(l)
+        if len(l):
+            self.interface.w.deepComponentsSetList.setSelection([0])
 
     def saveSubsetFonts(self):
         for f in self.RCJKI.fonts2DCFonts.values():

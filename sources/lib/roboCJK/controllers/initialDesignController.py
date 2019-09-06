@@ -111,7 +111,7 @@ class InitialDesignController(object):
         PostBannerNotification("Fonts saved", "")
 
     def injectGlyphsBack(self, glyphs, user):
-        self.RCJKI.injectGlyphsBack(glyphs, user)
+        self.RCJKI.injectGlyphsBack(glyphs, user, '_initialDesign_glyphs')
         self.RCJKI.saveProjectFonts()
 
     def pullMastersGlyphs(self):
@@ -121,5 +121,5 @@ class InitialDesignController(object):
             if glyphName not in self.RCJKI.reservedGlyphs['_initialDesign_glyphs']:
                 glyphs.append(glyphName)
 
-        self.RCJKI.pullMastersGlyphs(glyphs)
+        self.RCJKI.pullMastersGlyphs(glyphs, "_initialDesign_glyphs")
 

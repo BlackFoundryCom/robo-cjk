@@ -76,11 +76,13 @@ class Locker(object):
 
     @property
     def _allOtherLockedGlyphs(self):
-        s = set()
+        s = dict()
         for locker in self._controller._lockers:
-            for glyph in getattr(locker, self._step):
-                s.add(glyph)
-        s -= getattr(self, self._step)
+            for step in steps:
+                for glyph in getattr(locker, step):
+                    if step not in s: s[step] = set()
+                    if glyph not in self.glyphs[step]:
+                        s[step].add(glyph)
         return s
     
     @property

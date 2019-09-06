@@ -241,24 +241,24 @@ class RoboCJKController(object):
         self.powerRuler.mouseMoved(x, y)
         self.updateViews()
 
-    def injectGlyphsBack(self, glyphs, user):
+    def injectGlyphsBack(self, glyphs, user, step):
         for d in self.allFonts:
             for name, subsetFont in d.items():
                 if name in self.projectFonts:
                     f = self.projectFonts[name]
                     for glyphName in glyphs:
-                        if glyphName in self.reservedGlyphs:
+                        if glyphName in self.reservedGlyphs[step]:
                             f.insertGlyph(subsetFont[glyphName].naked())
                     f.save()
 
-    def pullMastersGlyphs(self, glyphs):
+    def pullMastersGlyphs(self, glyphs, step):
         self.projectEditorController.loadProject([self.projectFileLocalPath])
         for d in self.allFonts:
             for name, subsetFont in d.items():
                 if name in self.projectFonts:
                     f = self.projectFonts[name]
                     for glyphName in glyphs: 
-                        if glyphName not in self.reservedGlyphs:
+                        if glyphName not in self.reservedGlyphs[step]:
                             subsetFont[glyphName] = RGlyph(f[glyphName])
                     subsetFont.save()
 
@@ -320,7 +320,7 @@ class RoboCJKController(object):
                 markColor = font[uiGlyphName].markColor
                 if len(font[uiGlyphName]) == 0 and not font[uiGlyphName].components:
                     state = 'empty'
-        if uiGlyphName in self.lockedGlyphs:
+        if uiGlyphName in self.lockedGlyphs[step]:
             locked = True
 
         colID = tableColumn.identifier()

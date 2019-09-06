@@ -140,19 +140,23 @@ class DeepComponentEditionWindow(BaseWindowController):
                 if font.path.split("/")[-1] == DCMasterPath:
                     DCG = font
 
-            fontLayers = lambda font: [l.name for l in font.layers]
-            glyphsLocker = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
+            DCMLayers = [l.name for l in DCM.layers]
 
-            for name in DCM.keys():
-                if name not in glyphsLocker:
-                    for layer in fontLayers(DCM):
-                        DCG.getLayer(layer).insertGlyph(DCM[name].getLayer(layer))
+            for name in self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]:
+                glyphset = list(filter(lambda x: name[3:] in x, DCG))
+                for n in glyphset:
+                    for layer in DCMLayers:
+                        DCG.getLayer(layer).insertGlyph(DCM[n].getLayer(layer))
 
+        self.w.mainCanvas.update()
         return
         self.RCJKI.initialDesignController.pullMastersGlyphs()
         self.w.mainCanvas.update()
 
     def pushBackButtonCallback(self, sender):
+        # print(self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"])
+        # print(self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs)
+        # return
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         gitEngine.pull()
@@ -170,19 +174,18 @@ class DeepComponentEditionWindow(BaseWindowController):
 
             fontLayers = lambda font: [l.name for l in font.layers]
 
-            # for layer in fontLayers(DCG):
-            #     if layer not in fontLayers(DCM):
-            #         DCM.newLayer(layer)
             glyphsLocker = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
             for name in glyphsLocker:
-                for layer in fontLayers(DCG):
-                    DCM.getLayer(layer).insertGlyph(DCG[name].getLayer(layer))
+                glyphset = list(filter(lambda x: name[3:] in x, DCG))
+                for n in glyphset:
+                    for layer in fontLayers(DCG):
+                        DCM.getLayer(layer).insertGlyph(DCG[n].getLayer(layer))
 
-            for name in DCM.keys():
-                if name not in glyphsLocker:
+            for name in self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]:
+                glyphset = list(filter(lambda x: name[3:] in x, DCG))
+                for n in glyphset:
                     for layer in fontLayers(DCM):
-                        DCG.getLayer(layer).insertGlyph(DCM[name].getLayer(layer))
-
+                        DCG.getLayer(layer).insertGlyph(DCM[n].getLayer(layer))
 
             DCM.save()
             DCM.close()
