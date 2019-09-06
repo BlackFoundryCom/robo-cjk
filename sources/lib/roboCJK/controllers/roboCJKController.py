@@ -287,9 +287,11 @@ class RoboCJKController(object):
     @property
     def getCurrentGlyph(self):
         if CurrentGlyphWindow() is not None:
-            doodleGlyph = self.currentGlyphWindow.getGlyph()
+            doodleGlyph = CurrentGlyphWindow().getGlyph()
             layerName = doodleGlyph.layer.name
             self.currentGlyph = self.currentFont[doodleGlyph.name].getLayer(layerName)
+        else:
+            self.currentGlyphWindow = None
         return self.currentGlyph
 
     def glyphWindowBecameMain(self, sender):

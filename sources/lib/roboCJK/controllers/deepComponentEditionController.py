@@ -92,6 +92,70 @@ class DeepComponentEditionController(object):
         self.RCJKI.injectGlyphsBack(glyphs, user)
         self.RCJKI.saveProjectFonts()
 
+    
+    def pullDCMasters(self):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
+
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', script)
+
+        for DCMasterPath in os.listdir(DCMasterPaths):
+            if not DCMasterPath.endswith('.ufo'): continue
+
+            DCM = OpenFont(os.path.join(DCMasterPaths, DCMasterPath), showInterface = False)
+            for font in list(self.RCJKI.fonts2DCFonts.values()):
+                if font.path.split("/")[-1] == DCMasterPath:
+                    DCG = font
+
+            DCMLayers = [l.name for l in DCM.layers]
+            lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]
+
+            self.merge(lockedGlyphs, DCM, DCG, DCMLayers)
+
+    def merge(self, glyphs, font1, font2, fontlayers):
+        for name in glyphs:
+            glyphset = list(filter(lambda g: name[3:] in g.name, font1))
+            for g in glyphset:
+                font2.insertGlyph(font1[g.name])
+                for layer in fontlayers:
+                    if len(font1[g.name].getLayer(layer)):
+                        font2.getLayer(layer).insertGlyph(font1[g.name].getLayer(layer))
+
+    def pushDCMasters(self):
+        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
+        gitEngine = git.GitEngine(rootfolder)
+        gitEngine.pull()
+
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', script)
+
+        for DCMasterPath in os.listdir(DCMasterPaths):
+            if not DCMasterPath.endswith('.ufo'): continue
+
+            DCM = OpenFont(os.path.join(DCMasterPaths, DCMasterPath), showInterface = False)
+            for font in list(self.RCJKI.fonts2DCFonts.values()):
+                if font.path.split("/")[-1] == DCMasterPath:
+                    DCG = font
+
+            fontLayers = lambda font: [l.name for l in font.layers]
+
+            reservedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
+            lockedGlyphs = self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]
+
+            self.merge(reservedGlyphs, DCG, DCM, fontLayers(DCG))
+            self.merge(lockedGlyphs, DCM, DCG, fontLayers(DCM))
+
+            DCM.save()
+            DCM.close()
+            DCG.save()
+            
+        stamp = "Masters Fonts Saved"
+        gitEngine.commit(stamp)
+        gitEngine.push()
+        PostBannerNotification('Git Push', stamp)
+
     def loadProjectFonts(self):
         self.fontsList = []
         self.RCJKI.allFonts = []

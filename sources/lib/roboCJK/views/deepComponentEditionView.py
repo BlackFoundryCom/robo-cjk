@@ -125,90 +125,12 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.w.mainCanvas.update()
         
     def pullMasterGlyphsButtonCallback(self, sender):
-        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
-        gitEngine = git.GitEngine(rootfolder)
-        gitEngine.pull()
-
-        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
-        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', script)
-
-        for DCMasterPath in os.listdir(DCMasterPaths):
-            if not DCMasterPath.endswith('.ufo'): continue
-
-            DCM = OpenFont(os.path.join(DCMasterPaths, DCMasterPath), showInterface = False)
-
-            for font in list(self.RCJKI.fonts2DCFonts.values()):
-                if font.path.split("/")[-1] == DCMasterPath:
-                    DCG = font
-
-            DCMLayers = [l.name for l in DCM.layers]
-
-            for name in self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]:
-                glyphset = list(filter(lambda g: name[3:] in g.name, DCM))
-                for g in glyphset:
-                    DCG.insertGlyph(DCM[g.name])
-                    for layer in DCMLayers:
-                        DCG.getLayer(layer).insertGlyph(DCM[g.name].getLayer(layer))
-
-        self.w.mainCanvas.update()
-        return
-        self.RCJKI.initialDesignController.pullMastersGlyphs()
+        self.controller.pullDCMasters()
         self.w.mainCanvas.update()
 
     def pushBackButtonCallback(self, sender):
-
-        rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
-        gitEngine = git.GitEngine(rootfolder)
-        gitEngine.pull()
-
-        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
-        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', script)
-
-        for DCMasterPath in os.listdir(DCMasterPaths):
-            if not DCMasterPath.endswith('.ufo'): continue
-
-            DCM = OpenFont(os.path.join(DCMasterPaths, DCMasterPath), showInterface = False)
-
-            for font in list(self.RCJKI.fonts2DCFonts.values()):
-                if font.path.split("/")[-1] == DCMasterPath:
-                    DCG = font
-
-            fontLayers = lambda font: [l.name for l in font.layers]
-
-            glyphsLocker = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
-
-            for name in glyphsLocker:
-                glyphset = list(filter(lambda g: name[3:] in g.name, DCG))
-                for g in glyphset:
-                    DCM.insertGlyph(DCG[g.name])
-                    for layer in fontLayers(DCG):
-                        DCM.getLayer(layer).insertGlyph(DCG[g.name].getLayer(layer))
-                        
-            for name in self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]:
-                glyphset = list(filter(lambda g: name[3:] in g.name, DCM))
-                for g in glyphset:
-                    DCG.insertGlyph(DCM[g.name])
-                    for layer in fontLayers(DCM):
-                        DCG.getLayer(layer).insertGlyph(DCM[g.name].getLayer(layer))
-
-            DCM.save()
-            DCM.close()
-
-            DCG.save()
-            
-
-        stamp = "Masters Fonts Saved"
-        gitEngine.commit(stamp)
-        gitEngine.push()
-        PostBannerNotification('Git Push', stamp)
-
+        self.controller.pushDCMasters()
         self.w.mainCanvas.update()
-
-        return
-        
-        # user = gitEngine.user()
-        # glyphsList = self.RCJKI.collab._userLocker(user).glyphs['_deepComponentsEdition_glyphs']
-        # self.RCJKI.deepComponentEditionController.injectGlyphsBack(glyphsList, user)
 
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()
@@ -220,15 +142,6 @@ class DeepComponentEditionWindow(BaseWindowController):
             return
         self.RCJKI.currentFont = self.RCJKI.fonts2DCFonts[self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]]
         self.controller.updateGlyphSetList()
-
-
-    # def glyphSetListdoubleClickCallback(self, sender):
-    #     return
-        # if not sender.getSelection(): return
-        # if self.selectedGlyphName not in self.RCJKI.currentFont:
-        #     self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedGlyphName)
-        #     self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
-        # self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
 
     def glyphSetListSelectionCallback(self, sender):
         # return
