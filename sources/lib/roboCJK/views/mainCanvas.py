@@ -189,6 +189,9 @@ class MainCanvas():
 
                     if self.step == '_deepComponentsEdition_glyphs':
                         save()
+                        fill(0, 0, .8, .6)
+                        if self.preview: 
+                            fill(0)
                         translate(self.deepComponentTranslateX, self.deepComponentTranslateY)
                         drawGlyph(self.RCJKI.deepComponentGlyph)
                         restore()
