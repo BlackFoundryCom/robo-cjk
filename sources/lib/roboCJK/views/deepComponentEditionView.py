@@ -20,23 +20,30 @@ from imp import reload
 from vanilla import *
 from defconAppKit.windows.baseWindow import BaseWindowController
 
-from AppKit import NSCell, NSColor
+from AppKit import *
 
 from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow, PostBannerNotification
 from mojo.roboFont import *
 from mojo.canvas import *
+from lib.cells.colorCell import RFColorCell
+from fontTools.pens import cocoaPen
 
 import os
 import json
+import Quartz
 
 from utils import files
 from utils import git
 from views import tableDelegate
 from views import mainCanvas
+from utils import interpolations
+from resources import deepCompoMasters_AGB1_FULL
 
 reload(files)
 reload(git)
 reload(mainCanvas)
+reload(deepCompoMasters_AGB1_FULL)
+reload(interpolations)
 
 class DeepComponentEditionWindow(BaseWindowController):
 
@@ -46,8 +53,9 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.RCJKI = self.controller.RCJKI
         self.RCJKI.allFonts = []
         self.selectedGlyph = None
+        self.layersInfos = {}
 
-        self.w = Window((200, 0, 800, 600), 
+        self.w = Window((200, 0, 800, 800), 
                 'Deep Component Edition', 
                 minSize = (300,300), 
                 maxSize = (2500,2000))
@@ -66,7 +74,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                                 {"title": "MarkColor", "width" : 30, 'editable':False}
                                 ],
                 selectionCallback = self.glyphSetListSelectionCallback,
-                # doubleClickCallback = self.glyphSetListdoubleClickCallback,
+                doubleClickCallback = self.glyphSetListdoubleClickCallback,
                 # editCallback = self.glyphSetListEditCallback,
                 showColumnTitles = False,
                 drawFocusRing = False)
@@ -98,14 +106,35 @@ class DeepComponentEditionWindow(BaseWindowController):
             'Pull', 
             callback=self.pullMasterGlyphsButtonCallback)
 
-
-        self.w.mainCanvas = Canvas((200,0,-0,-40), 
-            delegate=mainCanvas.MainCanvas(self.RCJKI, self, '_deepComponentsEdition_glyphs'),
+        self.canvasDrawer = mainCanvas.MainCanvas(self.RCJKI, self, '_deepComponentsEdition_glyphs')
+        self.w.mainCanvas = Canvas((200,0,-0,-240), 
+            delegate=self.canvasDrawer,
             canvasSize=(5000, 5000),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
 
-        self.w.colorPicker = ColorWell((200,-60,20,20),
+        self.w.extremsList = PopUpButton((200, 0, 200, 20), 
+            [], 
+            sizeStyle = 'small',
+            callback = self.extremsListCallback)
+
+        slider = SliderListCell(minValue = 0, maxValue = 1000)
+        self.slidersValuesList = []
+        self.w.slidersList = List((200, -240, -0, -0),
+            self.slidersValuesList,
+            columnDescriptions = [
+                                    # {"title": "Layer", "editable": False, "width": 140},
+                                    {"title": "Image", "editable": False, "cell": ImageListCell(), "width": 60}, 
+                                    {"title": "Values", "cell": slider}],
+            editCallback = self.slidersListEditCallback,
+            # doubleClickCallback = self._sliderList_doubleClickCallback,
+            drawFocusRing = False,
+            allowsMultipleSelection = False,
+            rowHeight = 60.0,
+            showColumnTitles = False
+            )
+
+        self.w.colorPicker = ColorWell((200,-260,20,20),
                 callback=self.colorPickerCallback, 
                 color=NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 0))
 
@@ -132,6 +161,65 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.pushDCMasters()
         self.w.mainCanvas.update()
 
+    def setSliderList(self):
+        self.layersInfos = {}
+        self.slidersValuesList = []
+        layers = [l.name for l in list(filter(lambda l: len(self.RCJKI.currentFont[self.RCJKI.currentGlyph.name].getLayer(l.name)), self.RCJKI.currentFont.layers))]
+        for layerName in layers:
+            if layerName == "foreground": continue
+            g = self.RCJKI.currentFont[self.RCJKI.currentGlyph.name].getLayer(layerName)
+            f = g.getParent()
+            path = NSBezierPath.bezierPath()
+            pen = cocoaPen.CocoaPen(f, path)
+            g.draw(pen)
+            margins = 200
+            EM_Dimension_X, EM_Dimension_Y = self.RCJKI.project.settings['designFrame']['em_Dimension']
+            mediaBox = Quartz.CGRectMake(-margins, -margins, EM_Dimension_X+2*margins, EM_Dimension_Y+2*margins)
+            pdfData = Quartz.CFDataCreateMutable(None, 0)
+            dataConsumer = Quartz.CGDataConsumerCreateWithCFData(pdfData)
+            pdfContext = Quartz.CGPDFContextCreate(dataConsumer, mediaBox, None)
+            Quartz.CGContextSaveGState(pdfContext)
+            Quartz.CGContextBeginPage(pdfContext, mediaBox)
+
+            for i in range(path.elementCount()):
+                instruction, points = path.elementAtIndex_associatedPoints_(i)
+                if instruction == NSMoveToBezierPathElement:
+                    Quartz.CGContextMoveToPoint(pdfContext, points[0].x, points[0].y)
+                elif instruction == NSLineToBezierPathElement:
+                    Quartz.CGContextAddLineToPoint(pdfContext, points[0].x, points[0].y)
+                elif instruction == NSCurveToBezierPathElement:
+                    Quartz.CGContextAddCurveToPoint(pdfContext, points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y)
+                elif instruction == NSClosePathBezierPathElement:
+                    Quartz.CGContextClosePath(pdfContext)
+
+            Quartz.CGContextSetRGBFillColor(pdfContext, 0.0, 0.0, 0.0, 1.0)
+            # if self.ui.darkMode:
+            #     Quartz.CGContextSetRGBFillColor(pdfContext, 1.0, 1.0, 1.0, 1.0)
+            # else:
+            #     Quartz.CGContextSetRGBFillColor(pdfContext, 0.0, 0.0, 0.0, 1.0)
+    
+            Quartz.CGContextFillPath(pdfContext)
+            Quartz.CGContextEndPage(pdfContext)
+            Quartz.CGPDFContextClose(pdfContext)
+            Quartz.CGContextRestoreGState(pdfContext)
+
+            d = {'Layer': layerName,
+                'Image': NSImage.alloc().initWithData_(pdfData),
+                'Values': 0}
+
+            self.slidersValuesList.append(d)
+            self.layersInfos[layerName]:0
+        self.w.slidersList.set(self.slidersValuesList)
+
+    def slidersListEditCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        selectedLayerName = sender.get()[sel[0]]["Layer"]
+        selectedLayerValue = sender.get()[sel[0]]["Values"]
+        self.layersInfos[selectedLayerName] = selectedLayerValue
+        self.RCJKI.deepComponentGlyph = interpolations.deepolation(RGlyph(), self.RCJKI.currentFont[self.selectedDeepComponentGlyphName], self.layersInfos)
+        self.w.mainCanvas.update()
+
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
@@ -151,13 +239,26 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.updateDeepComponentsSetList(self.selectedGlyphName)
         self.w.mainCanvas.update()
 
+    def glyphSetListdoubleClickCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        selectedGlyphName = sender.get()[sel[0]]['Name']
+        self.RCJKI.openGlyphWindow(self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont][selectedGlyphName])
+
     def deepComponentsSetListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
         self.selectedDeepComponentGlyphName = sender.get()[sel[0]]['Name']
+
+        _, code, index = self.selectedDeepComponentGlyphName.split('_')
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+        l = [""]
+        l.extend(deepCompoMasters_AGB1_FULL.deepCompoMasters[script][chr(int(code,16))][int(index)])
+        self.w.extremsList.setItems(l)
         
         if self.selectedDeepComponentGlyphName in self.RCJKI.currentFont:
             self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
+            self.RCJKI.deepComponentGlyph = interpolations.deepolation(RGlyph(), self.RCJKI.currentGlyph, self.layersInfos)
             if self.RCJKI.currentGlyph.markColor is None:
                 r, g, b, a = 0, 0, 0, 0
             else: 
@@ -165,6 +266,16 @@ class DeepComponentEditionWindow(BaseWindowController):
             self.w.colorPicker.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a))
         else:
             self.RCJKI.currentGlyph = None
+        self.setSliderList()
+        self.w.mainCanvas.update()
+
+    def extremsListCallback(self, sender):
+        char = sender.getItem()
+        if char:
+            glyphName = files.unicodeName(char)
+            self.canvasDrawer.extremDCGlyph = self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont][glyphName]
+        else:
+            self.canvasDrawer.extremDCGlyph = None
         self.w.mainCanvas.update()
 
     def deepComponentsSetListDoubleClickCallback(self, sender):

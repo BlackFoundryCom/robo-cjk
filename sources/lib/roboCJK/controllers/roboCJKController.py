@@ -113,8 +113,8 @@ class RoboCJKController(object):
                             'drawPreview': False,
                             },
 
-            'previousGlyph' : [0, "k"],
-            'nextGlyph' : [0, "l"],
+            'previousGlyph' : [0, "p"],
+            'nextGlyph' : [0, "n"],
 
             'activePowerRuler' : [0, "r"],
             'unactivePowerRuler' : [commandDown, "r"],

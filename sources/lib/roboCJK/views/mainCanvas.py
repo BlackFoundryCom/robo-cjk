@@ -62,6 +62,9 @@ class MainCanvas():
         self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI)
         self.waterFall = displayOptionsDrawer.WaterFallDrawer(self.RCJKI)
         self.step = step
+        self.extremDCGlyph = None
+        self.deepComponentTranslateX = 0
+        self.deepComponentTranslateY = 0
 
     def mouseDown(self, info):
         if info.clickCount() == 2 and self.RCJKI.currentGlyph is not None:
@@ -76,9 +79,9 @@ class MainCanvas():
         deltaX = info.deltaX()/(self.scale+eps)
         deltaY = info.deltaY()/(self.scale+eps)
         if command:
-            pass
-            # TesterDeepComponent.translateX += deltaX
-            # TesterDeepComponent.translateY -= deltaY
+            # pass
+            self.deepComponentTranslateX += deltaX
+            self.deepComponentTranslateY -= deltaY
         else:
             self.translateX += deltaX
             self.translateY -= deltaY
@@ -168,14 +171,29 @@ class MainCanvas():
                     moveTo((0, 0))
                     lineTo((1100, 1100))
                     drawPath()
-                else:
-                    if g.name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.step]:
+                else:                
+                    if self.extremDCGlyph is not None:
+                        fill(0, 0, 0, .2)
+                        drawGlyph(self.extremDCGlyph)
+
+                    glyphName = g.name
+                    if self.step == '_deepComponentsEdition_glyphs':
+                        glyphName = 'uni'+g.name.split("_")[1]
+                    
+                    if glyphName in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.step]:
                         fill(0, 0, 0, 1)
-                    elif g.name in self.RCJKI.lockedGlyphs[self.step]:
+                    elif glyphName in self.RCJKI.lockedGlyphs[self.step]:
                         fill(1, 0, 0, 1)
                     else:
                         fill(0, 0, 0, .5)
-                    drawGlyph(g)
+
+                    if self.step == '_deepComponentsEdition_glyphs':
+                        save()
+                        translate(self.deepComponentTranslateX, self.deepComponentTranslateY)
+                        drawGlyph(self.RCJKI.deepComponentGlyph)
+                        restore()
+                    else:
+                        drawGlyph(g)
 
                     if self.RCJKI.settings["showDesignFrame"]:
                         if not self.preview or self.preview == self.RCJKI.settings["designFrame"]["drawPreview"]:

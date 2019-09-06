@@ -52,8 +52,9 @@ class DeepComponentEditionController(object):
             self.loadProjectFonts()
 
     def setCharacterSet(self):
-        self.characterSet = "".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script])
-        self.characterSet += "".join([k for key in self.RCJKI.project.script for k in self.RCJKI.characterSets[key]['Basic'] if k not in self.characterSet])
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+        self.characterSet = "".join(self.RCJKI.characterSets[script]['DeepComponentKeys'])
+        self.characterSet += "".join([k for k in self.RCJKI.characterSets[script]['Basic'] if k not in self.characterSet])
         # print(self.characterSet, deepCompoMasters_AGB1_FULL.Hanzi)
 
     def updateGlyphSetList(self):
@@ -212,6 +213,13 @@ class DeepComponentEditionController(object):
                     glyphName = files.unicodeName(c)
                     if glyphName in f:
                         keyAndXtremChars.insertGlyph(f[glyphName])
+
+                for char in self.RCJKI.characterSets[script]['DeepComponentKeys']:
+                    for l in deepCompoMasters_AGB1_FULL.deepCompoMasters[script][char]:
+                        for c in l:
+                            glyphName = files.unicodeName(c)
+                            if glyphName in f:
+                                keyAndXtremChars.insertGlyph(f[glyphName])
 
                 keyAndXtremChars.save(deepComponentGlyphsKeyAndXtremSavepath)
             else:
