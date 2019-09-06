@@ -129,7 +129,8 @@ class DeepComponentEditionWindow(BaseWindowController):
         gitEngine = git.GitEngine(rootfolder)
         gitEngine.pull()
 
-        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', "".join(self.RCJKI.project.script))
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', script)
 
         for DCMasterPath in os.listdir(DCMasterPaths):
             if not DCMasterPath.endswith('.ufo'): continue
@@ -143,10 +144,11 @@ class DeepComponentEditionWindow(BaseWindowController):
             DCMLayers = [l.name for l in DCM.layers]
 
             for name in self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]:
-                glyphset = list(filter(lambda x: name[3:] in x, DCG))
-                for n in glyphset:
+                glyphset = list(filter(lambda g: name[3:] in g.name, DCM))
+                for g in glyphset:
+                    DCG.insertGlyph(DCM[g.name])
                     for layer in DCMLayers:
-                        DCG.getLayer(layer).insertGlyph(DCM[n].getLayer(layer))
+                        DCG.getLayer(layer).insertGlyph(DCM[g.name].getLayer(layer))
 
         self.w.mainCanvas.update()
         return
@@ -154,14 +156,13 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def pushBackButtonCallback(self, sender):
-        # print(self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"])
-        # print(self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs)
-        # return
+
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         gitEngine.pull()
 
-        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', "".join(self.RCJKI.project.script))
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+        DCMasterPaths = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'DeepComponents', script)
 
         for DCMasterPath in os.listdir(DCMasterPaths):
             if not DCMasterPath.endswith('.ufo'): continue
@@ -175,25 +176,33 @@ class DeepComponentEditionWindow(BaseWindowController):
             fontLayers = lambda font: [l.name for l in font.layers]
 
             glyphsLocker = self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs["_deepComponentsEdition_glyphs"]
-            for name in glyphsLocker:
-                glyphset = list(filter(lambda x: name[3:] in x, DCG))
-                for n in glyphset:
-                    for layer in fontLayers(DCG):
-                        DCM.getLayer(layer).insertGlyph(DCG[n].getLayer(layer))
 
+            for name in glyphsLocker:
+                glyphset = list(filter(lambda g: name[3:] in g.name, DCG))
+                for g in glyphset:
+                    DCM.insertGlyph(DCG[g.name])
+                    for layer in fontLayers(DCG):
+                        DCM.getLayer(layer).insertGlyph(DCG[g.name].getLayer(layer))
+                        
             for name in self.RCJKI.collab._userLocker(self.RCJKI.user)._allOtherLockedGlyphs["_deepComponentsEdition_glyphs"]:
-                glyphset = list(filter(lambda x: name[3:] in x, DCG))
-                for n in glyphset:
+                glyphset = list(filter(lambda g: name[3:] in g.name, DCM))
+                for g in glyphset:
+                    DCG.insertGlyph(DCM[g.name])
                     for layer in fontLayers(DCM):
-                        DCG.getLayer(layer).insertGlyph(DCM[n].getLayer(layer))
+                        DCG.getLayer(layer).insertGlyph(DCM[g.name].getLayer(layer))
 
             DCM.save()
             DCM.close()
+
+            DCG.save()
+            
 
         stamp = "Masters Fonts Saved"
         gitEngine.commit(stamp)
         gitEngine.push()
         PostBannerNotification('Git Push', stamp)
+
+        self.w.mainCanvas.update()
 
         return
         
