@@ -83,6 +83,25 @@ class DeepComponentEditionController(object):
         self.interface.w.deepComponentsSetList.set(l)
         if len(l):
             self.interface.w.deepComponentsSetList.setSelection([0])
+        self.setExtremDCGlyph(None)
+
+    def updateExtemeList(self, selectedDCGlyphName):
+        _, code, index = selectedDCGlyphName.split('_')
+        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+        l = [""]
+        l.extend(deepCompoMasters_AGB1_FULL.deepCompoMasters[script][chr(int(code,16))][int(index)])
+        self.interface.w.extremsList.setItems(l)
+
+    def setExtremDCGlyph(self, char):
+        if char is None:
+            self.interface.canvasDrawer.extremDCGlyph = None
+        elif char:
+            glyphName = files.unicodeName(char)
+            self.interface.canvasDrawer.extremDCGlyph = self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont][glyphName]
+        else:
+            self.interface.canvasDrawer.extremDCGlyph = None
+        self.interface.w.mainCanvas.update()
+
 
     def saveSubsetFonts(self):
         for f in self.RCJKI.fonts2DCFonts.values():

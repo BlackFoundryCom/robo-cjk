@@ -36,6 +36,7 @@ from tools.externalTools import shapeTool
 from tools.externalTools import scalingEditTool
 from resources import characterSets
 from utils import git
+from utils import interpolations
 from views import tableDelegate
 
 reload(roboCJKView)
@@ -51,6 +52,7 @@ reload(git)
 reload(powerRuler)
 reload(shapeTool)
 reload(scalingEditTool)
+reload(interpolations)
 
 
 commandDown = 1048576
@@ -164,10 +166,17 @@ class RoboCJKController(object):
     # def viewWillChangeGlyph(self, info):
     #     print(info)
 
+    def getDeepComponentGlyph(self):
+        if self.currentGlyph is None: return
+        return interpolations.deepolation(RGlyph(), self.currentGlyph, self.layersInfos)
+
     def updateViews(self):
         UpdateCurrentGlyphView()
         if self.initialDesignController.interface:
             self.initialDesignController.interface.w.mainCanvas.update()
+        if self.deepComponentEditionController.interface:
+            self.deepComponentGlyph = self.getDeepComponentGlyph()
+            self.deepComponentEditionController.interface.w.mainCanvas.update()
         # if self.textCenterController.interface:
         #     self.textCenterController.interface.w.canvas.update()
 

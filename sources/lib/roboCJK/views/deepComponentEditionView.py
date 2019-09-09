@@ -53,7 +53,7 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.RCJKI = self.controller.RCJKI
         self.RCJKI.allFonts = []
         self.selectedGlyph = None
-        self.layersInfos = {}
+        self.RCJKI.layersInfos = {}
 
         self.w = Window((200, 0, 800, 800), 
                 'Deep Component Edition', 
@@ -162,7 +162,7 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def setSliderList(self):
-        self.layersInfos = {}
+        self.RCJKI.layersInfos = {}
         self.slidersValuesList = []
         layers = [l.name for l in list(filter(lambda l: len(self.RCJKI.currentFont[self.RCJKI.currentGlyph.name].getLayer(l.name)), self.RCJKI.currentFont.layers))]
         for layerName in layers:
@@ -208,7 +208,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                 'Values': 0}
 
             self.slidersValuesList.append(d)
-            self.layersInfos[layerName]:0
+            self.RCJKI.layersInfos[layerName]:0
         self.w.slidersList.set(self.slidersValuesList)
 
     def slidersListEditCallback(self, sender):
@@ -216,8 +216,9 @@ class DeepComponentEditionWindow(BaseWindowController):
         if not sel: return
         selectedLayerName = sender.get()[sel[0]]["Layer"]
         selectedLayerValue = sender.get()[sel[0]]["Values"]
-        self.layersInfos[selectedLayerName] = selectedLayerValue
-        self.RCJKI.deepComponentGlyph = interpolations.deepolation(RGlyph(), self.RCJKI.currentFont[self.selectedDeepComponentGlyphName], self.layersInfos)
+        self.RCJKI.layersInfos[selectedLayerName] = selectedLayerValue
+        self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
+        self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
         self.w.mainCanvas.update()
 
     def fontsListSelectionCallback(self, sender):
@@ -232,7 +233,6 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def glyphSetListSelectionCallback(self, sender):
-        # return
         sel = sender.getSelection()
         if not sel: return
         self.selectedGlyphName = sender.get()[sel[0]]['Name']
@@ -250,15 +250,12 @@ class DeepComponentEditionWindow(BaseWindowController):
         if not sel: return
         self.selectedDeepComponentGlyphName = sender.get()[sel[0]]['Name']
 
-        _, code, index = self.selectedDeepComponentGlyphName.split('_')
-        script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
-        l = [""]
-        l.extend(deepCompoMasters_AGB1_FULL.deepCompoMasters[script][chr(int(code,16))][int(index)])
-        self.w.extremsList.setItems(l)
+        self.controller.updateExtemeList(self.selectedDeepComponentGlyphName)
         
         if self.selectedDeepComponentGlyphName in self.RCJKI.currentFont:
             self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
-            self.RCJKI.deepComponentGlyph = interpolations.deepolation(RGlyph(), self.RCJKI.currentGlyph, self.layersInfos)
+            # self.RCJKI.deepComponentGlyph = interpolations.deepolation(RGlyph(), self.RCJKI.currentGlyph, self.RCJKI.layersInfos)
+            self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
             if self.RCJKI.currentGlyph.markColor is None:
                 r, g, b, a = 0, 0, 0, 0
             else: 
@@ -271,12 +268,7 @@ class DeepComponentEditionWindow(BaseWindowController):
 
     def extremsListCallback(self, sender):
         char = sender.getItem()
-        if char:
-            glyphName = files.unicodeName(char)
-            self.canvasDrawer.extremDCGlyph = self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont][glyphName]
-        else:
-            self.canvasDrawer.extremDCGlyph = None
-        self.w.mainCanvas.update()
+        self.controller.setExtremDCGlyph(char)
 
     def deepComponentsSetListDoubleClickCallback(self, sender):
         if not sender.getSelection(): return
