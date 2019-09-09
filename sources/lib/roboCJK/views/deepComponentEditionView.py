@@ -118,6 +118,29 @@ class DeepComponentEditionWindow(BaseWindowController):
             sizeStyle = 'small',
             callback = self.extremsListCallback)
 
+        self.w.dcOffsetXTextBox = TextBox((235, -260, 15, 20), "x:", sizeStyle = 'small')
+        self.w.dcOffsetYTextBox = TextBox((285, -260, 15, 20), "y:", sizeStyle = 'small')
+
+        self.deepComponentTranslateX = 0
+        self.w.dcOffsetXEditText = EditText((250, -260, 50, 20), 
+            self.deepComponentTranslateX,
+            sizeStyle = "small",
+            callback = self.dcOffsetXEditTextCallback,
+            continuous = False)
+
+        self.w.dcOffsetXEditText.getNSTextField().setBordered_(False)
+        self.w.dcOffsetXEditText.getNSTextField().setDrawsBackground_(False)
+
+        self.deepComponentTranslateY = 0
+        self.w.dcOffsetYEditText = EditText((300, -260, 50, 20), 
+            self.deepComponentTranslateY,
+            sizeStyle = "small",
+            callback = self.dcOffsetYEditTextCallback,
+            continuous = False)
+
+        self.w.dcOffsetYEditText.getNSTextField().setBordered_(False)
+        self.w.dcOffsetYEditText.getNSTextField().setDrawsBackground_(False)
+
         slider = SliderListCell(minValue = 0, maxValue = 1000)
         self.slidersValuesList = []
         self.w.slidersList = List((200, -240, -0, -0),
@@ -146,8 +169,25 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.dummyCell.setImage_(None)
 
         self.w.bind('close', self.windowCloses)
-
         self.w.open()
+
+    def UpdateDCOffset(self):
+        self.w.dcOffsetXEditText.set(self.deepComponentTranslateX)
+        self.w.dcOffsetYEditText.set(self.deepComponentTranslateY)
+
+    def dcOffsetXEditTextCallback(self, sender):
+        try:
+            self.deepComponentTranslateX = int(sender.get())
+        except:
+            sender.set(self.deepComponentTranslateX)
+        self.w.mainCanvas.update()
+
+    def dcOffsetYEditTextCallback(self, sender):
+        try:
+            self.deepComponentTranslateY = int(sender.get())
+        except:
+            sender.set(self.deepComponentTranslateY)
+        self.w.mainCanvas.update()
 
     def saveLocalFontButtonCallback(self, sender):
         self.RCJKI.deepComponentEditionController.saveSubsetFonts()

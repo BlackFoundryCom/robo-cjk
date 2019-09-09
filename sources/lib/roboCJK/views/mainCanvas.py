@@ -63,8 +63,8 @@ class MainCanvas():
         self.waterFall = displayOptionsDrawer.WaterFallDrawer(self.RCJKI)
         self.step = step
         self.extremDCGlyph = None
-        self.deepComponentTranslateX = 0
-        self.deepComponentTranslateY = 0
+        self.controller.deepComponentTranslateX = 0
+        self.controller.deepComponentTranslateY = 0
 
     def mouseDown(self, info):
         if info.clickCount() == 2 and self.RCJKI.currentGlyph is not None:
@@ -80,8 +80,11 @@ class MainCanvas():
         deltaY = info.deltaY()/(self.scale+eps)
         if command:
             # pass
-            self.deepComponentTranslateX += deltaX
-            self.deepComponentTranslateY -= deltaY
+            self.controller.deepComponentTranslateX += int(deltaX)
+            self.controller.deepComponentTranslateY -= int(deltaY)
+
+            self.controller.UpdateDCOffset()
+
         else:
             self.translateX += deltaX
             self.translateY -= deltaY
@@ -192,7 +195,7 @@ class MainCanvas():
                         fill(0, 0, .8, .6)
                         if self.preview: 
                             fill(0)
-                        translate(self.deepComponentTranslateX, self.deepComponentTranslateY)
+                        translate(self.controller.deepComponentTranslateX, self.controller.deepComponentTranslateY)
                         drawGlyph(self.RCJKI.deepComponentGlyph)
                         restore()
                     else:
