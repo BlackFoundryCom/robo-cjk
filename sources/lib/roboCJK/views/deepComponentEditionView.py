@@ -26,11 +26,11 @@ from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow, PostBa
 from mojo.roboFont import *
 from mojo.canvas import *
 from lib.cells.colorCell import RFColorCell
-from fontTools.pens import cocoaPen
+# from fontTools.pens import cocoaPen
 
 import os
 import json
-import Quartz
+# import Quartz
 
 from utils import files
 from utils import git
@@ -143,7 +143,7 @@ class DeepComponentEditionWindow(BaseWindowController):
 
         slider = SliderListCell(minValue = 0, maxValue = 1000)
         self.slidersValuesList = []
-        self.w.slidersList = List((200, -240, -0, -0),
+        self.w.slidersList = List((200, -240, -0, -20),
             self.slidersValuesList,
             columnDescriptions = [
                                     # {"title": "Layer", "editable": False, "width": 140},
@@ -153,9 +153,16 @@ class DeepComponentEditionWindow(BaseWindowController):
             # doubleClickCallback = self._sliderList_doubleClickCallback,
             drawFocusRing = False,
             allowsMultipleSelection = False,
-            rowHeight = 60.0,
+            rowHeight = 50.0,
             showColumnTitles = False
             )
+
+        self.w.addLayerButton = Button((-200, -20, 100, 20), 
+            "+",
+            callback = self.addLayerButtonCallback)
+        self.w.removeLayerButton = Button((-100, -20, 100, 20), 
+            "-",
+            callback = self.removeLayerButtonCallback)
 
         self.w.colorPicker = ColorWell((200,-260,20,20),
                 callback=self.colorPickerCallback, 
@@ -169,6 +176,7 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.dummyCell.setImage_(None)
 
         self.w.bind('close', self.windowCloses)
+        self.w.bind('became main', self.windowBecameMain)
         self.w.open()
 
     def UpdateDCOffset(self):
@@ -189,6 +197,32 @@ class DeepComponentEditionWindow(BaseWindowController):
             sender.set(self.deepComponentTranslateY)
         self.w.mainCanvas.update()
 
+    def addLayerButtonCallback(self, sender):
+        g = self.RCJKI.currentGlyph
+        f = self.RCJKI.currentFont
+        newGlyphLayer = list(filter(lambda l: not len(g.getLayer(l.name)), f.layers))[0]
+        f.getLayer(newGlyphLayer.name).insertGlyph(g.getLayer("foreground"))
+        self.RCJKI.currentGlyph = f.getLayer(newGlyphLayer.name)[g.name]
+        self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
+        self.setSliderList()
+
+    def removeLayerButtonCallback(self, sender):
+        sel = self.w.slidersList.getSelection()
+        if not sel:
+            PostBannerNotification("Error", "No selected layer")
+            return
+
+        layerName = self.slidersValuesList[sel[0]]['Layer']
+        self.RCJKI.currentFont.getLayer(layerName)[self.RCJKI.currentGlyph.name].clear()
+
+        self.slidersValuesList.pop(sel[0])
+        del self.RCJKI.layersInfos[layerName]
+
+        self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
+
+        self.w.slidersList.set(self.slidersValuesList)
+        self.w.mainCanvas.update()
+
     def saveLocalFontButtonCallback(self, sender):
         self.RCJKI.deepComponentEditionController.saveSubsetFonts()
         self.w.mainCanvas.update()
@@ -201,6 +235,25 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.pushDCMasters()
         self.w.mainCanvas.update()
 
+    def windowBecameMain(self, sender):
+        self.updateImageSliderList()
+
+    def updateImageSliderList(self):
+        self.slidersValuesList = []
+        for item in self.w.slidersList.get():
+
+            layerName = item["Layer"]
+            g = self.RCJKI.currentFont[self.RCJKI.currentGlyph.name].getLayer(layerName)
+            emDimensions = self.RCJKI.project.settings['designFrame']['em_Dimension']
+            pdfData = self.RCJKI.getLayerPDFImage(g, emDimensions)
+
+            d = {'Layer': layerName,
+                'Image': NSImage.alloc().initWithData_(pdfData),
+                'Values': item["Values"]}
+
+            self.slidersValuesList.append(d)
+        self.w.slidersList.set(self.slidersValuesList)
+
     def setSliderList(self):
         self.RCJKI.layersInfos = {}
         self.slidersValuesList = []
@@ -208,40 +261,8 @@ class DeepComponentEditionWindow(BaseWindowController):
         for layerName in layers:
             if layerName == "foreground": continue
             g = self.RCJKI.currentFont[self.RCJKI.currentGlyph.name].getLayer(layerName)
-            f = g.getParent()
-            path = NSBezierPath.bezierPath()
-            pen = cocoaPen.CocoaPen(f, path)
-            g.draw(pen)
-            margins = 200
-            EM_Dimension_X, EM_Dimension_Y = self.RCJKI.project.settings['designFrame']['em_Dimension']
-            mediaBox = Quartz.CGRectMake(-margins, -margins, EM_Dimension_X+2*margins, EM_Dimension_Y+2*margins)
-            pdfData = Quartz.CFDataCreateMutable(None, 0)
-            dataConsumer = Quartz.CGDataConsumerCreateWithCFData(pdfData)
-            pdfContext = Quartz.CGPDFContextCreate(dataConsumer, mediaBox, None)
-            Quartz.CGContextSaveGState(pdfContext)
-            Quartz.CGContextBeginPage(pdfContext, mediaBox)
-
-            for i in range(path.elementCount()):
-                instruction, points = path.elementAtIndex_associatedPoints_(i)
-                if instruction == NSMoveToBezierPathElement:
-                    Quartz.CGContextMoveToPoint(pdfContext, points[0].x, points[0].y)
-                elif instruction == NSLineToBezierPathElement:
-                    Quartz.CGContextAddLineToPoint(pdfContext, points[0].x, points[0].y)
-                elif instruction == NSCurveToBezierPathElement:
-                    Quartz.CGContextAddCurveToPoint(pdfContext, points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y)
-                elif instruction == NSClosePathBezierPathElement:
-                    Quartz.CGContextClosePath(pdfContext)
-
-            Quartz.CGContextSetRGBFillColor(pdfContext, 0.0, 0.0, 0.0, 1.0)
-            # if self.ui.darkMode:
-            #     Quartz.CGContextSetRGBFillColor(pdfContext, 1.0, 1.0, 1.0, 1.0)
-            # else:
-            #     Quartz.CGContextSetRGBFillColor(pdfContext, 0.0, 0.0, 0.0, 1.0)
-    
-            Quartz.CGContextFillPath(pdfContext)
-            Quartz.CGContextEndPage(pdfContext)
-            Quartz.CGPDFContextClose(pdfContext)
-            Quartz.CGContextRestoreGState(pdfContext)
+            emDimensions = self.RCJKI.project.settings['designFrame']['em_Dimension']
+            pdfData = self.RCJKI.getLayerPDFImage(g, emDimensions)
 
             d = {'Layer': layerName,
                 'Image': NSImage.alloc().initWithData_(pdfData),

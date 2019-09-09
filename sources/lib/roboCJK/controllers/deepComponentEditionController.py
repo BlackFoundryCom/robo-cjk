@@ -93,7 +93,7 @@ class DeepComponentEditionController(object):
         self.interface.w.extremsList.setItems(l)
 
     def setExtremDCGlyph(self, char):
-        if char is "None":
+        if char == "None":
             self.interface.canvasDrawer.extremDCGlyph = None
         elif char:
             glyphName = files.unicodeName(char)

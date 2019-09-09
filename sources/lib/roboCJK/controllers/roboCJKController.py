@@ -22,7 +22,7 @@ import os
 from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, setToolOrder, getToolOrder
 from mojo.roboFont import *
 from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow, UpdateCurrentGlyphView, setMaxAmountOfVisibleTools
-from AppKit import NSColor, NSCell
+from AppKit import *
 from views import roboCJKView
 from views.drawers import currentGlyphViewDrawer
 from views import textCenterView
@@ -38,6 +38,8 @@ from resources import characterSets
 from utils import git
 from utils import interpolations
 from views import tableDelegate
+import Quartz
+from fontTools.pens import cocoaPen
 
 reload(roboCJKView)
 reload(currentGlyphViewDrawer)
@@ -166,9 +168,48 @@ class RoboCJKController(object):
     # def viewWillChangeGlyph(self, info):
     #     print(info)
 
+    def getLayerPDFImage(self, g, emDimension):
+        f = g.getParent()
+        path = NSBezierPath.bezierPath()
+        pen = cocoaPen.CocoaPen(f, path)
+        g.draw(pen)
+        margins = 200
+        EM_Dimension_X, EM_Dimension_Y = emDimension
+        mediaBox = Quartz.CGRectMake(-margins, -margins, EM_Dimension_X+2*margins, EM_Dimension_Y+2*margins)
+        pdfData = Quartz.CFDataCreateMutable(None, 0)
+        dataConsumer = Quartz.CGDataConsumerCreateWithCFData(pdfData)
+        pdfContext = Quartz.CGPDFContextCreate(dataConsumer, mediaBox, None)
+        Quartz.CGContextSaveGState(pdfContext)
+        Quartz.CGContextBeginPage(pdfContext, mediaBox)
+
+        for i in range(path.elementCount()):
+            instruction, points = path.elementAtIndex_associatedPoints_(i)
+            if instruction == NSMoveToBezierPathElement:
+                Quartz.CGContextMoveToPoint(pdfContext, points[0].x, points[0].y)
+            elif instruction == NSLineToBezierPathElement:
+                Quartz.CGContextAddLineToPoint(pdfContext, points[0].x, points[0].y)
+            elif instruction == NSCurveToBezierPathElement:
+                Quartz.CGContextAddCurveToPoint(pdfContext, points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y)
+            elif instruction == NSClosePathBezierPathElement:
+                Quartz.CGContextClosePath(pdfContext)
+
+        Quartz.CGContextSetRGBFillColor(pdfContext, 0.0, 0.0, 0.0, 1.0)
+        # if self.ui.darkMode:
+        #     Quartz.CGContextSetRGBFillColor(pdfContext, 1.0, 1.0, 1.0, 1.0)
+        # else:
+        #     Quartz.CGContextSetRGBFillColor(pdfContext, 0.0, 0.0, 0.0, 1.0)
+
+        Quartz.CGContextFillPath(pdfContext)
+        Quartz.CGContextEndPage(pdfContext)
+        Quartz.CGPDFContextClose(pdfContext)
+        Quartz.CGContextRestoreGState(pdfContext)
+
+        return pdfData
+
+
     def getDeepComponentGlyph(self):
         if self.currentGlyph is None: return
-        return interpolations.deepolation(RGlyph(), self.currentGlyph, self.layersInfos)
+        return interpolations.deepolation(RGlyph(), self.currentGlyph.getLayer("foreground"), self.layersInfos)
 
     def updateViews(self):
         UpdateCurrentGlyphView()

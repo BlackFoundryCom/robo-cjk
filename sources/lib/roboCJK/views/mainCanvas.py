@@ -203,8 +203,12 @@ class MainCanvas():
 
                     if self.RCJKI.settings["showDesignFrame"]:
                         if not self.preview or self.preview == self.RCJKI.settings["designFrame"]["drawPreview"]:
+                            glyph = g
+                            if self.step == '_deepComponentsEdition_glyphs':
+                                glyph = self.RCJKI.deepComponentGlyph.copy()
+                                glyph.moveBy((self.controller.deepComponentTranslateX, self.controller.deepComponentTranslateY))
                             self.dfv.draw(
-                                glyph = g,
+                                glyph = glyph,
                                 mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
                                 secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
                                 customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
