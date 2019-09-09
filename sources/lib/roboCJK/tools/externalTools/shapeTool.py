@@ -137,7 +137,7 @@ class ShapeTool(BaseEventTool):
     def __init__(self, RCJKI):
         super(ShapeTool, self).__init__()
         self.RCJKI = RCJKI
-        self.glyph = self.RCJKI.getCurrentGlyph
+        self.glyph = self.RCJKI.getCurrentGlyph()
 
     def setup(self):
         # setup is called when the tool gets active
@@ -249,7 +249,7 @@ class ShapeTool(BaseEventTool):
         # on double click pop up an modal dialog with inputs
         if clickCount == 2:
             # create and open the modal dialog
-            GeometricShapesWindow(self.RCJKI.getCurrentGlyph,
+            GeometricShapesWindow(self.RCJKI.getCurrentGlyph(),
                             callback=self.drawShapeWithRectInGlyph,
                             x=self.minPoint.x,
                             y=self.minPoint.y)
@@ -266,7 +266,7 @@ class ShapeTool(BaseEventTool):
     def mouseUp(self, point):
         # mouse up, if you have recorded the rect draw that into the glyph
         if self.minPoint and self.maxPoint:
-            self.drawShapeWithRectInGlyph(self.shape, self.getRect(), self.RCJKI.getCurrentGlyph)
+            self.drawShapeWithRectInGlyph(self.shape, self.getRect(), self.RCJKI.getCurrentGlyph())
         # reset the tool
         self.minPoint = None
         self.maxPoint = None
