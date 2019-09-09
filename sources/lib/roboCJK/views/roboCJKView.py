@@ -105,6 +105,6 @@ class RoboCJKWindow(BaseWindowController):
             self.RCJKI.textCenterController.interface.w.close()
 
         setMaxAmountOfVisibleTools(14)
-        uninstallTool(shapeTool.ShapeTool(self.RCJKI))
-        uninstallTool(scalingEditTool.RCJKScalingEditTool(self.RCJKI))
+        uninstallTool(self.RCJKI.shapeTool)
+        uninstallTool(self.RCJKI.scalingEditTool)
 

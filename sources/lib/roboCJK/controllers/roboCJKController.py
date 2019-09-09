@@ -132,8 +132,11 @@ class RoboCJKController(object):
         self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
         self.powerRuler = powerRuler.Ruler(self)
-        self.shapeTool = installTool(shapeTool.ShapeTool(self))
-        self.scalingEditTool = installTool(scalingEditTool.RCJKScalingEditTool(self))
+        self.shapeTool = shapeTool.ShapeTool(self)
+        self.scalingEditTool = scalingEditTool.RCJKScalingEditTool(self)
+
+        installTool(self.shapeTool)
+        installTool(self.scalingEditTool)
 
         toolOrder = getToolOrder()
         toolOrder.remove('ShapeTool')
