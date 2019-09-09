@@ -60,6 +60,13 @@ class CurrentGlyphViewDrawer():
                     translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
                     scale = self.scale
                     )
+
+        if self.RCJKI.deepComponentGlyph is not None:
+            save()
+            fill(0, 0, .8, .15)
+            translate(self.RCJKI.deepComponentEditionController.interface.deepComponentTranslateX, self.RCJKI.deepComponentEditionController.interface.deepComponentTranslateY)
+            drawGlyph(self.RCJKI.deepComponentGlyph)
+            restore()
             
         if self.RCJKI.settings["referenceViewer"]["onOff"]:
             if g.name.startswith("uni"):

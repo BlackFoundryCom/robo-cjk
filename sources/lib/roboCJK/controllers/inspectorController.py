@@ -35,6 +35,8 @@ class inspectorController(object):
             self.RCJKI.initialDesignController.interface.w.mainCanvas.update()
         if self.RCJKI.textCenterController.interface:
             self.RCJKI.textCenterController.interface.w.canvas.update()
+        if self.RCJKI.deepComponentEditionController.interface:
+            self.RCJKI.deepComponentEditionController.interface.w.mainCanvas.update()
         UpdateCurrentGlyphView()
 
     def setProperties(self):

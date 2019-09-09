@@ -150,7 +150,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                                     {"title": "Image", "editable": False, "cell": ImageListCell(), "width": 60}, 
                                     {"title": "Values", "cell": slider}],
             editCallback = self.slidersListEditCallback,
-            # doubleClickCallback = self._sliderList_doubleClickCallback,
+            doubleClickCallback = self.sliderListDoubleClickCallback,
             drawFocusRing = False,
             allowsMultipleSelection = False,
             rowHeight = 50.0,
@@ -204,7 +204,11 @@ class DeepComponentEditionWindow(BaseWindowController):
         f.getLayer(newGlyphLayer.name).insertGlyph(g.getLayer("foreground"))
         self.RCJKI.currentGlyph = f.getLayer(newGlyphLayer.name)[g.name]
         self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
-        self.setSliderList()
+        self.slidersValuesList.append({'Layer': newGlyphLayer.name,
+                                        'Image': None,
+                                        'Values': 0})
+        self.updateImageSliderList()
+        # self.setSliderList()
 
     def removeLayerButtonCallback(self, sender):
         sel = self.w.slidersList.getSelection()
@@ -239,8 +243,8 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.updateImageSliderList()
 
     def updateImageSliderList(self):
-        self.slidersValuesList = []
-        for item in self.w.slidersList.get():
+        slidersValuesList = []
+        for item in self.slidersValuesList:
 
             layerName = item["Layer"]
             g = self.RCJKI.currentFont[self.RCJKI.currentGlyph.name].getLayer(layerName)
@@ -251,7 +255,8 @@ class DeepComponentEditionWindow(BaseWindowController):
                 'Image': NSImage.alloc().initWithData_(pdfData),
                 'Values': item["Values"]}
 
-            self.slidersValuesList.append(d)
+            slidersValuesList.append(d)
+        self.slidersValuesList = slidersValuesList
         self.w.slidersList.set(self.slidersValuesList)
 
     def setSliderList(self):
@@ -278,9 +283,17 @@ class DeepComponentEditionWindow(BaseWindowController):
         selectedLayerName = sender.get()[sel[0]]["Layer"]
         selectedLayerValue = sender.get()[sel[0]]["Values"]
         self.RCJKI.layersInfos[selectedLayerName] = selectedLayerValue
+        self.slidersValuesList[sel[0]]["Values"] = selectedLayerValue 
         self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
         self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
         self.w.mainCanvas.update()
+
+    def sliderListDoubleClickCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        layerName = sender.get()[sel[0]]['Layer']
+        self.RCJKI.currentGlyph = self.RCJKI.currentFont.getLayer(layerName)[self.RCJKI.currentGlyph.name]
+        self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
 
     def fontsListSelectionCallback(self, sender):
         sel = sender.getSelection()
