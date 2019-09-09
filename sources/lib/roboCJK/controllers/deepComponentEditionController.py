@@ -88,12 +88,12 @@ class DeepComponentEditionController(object):
     def updateExtemeList(self, selectedDCGlyphName):
         _, code, index = selectedDCGlyphName.split('_')
         script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
-        l = [""]
+        l = ["None"]
         l.extend(deepCompoMasters_AGB1_FULL.deepCompoMasters[script][chr(int(code,16))][int(index)])
         self.interface.w.extremsList.setItems(l)
 
     def setExtremDCGlyph(self, char):
-        if char is None:
+        if char is "None":
             self.interface.canvasDrawer.extremDCGlyph = None
         elif char:
             glyphName = files.unicodeName(char)
