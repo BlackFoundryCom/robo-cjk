@@ -311,6 +311,9 @@ class DeepComponentEditionWindow(BaseWindowController):
         if not sel: return
         self.selectedGlyphName = sender.get()[sel[0]]['Name']
         self.controller.updateDeepComponentsSetList(self.selectedGlyphName)
+        self.deepComponentTranslateX, self.deepComponentTranslateY = 0, 0
+        self.w.dcOffsetXEditText.set(self.deepComponentTranslateX)
+        self.w.dcOffsetYEditText.set(self.deepComponentTranslateY)
         self.w.mainCanvas.update()
 
     def glyphSetListdoubleClickCallback(self, sender):
@@ -338,6 +341,9 @@ class DeepComponentEditionWindow(BaseWindowController):
         else:
             self.RCJKI.currentGlyph = None
         self.setSliderList()
+        self.deepComponentTranslateX, self.deepComponentTranslateY = 0, 0
+        self.w.dcOffsetXEditText.set(self.deepComponentTranslateX)
+        self.w.dcOffsetYEditText.set(self.deepComponentTranslateY)
         self.w.mainCanvas.update()
 
     def extremsListCallback(self, sender):

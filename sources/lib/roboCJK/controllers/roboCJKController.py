@@ -32,6 +32,7 @@ from controllers import deepComponentEditionController
 from controllers import inspectorController
 from controllers import textCenterController
 from tools import powerRuler
+from tools import balanceHandles
 from tools.externalTools import shapeTool
 from tools.externalTools import scalingEditTool
 from resources import characterSets
@@ -52,6 +53,7 @@ reload(textCenterController)
 reload(characterSets)
 reload(git)
 reload(powerRuler)
+reload(balanceHandles)
 reload(shapeTool)
 reload(scalingEditTool)
 reload(interpolations)
@@ -123,6 +125,8 @@ class RoboCJKController(object):
             'activePowerRuler' : [0, "r"],
             'unactivePowerRuler' : [commandDown, "r"],
 
+            'balanceHandles' : [commandDown+shiftDown, "A"],
+
             'saveFonts' : [commandDown, "s"]
         }
         self.properties = ""
@@ -132,6 +136,7 @@ class RoboCJKController(object):
         self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
         self.powerRuler = powerRuler.Ruler(self)
+        self.balanceHandles = balanceHandles.BalanceHandles()
         self.shapeTool = shapeTool.ShapeTool(self)
         self.scalingEditTool = scalingEditTool.RCJKScalingEditTool(self)
 
@@ -265,12 +270,14 @@ class RoboCJKController(object):
             elif self.deepComponentEditionController.interface:
                 self.deepComponentEditionController.saveSubsetFonts()
 
-
         elif inputKey == self.settings['unactivePowerRuler']:
             self.powerRuler.killPowerRuler()
 
         elif inputKey == self.settings['activePowerRuler']:
             self.powerRuler.launchPowerRuler()
+
+        elif inputKey == self.settings['balanceHandles']:
+            self.balanceHandles.balance(self.currentGlyph)
 
         elif inputKey in [self.settings['previousGlyph'], self.settings['nextGlyph']]:
 
