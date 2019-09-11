@@ -48,6 +48,7 @@ class DeepComponentEditionController(object):
     def launchDeepComponentEditionInterface(self):
         self.setCharacterSet()
         if not self.interface:
+            self.RCJKI.resetController()
             self.interface = deepComponentEditionView.DeepComponentEditionWindow(self)
             self.loadProjectFonts()
 

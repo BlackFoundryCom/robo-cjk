@@ -125,7 +125,7 @@ class RoboCJKController(object):
             'activePowerRuler' : [0, "r"],
             'unactivePowerRuler' : [commandDown, "r"],
 
-            'balanceHandles' : [commandDown+shiftDown, "A"],
+            'balanceHandles' : [commandDown+shiftDown, "a"],
 
             'saveFonts' : [commandDown, "s"]
         }
@@ -152,6 +152,15 @@ class RoboCJKController(object):
         setMaxAmountOfVisibleTools(6)
 
         self.textCenterInterface = None
+
+    def resetController(self):
+        self.currentFont = None
+        self.currentGlyph = None
+        # self.allFonts = []
+        # self.fonts2DCFonts = {}
+        # self.lockedGlyphs = []
+        # self.reservedGlyphs = []
+
 
     def toggleObservers(self, forceKill=False):
         if self.observers or forceKill:
@@ -215,9 +224,6 @@ class RoboCJKController(object):
         return pdfData
 
 
-    def getDeepComponentGlyph(self):
-        if self.currentGlyph is None: return
-        return interpolations.deepolation(RGlyph(), self.currentGlyph.getLayer("foreground"), self.layersInfos)
 
     def updateViews(self):
         UpdateCurrentGlyphView()
@@ -347,12 +353,17 @@ class RoboCJKController(object):
     def getCurrentGlyph(self):
         if CurrentGlyphWindow() is not None:
             doodleGlyph = CurrentGlyphWindow().getGlyph()
-            layerName = doodleGlyph.layer.name
-            if doodleGlyph.name in self.currentFont.keys():
-                self.currentGlyph = self.currentFont[doodleGlyph.name].getLayer(layerName)
+            if doodleGlyph is not None:
+                layerName = doodleGlyph.layer.name
+                if doodleGlyph.name in self.currentFont.keys():
+                    self.currentGlyph = self.currentFont[doodleGlyph.name].getLayer(layerName)
         else:
             self.currentGlyphWindow = None
         return self.currentGlyph
+
+    def getDeepComponentGlyph(self):
+        if self.currentGlyph is None: return
+        return interpolations.deepolation(RGlyph(), self.currentGlyph.getLayer("foreground"), self.layersInfos)
 
     def glyphWindowBecameMain(self, sender):
         self.getCurrentGlyph()

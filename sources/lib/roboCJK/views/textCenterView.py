@@ -137,7 +137,12 @@ class TextCenterWindow():
         self.setStringFromSelection()
 
     def setStringFromSelection(self):
-        glyphsetList = self.RCJKI.initialDesignController.interface.w.glyphSetList
+        if self.RCJKI.initialDesignController.interface:
+            glyphsetList = self.RCJKI.initialDesignController.interface.w.glyphSetList
+        elif self.RCJKI.deepComponentEditionController.interface:
+            glyphsetList = self.RCJKI.deepComponentEditionController.interface.w.glyphSetList
+        else:
+            return
         string = ""
         for index in glyphsetList.getSelection():
             string += "/%s"%glyphsetList.get()[index]["Name"]
@@ -334,17 +339,17 @@ class TextCenterWindow():
                 fill(rc, gc, bc, ac)
 
                 if self.RCJKI.settings['showDesignFrame']:
-                        self.dfd.draw(
-                            glyph = glyph,
-                            mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
-                            secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
-                            customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
-                            proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
-                            translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
-                            translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
-                            scale = self.scale,
-                            inverse = self.inverse
-                            )
+                    self.dfd.draw(
+                        glyph = glyph,
+                        mainFrames = self.RCJKI.settings['designFrame']['showMainFrames'], 
+                        secondLines = self.RCJKI.settings['designFrame']['showSecondLines'], 
+                        customsFrames = self.RCJKI.settings['designFrame']['showCustomsFrames'], 
+                        proximityPoints = self.RCJKI.settings['designFrame']['showproximityPoints'],
+                        translate_secondLine_X = self.RCJKI.settings['designFrame']['translate_secondLine_X'], 
+                        translate_secondLine_Y = self.RCJKI.settings['designFrame']['translate_secondLine_Y'],
+                        scale = self.scale,
+                        inverse = self.inverse
+                        )
 
                 if not self.verticalMode:
                     glyphWidth = glyph.width

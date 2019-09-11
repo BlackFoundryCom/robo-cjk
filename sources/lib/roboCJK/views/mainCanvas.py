@@ -147,10 +147,13 @@ class MainCanvas():
     def draw(self):
         try:
             save()
+
+            
             g = self.RCJKI.currentGlyph
             scale(self.scale, self.scale)
             translate(((self.canvasWidth/self.scale)-1000)*.5, 250)
             translate(self.translateX, self.translateY)
+            
             if g is None: 
                 iconText = robocjk.roboCJK_Icon.get()
                 icon = RGlyph()
@@ -174,15 +177,16 @@ class MainCanvas():
                     moveTo((0, 0))
                     lineTo((1100, 1100))
                     drawPath()
-                else:                
+                else:               
+                    # print("1") 
                     if self.extremDCGlyph is not None:
                         fill(0, 0, 0, .2)
                         drawGlyph(self.extremDCGlyph)
-
+                    # print("2")
                     glyphName = g.name
                     if self.step == '_deepComponentsEdition_glyphs':
                         glyphName = 'uni'+g.name.split("_")[1]
-                    
+
                     if glyphName in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.step]:
                         fill(0, 0, 0, 1)
                     elif glyphName in self.RCJKI.lockedGlyphs[self.step]:
@@ -196,10 +200,12 @@ class MainCanvas():
                         if self.preview: 
                             fill(0)
                         translate(self.controller.deepComponentTranslateX, self.controller.deepComponentTranslateY)
+                        
                         drawGlyph(self.RCJKI.deepComponentGlyph)
                         restore()
                     else:
                         drawGlyph(g)
+
 
                     if self.RCJKI.settings["showDesignFrame"]:
                         if not self.preview or self.preview == self.RCJKI.settings["designFrame"]["drawPreview"]:
@@ -229,6 +235,7 @@ class MainCanvas():
 
                         if not self.preview or self.preview == self.RCJKI.settings["referenceViewer"]["drawPreview"]:
                             self.rvd.draw(char)
+
                         
                     # f = self.ui.font2Storage[self.ui.font]
                     fill(.2, 0, 1, .5)
@@ -243,10 +250,11 @@ class MainCanvas():
 
                     if self.RCJKI.settings["waterFall"]:
                         self.waterFall.draw(g, self.preview)
+
                         
                     # if self.ui.interpolaviourOnOff:
                     #     InterpolaviourDrawer(self.ui).draw(g, self.scale, self.preview)
                     # TesterDeepComponent(self.ui, self.ui.w.deepComponentGroup.creator.storageFont_Glyphset)
             restore()
         except Exception as e:
-            print(e)
+            print("maincanvasDrawer ", e)

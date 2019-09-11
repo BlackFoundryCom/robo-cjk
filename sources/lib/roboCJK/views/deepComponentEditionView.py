@@ -200,13 +200,17 @@ class DeepComponentEditionWindow(BaseWindowController):
     def addLayerButtonCallback(self, sender):
         g = self.RCJKI.currentGlyph
         f = self.RCJKI.currentFont
-        newGlyphLayer = list(filter(lambda l: not len(g.getLayer(l.name)), f.layers))[0]
-        f.getLayer(newGlyphLayer.name).insertGlyph(g.getLayer("foreground"))
-        self.RCJKI.currentGlyph = f.getLayer(newGlyphLayer.name)[g.name]
-        self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
-        self.slidersValuesList.append({'Layer': newGlyphLayer.name,
+        if len(f.getLayer("foreground")[g.name]):
+            newGlyphLayer = list(filter(lambda l: not len(g.getLayer(l.name)), f.layers))[0]
+            f.getLayer(newGlyphLayer.name).insertGlyph(g.getLayer("foreground"))
+            self.RCJKI.currentGlyph = f.getLayer(newGlyphLayer.name)[g.name]
+            self.slidersValuesList.append({'Layer': newGlyphLayer.name,
                                         'Image': None,
                                         'Values': 0})
+        else:
+
+            self.RCJKI.currentGlyph = f.getLayer("foreground")[g.name]
+        self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
         self.updateImageSliderList()
         # self.setSliderList()
 
@@ -274,7 +278,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                 'Values': 0}
 
             self.slidersValuesList.append(d)
-            self.RCJKI.layersInfos[layerName]:0
+            self.RCJKI.layersInfos[layerName]=0
         self.w.slidersList.set(self.slidersValuesList)
 
     def slidersListEditCallback(self, sender):
@@ -328,11 +332,10 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.selectedDeepComponentGlyphName = sender.get()[sel[0]]['Name']
 
         self.controller.updateExtemeList(self.selectedDeepComponentGlyphName)
-        
         if self.selectedDeepComponentGlyphName in self.RCJKI.currentFont:
             self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
             # self.RCJKI.deepComponentGlyph = interpolations.deepolation(RGlyph(), self.RCJKI.currentGlyph, self.RCJKI.layersInfos)
-            self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
+            # self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
             if self.RCJKI.currentGlyph.markColor is None:
                 r, g, b, a = 0, 0, 0, 0
             else: 
@@ -341,9 +344,12 @@ class DeepComponentEditionWindow(BaseWindowController):
         else:
             self.RCJKI.currentGlyph = None
         self.setSliderList()
+
+        self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
+        
         self.deepComponentTranslateX, self.deepComponentTranslateY = 0, 0
         self.w.dcOffsetXEditText.set(self.deepComponentTranslateX)
-        self.w.dcOffsetYEditText.set(self.deepComponentTranslateY)
+        self.w.dcOffsetYEditText.set(self.deepComponentTranslateY) 
         self.w.mainCanvas.update()
 
     def extremsListCallback(self, sender):

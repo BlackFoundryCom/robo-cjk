@@ -37,6 +37,7 @@ class InitialDesignController(object):
     def launchInitialDesignInterface(self):
         self.setCharacterSet()
         if not self.interface:
+            self.RCJKI.resetController()
             self.interface = initialDesignView.InitialDesignWindow(self)
             self.loadProjectFonts()
 
