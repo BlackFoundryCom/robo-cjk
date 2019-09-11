@@ -18,6 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from ufoLib.pointPen import PointToSegmentPen
 from mojo.roboFont import *
+import math
 
 def checkCompatible(g1, g2):
     lenghtContour = lambda g: [len(c) for c in g]
@@ -97,16 +98,29 @@ def deepCompatible(masterGlyph, layersNames):
                 return False
     return True
 
+def distance(pt1, pt2):
+   return math.sqrt((pt1[0] - pt2[0])**2 + (pt1[1] - pt2[1])**2)
+
+def lengtha(a):
+   return(math.sqrt(a[0]*a[0]+a[1]*a[1]))
+
+def normalize(a):
+   l = lengtha(a)
+   if l == 0:
+       l = 1e-10
+   return([a[0]/l, a[1]/l])
+
 def deepolation(newGlyph, masterGlyph, layersInfo = {}):
 
     if not deepCompatible(masterGlyph, list(layersInfo.keys())):
         return False
 
     pen = PointToSegmentPen(newGlyph.getPen())
+    contoursList = []
 
     for contourIndex, contour in enumerate(masterGlyph):
 
-        pen.beginPath()
+        pointsList = []
 
         for pointIndex, point in enumerate(contour.points):
 
@@ -128,8 +142,37 @@ def deepolation(newGlyph, masterGlyph, layersInfo = {}):
             newX = int(px + deltaX)
             newY = int(py + deltaY)
 
-            pen.addPoint((newX, newY), ptype)
+            pointsList.append([[newX, newY], ptype, point])
 
-        pen.endPath()
+        contoursList.append(pointsList)
+
+        for pointsList in contoursList:
+
+            pen.beginPath()
+            lenc = len(pointsList)
+
+            for pointIndex, (p, t, point) in enumerate(pointsList):
+
+                prevp, prevt, prevPoint = pointsList[pointIndex-1]
+                prevprevp, prevprevt, prevprevPoint = pointsList[pointIndex-2]
+                nextp, nextt, nextPoint = pointsList[(pointIndex+1)%lenc]
+                nextnextp, nextnextt, nextnextPoint = pointsList[(pointIndex+2)%lenc]
+
+                if prevPoint.smooth and point.type == 'offcurve':
+
+                    dx, dy = prevp[0] - prevprevp[0], prevp[1] - prevprevp[1]
+                    d = distance(p, prevp)
+                    dprev = normalize([dx, dy])
+                    p = [prevp[0]+ d*dprev[0], prevp[1]+d*dprev[1]]
+
+                if nextPoint.smooth and point.type == 'offcurve':
+
+                    dx, dy = nextp[0] - nextnextp[0], nextp[1] - nextnextp[1]
+                    d = distance(p, nextp)
+                    dnext = normalize([dx, dy])
+                    p = [nextp[0]+ d*dnext[0], nextp[1]+d*dnext[1]]
+
+                pen.addPoint((int(p[0]), int(p[1])), t)
+            pen.endPath()
 
     return newGlyph
