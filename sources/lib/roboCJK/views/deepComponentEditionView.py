@@ -18,6 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from imp import reload
 from vanilla import *
+from vanilla.dialogs import askYesNo
 from defconAppKit.windows.baseWindow import BaseWindowController
 
 from AppKit import *
@@ -346,7 +347,7 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.setSliderList()
 
         self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
-        
+
         self.deepComponentTranslateX, self.deepComponentTranslateY = 0, 0
         self.w.dcOffsetXEditText.set(self.deepComponentTranslateX)
         self.w.dcOffsetYEditText.set(self.deepComponentTranslateY) 
@@ -376,10 +377,15 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def windowCloses(self, sender):
+        askYesNo('Do you want to save fonts?', "Without saving you'll loose unsaved modification", alertStyle = 2, parentWindow = None, resultCallback = self.yesnocallback)
         if CurrentGlyphWindow() is not None:
             CurrentGlyphWindow().close()
         self.RCJKI.currentGlyphWindow = None
         self.RCJKI.deepComponentEditionController.interface = None
+
+    def yesnocallback(self, yes):
+        if yes:
+            self.RCJKI.deepComponentEditionController.saveSubsetFonts()
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
         self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, '_deepComponentsEdition_glyphs', self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont])

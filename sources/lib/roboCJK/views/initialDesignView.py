@@ -23,6 +23,7 @@ from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow
 from mojo.roboFont import *
 from mojo.canvas import *
 from vanilla import *
+from vanilla.dialogs import askYesNo
 import os
 import json
 
@@ -178,10 +179,15 @@ class InitialDesignWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def windowCloses(self, sender):
+        askYesNo('Do you want to save fonts?', "Without saving you'll loose unsaved modification", alertStyle = 2, parentWindow = None, resultCallback = self.yesnocallback)
         if CurrentGlyphWindow() is not None:
             CurrentGlyphWindow().close()
         self.RCJKI.currentGlyphWindow = None
         self.RCJKI.initialDesignController.interface = None
+
+    def yesnocallback(self, yes):
+        if yes:
+            self.RCJKI.initialDesignController.saveSubsetFonts()
 
     def windowBecameMain(self, sender):
         sel = self.w.glyphSetList.getSelection()
