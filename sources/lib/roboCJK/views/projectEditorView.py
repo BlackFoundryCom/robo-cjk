@@ -206,7 +206,7 @@ class EditProjectSheet():
         ###
         self.parent.sheet.lockerGroup = Group((0,60,-0,-30))
 
-        segmentedElements = ["Initial Design", "Deep Component Edition"]
+        segmentedElements = ["Initial Design", "Keys and Extrems", "Deep Component Edition"]
         self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton = SegmentedButton((10, 10, -10, 20),
             [dict(title=e, width=577/len(segmentedElements)) for e in segmentedElements],
             callback = self.lockerDesignStepSegmentedButtonCallback,
@@ -214,6 +214,8 @@ class EditProjectSheet():
         self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton.set(0)
 
         self.parent.sheet.lockerGroup.initialDesign = LockerGroup((0, 0, -0, -0), self, "_initialDesign_glyphs")
+        self.parent.sheet.lockerGroup.keysAndExtrems = LockerGroup((0, 0, -0, -0), self, "_keysAndExtrems_glyphs")
+        self.parent.sheet.lockerGroup.keysAndExtrems.show(0)
         self.parent.sheet.lockerGroup.deepComponentEdition = LockerGroup((0, 0, -0, -0), self, "_deepComponentsEdition_glyphs")
         self.parent.sheet.lockerGroup.deepComponentEdition.show(0)
         
@@ -475,6 +477,7 @@ class EditProjectSheet():
         sel = sender.get()
         groups = [
             self.parent.sheet.lockerGroup.initialDesign,
+            self.parent.sheet.lockerGroup.keysAndExtrems,
             self.parent.sheet.lockerGroup.deepComponentEdition
             ]
         for i, e in enumerate(groups):

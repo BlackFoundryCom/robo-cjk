@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from imp import reload
 import os
 
-from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, setToolOrder, getToolOrder
+from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, uninstallTool, setToolOrder, getToolOrder
 from mojo.roboFont import *
 from mojo.UI import PostBannerNotification, OpenGlyphWindow, CurrentGlyphWindow, UpdateCurrentGlyphView, setMaxAmountOfVisibleTools
 from AppKit import *
@@ -29,6 +29,8 @@ from views import textCenterView
 from controllers import projectEditorController
 from controllers import initialDesignController
 from controllers import deepComponentEditionController
+from controllers import keysAndExtremsEditionController
+from controllers import deepComponentsController
 from controllers import inspectorController
 from controllers import textCenterController
 from tools import powerRuler
@@ -48,6 +50,8 @@ reload(textCenterView)
 reload(projectEditorController)
 reload(initialDesignController)
 reload(deepComponentEditionController)
+reload(keysAndExtremsEditionController)
+reload(deepComponentsController)
 reload(inspectorController)
 reload(textCenterController)
 reload(characterSets)
@@ -85,6 +89,7 @@ class RoboCJKController(object):
         self.characterSets = characterSets.sets
         self.currentFont = None
         self.currentGlyph = None
+        self.deepComponentGlyph = None
         self.currentGlyphWindow = None
         self.allFonts = []
         self.fonts2DCFonts = {}
@@ -133,12 +138,20 @@ class RoboCJKController(object):
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
         self.deepComponentEditionController = deepComponentEditionController.DeepComponentEditionController(self)
+        self.keysAndExtremsEditionController = keysAndExtremsEditionController.keysAndExtremsEditionController(self)
+        self.deepComponentsController = deepComponentsController.DeepComponentsController(self)
         self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
         self.powerRuler = powerRuler.Ruler(self)
         self.balanceHandles = balanceHandles.BalanceHandles()
         self.shapeTool = shapeTool.ShapeTool(self)
         self.scalingEditTool = scalingEditTool.RCJKScalingEditTool(self)
+
+        self.designControllers = [
+            self.initialDesignController,
+            self.deepComponentEditionController,
+            self.keysAndExtremsEditionController,
+            ]
 
         installTool(self.shapeTool)
         installTool(self.scalingEditTool)
@@ -152,6 +165,40 @@ class RoboCJKController(object):
         setMaxAmountOfVisibleTools(6)
 
         self.textCenterInterface = None
+
+    def windowCloses(self):
+        setMaxAmountOfVisibleTools(14)
+        uninstallTool(self.shapeTool)
+        uninstallTool(self.scalingEditTool)
+
+        self.toggleObservers(forceKill=True)
+
+        if self.projectEditorController.interface:
+            self.projectEditorController.interface.w.close()
+
+        if self.initialDesignController.interface:
+            self.initialDesignController.interface.w.close()
+
+        if self.deepComponentsController.interface:
+            self.deepComponentsController.interface.w.close()
+
+        if self.textCenterInterface:
+            self.textCenterInterface.w.close()
+
+        if self.inspectorController.interface:
+            self.inspectorController.interface.w.close()
+
+        if self.textCenterController.interface:
+            self.textCenterController.interface.w.close()
+
+        if self.deepComponentEditionController.interface:
+            self.deepComponentEditionController.interface.w.close()
+
+    def closeDesignControllers(self):
+        for designController in self.designControllers:
+            if designController.interface:
+                designController.interface.w.close()
+                designController.interface = None
 
     def resetController(self):
         self.currentFont = None
@@ -243,7 +290,7 @@ class RoboCJKController(object):
     def updateUI(self):
         self.interface.w.initialDesignEditorButton.enable(self.project!=None)
         self.interface.w.textCenterButton.enable(self.project!=None)
-        self.interface.w.deepComponentEditionButton.enable(self.project!=None)
+        self.interface.w.deepComponentButton.enable(self.project!=None)
         self.interface.w.inspectorButton.enable(self.project!=None)
 
     def launchTextCenterInterface(self):

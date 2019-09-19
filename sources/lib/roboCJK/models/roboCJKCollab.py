@@ -21,6 +21,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 steps = [
 "_initialDesign_glyphs", 
 "_deepComponentsEdition_glyphs",
+"_keysAndExtrems_glyphs",
 ]
 
 scriptFallback = "Hanzi"

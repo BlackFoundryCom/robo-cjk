@@ -27,15 +27,16 @@ reload(initialDesignView)
 reload(files)
 reload(git)
 
-class InitialDesignController(object):
+class keysAndExtremsEditionController(object):
+
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.interface = None
         self.characterSet = None
         self.fontsList = []
-        self.designStep = "_initialDesign_glyphs"
+        self.designStep = "_keysAndExtrems_glyphs"
 
-    def launchInitialDesignInterface(self):
+    def launchkeysAndExtremsEditionInterface(self):
         self.setCharacterSet()
         if not self.interface:
             self.RCJKI.resetController()
@@ -43,14 +44,14 @@ class InitialDesignController(object):
             self.loadProjectFonts()
 
     def setCharacterSet(self):
-        self.characterSet = "".join([self.RCJKI.characterSets[key]['Basic'] for key in self.RCJKI.project.script])
+        self.characterSet = "".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script])
 
     def loadProjectFonts(self):
         self.fontsList = []
         self.RCJKI.allFonts = []
         for name, file in self.RCJKI.project.masterFontsPaths.items():
             path = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Masters', file)
-            initialDesignSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'InitialDesign', "".join(self.RCJKI.project.script), file)
+            initialDesignSavepath = os.path.join(os.path.split(self.RCJKI.projectFileLocalPath)[0], 'Temp', 'keysAndExtrems', "".join(self.RCJKI.project.script), file)
             if not os.path.isdir(initialDesignSavepath):
                 files.makepath(initialDesignSavepath)
                 f = OpenFont(path, showInterface=False)
@@ -107,16 +108,19 @@ class InitialDesignController(object):
         self.interface.w.glyphSetList.set(l)
 
     def saveSubsetFonts(self):
+        return
         for d in self.RCJKI.allFonts:
             for name, f in d.items():
                 f.save()
         PostBannerNotification("Fonts saved", "")
 
     def injectGlyphsBack(self, glyphs, user):
+        return
         self.RCJKI.injectGlyphsBack(glyphs, user, self.designStep)
         self.RCJKI.saveProjectFonts()
 
     def pullMastersGlyphs(self):
+        return
         glyphs = []
         for c in self.characterSet:
             glyphName = files.unicodeName(c)

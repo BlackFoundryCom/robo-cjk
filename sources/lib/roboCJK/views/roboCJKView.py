@@ -25,14 +25,14 @@ from mojo.UI import PostBannerNotification, setMaxAmountOfVisibleTools
 from mojo.events import uninstallTool
 
 from controllers import initialDesignController
-from controllers import deepComponentEditionController
+from controllers import deepComponentsController
 from controllers import textCenterController
 
 from tools.externalTools import shapeTool
 from tools.externalTools import scalingEditTool
 
 reload(initialDesignController)
-reload(deepComponentEditionController)
+reload(deepComponentsController)
 reload(textCenterController)
 reload(shapeTool)
 reload(scalingEditTool)
@@ -46,7 +46,7 @@ class RoboCJKWindow(BaseWindowController):
         self.w.userTextBox = TextBox((0,0, 200, 20), self.RCJKI.user,alignment='center')
         self.w.projectEditorButton = Button((0,20,200,20), 'Project', callback=self.openProjectEditor)
         self.w.initialDesignEditorButton = Button((0,40,200,20), 'Initial Design', callback=self.openInitialDesignEditor)
-        self.w.deepComponentEditionButton = Button((0,60,200,20), 'Deep Component Edition', callback=self.openDeepComponentEdition)
+        self.w.deepComponentButton = Button((0,60,200,20), 'Deep Components', callback=self.openDeepComponent)
         self.w.textCenterButton = Button((0,80,200,20), 'Text Center', callback=self.openTextCenter)
         self.w.inspectorButton = Button((0,100,200,20), 'Inspector', callback=self.openInspector)
         self.w.settingsButton = Button((0,-20,200,20), 'Settings', callback=self.openSettings)
@@ -64,18 +64,11 @@ class RoboCJKWindow(BaseWindowController):
         self.RCJKI.projectEditorController.launchProjectEditorInterface()
 
     def openInitialDesignEditor(self, sender):
-        if self.RCJKI.deepComponentEditionController.interface:
-            self.RCJKI.deepComponentEditionController.interface.w.close()
-            self.RCJKI.deepComponentEditionController.interface = None
+        self.RCJKI.closeDesignControllers()
         self.RCJKI.initialDesignController.launchInitialDesignInterface()
 
-    def openDeepComponentEdition(self, sender):
-        # print("".join([self.RCJKI.characterSets[key]['DeepComponentKeys'] for key in self.RCJKI.project.script]))
-
-        if self.RCJKI.initialDesignController.interface:
-            self.RCJKI.initialDesignController.interface.w.close()
-            self.RCJKI.initialDesignController.interface = None
-        self.RCJKI.deepComponentEditionController.launchDeepComponentEditionInterface()
+    def openDeepComponent(self, sender):
+        self.RCJKI.deepComponentsController.launchDeepComponentsInterface()
 
     def openSettings(self, sender):
         pass
@@ -84,27 +77,6 @@ class RoboCJKWindow(BaseWindowController):
         self.RCJKI.inspectorController.launchInspectorInterface()
 
     def windowCloses(self, sender):
-        self.RCJKI.toggleObservers(forceKill=True)
+        self.RCJKI.windowCloses()
 
-        if self.RCJKI.projectEditorController.interface:
-            self.RCJKI.projectEditorController.interface.w.close()
-
-        if self.RCJKI.initialDesignController.interface:
-            self.RCJKI.initialDesignController.interface.w.close()
-            
-        if self.RCJKI.deepComponentEditionController.interface:
-            self.RCJKI.deepComponentEditionController.interface.w.close()
-
-        if self.RCJKI.textCenterInterface:
-            self.RCJKI.textCenterInterface.w.close()
-
-        if self.RCJKI.inspectorController.interface:
-            self.RCJKI.inspectorController.interface.w.close()
-
-        if self.RCJKI.textCenterController.interface:
-            self.RCJKI.textCenterController.interface.w.close()
-
-        setMaxAmountOfVisibleTools(14)
-        uninstallTool(self.RCJKI.shapeTool)
-        uninstallTool(self.RCJKI.scalingEditTool)
 
