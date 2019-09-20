@@ -94,33 +94,13 @@ class keysAndExtremsEditionController(object):
             locker._addGlyphs(lck['glyphs'])
 
     def updateGlyphSetList(self):
-        l = []
-        if self.RCJKI.currentFont is not None:
-            later = []
-            for c in self.characterSet:
-                name = files.unicodeName(c)
-                code = c
-                if name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.designStep]:
-                    l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
-                else:
-                    later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
-            l += later
-        self.interface.w.glyphSetList.set(l)
-
-    def saveSubsetFonts(self):
-        return
-        for d in self.RCJKI.allFonts:
-            for name, f in d.items():
-                f.save()
-        PostBannerNotification("Fonts saved", "")
+        self.interface.w.glyphSetList.set(self.RCJKI.getGlyphSetList(self.characterSet, self.designStep))
 
     def injectGlyphsBack(self, glyphs, user):
-        return
         self.RCJKI.injectGlyphsBack(glyphs, user, self.designStep)
         self.RCJKI.saveProjectFonts()
 
     def pullMastersGlyphs(self):
-        return
         glyphs = []
         for c in self.characterSet:
             glyphName = files.unicodeName(c)

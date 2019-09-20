@@ -93,24 +93,7 @@ class InitialDesignController(object):
             locker._addGlyphs(lck['glyphs'])
 
     def updateGlyphSetList(self):
-        l = []
-        if self.RCJKI.currentFont is not None:
-            later = []
-            for c in self.characterSet:
-                name = files.unicodeName(c)
-                code = c
-                if name in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.designStep]:
-                    l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
-                else:
-                    later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
-            l += later
-        self.interface.w.glyphSetList.set(l)
-
-    def saveSubsetFonts(self):
-        for d in self.RCJKI.allFonts:
-            for name, f in d.items():
-                f.save()
-        PostBannerNotification("Fonts saved", "")
+        self.interface.w.glyphSetList.set(self.RCJKI.getGlyphSetList(self.characterSet, self.designStep))
 
     def injectGlyphsBack(self, glyphs, user):
         self.RCJKI.injectGlyphsBack(glyphs, user, self.designStep)

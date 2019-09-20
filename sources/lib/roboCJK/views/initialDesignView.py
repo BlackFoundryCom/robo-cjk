@@ -106,7 +106,7 @@ class InitialDesignWindow(BaseWindowController):
 
 
     def saveLocalFontButtonCallback(self, sender):
-        self.RCJKI.initialDesignController.saveSubsetFonts()
+        self.RCJKI.saveAllFonts()
         self.w.mainCanvas.update()
         
     def pullMasterGlyphsButtonCallback(self, sender):

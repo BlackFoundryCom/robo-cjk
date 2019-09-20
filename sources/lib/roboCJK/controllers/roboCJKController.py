@@ -41,6 +41,7 @@ from resources import characterSets
 from utils import git
 from utils import interpolations
 from views import tableDelegate
+from utils import files
 import Quartz
 from fontTools.pens import cocoaPen
 
@@ -56,6 +57,7 @@ reload(inspectorController)
 reload(textCenterController)
 reload(characterSets)
 reload(git)
+reload(files)
 reload(powerRuler)
 reload(balanceHandles)
 reload(shapeTool)
@@ -270,7 +272,26 @@ class RoboCJKController(object):
 
         return pdfData
 
+    def getGlyphSetList(self, charset, designStep):
+        l = []
+        if self.currentFont is not None:
+            later = []
+            for c in charset:
+                name = files.unicodeName(c)
+                code = c
+                if name in self.collab._userLocker(self.user).glyphs[designStep]:
+                    l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+                else:
+                    later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+            l += later
+        return l
 
+    def saveAllSubsetFonts(self):
+        for d in self.allFonts:
+            for name, f in d.items():
+                f.save()
+        PostBannerNotification("Fonts saved", "")
+        
 
     def updateViews(self):
         UpdateCurrentGlyphView()
