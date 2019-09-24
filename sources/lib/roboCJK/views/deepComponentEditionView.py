@@ -213,7 +213,9 @@ class DeepComponentEditionWindow(BaseWindowController):
             self.slidersValuesList.append({'Layer': newGlyphLayer.name,
                                         'Image': None,
                                         'XValue': 0,
-                                        'YValue': 0})
+                                        'Lock':1,
+                                        'YValue': 0
+                                        })
         else:
 
             self.RCJKI.currentGlyph = f.getLayer("foreground")[g.name]
