@@ -178,39 +178,43 @@ class MainCanvas():
                     lineTo((1100, 1100))
                     drawPath()
                 else:               
-                    # print("1") 
+                    
                     if self.extremDCGlyph is not None:
                         fill(0, 0, 0, .2)
                         drawGlyph(self.extremDCGlyph)
-                    # print("2")
+                    
                     glyphName = g.name
                     if self.step == '_deepComponentsEdition_glyphs':
                         glyphName = 'uni'+g.name.split("_")[1]
-
+                    
                     if glyphName in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.step]:
                         fill(0, 0, 0, 1)
                     elif glyphName in self.RCJKI.lockedGlyphs[self.step]:
                         fill(1, 0, 0, 1)
                     else:
                         fill(0, 0, 0, .5)
-
+                    
                     if self.step == '_deepComponentsEdition_glyphs':
-                        save()
-                        fill(0, 0, .8, .6)
-                        if self.preview: 
-                            fill(0)
-                        translate(self.controller.deepComponentTranslateX, self.controller.deepComponentTranslateY)
-                        
-                        drawGlyph(self.RCJKI.deepComponentGlyph)
-                        restore()
+                        if self.RCJKI.deepComponentGlyph:
+                            save()
+                            fill(0, 0, .8, .6)
+                            if self.preview: 
+                                fill(0)
+                            translate(self.controller.deepComponentTranslateX, self.controller.deepComponentTranslateY)
+                            
+                            drawGlyph(self.RCJKI.deepComponentGlyph)
+                            restore()
+                        else:
+                            fill(.95, .15, .4, .8)
+                            drawGlyph(g)    
                     else:
                         drawGlyph(g)
-
+                    
 
                     if self.RCJKI.settings["showDesignFrame"]:
                         if not self.preview or self.preview == self.RCJKI.settings["designFrame"]["drawPreview"]:
                             glyph = g
-                            if self.step == '_deepComponentsEdition_glyphs':
+                            if self.step == '_deepComponentsEdition_glyphs' and self.RCJKI.deepComponentGlyph:
                                 glyph = self.RCJKI.deepComponentGlyph.copy()
                                 glyph.moveBy((self.controller.deepComponentTranslateX, self.controller.deepComponentTranslateY))
                             self.dfv.draw(

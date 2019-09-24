@@ -61,11 +61,16 @@ class CurrentGlyphViewDrawer():
                     scale = self.scale
                     )
 
-        if self.RCJKI.deepComponentGlyph is not None:
+        if self.RCJKI.deepComponentGlyph:
             save()
             fill(0, 0, .8, .15)
             translate(self.RCJKI.deepComponentEditionController.interface.deepComponentTranslateX, self.RCJKI.deepComponentEditionController.interface.deepComponentTranslateY)
             drawGlyph(self.RCJKI.deepComponentGlyph)
+            restore()
+        else:
+            save()
+            fill(.95, .15, .4, .8)
+            drawGlyph(g)  
             restore()
             
         if self.RCJKI.settings["referenceViewer"]["onOff"]:

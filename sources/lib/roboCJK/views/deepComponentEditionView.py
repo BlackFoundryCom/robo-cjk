@@ -312,14 +312,18 @@ class DeepComponentEditionWindow(BaseWindowController):
             if XValue != self.slidersValuesList[sel[0]]["XValue"]:
                 YValue = XValue
                 changed = True
+
             elif YValue != self.slidersValuesList[sel[0]]["YValue"]:
                 XValue = YValue
                 changed = True
 
-        selectedLayerValue = (XValue, YValue)
+        if lock != self.slidersValuesList[sel[0]]["Lock"]:
+            changed = True
 
-        self.RCJKI.layersInfos[selectedLayerName] = selectedLayerValue
-        self.slidersValuesList[sel[0]]["XValue"], self.slidersValuesList[sel[0]]["YValue"] = selectedLayerValue 
+        self.RCJKI.layersInfos[selectedLayerName] = (XValue, YValue)
+        self.slidersValuesList[sel[0]]["XValue"] = XValue 
+        self.slidersValuesList[sel[0]]["YValue"] = YValue 
+        self.slidersValuesList[sel[0]]["Lock"] = lock
 
         if changed:
             d = {'Layer': selectedLayerName,
