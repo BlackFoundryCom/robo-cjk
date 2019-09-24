@@ -219,6 +219,8 @@ class DeepComponentEditionWindow(BaseWindowController):
         else:
 
             self.RCJKI.currentGlyph = f.getLayer("foreground")[g.name]
+            self.RCJKI.currentGlyph.appendGlyph(self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont][self.selectedGlyphName])
+
         self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
         self.updateImageSliderList()
         # self.setSliderList()
@@ -318,7 +320,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                 changed = True
 
         if lock != self.slidersValuesList[sel[0]]["Lock"]:
-            changed = True
+            changed = True 
 
         self.RCJKI.layersInfos[selectedLayerName] = (XValue, YValue)
         self.slidersValuesList[sel[0]]["XValue"] = XValue 
