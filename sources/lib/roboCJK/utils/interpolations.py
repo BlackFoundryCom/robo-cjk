@@ -128,16 +128,17 @@ def deepolation(newGlyph, masterGlyph, layersInfo = {}):
             ptype = point.type if point.type != 'offcurve' else None
 
             deltaX, deltaY = 0.0, 0.0
-            for layerName, value in layersInfo.items():
+            for layerName, values in layersInfo.items():
 
-                ratio = value / 1000.0
+                ratioX = values[0] / 1000.0
+                ratioY = values[1] / 1000.0
                 layerGlyph = masterGlyph.getLayer(layerName)
 
                 pI = layerGlyph[contourIndex].points[pointIndex]
                 pxI, pyI = pI.x, pI.y
 
-                deltaX += ratio * (pxI-px)
-                deltaY += ratio * (pyI-py)
+                deltaX += ratioX * (pxI-px)
+                deltaY += ratioY * (pyI-py)
 
             newX = int(px + deltaX)
             newY = int(py + deltaY)

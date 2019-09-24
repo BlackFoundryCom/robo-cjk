@@ -143,13 +143,18 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.w.dcOffsetYEditText.getNSTextField().setDrawsBackground_(False)
 
         slider = SliderListCell(minValue = 0, maxValue = 1000)
+        checkbox = CheckBoxListCell()
         self.slidersValuesList = []
         self.w.slidersList = List((200, -240, -0, -20),
             self.slidersValuesList,
             columnDescriptions = [
                                     # {"title": "Layer", "editable": False, "width": 140},
                                     {"title": "Image", "editable": False, "cell": ImageListCell(), "width": 60}, 
-                                    {"title": "Values", "cell": slider}],
+                                    {"title": "XValue", "cell": slider, "width": 250}, 
+                                    {"title": "Lock", "cell": checkbox, "width": 20},
+                                    {"title": "YValue", "cell": slider, "width": 250},
+                                    
+                                    ],
             editCallback = self.slidersListEditCallback,
             doubleClickCallback = self.sliderListDoubleClickCallback,
             drawFocusRing = False,
@@ -207,7 +212,8 @@ class DeepComponentEditionWindow(BaseWindowController):
             self.RCJKI.currentGlyph = f.getLayer(newGlyphLayer.name)[g.name]
             self.slidersValuesList.append({'Layer': newGlyphLayer.name,
                                         'Image': None,
-                                        'Values': 0})
+                                        'XValue': 0,
+                                        'YValue': 0})
         else:
 
             self.RCJKI.currentGlyph = f.getLayer("foreground")[g.name]
@@ -258,7 +264,9 @@ class DeepComponentEditionWindow(BaseWindowController):
 
             d = {'Layer': layerName,
                 'Image': NSImage.alloc().initWithData_(pdfData),
-                'Values': item["Values"]}
+                'XValue': item["XValue"],
+                'YValue': item["YValue"],
+                'Lock': item["Lock"]}
 
             slidersValuesList.append(d)
         self.slidersValuesList = slidersValuesList
@@ -276,19 +284,52 @@ class DeepComponentEditionWindow(BaseWindowController):
 
             d = {'Layer': layerName,
                 'Image': NSImage.alloc().initWithData_(pdfData),
-                'Values': 0}
+                'XValue': 0,
+                'YValue': 0,
+                'Lock': 1}
 
             self.slidersValuesList.append(d)
-            self.RCJKI.layersInfos[layerName]=0
+            self.RCJKI.layersInfos[layerName] = (0, 0)
         self.w.slidersList.set(self.slidersValuesList)
 
     def slidersListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        selectedLayerName = sender.get()[sel[0]]["Layer"]
-        selectedLayerValue = sender.get()[sel[0]]["Values"]
+
+        layersInfo = sender.get()
+        layerInfo = layersInfo[sel[0]]
+
+        selectedLayerName = layerInfo["Layer"]
+        image = layerInfo["Image"]
+        lock = layerInfo["Lock"]
+        XValue = layerInfo["XValue"] 
+        YValue = layerInfo["YValue"]
+
+        changed = False
+        if lock:
+            if XValue != self.slidersValuesList[sel[0]]["XValue"]:
+                YValue = XValue
+                changed = True
+            elif YValue != self.slidersValuesList[sel[0]]["YValue"]:
+                XValue = YValue
+                changed = True
+
+        selectedLayerValue = (XValue, YValue)
+
         self.RCJKI.layersInfos[selectedLayerName] = selectedLayerValue
-        self.slidersValuesList[sel[0]]["Values"] = selectedLayerValue 
+        self.slidersValuesList[sel[0]]["XValue"], self.slidersValuesList[sel[0]]["YValue"] = selectedLayerValue 
+
+        if changed:
+            d = {'Layer': selectedLayerName,
+                'Image': image,
+                'XValue': XValue,
+                'YValue': YValue,
+                'Lock': lock}
+
+            layers = [e if i != sel[0] else d for i, e in enumerate(layersInfo)]
+            sender.set(layers)
+            sender.setSelection(sel)
+
         self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
         self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
         self.w.mainCanvas.update()
