@@ -22,14 +22,20 @@ from mojo.drawingTools import *
 
 class StackMasterDrawer():
 
-    def __init__(self, RCJKI):
+    def __init__(self, RCJKI, controller):
         self.RCJKI = RCJKI
+        self.c = controller
 
     def getFonts(self):
         self.fonts = []
-        for t in self.RCJKI.allFonts:
-            for _ , f in t.items():
+
+        if self.RCJKI.designStep == '_deepComponentsEdition_glyphs':
+            for f in self.RCJKI.DCFonts2Fonts.keys():
                 self.fonts.append(f)
+        else:
+            for t in self.RCJKI.allFonts:
+                for _ , f in t.items():
+                    self.fonts.append(f)
         return self.fonts
 
     def draw(self, glyph, preview = False):
@@ -51,7 +57,7 @@ class StackMasterDrawer():
                 if glyph.name not in font: continue
                 if font[glyph.name] == glyph: continue
 
-                drawGlyph(font[glyph.name])
+                drawGlyph(font[glyph.name].getLayer(glyph.layer.name))
 
         restore()
 

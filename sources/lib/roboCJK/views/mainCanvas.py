@@ -51,7 +51,7 @@ class MainCanvas():
     translateX = 300
     translateY = 280
 
-    def __init__(self, RCJKI, controller, step):
+    def __init__(self, RCJKI, controller):
         self.RCJKI = RCJKI
         self.controller = controller
         self.canvasWidth = 386
@@ -59,9 +59,9 @@ class MainCanvas():
         self.dfv = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
         self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.RCJKI)
         self.interpolaviourDrawer = interpolaviourDrawer.InterpolaviourDrawer(self.RCJKI)
-        self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI)
+        self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI, self)
         self.waterFall = displayOptionsDrawer.WaterFallDrawer(self.RCJKI)
-        self.step = step
+
         self.extremDCGlyph = None
         self.controller.deepComponentTranslateX = 0
         self.controller.deepComponentTranslateY = 0
@@ -184,17 +184,17 @@ class MainCanvas():
                         drawGlyph(self.extremDCGlyph)
                     
                     glyphName = g.name
-                    if self.step == '_deepComponentsEdition_glyphs':
+                    if self.RCJKI.designStep == '_deepComponentsEdition_glyphs':
                         glyphName = 'uni'+g.name.split("_")[1]
                     
-                    if glyphName in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.step]:
+                    if glyphName in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.RCJKI.designStep]:
                         fill(0, 0, 0, 1)
-                    elif glyphName in self.RCJKI.lockedGlyphs[self.step]:
+                    elif glyphName in self.RCJKI.lockedGlyphs[self.RCJKI.designStep]:
                         fill(1, 0, 0, 1)
                     else:
                         fill(0, 0, 0, .5)
                     
-                    if self.step == '_deepComponentsEdition_glyphs':
+                    if self.RCJKI.designStep == '_deepComponentsEdition_glyphs':
                         if self.RCJKI.deepComponentGlyph:
                             save()
                             fill(0, 0, .8, .6)
@@ -214,7 +214,7 @@ class MainCanvas():
                     if self.RCJKI.settings["showDesignFrame"]:
                         if not self.preview or self.preview == self.RCJKI.settings["designFrame"]["drawPreview"]:
                             glyph = g
-                            if self.step == '_deepComponentsEdition_glyphs' and self.RCJKI.deepComponentGlyph:
+                            if self.RCJKI.designStep == '_deepComponentsEdition_glyphs' and self.RCJKI.deepComponentGlyph:
                                 glyph = self.RCJKI.deepComponentGlyph.copy()
                                 glyph.moveBy((self.controller.deepComponentTranslateX, self.controller.deepComponentTranslateY))
                             self.dfv.draw(

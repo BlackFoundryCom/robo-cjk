@@ -36,6 +36,7 @@ class DeepComponentEditionController(object):
         self.characterSet = None
         self.fontsList = []
 
+
         """
         MASTER FONTS
         MASTER DEEP COMPONENTS FONTS (with all dc keys)
@@ -51,6 +52,7 @@ class DeepComponentEditionController(object):
             self.RCJKI.resetController()
             self.interface = deepComponentEditionView.DeepComponentEditionWindow(self)
             self.loadProjectFonts()
+            self.RCJKI.designStep = '_deepComponentsEdition_glyphs'
 
     def setCharacterSet(self):
         script = self.RCJKI.collab._userLocker(self.RCJKI.user).script

@@ -35,9 +35,10 @@ class CurrentGlyphViewDrawer():
         # for t in self.RCJKI.allFonts:
         #     for _ , f in t.items():
         #         self.fonts.append(f)
+        
         self.dfd = designFrameDrawer.DesignFrameDrawer(self.RCJKI)
         self.rvd = referenceViewDrawer.ReferenceViewerDraw(self.RCJKI)
-        self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI)
+        self.stackMaster = displayOptionsDrawer.StackMasterDrawer(self.RCJKI, self)
         self.powerRuler = powerRulerDrawer.PowerRulerDrawer(self.RCJKI)
 
     def draw(self, info):

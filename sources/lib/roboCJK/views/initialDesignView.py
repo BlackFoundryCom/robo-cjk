@@ -79,9 +79,10 @@ class InitialDesignWindow(BaseWindowController):
             'Pull', 
             callback=self.pullMasterGlyphsButtonCallback)
         
+        
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
-            delegate=mainCanvas.MainCanvas(self.RCJKI, self, self.controller.designStep),
+            delegate=mainCanvas.MainCanvas(self.RCJKI, self, self.RCJKI.designStep),
             canvasSize=(5000, 5000),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)
@@ -117,7 +118,7 @@ class InitialDesignWindow(BaseWindowController):
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         user = gitEngine.user()
-        glyphsList = self.RCJKI.collab._userLocker(user).glyphs[self.controller.designStep]
+        glyphsList = self.RCJKI.collab._userLocker(user).glyphs[self.RCJKI.designStep]
         self.RCJKI.initialDesignController.injectGlyphsBack(glyphsList, user)
 
     def colorPickerCallback(self, sender):
@@ -201,4 +202,4 @@ class InitialDesignWindow(BaseWindowController):
         self.w.mainCanvas.update()
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
-        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, self.controller.designStep, self.RCJKI.currentFont)
+        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, self.RCJKI.designStep, self.RCJKI.currentFont)

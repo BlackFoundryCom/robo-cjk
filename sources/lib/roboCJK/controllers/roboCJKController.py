@@ -91,6 +91,7 @@ class RoboCJKController(object):
         self.characterSets = characterSets.sets
         self.currentFont = None
         self.currentGlyph = None
+        self.designStep = "_initialDesign_glyphs"
         self.deepComponentGlyph = None
         self.currentGlyphWindow = None
         self.allFonts = []
@@ -205,6 +206,7 @@ class RoboCJKController(object):
     def resetController(self):
         self.currentFont = None
         self.currentGlyph = None
+        self.designStep = "_initialDesign_glyphs"
         # self.allFonts = []
         # self.fonts2DCFonts = {}
         # self.lockedGlyphs = []

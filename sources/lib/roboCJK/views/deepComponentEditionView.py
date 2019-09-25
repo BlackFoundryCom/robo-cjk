@@ -107,7 +107,9 @@ class DeepComponentEditionWindow(BaseWindowController):
             'Pull', 
             callback=self.pullMasterGlyphsButtonCallback)
 
-        self.canvasDrawer = mainCanvas.MainCanvas(self.RCJKI, self, '_deepComponentsEdition_glyphs')
+        
+
+        self.canvasDrawer = mainCanvas.MainCanvas(self.RCJKI, self)
         self.w.mainCanvas = Canvas((200,0,-0,-240), 
             delegate=self.canvasDrawer,
             canvasSize=(5000, 5000),

@@ -33,7 +33,7 @@ class InitialDesignController(object):
         self.interface = None
         self.characterSet = None
         self.fontsList = []
-        self.designStep = "_initialDesign_glyphs"
+        
 
     def launchInitialDesignInterface(self):
         self.setCharacterSet()
@@ -41,6 +41,7 @@ class InitialDesignController(object):
             self.RCJKI.resetController()
             self.interface = initialDesignView.InitialDesignWindow(self)
             self.loadProjectFonts()
+            self.RCJKI.designStep = "_initialDesign_glyphs"
 
     def setCharacterSet(self):
         self.characterSet = "".join([self.RCJKI.characterSets[key]['Basic'] for key in self.RCJKI.project.script])
@@ -87,24 +88,24 @@ class InitialDesignController(object):
         collabFile = open(collabFilePath, 'r')
         d = json.load(collabFile)
         for lck in d['lockers']:
-            self.RCJKI.collab._addLocker(lck['user'], self.designStep)
+            self.RCJKI.collab._addLocker(lck['user'], self.RCJKI.designStep)
         for lck in d['lockers']:
             locker = self.RCJKI.collab._userLocker(lck['user'])
             locker._addGlyphs(lck['glyphs'])
 
     def updateGlyphSetList(self):
-        self.interface.w.glyphSetList.set(self.RCJKI.getGlyphSetList(self.characterSet, self.designStep))
+        self.interface.w.glyphSetList.set(self.RCJKI.getGlyphSetList(self.characterSet, self.RCJKI.designStep))
 
     def injectGlyphsBack(self, glyphs, user):
-        self.RCJKI.injectGlyphsBack(glyphs, user, self.designStep)
+        self.RCJKI.injectGlyphsBack(glyphs, user, self.RCJKI.designStep)
         self.RCJKI.saveProjectFonts()
 
     def pullMastersGlyphs(self):
         glyphs = []
         for c in self.characterSet:
             glyphName = files.unicodeName(c)
-            if glyphName not in self.RCJKI.reservedGlyphs[self.designStep]:
+            if glyphName not in self.RCJKI.reservedGlyphs[self.RCJKI.designStep]:
                 glyphs.append(glyphName)
 
-        self.RCJKI.pullMastersGlyphs(glyphs, self.designStep)
+        self.RCJKI.pullMastersGlyphs(glyphs, self.RCJKI.designStep)
 
