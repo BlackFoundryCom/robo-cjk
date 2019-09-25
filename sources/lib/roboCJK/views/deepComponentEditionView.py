@@ -26,6 +26,7 @@ from AppKit import *
 from mojo.UI import OpenGlyphWindow, AllGlyphWindows, CurrentGlyphWindow, PostBannerNotification
 from mojo.roboFont import *
 from mojo.canvas import *
+from mojo.events import addObserver, removeObserver
 from lib.cells.colorCell import RFColorCell
 # from fontTools.pens import cocoaPen
 
@@ -183,9 +184,33 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.dummyCell = NSCell.alloc().init()
         self.dummyCell.setImage_(None)
 
+        self.observer()
+
         self.w.bind('close', self.windowCloses)
         self.w.bind('became main', self.windowBecameMain)
         self.w.open()
+
+    def observer(self, remove=False):
+        if not remove:
+            addObserver(self, "glyphAdditionContextualMenuItems", "glyphAdditionContextualMenuItems")
+            return
+        removeObserver(self, "glyphAdditionContextualMenuItems")
+
+    def glyphAdditionContextualMenuItems(self, info):
+        info['additionContextualMenuItems'].append(("Import layer from next master", self.importLayerFromNextMaster))
+
+    def importLayerFromNextMaster(self, sender):
+        font = None
+        for f in self.RCJKI.DCFonts2Fonts.keys():
+            if f == self.RCJKI.currentFont: continue
+            font = f 
+        glyph = self.RCJKI.currentGlyph
+        name = glyph.name
+        glyph.prepareUndo()
+        glyph.clear()
+        glyph.appendGlyph(font[name].getLayer(glyph.layer.name))
+        glyph.performUndo()
+        glyph.update()
 
     def UpdateDCOffset(self):
         self.w.dcOffsetXEditText.set(self.deepComponentTranslateX)
@@ -433,6 +458,7 @@ class DeepComponentEditionWindow(BaseWindowController):
             CurrentGlyphWindow().close()
         self.RCJKI.currentGlyphWindow = None
         self.RCJKI.deepComponentEditionController.interface = None
+        self.observer(True)
 
     def yesnocallback(self, yes):
         if yes:
