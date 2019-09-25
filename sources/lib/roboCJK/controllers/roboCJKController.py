@@ -111,7 +111,7 @@ class RoboCJKController(object):
                             },
 
             'stackMasters': True,
-            'stackMastersColor': NSColor.colorWithCalibratedRed_green_blue_alpha_(0, .3, 1, .3),
+            'stackMastersColor': NSColor.colorWithCalibratedRed_green_blue_alpha_(1, .4, 0, .4),
             'waterFall': False,
             'waterFallColor': NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1),
 

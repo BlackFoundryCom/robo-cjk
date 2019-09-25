@@ -25,12 +25,14 @@ class StackMasterDrawer():
     def __init__(self, RCJKI, controller):
         self.RCJKI = RCJKI
         self.c = controller
+        # print(self.c.__class__.__name__)
 
     def getFonts(self):
         self.fonts = []
 
-        if self.RCJKI.designStep == '_deepComponentsEdition_glyphs':
+        if self.RCJKI.designStep == '_deepComponentsEdition_glyphs' and self.c.__class__.__name__ != "MainCanvas":
             for f in self.RCJKI.DCFonts2Fonts.keys():
+                if f == self.RCJKI.currentFont: continue
                 self.fonts.append(f)
         else:
             for t in self.RCJKI.allFonts:
