@@ -250,6 +250,7 @@ class DeepComponentEditionWindow(BaseWindowController):
 
         self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
         self.updateImageSliderList()
+        self.RCJKI.updateViews()
         # self.setSliderList()
 
     def removeLayerButtonCallback(self, sender):
