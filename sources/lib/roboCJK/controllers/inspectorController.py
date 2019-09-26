@@ -19,6 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from imp import reload
 from views import inspectorView
 from mojo.UI import UpdateCurrentGlyphView
+from mojo.roboFont import *
 reload(inspectorView)
 
 class inspectorController(object):
@@ -95,3 +96,69 @@ class inspectorController(object):
         dx = pt.x - onPt.x
         dy = pt.y - onPt.y
         return (dx, dy)
+
+    def scaleTransformation(self, values):
+        if not self.RCJKI.currentGlyph: return
+
+        self.RCJKI.currentGlyph.update()
+        self.RCJKI.currentGlyph.prepareUndo()
+
+        contours = list(filter(lambda c: c.selected, self.RCJKI.currentGlyph)) 
+        points = [p for c in self.RCJKI.currentGlyph for p in c.points if p.selected]
+
+        if contours:  
+            self.scaleContours(contours, values) 
+             
+        elif points:
+            self.scalePoints(points, values) 
+             
+        else:
+            self.scaleContours(self.RCJKI.currentGlyph, values)  
+
+        self.RCJKI.currentGlyph.performUndo()
+        self.RCJKI.currentGlyph.update()
+
+        self.RCJKI.updateViews()
+
+    def scaleContours(self, contours, values):
+        x, y, w, h = [], [], [], []
+
+        for contour in contours:
+            x.append(contour.box[0])
+            y.append(contour.box[1])
+            w.append(contour.box[2])
+            h.append(contour.box[3])
+
+        x = min(x)
+        y = min(y)
+        w = max(w)
+        h = max(h)
+
+        self.scale(contours, values, (x, y, w, h))
+
+    def scale(self, elements, values, pos):
+        xValue, yValue = values
+
+        x, y, w, h = pos
+        
+        centerX = x + (w - x) * .5
+        centerY = y + (h - y) * .5
+
+        for element in elements:
+            element.scaleBy((xValue, yValue), (centerX, centerY))
+
+    def scalePoints(self, points, values):
+        posx, posy = [], []
+
+        for point in points:
+            posx.append(point.x)
+            posy.append(point.y)
+
+        x = min(posx)
+        y = min(posy)
+        w = max(posx)
+        h = max(posy)
+
+        self.scale(points, values, (x, y, w, h))
+
+

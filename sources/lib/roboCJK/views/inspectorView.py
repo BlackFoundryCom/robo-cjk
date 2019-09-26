@@ -33,6 +33,8 @@ class Inspector():
 
         self.interpolaviour = Interpolaviour((0,0,-0,-0), self.RCJKI)
 
+        self.transformation = Transformation((0,0,-0,-0), self.RCJKI)
+
         self.displayOption = DisplayOptions((0,0,-0,-0), self.RCJKI)
 
         self.referenceViewer = ReferenceViewer((0,0,-0,-0), self.RCJKI)
@@ -49,6 +51,12 @@ class Inspector():
 
                         dict(label="Interpolaviour", 
                             view=self.interpolaviour, 
+                            size=130, 
+                            collapsed=False, 
+                            canResize=0),
+
+                        dict(label="Transformation", 
+                            view=self.transformation, 
                             size=130, 
                             collapsed=False, 
                             canResize=0),
@@ -80,6 +88,21 @@ class Inspector():
 
     def windowCloses(self, sender):
         self.RCJKI.inspectorController.interface = None
+
+class Transformation(Group):
+
+    def __init__(self, posSize, RCJKI):
+        super(Transformation, self).__init__(posSize)
+        self.RCJKI = RCJKI
+
+        self.transformationVerticale = Button((10, 10, -10, 20), 'Vertical', callback = self.transformationVerticaleCallback)
+        self.transformationHorizontale = Button((10, 40, -10, 20), 'Horizontal', callback = self.transformationHorizontaleCallback)
+
+    def transformationVerticaleCallback(self, sender):
+        self.RCJKI.inspectorController.scaleTransformation((-1, 1))
+
+    def transformationHorizontaleCallback(self, sender):
+        self.RCJKI.inspectorController.scaleTransformation((1, -1))
 
 class Properties(Group):
 
