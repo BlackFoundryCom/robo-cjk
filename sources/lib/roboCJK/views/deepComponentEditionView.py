@@ -166,6 +166,9 @@ class DeepComponentEditionWindow(BaseWindowController):
             showColumnTitles = False
             )
 
+        self.w.addNLIButton = Button((-300, -20, 100, 20),
+            'NLI',
+            callback = self.addNLIButtonCallback)
         self.w.addLayerButton = Button((-200, -20, 100, 20), 
             "+",
             callback = self.addLayerButtonCallback)
@@ -229,6 +232,9 @@ class DeepComponentEditionWindow(BaseWindowController):
         except:
             sender.set(self.deepComponentTranslateY)
         self.w.mainCanvas.update()
+
+    def addNLIButtonCallback(self, sender):
+        self.RCJKI.deepComponentEditionController.makeNLIPaths(reset=True)
 
     def addLayerButtonCallback(self, sender):
         g = self.RCJKI.currentGlyph
@@ -407,13 +413,14 @@ class DeepComponentEditionWindow(BaseWindowController):
     def deepComponentsSetListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
+        self.RCJKI.deepComponentEditionController.makeNLIPaths()
+
         self.selectedDeepComponentGlyphName = sender.get()[sel[0]]['Name']
 
         self.controller.updateExtemeList(self.selectedDeepComponentGlyphName)
         if self.selectedDeepComponentGlyphName in self.RCJKI.currentFont:
             self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
-            # self.RCJKI.deepComponentGlyph = interpolations.deepolation(RGlyph(), self.RCJKI.currentGlyph, self.RCJKI.layersInfos)
-            # self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
+
             if self.RCJKI.currentGlyph.markColor is None:
                 r, g, b, a = 0, 0, 0, 0
             else: 

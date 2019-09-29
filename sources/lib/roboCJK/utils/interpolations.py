@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from ufoLib.pointPen import PointToSegmentPen
+from fontPens.penTools import getCubicPoint
 from mojo.roboFont import *
 import math
 
@@ -110,14 +111,15 @@ def normalize(a):
        l = 1e-10
    return([a[0]/l, a[1]/l])
 
-def deepolation(newGlyph, masterGlyph, layersInfo = {}):
+def deepolation(newGlyph, masterGlyph, pathsGlyphs, layersInfo = {}):
 
     if not deepCompatible(masterGlyph, list(layersInfo.keys())):
         return False
 
     pen = PointToSegmentPen(newGlyph.getPen())
     contoursList = []
-
+    pathsGlyph = pathsGlyphs[masterGlyph.name]
+    allpointsIndex = 0
     for contourIndex, contour in enumerate(masterGlyph):
 
         pointsList = []
@@ -129,16 +131,31 @@ def deepolation(newGlyph, masterGlyph, layersInfo = {}):
 
             deltaX, deltaY = 0.0, 0.0
             for layerName, values in layersInfo.items():
+                pathGlyph = None
+                if pathsGlyph:
+                    pathGlyph = pathsGlyph['paths_'+layerName]
 
                 ratioX = values[0] / 1000.0
                 ratioY = values[1] / 1000.0
+                ratio = ratioX
+
                 layerGlyph = masterGlyph.getLayer(layerName)
 
                 pI = layerGlyph[contourIndex].points[pointIndex]
                 pxI, pyI = pI.x, pI.y
 
-                deltaX += ratioX * (pxI-px)
-                deltaY += ratioY * (pyI-py)
+                dx = pxI-px
+                dy = pyI-py
+                n = normalize((-dy, dx))
+                curve = ((px, py), (px+dx*.33+n[0]*50, py+dy*.33+n[1]*50), (px+dx*.66+n[0]*50, py+dy*.66+n[1]*50), (pxI, pyI))
+                if pathGlyph:
+                    curve = [(p.x, p.y) for p in pathGlyph[allpointsIndex].points]
+                    
+                nli = getCubicPoint(ratio, curve[0], curve[1], curve[2], curve[3])
+                deltaX += nli[0] - px
+                deltaY += nli[1] - py
+
+            allpointsIndex += 1
 
             newX = int(px + deltaX)
             newY = int(py + deltaY)

@@ -296,5 +296,29 @@ class DeepComponentEditionController(object):
         if self.interface:
             self.interface.w.fontsList.set(self.fontsList)
 
+    def makeNLIPaths(self, reset=False):
+        g = self.RCJKI.currentGlyph
+        if not g: return
+        if g.name in self.RCJKI.pathsGlyphs and reset == False: return
+        pathsGlyphs = {}
+        start = g.getLayer('foreground')
+        for end in g.layers:
+            endName = end.layerName
+            if endName == 'foreground': continue
+            if len(end) == 0: continue
+            pathGlyph = RGlyph()
+            pathGlyph.name = 'paths_%s' % endName
+            
+            pen = pathGlyph.getPen()
 
+            for cs, ce in zip(start, end):
+                for j, p in enumerate(cs.points):
+                    pen.moveTo((p.x, p.y))
+                    pe = ce.points[j]
+                    pen.curveTo( (p.x+(pe.x-p.x)/3.33 , p.y+(pe.y-p.y)/3.33), (p.x+2*(pe.x-p.x)/3.33 , p.y+2*(pe.y-p.y)/3.33),  (pe.x, pe.y) )
+                    pen.endPath()
+            
+            pathsGlyphs[pathGlyph.name] = pathGlyph
+
+        self.RCJKI.pathsGlyphs[g.name] = pathsGlyphs
 

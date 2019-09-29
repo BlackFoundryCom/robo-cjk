@@ -62,6 +62,36 @@ class CurrentGlyphViewDrawer():
                     scale = self.scale
                     )
 
+        if g.name in self.RCJKI.pathsGlyphs:
+            pathsGlyph = self.RCJKI.pathsGlyphs[g.name]
+            if 'paths_'+g.layerName in pathsGlyph:
+                pathGlyph = pathsGlyph['paths_'+g.layerName]
+                save()
+                for c in pathGlyph:
+                    newPath()
+                    moveTo((c[0][0].x, c[0][0].y))
+                    for s in c:
+                        lineTo((s[0].x, s[0].y))
+                        for p in s:
+                            lineTo((p.x, p.y))
+                            if p.type =='offcurve':
+                                save()
+                                fill(1, 0, 0, 1)
+                                stroke(None)
+                                oval(p.x-5, p.y-5, 10, 10)
+                                restore()
+                    save()
+                    fill(None)
+                    stroke(1, 0, 0, .3)     
+                    drawPath()
+                    restore()
+                save()
+                fill(None)
+                stroke(1, 0, 0, 1)
+                drawGlyph(pathGlyph)
+                restore()
+                restore()
+
         if self.RCJKI.deepComponentGlyph:
             save()
             fill(0, 0, .8, .15)
@@ -82,7 +112,7 @@ class CurrentGlyphViewDrawer():
             else:
                 char = ""
             if not (info['notificationName'] == "drawPreview") or (info['notificationName'] == "drawPreview") == self.RCJKI.settings["referenceViewer"]["drawPreview"]:
-                self.rvd.draw(char) 
+                self.rvd.draw(char)
 
         if self.RCJKI.settings["stackMasters"]:
             self.stackMaster.draw(g, preview = info['notificationName'] == "drawPreview")

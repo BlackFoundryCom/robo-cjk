@@ -79,6 +79,73 @@ kLockedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 0, 0, 1)
 kFreeColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 1)
 kReservedColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1)
 
+class PointLocation(object):
+    def __init__(self, rfPoint, cont, seg, idx):
+        p = Point(rfPoint)
+        self.pos = p
+        self.rfPoint = rfPoint
+        self.cont = cont
+        self.seg = seg
+        self.idx = idx
+
+class Point(object):
+    __slots__ = ('x', 'y')
+    def __init__(self, ix=0.0, iy=0.0):
+        self.x = ix
+        self.y = iy
+    def __len__(self): return 2
+    def __getitem__(self, i):
+        if i == 0:
+            return self.x
+        elif i == 1:
+            return self.y
+        else:
+            raise IndexError("coordinate index {} out of range [0,1]".format(i))
+    def __repr__(self):
+        return "({:f},{:f})".format(self.x, self.y)
+    def __str__(self):
+        return self.__repr__()
+    def __add__(self, rhs): # rhs = right hand side
+        return Point(self.x + rhs.x, self.y + rhs.y)
+    def __sub__(self, rhs):
+        return Point(self.x - rhs.x, self.y - rhs.y)
+    def __or__(self, rhs): # dot product
+        return (self.x * rhs.x + self.y * rhs.y)
+    def __mul__(self, s): # 's' is a number, not a point
+        return Point(s * self.x, s * self.y)
+    def __rmul__(self, s): # 's' is a number, not a point
+        return Point(s * self.x, s * self.y)
+
+    def opposite(self):
+        return Point(-self.x, -self.y)
+    def rotateCCW(self):
+        return Point(-self.y, self.x)
+    def squaredLength(self):
+        return self.x * self.x + self.y * self.y
+    def length(self):
+        return math.sqrt(self.squaredLength())
+
+    def sheared(self, angleInDegree):
+        r = math.tan(math.radians(angleInDegree))
+        return Point(self.x - r*self.y, self.y)
+    def absolute(self):
+        return Point(abs(self.x), abs(self.y))
+    def normalized(self):
+        l = self.length()
+        if l < 1e-6: return Point(0.0, 0.0)
+        return Point(float(self.x)/l, float(self.y)/l)
+    def swapAxes(self):
+        return Point(self.y, self.x)
+    def projectOnX(self):
+        return Point(self.x, 0,0)
+    def projectOnAxis(self,axis):
+        if axis == 0:
+            return Point(self.x, 0.0)
+        else:
+            return Point(0.0, self.y)
+    def projectOnY(self):
+        return Point(0.0, self.y)
+
 
 class RoboCJKController(object):
     def __init__(self):
@@ -91,6 +158,9 @@ class RoboCJKController(object):
         self.characterSets = characterSets.sets
         self.currentFont = None
         self.currentGlyph = None
+
+        self.pathsGlyphs = {}
+
         self.designStep = "_initialDesign_glyphs"
         self.deepComponentGlyph = None
         self.currentGlyphWindow = None
@@ -221,6 +291,9 @@ class RoboCJKController(object):
             removeObserver(self, "keyDown")
             removeObserver(self, "keyUp")
             removeObserver(self, "mouseMoved")
+            removeObserver(self, "mouseDown")
+            # removeObserver(self, "mouseUp")
+            removeObserver(self, "mouseDragged")
             # removeObserver(self, "viewWillChangeGlyph")
         else:
             addObserver(self, "drawInGlyphWindow", "draw")
@@ -229,6 +302,9 @@ class RoboCJKController(object):
             addObserver(self, "keyDownInGlyphWindow", "keyDown")
             addObserver(self, "keyUpInGlyphWindow", "keyUp")
             addObserver(self, "mouseMovedInGlyphWindow", "mouseMoved")
+            addObserver(self, "mouseDownInGlyphWindow", "mouseDown")
+            # removeObserver(self, "mouseUpInGlyphWindow" "mouseUp")
+            addObserver(self, "mouseDraggedInGlyphWindow", "mouseDragged")
             # addObserver(self, "viewWillChangeGlyph", "viewWillChangeGlyph")
 
         self.observers = not self.observers
@@ -368,6 +444,39 @@ class RoboCJKController(object):
 
         self.updateViews()
 
+    def pointClickedOnGlyph(self, clickPos, glyph, best, dist):
+        if len(glyph) == 0: return
+        thresh = 10.0 * 10.0
+        def update(p, cont, seg, idx):
+            d = (Point(clickPos[0], clickPos[1]) - Point(p.x, p.y)).squaredLength()
+            if d < dist[0]:
+                dist[0] = d
+                best[0] = PointLocation(Point(p), cont, seg, idx)
+                
+        for cont, contour in enumerate(glyph):
+            for seg, segment in enumerate(contour):
+                for idx, p in enumerate(segment.offCurve):
+                    update(p, cont, seg, idx)
+        if dist[0] <= thresh:
+            return best[0]
+        else:
+            return None
+
+    def mouseDownInGlyphWindow(self, info):
+        pClick = info['point']
+        best = [None]
+        dist = [999999999.0]
+        self.ploc = self.pointClickedOnGlyph(pClick, self.pathsGlyphs[self.currentGlyph.name]['paths_'+self.currentGlyph.layerName], best, dist)
+        
+
+    def mouseDraggedInGlyphWindow(self, info):
+        if not self.ploc: return
+        point = info['point']
+        mouseDraggedPos = Point(point.x, point.y)
+        pmoved = self.pathsGlyphs[self.currentGlyph.name]['paths_'+self.currentGlyph.layerName][self.ploc.cont][self.ploc.seg][self.ploc.idx]
+        pmoved.x = mouseDraggedPos.x
+        pmoved.y = mouseDraggedPos.y
+
     def keyUpInGlyphWindow(self, info):
         self.powerRuler.keyUp()
         self.updateViews()
@@ -433,7 +542,9 @@ class RoboCJKController(object):
 
     def getDeepComponentGlyph(self):
         if self.currentGlyph is None: return
-        return interpolations.deepolation(RGlyph(), self.currentGlyph.getLayer("foreground"), self.layersInfos)
+        self.deepComponentEditionController.makeNLIPaths()
+        return interpolations.deepolation(RGlyph(), self.currentGlyph.getLayer("foreground"), self.pathsGlyphs,  self.layersInfos)
+        
 
     def glyphWindowBecameMain(self, sender):
         self.getCurrentGlyph()
