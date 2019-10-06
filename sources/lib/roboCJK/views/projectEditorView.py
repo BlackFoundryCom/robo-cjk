@@ -29,6 +29,7 @@ from mojo.canvas import CanvasGroup
 from AppKit import NSColor
 import os
 import random
+import shutil
 
 from views.drawers import designFrameDrawer
 from views.drawers import referenceViewDrawer
@@ -168,7 +169,9 @@ class EditProjectSheet():
         self.parent.sheet.masterGroup.mastersList = List((10, 10, -10, 140), 
                 l,
                 columnDescriptions = [{"title": "FamilyName"}, {"title": "StyleName"}],
-                drawFocusRing = False)
+                drawFocusRing = False,
+                selectionCallback = self.mastersListSelectionCallback,
+                editCallback=self.mastersListEditCallback)
 
         self.parent.sheet.masterGroup.importMastersButton = Button((10, 155, 190, 20), 
                 "Import",
@@ -508,8 +511,20 @@ class EditProjectSheet():
         self.getFonts()
 
     def createMastersButtonCallback(self, sender):
-        familyName = self.parent.RCJKI.project.name
-        styleName = "Regular"
+        self.nameMasterSheet = Sheet((220, 90), self.parent.sheet)
+        self.nameMasterSheet.familyNameEditText = EditText((10, 10, 200, 22), "FamilyName")
+        self.nameMasterSheet.styleNameEditText = EditText((10, 32, 200, 22), "StyleName")
+        self.nameMasterSheet.CancelButton = Button((10, 60, 100, 20), "Cancel", callback=self.createMasterCancelButtonCallback)
+        self.nameMasterSheet.OKButton = Button((110, 60, 100, 20), "OK", callback=self.createMasterOKButtonCallback)
+        self.nameMasterSheet.open()
+
+    def createMasterCancelButtonCallback(self, sender):
+        self.nameMasterSheet.close()
+
+    def createMasterOKButtonCallback(self, sender):
+        familyName = self.nameMasterSheet.familyNameEditText.get()
+        styleName = self.nameMasterSheet.styleNameEditText.get()
+        self.nameMasterSheet.close()
 
         self.parent.RCJKI.projectEditorController.createFontToProject(familyName, styleName)
         self.fontNames.append("%s-%s"%(familyName, styleName))
@@ -518,10 +533,46 @@ class EditProjectSheet():
     def removeMastersButtonCallback(self, sender):
         sel = self.parent.sheet.masterGroup.mastersList.getSelection()
         if not sel: return
+        rootfolder = os.path.split(self.parent.RCJKI.projectFileLocalPath)[0]
         for s in sel:
             d = self.parent.sheet.masterGroup.mastersList.get()[s]
             e = d['FamilyName']+'-'+d['StyleName']
+            oldPath = os.path.join(rootfolder, 'Masters', self.parent.RCJKI.project.masterFontsPaths[e])
+            shutil.rmtree(oldPath)
             del self.parent.RCJKI.project.masterFontsPaths[e]
+        self.getFonts()
+
+    def mastersListSelectionCallback(self, sender):
+        sel = self.parent.sheet.masterGroup.mastersList.getSelection()
+        if not sel: return
+        s = sel[0]
+        d = self.parent.sheet.masterGroup.mastersList.get()[s]
+        self.selectedFontName = d['FamilyName'] + '-' + d['StyleName']
+
+    def mastersListEditCallback(self, sender):
+        sel = self.parent.sheet.masterGroup.mastersList.getSelection()
+        if not sel: return
+        col, row = sender.getEditedColumnAndRow()
+        if col == -1 or row == -1: return
+
+        familyName = sender.get()[row]['FamilyName']
+        styleName = sender.get()[row]['StyleName']
+        f = self.parent.RCJKI.projectFonts[self.selectedFontName]
+        f.info.familyName = familyName
+        f.info.styleName = styleName
+        newFontName = familyName + '-' + styleName
+
+        if newFontName not in self.parent.RCJKI.project.masterFontsPaths:
+            UFOName = "%s.ufo"%newFontName
+            rootfolder = os.path.split(self.parent.RCJKI.projectFileLocalPath)[0]
+            savePath = os.path.join(rootfolder, 'Masters', UFOName)
+            f.save(savePath)
+            oldPath = os.path.join(rootfolder, 'Masters', "%s.ufo"%self.selectedFontName)
+            shutil.rmtree(oldPath)
+            del self.parent.RCJKI.project.masterFontsPaths[self.selectedFontName]
+            self.parent.RCJKI.project.masterFontsPaths[newFontName] = UFOName
+            self.parent.RCJKI.projectFonts[newFontName] = f
+
         self.getFonts()
 
     def getFonts(self):

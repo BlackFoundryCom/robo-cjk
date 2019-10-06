@@ -315,7 +315,7 @@ class DeepComponentEditionController(object):
                 for j, p in enumerate(cs.points):
                     pen.moveTo((p.x, p.y))
                     pe = ce.points[j]
-                    pen.curveTo( (p.x+(pe.x-p.x)/3.33 , p.y+(pe.y-p.y)/3.33), (p.x+2*(pe.x-p.x)/3.33 , p.y+2*(pe.y-p.y)/3.33),  (pe.x, pe.y) )
+                    pen.curveTo( (p.x+(pe.x-p.x)/3 , p.y+(pe.y-p.y)/3), (p.x+2*(pe.x-p.x)/3 , p.y+2*(pe.y-p.y)/3),  (pe.x, pe.y) )
                     pen.endPath()
             
             pathsGlyphs[pathGlyph.name] = pathGlyph

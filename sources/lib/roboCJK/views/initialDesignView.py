@@ -82,7 +82,7 @@ class InitialDesignWindow(BaseWindowController):
         
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
-            delegate=mainCanvas.MainCanvas(self.RCJKI, self, self.RCJKI.designStep),
+            delegate=mainCanvas.MainCanvas(self.RCJKI, self),
             canvasSize=(5000, 5000),
             hasHorizontalScroller=False, 
             hasVerticalScroller=False)

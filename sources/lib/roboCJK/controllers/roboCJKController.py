@@ -160,6 +160,7 @@ class RoboCJKController(object):
         self.currentGlyph = None
 
         self.pathsGlyphs = {}
+        self.ploc = None
 
         self.designStep = "_initialDesign_glyphs"
         self.deepComponentGlyph = None
@@ -357,10 +358,12 @@ class RoboCJKController(object):
             for c in charset:
                 name = files.unicodeName(c)
                 code = c
-                if name in self.collab._userLocker(self.user).glyphs[designStep]:
-                    l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
-                else:
-                    later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+                for locker in self.collab.lockers:
+                    if locker.user == self.user:
+                        if name in locker.glyphs[designStep]:
+                            l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':(0, 0, 0, 0)}))
+                        else:
+                            later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':(0, 0, 0, 0)}))
             l += later
         return l
 
@@ -463,6 +466,8 @@ class RoboCJKController(object):
             return None
 
     def mouseDownInGlyphWindow(self, info):
+        if self.currentGlyph.name not in self.pathsGlyphs: return
+        if self.currentGlyph.layerName == 'foreground': return
         pClick = info['point']
         best = [None]
         dist = [999999999.0]
@@ -543,7 +548,7 @@ class RoboCJKController(object):
     def getDeepComponentGlyph(self):
         if self.currentGlyph is None: return
         self.deepComponentEditionController.makeNLIPaths()
-        return interpolations.deepolation(RGlyph(), self.currentGlyph.getLayer("foreground"), self.pathsGlyphs,  self.layersInfos)
+        return interpolations.deepolation(RGlyph(), self.currentGlyph.getLayer("foreground"), self.pathsGlyphs, self.layersInfos)
         
 
     def glyphWindowBecameMain(self, sender):

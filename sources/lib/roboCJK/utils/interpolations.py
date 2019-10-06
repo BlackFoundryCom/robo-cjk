@@ -118,7 +118,9 @@ def deepolation(newGlyph, masterGlyph, pathsGlyphs, layersInfo = {}):
 
     pen = PointToSegmentPen(newGlyph.getPen())
     contoursList = []
-    pathsGlyph = pathsGlyphs[masterGlyph.name]
+    pathsGlyph = None
+    if masterGlyph.name in pathsGlyphs:
+        pathsGlyph = pathsGlyphs[masterGlyph.name]
     allpointsIndex = 0
     for contourIndex, contour in enumerate(masterGlyph):
 
@@ -130,14 +132,13 @@ def deepolation(newGlyph, masterGlyph, pathsGlyphs, layersInfo = {}):
             ptype = point.type if point.type != 'offcurve' else None
 
             deltaX, deltaY = 0.0, 0.0
-            for layerName, values in layersInfo.items():
+            for layerName, value in layersInfo.items():
                 pathGlyph = None
                 if pathsGlyph:
                     pathGlyph = pathsGlyph['paths_'+layerName]
 
-                ratioX = values[0] / 1000.0
-                ratioY = values[1] / 1000.0
-                ratio = ratioX
+                ratio = value / 1000.0
+                # ratioY = values[1] / 1000.0
 
                 layerGlyph = masterGlyph.getLayer(layerName)
 
@@ -147,7 +148,7 @@ def deepolation(newGlyph, masterGlyph, pathsGlyphs, layersInfo = {}):
                 dx = pxI-px
                 dy = pyI-py
                 n = normalize((-dy, dx))
-                curve = ((px, py), (px+dx*.33+n[0]*50, py+dy*.33+n[1]*50), (px+dx*.66+n[0]*50, py+dy*.66+n[1]*50), (pxI, pyI))
+                curve = ((px, py), (px+dx/3+n[0]*50, py+dy/3+n[1]*50), (px+dx*2/3+n[0]*50, py+dy*2/3+n[1]*50), (pxI, pyI))
                 if pathGlyph:
                     curve = [(p.x, p.y) for p in pathGlyph[allpointsIndex].points]
                     
