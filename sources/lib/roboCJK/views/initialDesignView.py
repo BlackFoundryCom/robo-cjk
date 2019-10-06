@@ -189,7 +189,7 @@ class InitialDesignWindow(BaseWindowController):
 
     def yesnocallback(self, yes):
         if yes:
-            self.RCJKI.initialDesignController.saveSubsetFonts()
+            self.RCJKI.saveAllSubsetFonts()
 
     def windowBecameMain(self, sender):
         sel = self.w.glyphSetList.getSelection()

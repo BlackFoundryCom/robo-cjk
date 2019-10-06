@@ -62,6 +62,7 @@ class keysAndExtremsEditionController(object):
                     glyphName = files.unicodeName(c)
                     if glyphName in f:
                         nf.insertGlyph(f[glyphName])
+                        print(glyphName)
                 f.close()
                 nf.save(initialDesignSavepath)
                 self.RCJKI.allFonts.append({name:nf})
@@ -69,11 +70,11 @@ class keysAndExtremsEditionController(object):
             else:
                 f = OpenFont(initialDesignSavepath, showInterface=False)
                 
-                glyph0rder = []
+                glyphOrder = []
                 for c in self.characterSet:
                     glyphName = files.unicodeName(c)
-                    glyph0rder.append(glyphName)
-                f.glyphOrder = glyph0rder
+                    glyphOrder.append(glyphName)
+                f.glyphOrder = glyphOrder
                 f.save()
 
                 self.RCJKI.allFonts.append({name:f})
