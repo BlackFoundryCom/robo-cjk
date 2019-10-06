@@ -107,7 +107,7 @@ class InitialDesignWindow(BaseWindowController):
 
 
     def saveLocalFontButtonCallback(self, sender):
-        self.RCJKI.saveAllFonts()
+        self.RCJKI.saveAllSubsetFonts()
         self.w.mainCanvas.update()
         
     def pullMasterGlyphsButtonCallback(self, sender):
@@ -185,6 +185,7 @@ class InitialDesignWindow(BaseWindowController):
             CurrentGlyphWindow().close()
         self.RCJKI.currentGlyphWindow = None
         self.RCJKI.initialDesignController.interface = None
+        self.RCJKI.keysAndExtremsEditionController.interface = None
 
     def yesnocallback(self, yes):
         if yes:

@@ -30,7 +30,7 @@ class DeepComponentsWindow(BaseWindowController):
         self.w = Window((0, 185, 200, 60), "Deep Components")
 
         self.w.keysAndExtremsGlyphButton = Button((0, 0, 200, 20), 
-                'Keys & Extrems', 
+                'Keys & Extremes', 
                 callback = self.keysAndExtremsGlyphButtonCallback)
 
         self.w.deepComponentEditionButton = Button((0, 20, 200, 20), 

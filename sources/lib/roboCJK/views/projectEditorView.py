@@ -209,7 +209,7 @@ class EditProjectSheet():
         ###
         self.parent.sheet.lockerGroup = Group((0,60,-0,-30))
 
-        segmentedElements = ["Initial Design", "Keys and Extrems", "Deep Component Edition"]
+        segmentedElements = ["Initial Design", "Keys and Extremes", "Deep Component Edition"]
         self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton = SegmentedButton((10, 10, -10, 20),
             [dict(title=e, width=577/len(segmentedElements)) for e in segmentedElements],
             callback = self.lockerDesignStepSegmentedButtonCallback,
@@ -427,7 +427,7 @@ class EditProjectSheet():
             self.selectedFontIndex += 1
 
     def getPreviewGlyph(self):
-        if not self.previewFont:
+        if self.previewFont is None:
             self.previewGlyph = None
             return
         self.previewGlyph = RGlyph()
@@ -437,7 +437,7 @@ class EditProjectSheet():
         for charset in "".join([d['Basic'] for d in [self.parent.RCJKI.characterSets[key] for key in self.parent.RCJKI.project.script]]):
             characterSet += charset
 
-        glyphNames = [files.unicodeName(c) for c in characterSet if "uni"+files.normalizeUnicode(hex(ord(c))[2:].upper()) in self.previewFont.keys()]
+        glyphNames = [files.unicodeName(c) for c in characterSet if files.unicodeName(c) in self.previewFont.keys() and (len(self.previewFont[files.unicodeName(c)]) != 0 or self.previewFont[files.unicodeName(c)].components != [])]
         self.previewGlyph = self.previewFont[random.choice(glyphNames)]
     
     # def usersListSelectionCallback(self, sender):

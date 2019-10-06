@@ -154,7 +154,7 @@ class MainCanvas():
             translate(((self.canvasWidth/self.scale)-1000)*.5, 250)
             translate(self.translateX, self.translateY)
             
-            if g is None: 
+            if g is None or (len(g) == 0 and g.components == []): 
                 iconText = robocjk.roboCJK_Icon.get()
                 icon = RGlyph()
                 pen = icon.getPointPen()

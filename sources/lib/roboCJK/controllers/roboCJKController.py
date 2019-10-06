@@ -256,6 +256,9 @@ class RoboCJKController(object):
         if self.deepComponentsController.interface:
             self.deepComponentsController.interface.w.close()
 
+        if self.keysAndExtremsEditionController.interface:
+            self.keysAndExtremsEditionController.interface.w.close()
+
         if self.textCenterInterface:
             self.textCenterInterface.w.close()
 
@@ -358,12 +361,10 @@ class RoboCJKController(object):
             for c in charset:
                 name = files.unicodeName(c)
                 code = c
-                for locker in self.collab.lockers:
-                    if locker.user == self.user:
-                        if name in locker.glyphs[designStep]:
-                            l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':(0, 0, 0, 0)}))
-                        else:
-                            later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':(0, 0, 0, 0)}))
+                if name in self.collab._userLocker(self.user).glyphs[designStep]:
+                    l.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
+                else:
+                    later.append(({'#':'', 'Char':code, 'Name':name, 'MarkColor':''}))
             l += later
         return l
 
@@ -420,10 +421,10 @@ class RoboCJKController(object):
 
         if inputKey == self.settings['saveFonts']:
             if self.initialDesignController.interface:
-                self.initialDesignController.saveSubsetFonts()
+                self.initialDesignController.saveAllSubsetFonts()
 
             elif self.deepComponentEditionController.interface:
-                self.deepComponentEditionController.saveSubsetFonts()
+                self.deepComponentEditionController.saveAllSubsetFonts()
 
         elif inputKey == self.settings['unactivePowerRuler']:
             self.powerRuler.killPowerRuler()
@@ -497,7 +498,7 @@ class RoboCJKController(object):
                 if name in self.projectFonts:
                     f = self.projectFonts[name]
                     for glyphName in glyphs:
-                        if glyphName in self.reservedGlyphs[step]:
+                        if glyphName in self.reservedGlyphs[step] and glyphName in subsetFont:
                             f.insertGlyph(subsetFont[glyphName].naked())
                     f.save()
 
@@ -562,10 +563,10 @@ class RoboCJKController(object):
         if tableColumn is None: return None
         cell = tableColumn.dataCell()
         if window is None:
+            return None
+        if (row < 0) or (row >= len(window.glyphSetList.get())):
             return cell
-        if (row < 0) or (row >= len(window.glyphSetList)):
-            return cell
-        uiGlyph  = window.glyphSetList[row]
+        uiGlyph  = window.glyphSetList.get()[row]
         uiGlyphName = uiGlyph['Name']
         uiGlyphReserved = uiGlyphName in self.collab._userLocker(self.user).glyphs[step]
 
@@ -579,7 +580,7 @@ class RoboCJKController(object):
                 markColor = font[uiGlyphName].markColor
                 if len(font[uiGlyphName]) == 0 and not font[uiGlyphName].components:
                     state = 'empty'
-        if uiGlyphName in self.lockedGlyphs[step]:
+        if uiGlyphName in self.lockedGlyphs:
             locked = True
 
         colID = tableColumn.identifier()
