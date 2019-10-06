@@ -62,7 +62,6 @@ class keysAndExtremsEditionController(object):
                     glyphName = files.unicodeName(c)
                     if glyphName in f:
                         nf.insertGlyph(f[glyphName])
-                        print(glyphName)
                 f.close()
                 nf.save(initialDesignSavepath)
                 self.RCJKI.allFonts.append({name:nf})
