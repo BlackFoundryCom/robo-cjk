@@ -57,6 +57,8 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.selectedGlyph = None
         self.RCJKI.layersInfos = {}
 
+        self.lock = False
+
         self.w = Window((200, 0, 800, 800), 
                 'Deep Component Edition', 
                 minSize = (300,300), 
@@ -80,6 +82,10 @@ class DeepComponentEditionWindow(BaseWindowController):
                 # editCallback = self.glyphSetListEditCallback,
                 showColumnTitles = False,
                 drawFocusRing = False)
+
+        self.delegate = tableDelegate.TableDelegate.alloc().initWithMaster(self, "_deepComponentsEdition_glyphs", self.w.glyphSetList)
+        tableView = self.w.glyphSetList.getNSTableView()
+        tableView.setDelegate_(self.delegate)
 
         self.w.deepComponentsSetList = List((0, 315, 200, 200),
                 [],
@@ -153,7 +159,8 @@ class DeepComponentEditionWindow(BaseWindowController):
             columnDescriptions = [
                                     {"title": "Layer", "editable": False, "width": 0},
                                     {"title": "Image", "editable": False, "cell": ImageListCell(), "width": 60}, 
-                                    {"title": "Values", "cell": slider, "width": 520}
+                                    {"title": "Values", "cell": slider, "width": 410},
+                                    {"title": "NLI", "cell": PopUpButtonListCell(["NLI", "Reset NLI", "Update NLI"]), "binding": "selectedValue", "width": 100}
                                     # {"title": "Lock", "cell": checkbox, "width": 20},
                                    # {"title": "YValue", "cell": slider, "width": 250},
                                     
@@ -180,9 +187,7 @@ class DeepComponentEditionWindow(BaseWindowController):
                 callback=self.colorPickerCallback, 
                 color=NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 0, 0))
 
-        self.delegate = tableDelegate.TableDelegate.alloc().initWithMaster(self)
-        tableView = self.w.glyphSetList.getNSTableView()
-        tableView.setDelegate_(self.delegate)
+        
 
         self.dummyCell = NSCell.alloc().init()
         self.dummyCell.setImage_(None)
@@ -245,8 +250,8 @@ class DeepComponentEditionWindow(BaseWindowController):
             self.RCJKI.currentGlyph = f.getLayer(newGlyphLayer.name)[g.name]
             self.slidersValuesList.append({'Layer': newGlyphLayer.name,
                                         'Image': None,
-                                        'Values': 0
-                                        # 'Lock':1,
+                                        'Values': 0,
+                                        'NLI': 'NLI',
                                         # 'YValue': 0
                                         })
         else:
@@ -302,8 +307,8 @@ class DeepComponentEditionWindow(BaseWindowController):
 
             d = {'Layer': layerName,
                 'Image': NSImage.alloc().initWithData_(pdfData),
-                'Values': item["Values"]
-                # 'YValue': item["YValue"],
+                'Values': item["Values"],
+                'NLI': 'NLI'
                 # 'Lock': item["Lock"]
                 }
 
@@ -323,8 +328,8 @@ class DeepComponentEditionWindow(BaseWindowController):
 
             d = {'Layer': layerName,
                 'Image': NSImage.alloc().initWithData_(pdfData),
-                'Values': 0
-                # 'YValue': 0,
+                'Values': 0,
+                'NLI': 'NLI'
                 # 'Lock': 1
                 }
 
@@ -335,7 +340,8 @@ class DeepComponentEditionWindow(BaseWindowController):
     def slidersListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-
+        if self.lock: return
+        self.lock = True
         layersInfo = sender.get()
         layerInfo = layersInfo[sel[0]]
 
@@ -374,9 +380,11 @@ class DeepComponentEditionWindow(BaseWindowController):
         # sender.set(layers)
         # sender.setSelection(sel)
 
+        layerInfo["NLI"] = "NLI"
         self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedDeepComponentGlyphName]
         self.RCJKI.deepComponentGlyph = self.RCJKI.getDeepComponentGlyph()
         self.w.mainCanvas.update()
+        self.lock = False
 
     def sliderListDoubleClickCallback(self, sender):
         sel = sender.getSelection()
@@ -463,7 +471,7 @@ class DeepComponentEditionWindow(BaseWindowController):
         self.controller.updateGlyphSetList()
 
     def windowCloses(self, sender):
-        askYesNo('Do you want to save fonts?', "Without saving you'll loose unsaved modification", alertStyle = 2, parentWindow = None, resultCallback = self.yesnocallback)
+        # askYesNo('Do you want to save fonts?', "Without saving you'll loose unsaved modification", alertStyle = 2, parentWindow = None, resultCallback = self.yesnocallback)
         if CurrentGlyphWindow() is not None:
             CurrentGlyphWindow().close()
         self.RCJKI.currentGlyphWindow = None
@@ -474,5 +482,5 @@ class DeepComponentEditionWindow(BaseWindowController):
         if yes:
             self.RCJKI.deepComponentEditionController.saveSubsetFonts()
 
-    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
-        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, '_deepComponentsEdition_glyphs', self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont])
+    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, designStep, glist):
+        self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, glist, designStep, self.RCJKI.DCFonts2Fonts[self.RCJKI.currentFont])

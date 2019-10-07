@@ -145,7 +145,7 @@ class DesignFrameDrawer():
                         elif self.findProximity(listYtop, py, left = 0, right = 3):
                             drawOval = 1
                         if drawOval:
-                            oval(px-20, py-20-translateY, 40, 40)
+                            oval(px-20*scale, py-20*scale-translateY, 40*scale, 40*scale)
                             continue                  
         if secondLines:
             fill(None)

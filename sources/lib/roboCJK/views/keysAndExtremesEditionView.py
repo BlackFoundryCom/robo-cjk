@@ -35,16 +35,18 @@ reload(files)
 reload(git)
 reload(mainCanvas)
 
-class InitialDesignWindow(BaseWindowController):
+class KeysAndExtremsEditionWindow(BaseWindowController):
+
     def __init__(self, controller):
-        super(InitialDesignWindow, self).__init__()
+        super(KeysAndExtremsEditionWindow, self).__init__()
         self.controller = controller
         self.RCJKI = self.controller.RCJKI
+
         self.RCJKI.allFonts = []
         self.selectedGlyph = None
     
         self.w = Window((200, 0, 800, 600), 
-                'Initial Design', 
+                'Keys & Extremes', 
                 minSize = (300,300), 
                 maxSize = (2500,2000))
         
@@ -53,7 +55,7 @@ class InitialDesignWindow(BaseWindowController):
                 selectionCallback = self.fontsListSelectionCallback,
                 drawFocusRing = False)
 
-        self.w.glyphSetList = List((0,85,200,-60),
+        self.w.glyphSetList = List((0, 85, 200, 200),
                 [],
                 columnDescriptions = [
                                 {"title": "#", "width" : 20, 'editable':False},
@@ -62,14 +64,33 @@ class InitialDesignWindow(BaseWindowController):
                                 {"title": "MarkColor", "width" : 30, 'editable':False}
                                 ],
                 selectionCallback = self.glyphSetListSelectionCallback,
-                doubleClickCallback = self.glyphSetListdoubleClickCallback,
+                # doubleClickCallback = self.glyphSetListdoubleClickCallback,
                 # editCallback = self.glyphSetListEditCallback,
                 showColumnTitles = False,
                 drawFocusRing = False)
 
-        self.delegate = tableDelegate.TableDelegate.alloc().initWithMaster(self, '_initialDesign_glyphs', self.w.glyphSetList)
-        tableView = self.w.glyphSetList.getNSTableView()
-        tableView.setDelegate_(self.delegate)
+        self.delegateGlypSetList = tableDelegate.TableDelegate.alloc().initWithMaster(self, "_initialDesign_glyphs", self.w.glyphSetList)
+        tableViewGlyphSetList = self.w.glyphSetList.getNSTableView()
+        tableViewGlyphSetList.setDelegate_(self.delegateGlypSetList)
+
+        self.w.charactersSetList = List((0, 200, 200, -60),
+                [],
+                columnDescriptions = [
+                                {"title": "#", "width" : 20, 'editable':False},
+                                {"title": "Char", "width" : 30, 'editable':False},
+                                {"title": "Name", "width" : 80, 'editable':False},
+                                {"title": "MarkColor", "width" : 30, 'editable':False}
+                                ],
+                selectionCallback = self.charactersSetListSelectionCallback,
+                doubleClickCallback = self.charactersSetListDoubleClickCallback,
+                # editCallback = self.glyphSetListEditCallback,
+                showColumnTitles = False,
+                drawFocusRing = False
+            )
+        
+        self.delegateCharSetList = tableDelegate.TableDelegate.alloc().initWithMaster(self, "_keysAndExtrems_glyphs", self.w.charactersSetList)
+        tableViewCharSetList = self.w.charactersSetList.getNSTableView()
+        tableViewCharSetList.setDelegate_(self.delegateCharSetList)
 
         self.w.saveLocalFontButton = Button((0,-60,200,20), 
             'Save', 
@@ -82,7 +103,6 @@ class InitialDesignWindow(BaseWindowController):
         self.w.pullMasterGlyphsButton = Button((0,-20,200,20), 
             'Pull', 
             callback=self.pullMasterGlyphsButtonCallback)
-        
         
 
         self.w.mainCanvas = Canvas((200,0,-0,-40), 
@@ -105,20 +125,22 @@ class InitialDesignWindow(BaseWindowController):
         self.w.bind("became main", self.windowBecameMain)
         self.w.open()
 
-
     def saveLocalFontButtonCallback(self, sender):
-        self.RCJKI.saveAllSubsetFonts()
+        return
+        self.RCJKI.initialDesignController.saveSubsetFonts()
         self.w.mainCanvas.update()
         
     def pullMasterGlyphsButtonCallback(self, sender):
+        return
         self.RCJKI.initialDesignController.pullMastersGlyphs()
         self.w.mainCanvas.update()
 
     def pushBackButtonCallback(self, sender):
+        return
         rootfolder = os.path.split(self.RCJKI.projectFileLocalPath)[0]
         gitEngine = git.GitEngine(rootfolder)
         user = gitEngine.user()
-        glyphsList = self.RCJKI.collab._userLocker(user).glyphs[self.RCJKI.designStep]
+        glyphsList = self.RCJKI.collab._userLocker(user).glyphs['_initialDesign_glyphs']
         self.RCJKI.initialDesignController.injectGlyphsBack(glyphsList, user)
 
     def colorPickerCallback(self, sender):
@@ -143,33 +165,13 @@ class InitialDesignWindow(BaseWindowController):
         self.RCJKI.currentFont = self.RCJKI.allFonts[sel[0]][self.controller.fontsList[sel[0]]]
         self.controller.updateGlyphSetList()
 
-    # def glyphSetListEditCallback(self, sender):
-    #     if not sender.getSelection(): return
 
-    #     myLocker = self.RCJKI.collab._userLocker(self.RCJKI.user)
-    #     if myLocker:
-    #         self.RCJKI.lockedGlyphs = myLocker._allOtherLockedGlyphs
-    #         self.RCJKI.reservedGlyphs = myLocker.glyphs
-    #     else:
-    #         myLocker = self.RCJKI.collab._addLocker(self.RCJKI.user)
-
-        # self.RCJKI.projectEditorController.saveCollabToFile()
-        # self.RCJKI.projectEditorController.pushRefresh()
-
-
-    def glyphSetListdoubleClickCallback(self, sender):
-        if not sender.getSelection(): return
-        if self.selectedGlyphName not in self.RCJKI.currentFont:
-            self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedGlyphName)
-            self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
-        self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
-
-    def glyphSetListSelectionCallback(self, sender):
+    def charactersSetListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        self.selectedGlyphName = sender.get()[sel[0]]['Name']
-        if self.selectedGlyphName in self.RCJKI.currentFont:
-            self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
+        self.selectedCharName = sender.get()[sel[0]]['Name']
+        if self.selectedCharName in self.RCJKI.currentFont:
+            self.RCJKI.currentGlyph = self.RCJKI.currentFont[self.selectedCharName]
             if self.RCJKI.currentGlyph.markColor is None:
                 r, g, b, a = 0, 0, 0, 0
             else: 
@@ -179,18 +181,34 @@ class InitialDesignWindow(BaseWindowController):
             self.RCJKI.currentGlyph = None
         self.w.mainCanvas.update()
 
+    def charactersSetListDoubleClickCallback(self, sender):
+        if not sender.getSelection(): return
+        if self.selectedCharName not in self.RCJKI.currentFont:
+            self.RCJKI.currentGlyph = self.RCJKI.currentFont.newGlyph(self.selectedCharName)
+            self.RCJKI.currentGlyph.width = self.RCJKI.project.settings['designFrame']['em_Dimension'][0]
+        self.RCJKI.openGlyphWindow(self.RCJKI.currentGlyph)
+
+    def glyphSetListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        self.selectedGlyphName = sender.get()[sel[0]]['Name']
+        self.controller.updateCharactersSetList(self.selectedGlyphName)
+        self.w.mainCanvas.update()
+
     def windowCloses(self, sender):
         # askYesNo('Do you want to save fonts?', "Without saving you'll loose unsaved modification", alertStyle = 2, parentWindow = None, resultCallback = self.yesnocallback)
         if CurrentGlyphWindow() is not None:
             CurrentGlyphWindow().close()
         self.RCJKI.currentGlyphWindow = None
-        self.RCJKI.initialDesignController.interface = None
+        self.controller.interface = None
 
     def yesnocallback(self, yes):
+        return
         if yes:
-            self.RCJKI.saveAllSubsetFonts()
+            self.RCJKI.initialDesignController.saveSubsetFonts()
 
     def windowBecameMain(self, sender):
+        return
         sel = self.w.glyphSetList.getSelection()
         if not sel: return
         self.selectedGlyphName = self.w.glyphSetList.get()[sel[0]]['Name']

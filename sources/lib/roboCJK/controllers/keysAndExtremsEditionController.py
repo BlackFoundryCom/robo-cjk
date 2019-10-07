@@ -20,14 +20,16 @@ from imp import reload
 import os
 from mojo.roboFont import *
 from mojo.UI import PostBannerNotification
-from views import initialDesignView
+from views import keysAndExtremesEditionView
+from resources import deepCompo2Chars
+from resources import deepCompoMasters_AGB1_FULL
 from utils import files
 from utils import git
-reload(initialDesignView)
+reload(keysAndExtremesEditionView)
 reload(files)
 reload(git)
 
-class keysAndExtremsEditionController(object):
+class KeysAndExtremsEditionController(object):
 
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
@@ -40,8 +42,8 @@ class keysAndExtremsEditionController(object):
         self.setCharacterSet()
         if not self.interface:
             self.RCJKI.resetController()
-            self.RCJKI.designStep = "_initialDesign_glyphs"
-            self.interface = initialDesignView.InitialDesignWindow(self)
+            self.RCJKI.designStep = "_keysAndExtrems_glyphs"
+            self.interface = keysAndExtremesEditionView.KeysAndExtremsEditionWindow(self)
             self.loadProjectFonts()
             
 
@@ -97,6 +99,26 @@ class keysAndExtremsEditionController(object):
 
     def updateGlyphSetList(self):
         self.interface.w.glyphSetList.set(self.RCJKI.getGlyphSetList(self.characterSet, self.RCJKI.designStep))
+
+    def updateCharactersSetList(self, gname):
+        l = []
+        later = []
+        if self.RCJKI.currentFont is not None:
+            char = chr(int(gname[3:],16))
+            script = self.RCJKI.collab._userLocker(self.RCJKI.user).script
+            if char in deepCompoMasters_AGB1_FULL.deepCompoMasters[script]:
+                charsLists = deepCompoMasters_AGB1_FULL.deepCompoMasters[script][char]
+                for li in charsLists:
+                    for c in li:
+                        charname = files.unicodeName(c)
+                        if charname in self.RCJKI.collab._userLocker(self.RCJKI.user).glyphs[self.RCJKI.designStep]:
+                            l.append(({'#':'', 'Char':c, 'Name':charname, 'MarkColor':''}))
+                        else:
+                            later.append(({'#':'', 'Char':c, 'Name':charname, 'MarkColor':''}))
+            l += later
+        self.interface.w.charactersSetList.set(l)
+        if len(l):
+            self.interface.w.charactersSetList.setSelection([0])
 
     def injectGlyphsBack(self, glyphs, user):
         self.RCJKI.injectGlyphsBack(glyphs, user, self.RCJKI.designStep)

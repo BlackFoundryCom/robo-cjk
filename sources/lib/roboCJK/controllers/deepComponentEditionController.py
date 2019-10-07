@@ -247,11 +247,11 @@ class DeepComponentEditionController(object):
             else:
                 keyAndXtremChars = OpenFont(deepComponentGlyphsKeyAndXtremSavepath, showInterface=False)
                 
-                glyph0rder = []
+                glyphOrder = []
                 for c in self.characterSet:
                     glyphName = files.unicodeName(c)
-                    glyph0rder.append(glyphName)
-                keyAndXtremChars.glyphOrder = glyph0rder
+                    glyphOrder.append(glyphName)
+                keyAndXtremChars.glyphOrder = glyphOrder
                 keyAndXtremChars.save()
 
             self.RCJKI.allFonts.append({name:keyAndXtremChars})

@@ -34,11 +34,11 @@ class DeepComponentsWindow(BaseWindowController):
                 callback = self.keysAndExtremsGlyphButtonCallback)
 
         self.w.deepComponentEditionButton = Button((0, 20, 200, 20), 
-                'DC Edition', 
+                'Edition', 
                 callback = self.deepComponentEditionButtonCallback)
 
         self.w.deepComponentInstantiationButton = Button((0, 40, 200, 20), 
-                'DC Instantiation', 
+                'Instantiation', 
                 callback = self.deepComponentInstantiationButtonCallback)
 
         self.w.open()

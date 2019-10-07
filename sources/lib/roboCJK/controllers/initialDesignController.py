@@ -39,9 +39,9 @@ class InitialDesignController(object):
         self.setCharacterSet()
         if not self.interface:
             self.RCJKI.resetController()
+            self.RCJKI.designStep = "_initialDesign_glyphs"
             self.interface = initialDesignView.InitialDesignWindow(self)
             self.loadProjectFonts()
-            self.RCJKI.designStep = "_initialDesign_glyphs"
 
     def setCharacterSet(self):
         self.characterSet = "".join([self.RCJKI.characterSets[key]['Basic'] for key in self.RCJKI.project.script])

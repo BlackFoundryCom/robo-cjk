@@ -22,7 +22,7 @@ import objc
 
 class TableDelegate(NSObject):
     @objc.python_method
-    def initWithMaster(self, master):
+    def initWithMaster(self, master, designStep, glist):
         # ALWAYS call the super's designated initializer.  Also, make sure to
         # re-bind "self" just in case it returns something else, or even
         # None!
@@ -30,7 +30,9 @@ class TableDelegate(NSObject):
         if self is None: return None
 
         self.master = master
+        self.designStep = designStep
+        self.glist = glist
         return self
 
     def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row):
-        return self.master.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row)
+        return self.master.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.designStep, self.glist)

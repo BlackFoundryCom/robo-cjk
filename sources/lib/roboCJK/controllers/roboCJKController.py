@@ -212,7 +212,7 @@ class RoboCJKController(object):
         self.projectEditorController = projectEditorController.ProjectEditorController(self)
         self.initialDesignController = initialDesignController.InitialDesignController(self)
         self.deepComponentEditionController = deepComponentEditionController.DeepComponentEditionController(self)
-        self.keysAndExtremsEditionController = keysAndExtremsEditionController.keysAndExtremsEditionController(self)
+        self.keysAndExtremsEditionController = keysAndExtremsEditionController.KeysAndExtremsEditionController(self)
         self.deepComponentsController = deepComponentsController.DeepComponentsController(self)
         self.inspectorController = inspectorController.inspectorController(self)
         self.textCenterController = textCenterController.textCenterController(self)
@@ -559,20 +559,19 @@ class RoboCJKController(object):
     def glyphWindowCloses(self, sender):
         self.currentGlyphWindow = None
 
-    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, window, step, font):
+    def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, window, glist, step, font):
         if tableColumn is None: return None
         cell = tableColumn.dataCell()
         if window is None:
             return None
-        if (row < 0) or (row >= len(window.glyphSetList.get())):
+        if (row < 0) or (row >= len(glist.get())):
             return cell
-        uiGlyph  = window.glyphSetList.get()[row]
+        uiGlyph  = glist.get()[row]
         uiGlyphName = uiGlyph['Name']
         uiGlyphReserved = uiGlyphName in self.collab._userLocker(self.user).glyphs[step]
 
         state = 'missing'
         locked = False
-        reserved = False
         markColor = None
         if font:
             if uiGlyphName in font:
