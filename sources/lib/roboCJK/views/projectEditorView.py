@@ -209,7 +209,7 @@ class EditProjectSheet():
         ###
         self.parent.sheet.lockerGroup = Group((0,60,-0,-30))
 
-        segmentedElements = ["Initial Design", "Keys and Extremes", "Deep Component Edition"]
+        segmentedElements = ["Initial Design", "Keys and Extremes", "DC Edition", "DC Instantiation"]
         self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton = SegmentedButton((10, 10, -10, 20),
             [dict(title=e, width=577/len(segmentedElements)) for e in segmentedElements],
             callback = self.lockerDesignStepSegmentedButtonCallback,
@@ -221,6 +221,8 @@ class EditProjectSheet():
         self.parent.sheet.lockerGroup.keysAndExtrems.show(0)
         self.parent.sheet.lockerGroup.deepComponentEdition = LockerGroup((0, 0, -0, -0), self, "_deepComponentsEdition_glyphs")
         self.parent.sheet.lockerGroup.deepComponentEdition.show(0)
+        self.parent.sheet.lockerGroup.deepComponentInstantiation = LockerGroup((0, 0, -0, -0), self, "_deepComponentsInstantiation_glyphs")
+        self.parent.sheet.lockerGroup.deepComponentInstantiation.show(0)
         
         # self.parent.sheet.lockerGroup.usersList = List((10, 40, 280, 65),
         #         [d['user'] for d in self.parent.RCJKI.project.usersLockers['lockers']],
@@ -481,7 +483,8 @@ class EditProjectSheet():
         groups = [
             self.parent.sheet.lockerGroup.initialDesign,
             self.parent.sheet.lockerGroup.keysAndExtrems,
-            self.parent.sheet.lockerGroup.deepComponentEdition
+            self.parent.sheet.lockerGroup.deepComponentEdition,
+            self.parent.sheet.lockerGroup.deepComponentInstantiation
             ]
         for i, e in enumerate(groups):
             e.show(i == sel)

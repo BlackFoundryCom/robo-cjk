@@ -22,6 +22,7 @@ steps = [
 "_initialDesign_glyphs", 
 "_deepComponentsEdition_glyphs",
 "_keysAndExtrems_glyphs",
+"_deepComponentsInstantiation_glyphs",
 ]
 
 scriptFallback = "Hanzi"
