@@ -69,7 +69,7 @@ class KeysAndExtremsEditionWindow(BaseWindowController):
                 showColumnTitles = False,
                 drawFocusRing = False)
 
-        self.delegateGlypSetList = tableDelegate.TableDelegate.alloc().initWithMaster(self, "_initialDesign_glyphs", self.w.glyphSetList)
+        self.delegateGlypSetList = tableDelegate.TableDelegate.alloc().initWithMaster(self, "_keysAndExtrems_glyphs", self.w.glyphSetList)
         tableViewGlyphSetList = self.w.glyphSetList.getNSTableView()
         tableViewGlyphSetList.setDelegate_(self.delegateGlypSetList)
 
