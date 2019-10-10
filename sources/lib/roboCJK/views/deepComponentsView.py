@@ -27,19 +27,22 @@ class DeepComponentsWindow(BaseWindowController):
         self.controller = controller
         self.RCJKI = self.controller.RCJKI
 
-        self.w = Window((0, 185, 200, 60), "Deep Components")
+        self.w = Window((0, 185, 200, 40), "Deep Components")
+        y = 0
+        # self.w.keysAndExtremsGlyphButton = Button((0, y, 200, 20), 
+        #         'Keys & Extremes', 
+        #         callback = self.keysAndExtremsGlyphButtonCallback)
+        # y += 20
 
-        self.w.keysAndExtremsGlyphButton = Button((0, 0, 200, 20), 
-                'Keys & Extremes', 
-                callback = self.keysAndExtremsGlyphButtonCallback)
-
-        self.w.deepComponentEditionButton = Button((0, 20, 200, 20), 
+        self.w.deepComponentEditionButton = Button((0, y, 200, 20), 
                 'Edition', 
                 callback = self.deepComponentEditionButtonCallback)
+        y += 20
 
-        self.w.deepComponentInstantiationButton = Button((0, 40, 200, 20), 
+        self.w.deepComponentInstantiationButton = Button((0, y, 200, 20), 
                 'Instantiation', 
                 callback = self.deepComponentInstantiationButtonCallback)
+        y += 20
 
         self.w.open()
 

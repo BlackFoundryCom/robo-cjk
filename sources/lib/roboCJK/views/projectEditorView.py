@@ -35,10 +35,12 @@ from views.drawers import designFrameDrawer
 from views.drawers import referenceViewDrawer
 from utils import files
 from resources import characterSets
+from resources import deepCompoMasters_AGB1_FULL
 reload(designFrameDrawer)
 reload(referenceViewDrawer)
 reload(files)
 reload(characterSets)
+reload(deepCompoMasters_AGB1_FULL)
 
 class ProjectEditorWindow(BaseWindowController):
     def __init__(self, RCJKI):
@@ -67,6 +69,120 @@ class ProjectEditorWindow(BaseWindowController):
 
     def windowCloses(self, sender):
         self.RCJKI.projectEditorController.interface = None
+
+class LockerDCEGroup(Group):
+
+    def __init__(self, posSize, controller, step):
+        super(LockerDCEGroup, self).__init__(posSize)
+        self.c = controller
+        self.step = step
+        self.script = "Hanzi"
+
+        usersList = [d['user'] for d in self.c.parent.RCJKI.project.usersLockers['lockers']]
+        if usersList:
+            self.user = usersList[0]
+
+        self.usersList = List((10, 40, 280, 65),
+                usersList,
+                selectionCallback = self.usersListSelectionCallback,
+                drawFocusRing = False
+                ) 
+
+        ####NEW####
+        self.selectedDCKey = None
+
+        checkBox = CheckBoxListCell()
+        self.keyList = List((10, 125, 193, -40),
+            self.deepComponentKeys,
+            columnDescriptions = [{"title": "sel", "cell":checkBox, "width":30}, {"title": "char"}],
+            selectionCallback = self.keyListSelectionCallback,
+            editCallback = self.keyListEditCallback,
+            drawFocusRing = False,
+            showColumnTitles = False
+            )
+
+        self.variantList = List((203, 125, 193, -40),
+            self.deepComponentVariants,
+            drawFocusRing = False,
+            showColumnTitles = False
+            )
+        # self.extremsList = List((396, 125, 193, -40),
+        #     [],
+        #     drawFocusRing = False,
+        #     showColumnTitles = False
+        #     )
+        self.extremsList = TextEditor((396, 125, 193, -40),
+            self.extremsDCGlyphs
+            )
+
+        self.keyList.setSelection([])
+        
+    @property
+    def deepComponents(self):
+        return deepCompoMasters_AGB1_FULL.deepCompoMasters[self.script]
+
+    @property
+    def deepComponentKeys(self):
+        if not self.user+"\n" in [e._toDict['user'] for e in self.c.parent.RCJKI.collab.lockers]:
+            userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
+        else:
+            userLocker = [e for e in self.c.parent.RCJKI.collab.lockers if e._toDict['user'] == self.user][0]
+        return [dict(sel = files.unicodeName(e) in userLocker.glyphs[self.step], char = e) for e in list(self.deepComponents.keys())]
+
+    @property
+    def deepComponentVariants(self):
+        variants = []
+        if self.selectedDCKey is not None:
+            variants = [e[0] for e in list(self.deepComponents[self.selectedDCKey])]
+        return variants
+
+    @property
+    def extremsDCGlyphs(self):
+        extrems = ''
+        if self.selectedDCKey is not None:
+            for e in list(self.deepComponents[self.selectedDCKey]):
+                extrems += "".join(e)
+        return extrems
+
+    def keyListSelectionCallback(self, sender):
+        self.setSelectedDCKey(sender)        
+
+    def setSelectedDCKey(self, sender):
+        sel = sender.getSelection()
+        self.selectedDCKey = None
+        if sel:
+            if self.deepComponentKeys[sender.getSelection()[0]]["sel"]:
+                self.selectedDCKey = self.deepComponentKeys[sender.getSelection()[0]]["char"]
+
+        self.variantList.set(self.deepComponentVariants)
+        self.extremsList.set(self.extremsDCGlyphs)
+
+    def keyListEditCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        chars =[]
+        for k in sender.get():
+            if not k["sel"]: continue
+            char = k["char"]
+            var = [e[0] for e in list(self.deepComponents[char])]
+            chars.extend(var)
+
+        userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
+        glyphs = [files.unicodeName(char) for char in chars]
+        userLocker._setAttr(self.step)
+        userLocker._clearGlyphs()
+        userLocker._addGlyphs(glyphs)
+        userLocker._setScript(self.script)
+        self.c.parent.RCJKI.project.usersLockers = self.c.parent.RCJKI.collab._toDict
+
+        self.setSelectedDCKey(sender)
+
+    ####OLD
+    def usersListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        self.user = sender.get()[sel[0]]
+        self.keyList.set(self.deepComponentKeys)
 
 class LockerGroup(Group):
 
@@ -110,12 +226,6 @@ class LockerGroup(Group):
 
         self.setScriptInLocker()
 
-    def usersListSelectionCallback(self, sender):
-        sel = sender.getSelection()
-        if not sel: return
-        self.user = sender.get()[sel[0]]
-        self.charactersTextEditor.set(self.charactersTextEditorText)
-
     def scriptsRadioGroupCallback(self, sender):
         self.script = self.c.parent.RCJKI.project.script[sender.get()]
         self.setScriptInLocker()
@@ -124,6 +234,12 @@ class LockerGroup(Group):
         if hasattr(self, "user"):
             userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
             userLocker._setScript(self.script)
+
+    def usersListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        self.user = sender.get()[sel[0]]
+        self.charactersTextEditor.set(self.charactersTextEditorText)
 
     @property
     def charactersTextEditorText(self):
@@ -209,7 +325,11 @@ class EditProjectSheet():
         ###
         self.parent.sheet.lockerGroup = Group((0,60,-0,-30))
 
-        segmentedElements = ["Initial Design", "Keys and Extremes", "DC Edition", "DC Instantiation"]
+        segmentedElements = ["Initial Design",
+                            # "Keys and Extremes", 
+                            "DC Edition", 
+                            "DC Instantiation"
+                            ]
         self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton = SegmentedButton((10, 10, -10, 20),
             [dict(title=e, width=577/len(segmentedElements)) for e in segmentedElements],
             callback = self.lockerDesignStepSegmentedButtonCallback,
@@ -217,9 +337,9 @@ class EditProjectSheet():
         self.parent.sheet.lockerGroup.lockerDesignStepSegmentedButton.set(0)
 
         self.parent.sheet.lockerGroup.initialDesign = LockerGroup((0, 0, -0, -0), self, "_initialDesign_glyphs")
-        self.parent.sheet.lockerGroup.keysAndExtrems = LockerGroup((0, 0, -0, -0), self, "_keysAndExtrems_glyphs")
-        self.parent.sheet.lockerGroup.keysAndExtrems.show(0)
-        self.parent.sheet.lockerGroup.deepComponentEdition = LockerGroup((0, 0, -0, -0), self, "_deepComponentsEdition_glyphs")
+        # self.parent.sheet.lockerGroup.keysAndExtrems = LockerGroup((0, 0, -0, -0), self, "_keysAndExtrems_glyphs")
+        # self.parent.sheet.lockerGroup.keysAndExtrems.show(0)
+        self.parent.sheet.lockerGroup.deepComponentEdition = LockerDCEGroup((0, 0, -0, -0), self, "_deepComponentsEdition_glyphs")
         self.parent.sheet.lockerGroup.deepComponentEdition.show(0)
         self.parent.sheet.lockerGroup.deepComponentInstantiation = LockerGroup((0, 0, -0, -0), self, "_deepComponentsInstantiation_glyphs")
         self.parent.sheet.lockerGroup.deepComponentInstantiation.show(0)
@@ -482,7 +602,7 @@ class EditProjectSheet():
         sel = sender.get()
         groups = [
             self.parent.sheet.lockerGroup.initialDesign,
-            self.parent.sheet.lockerGroup.keysAndExtrems,
+            # self.parent.sheet.lockerGroup.keysAndExtrems,
             self.parent.sheet.lockerGroup.deepComponentEdition,
             self.parent.sheet.lockerGroup.deepComponentInstantiation
             ]
