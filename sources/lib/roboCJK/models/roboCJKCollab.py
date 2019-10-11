@@ -116,10 +116,10 @@ class Locker(object):
     def _removeGlyphs(self, glyphs):
         for glyph in glyphs:
             if glyph in getattr(self, self._step):
-                if isinstance(steps[self._step], set):
+                if steps[self._step] == "set":
                     getattr(self, self._step).remove(glyph)
 
-                elif isinstance(steps[self._step], dict):
+                elif steps[self._step] == "dict":
                     del getattr(self, self._step)[glyph]
 
     def _setAttr(self, attr):

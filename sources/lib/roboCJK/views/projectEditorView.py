@@ -109,6 +109,18 @@ class LockerDCEGroup(Group):
             showColumnTitles = False
             )
 
+        self.addVariantButton = Button((203, -60, 193/2, -40),
+            "+",
+            callback = self.addVariantButtonCallback,
+            sizeStyle = 'small'
+            )
+
+        self.removeVariantButton = Button((203+193/2, -60, 193/2, -40),
+            "-",
+            callback = self.removeVariantButtonCallback,
+            sizeStyle = 'small'
+            )
+
         self.extremsList = TextEditor((396, 125, 193, -40),
             self.extremsDCGlyphs,
             callback = self.extremsListCallback
@@ -166,7 +178,15 @@ class LockerDCEGroup(Group):
                 self.selectedDCKey = self.deepComponentKeys[sender.getSelection()[0]]["char"]
 
         self.variantList.set(self.deepComponentVariants)
+        self.addVariantButton.show(len(self.deepComponentVariants) != 0)
+        self.removeVariantButton.show(len(self.deepComponentVariants) != 0)
         self.extremsList.set(self.extremsDCGlyphs)
+
+    def addVariantButtonCallback(self, sender):
+        pass
+
+    def removeVariantButtonCallback(self, sender):
+        pass
 
     def extremsListCallback(self, sender):
         pass
@@ -174,17 +194,15 @@ class LockerDCEGroup(Group):
     def keyListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        chars = {}
+        glyphs = {}
         for k in sender.get():
             if not k["sel"]: continue
             char = k["char"]
             var = {files.unicodeName(e[0]):[files.unicodeName(i) for i in e] for e in list(self.deepComponents[char])}
-            chars = dict(var, **chars)
+            glyphs = dict(var, **glyphs)
 
         userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
-        # glyphs = [files.unicodeName(char) for char in chars]
-        glyphs = chars
-        print(glyphs)
+        
         userLocker._setAttr(self.step)
         userLocker._clearGlyphs()
         userLocker._addGlyphs(glyphs)
