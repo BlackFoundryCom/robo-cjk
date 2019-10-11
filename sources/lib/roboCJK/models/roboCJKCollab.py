@@ -1,5 +1,3 @@
-
-
 """
 Copyright 2019 Black Foundry.
 
@@ -18,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-steps = [
-"_initialDesign_glyphs", 
-"_deepComponentsEdition_glyphs",
-# "_keysAndExtrems_glyphs",
-"_deepComponentsInstantiation_glyphs",
-]
+steps = {
+        "_initialDesign_glyphs": 
+            "set", 
+        "_deepComponentsEdition_glyphs": 
+            "dict",
+        "_deepComponentsInstantiation_glyphs": 
+            "set",
+        }   
 
 scriptFallback = "Hanzi"
 
@@ -41,7 +41,7 @@ class RoboCJKCollab(object):
         if not l: return False
         return l[0]
 
-    def _addLocker(self, user, glyphs=[], step=steps[0]):
+    def _addLocker(self, user, glyphs=[], step=list(steps.keys())[0]):
         if user not in [locker.user for locker in self._lockers]:
             locker = Locker(self, user)
             l = Locker(self, user)
@@ -73,8 +73,9 @@ class Locker(object):
         self._controller = controller
         self.user = user
         self.script = scriptFallback
-        for step in steps:
-            setattr(self, step, set())
+        for step, obj in steps.items():
+            if obj == "set": setattr(self, step, set())
+            elif obj == "dict": setattr(self, step, dict())
 
     @property
     def _allOtherLockedGlyphs(self):
@@ -82,29 +83,44 @@ class Locker(object):
         for locker in self._controller._lockers:
             for step in steps:
                 for glyph in getattr(locker, step):
-                    if step not in s: s[step] = set()
+                    if step not in s.keys(): s[step] = set()
                     if glyph not in self.glyphs[step]:
                         s[step].add(glyph)
         return s
     
     @property
     def glyphs(self):
-        return {step : list(getattr(self, step)) for step in steps}
+        return {step : list(getattr(self, step)) if isinstance(getattr(self, step), set) else getattr(self, step) for step in steps}
 
     def _addGlyphs(self, glyphs):
-        for glyph in glyphs:
-            if glyph not in self._allOtherLockedGlyphs:
+        if steps[self._step] == "set":
+            for glyph in glyphs:
+                if self._step in self._allOtherLockedGlyphs and glyph in self._allOtherLockedGlyphs[self._step]: continue
                 getattr(self, self._step).add(glyph)
+
+        elif steps[self._step] == "dict":
+            for glyph, values in glyphs.items():
+                if self._step in self._allOtherLockedGlyphs and glyph in self._allOtherLockedGlyphs[self._step]: continue
+                getattr(self, self._step)[glyph] = values
 
     def _clearGlyphs(self):
         if hasattr(self, self._step):
             delattr(self, self._step)
-        setattr(self, self._step, set())
+
+        if steps[self._step] == "set":
+            setattr(self, self._step, set())
+
+        elif steps[self._step] == "dict":
+            setattr(self, self._step, dict())
 
     def _removeGlyphs(self, glyphs):
         for glyph in glyphs:
             if glyph in getattr(self, self._step):
-                getattr(self, self._step).remove(glyph)
+                if isinstance(steps[self._step], set):
+                    getattr(self, self._step).remove(glyph)
+
+                elif isinstance(steps[self._step], dict):
+                    del getattr(self, self._step)[glyph]
 
     def _setAttr(self, attr):
         self._step = attr
@@ -115,6 +131,8 @@ class Locker(object):
     @property
     def _toDict(self):
         return {e: getattr(self, e) for e in dir(self) if not e.startswith('_')}
+
+
 
 import random
 def testCollab(users):
@@ -132,4 +150,5 @@ def testCollab(users):
 
 if __name__ == "__main__":
     testCollab(['user1', 'user2', 'user3'])
+
 

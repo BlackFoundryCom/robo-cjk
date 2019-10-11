@@ -16,7 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-#coding=utf-8
 from imp import reload
 from defconAppKit.windows.baseWindow import BaseWindowController
 from vanilla import *
@@ -78,6 +77,7 @@ class LockerDCEGroup(Group):
         self.step = step
         self.script = "Hanzi"
 
+        self.user = None
         usersList = [d['user'] for d in self.c.parent.RCJKI.project.usersLockers['lockers']]
         if usersList:
             self.user = usersList[0]
@@ -90,6 +90,7 @@ class LockerDCEGroup(Group):
 
         ####NEW####
         self.selectedDCKey = None
+        self.selectedDCVariant = None
 
         checkBox = CheckBoxListCell()
         self.keyList = List((10, 125, 193, -40),
@@ -103,16 +104,14 @@ class LockerDCEGroup(Group):
 
         self.variantList = List((203, 125, 193, -40),
             self.deepComponentVariants,
+            selectionCallback = self.variantListSelectionCallback, 
             drawFocusRing = False,
             showColumnTitles = False
             )
-        # self.extremsList = List((396, 125, 193, -40),
-        #     [],
-        #     drawFocusRing = False,
-        #     showColumnTitles = False
-        #     )
+
         self.extremsList = TextEditor((396, 125, 193, -40),
-            self.extremsDCGlyphs
+            self.extremsDCGlyphs,
+            callback = self.extremsListCallback
             )
 
         self.keyList.setSelection([])
@@ -123,6 +122,8 @@ class LockerDCEGroup(Group):
 
     @property
     def deepComponentKeys(self):
+        if self.user is None:
+            return []
         if not self.user+"\n" in [e._toDict['user'] for e in self.c.parent.RCJKI.collab.lockers]:
             userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
         else:
@@ -140,12 +141,22 @@ class LockerDCEGroup(Group):
     def extremsDCGlyphs(self):
         extrems = ''
         if self.selectedDCKey is not None:
-            for e in list(self.deepComponents[self.selectedDCKey]):
-                extrems += "".join(e)
+            if self.selectedDCVariant is not None:
+                for e in list(self.deepComponents[self.selectedDCKey]):
+                    if e[0] != self.selectedDCVariant: continue
+                    extrems += "".join(e)
         return extrems
 
     def keyListSelectionCallback(self, sender):
-        self.setSelectedDCKey(sender)        
+        self.setSelectedDCKey(sender)      
+
+    def variantListSelectionCallback(self, sender):
+        self.selectedDCVariant = None
+        sel = sender.getSelection()
+        if sel:
+            self.selectedDCVariant = sender.get()[sel[0]]
+
+        self.extremsList.set(self.extremsDCGlyphs)
 
     def setSelectedDCKey(self, sender):
         sel = sender.getSelection()
@@ -157,18 +168,23 @@ class LockerDCEGroup(Group):
         self.variantList.set(self.deepComponentVariants)
         self.extremsList.set(self.extremsDCGlyphs)
 
+    def extremsListCallback(self, sender):
+        pass
+
     def keyListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        chars =[]
+        chars = {}
         for k in sender.get():
             if not k["sel"]: continue
             char = k["char"]
-            var = [e[0] for e in list(self.deepComponents[char])]
-            chars.extend(var)
+            var = {files.unicodeName(e[0]):[files.unicodeName(i) for i in e] for e in list(self.deepComponents[char])}
+            chars = dict(var, **chars)
 
         userLocker = self.c.parent.RCJKI.collab._addLocker(self.user, self.step)
-        glyphs = [files.unicodeName(char) for char in chars]
+        # glyphs = [files.unicodeName(char) for char in chars]
+        glyphs = chars
+        print(glyphs)
         userLocker._setAttr(self.step)
         userLocker._clearGlyphs()
         userLocker._addGlyphs(glyphs)
