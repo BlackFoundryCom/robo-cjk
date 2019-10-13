@@ -22,7 +22,7 @@ from drawers.DesignFrameDrawer import DesignFrameDrawer
 from drawers.ReferenceViewerDrawer import ReferenceViewerDraw
 from mojo.UI import OpenGlyphWindow
 from mojo.events import extractNSEvent
-from ufoLib.glifLib import readGlyphFromString
+from fontTools.ufoLib.glifLib import readGlyphFromString
 from drawers.DeepComponentDrawer import DeepComponentDrawer
 from drawers.Tester_DeepComponentDrawer import TesterDeepComponent
 from drawers.InterpolaviourDrawer import InterpolaviourDrawer

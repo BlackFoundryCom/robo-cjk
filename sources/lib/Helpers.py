@@ -22,7 +22,7 @@ from vanilla.dialogs import message
 from AppKit import NSColor, NSFont, NSAppearance
 from mojo.UI import CurrentGlyphWindow
 from vanilla import TextBox
-from ufoLib.pointPen import PointToSegmentPen
+from fontTools.ufoLib.pointPen import PointToSegmentPen
 from mojo.roboFont import *
     
 def checkCompatible(g1, g2):
