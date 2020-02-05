@@ -187,7 +187,7 @@ class DCCG_View(CanvasGroup):
     @glyphUndo
     def slidersListEditCallback(self, sender):
         if not sender.getSelection(): return
-        self.RCJKI.sliderValue = round(float(self.slidersList[sender.getSelection()[0]]['PreviewValue']), 2)
+        self.RCJKI.sliderValue = round(float(self.slidersList[sender.getSelection()[0]]['PreviewValue']), 3)
         self.RCJKI.sliderName = self.slidersList[sender.getSelection()[0]]['Axis']
         if self.RCJKI.isDeepComponent:
             self.RCJKI.currentGlyph.updateAtomicElementCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
