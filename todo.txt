@@ -1,0 +1,19 @@
+BUG
+
+- Fixer la preview des deep components dans la sheet d'ajout (CG)
+- Fixer les axes qui se rajoutent sans prevenir dans un CG
+- Fixer la sélection du premier deep composent dans la sheet d'ajout (CG) lors de l'initialisation
+- Après le renommage d'un character, Updater le self.prevGlyphName
+- Fixer/rajout le rajout de nouveau axes d'un deep component dans les character glyph
+- Désactiver le changement de current glyph au click dans un space center
+
+TO_ADD
+
+- Fontlib + fontInfos dans un plist
+- Nommer les axes de deep components
+- Modifier la position d'origine avec une ancre
+- Protect the non-compatibility of an atomic element
+- Undo
+- Del glyphs
+- Disable 'save project' and 'new project' while no git repo is loaded
+- sélection multiple d'élément dans la glyph window ?
