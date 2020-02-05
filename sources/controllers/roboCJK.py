@@ -178,18 +178,16 @@ class RoboCJKController(object):
         glyph = notification['glyph']
         if glyph is None: return
         self.currentGlyph = self.currentFont[glyph.name]
+        d = self.currentGlyph._glyphVariations
         if self.isAtomic:
-            d = self.currentGlyph._glyphVariations
             self.atomicView.atomicElementsList.set([
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
                 ])
         elif self.isDeepComponent:
-            d = self.currentGlyph._glyphVariations
             self.deepComponentView.sourcesList.set([
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
                 ])
         elif self.isCharacterGlyph:
-            d = self.currentGlyph._glyphVariations
             self.characterGlyphView.sourcesList.set([
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
                 ])
@@ -204,6 +202,7 @@ class RoboCJKController(object):
     @refresh
     def addSubView(self):
         self.window = CurrentGlyphWindow()
+        if self.window is None: return
         # add the view to the GlyphEditor
         self.showCanvasGroups()
         if self.isAtomic: 

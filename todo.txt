@@ -1,7 +1,5 @@
 BUG
 
-- Désactiver le changement de current glyph au click dans un space center
-
 TO_ADD
 
 - Fontlib + fontInfos dans un plist
