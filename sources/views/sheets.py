@@ -192,7 +192,7 @@ class SelectDeepComponentSheet():
 
         self.parent.sheet.canvasPreview = Canvas(
             (0, -320, -0, -20), 
-            canvasSize=(300, 200), 
+            canvasSize=(300, 300), 
             delegate=self
             )
         
@@ -204,6 +204,7 @@ class SelectDeepComponentSheet():
             )
         if deepComponentsNames:
             self.getDeepComponentPreview(deepComponentsNames[0])
+            self.deepComponentName = deepComponentsNames[0]
         
         self.parent.sheet.addButton = Button(
             (-150,-20, 150, 20), 
@@ -225,8 +226,11 @@ class SelectDeepComponentSheet():
         self.getDeepComponentPreview(self.deepComponentName)
 
     def getDeepComponentPreview(self, deepComponentName):
-        self.RCJKI.currentFont[deepComponentName].computeDeepComponents()
-        self.previewGlyph = self.RCJKI.currentFont[deepComponentName].computedAtomicInstances
+        glyph = self.RCJKI.currentFont[deepComponentName]
+        self.previewGlyph = glyph.generateDeepComponent(
+                glyph, 
+                preview=False,
+                )
         self.parent.sheet.canvasPreview.update()
     
     def closeSheet(self, sender):
