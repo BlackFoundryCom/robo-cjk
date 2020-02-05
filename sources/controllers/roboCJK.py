@@ -249,8 +249,8 @@ class RoboCJKController(object):
             mjdt.save()
             mjdt.translate(0, 100)
             for i, d in enumerate(self.currentGlyph.preview):
-                for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in d.items():
-                    drawGlyph(atomicInstanceGlyph)
+                for atomicInstanceGlyph in d.values():
+                    drawGlyph(atomicInstanceGlyph[0])
             mjdt.restore()
         elif self.isCharacterGlyph:
             mjdt.save()
@@ -258,8 +258,8 @@ class RoboCJKController(object):
             for i, e in enumerate(self.currentGlyph.preview):
                 for dcName, (dcCoord, l) in e.items():
                     for dcAtomicElements in l:
-                        for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in dcAtomicElements.items():
-                            drawGlyph(atomicInstanceGlyph)
+                        for atomicInstanceGlyph in dcAtomicElements.values():
+                            drawGlyph(atomicInstanceGlyph[0])
             mjdt.restore()
         mjdt.restore()
 
@@ -299,6 +299,7 @@ class RoboCJKController(object):
         elif self.isCharacterGlyph:
             self.characterGlyphView.slidersList.set([])
             variation = self.currentGlyph.pointIsInside((px, py))
+            print(variation)
             if variation:
                 for axisName, value in variation.items(): 
 

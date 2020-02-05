@@ -50,7 +50,6 @@ class DeepComponent(Glyph):
                 for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in d.items():
                     if atomicInstanceGlyph.pointInside((px, py)):
                         self.selectedElement = dict(index = i, element = atomicElementName)
-                        # print("atomicCoord: ",atomicCoord)
                         return atomicCoord
         return False
 
@@ -113,21 +112,24 @@ class DeepComponent(Glyph):
 
         self._glyphVariations[name] = dcgv
         # check all existing characterGlyph's deep components and add glyph variation to coord
-        for name in self.currentFont.characterGlyphSet:
-            g2 = self.currentFont[name]
+        for glyphname in self.currentFont.characterGlyphSet:
+            g2 = self.currentFont[glyphname]
             for d in g2._deepComponents:
+                if d["name"] != self.name: continue
                 d['coord'][name] = 0
 
     def removeVariationAxis(self, name):
         del self._glyphVariations[name]
 
-        for name in self.currentFont.characterGlyphSet:
-            g2 = self.currentFont[name]
+        for glyphname in self.currentFont.characterGlyphSet:
+            g2 = self.currentFont[glyphname]
             for d in g2._deepComponents:
+                if d["name"] != self.name: continue
                 if name in d['coord']:
                     del d['coord'][name]
             for v, l in g2._glyphVariations.items():
                 for d in l:
+                    if d["name"] != self.name: continue
                     if name in d['coord']:
                         del d['coord'][name]
 

@@ -36,11 +36,12 @@ class CharacterGlyph(Glyph):
 
     def _initWithLib(self):
         self._deepComponents = list(self._RGlyph.lib[deepComponentsKey])      
-        self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])      
+        self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])  
 
     def pointIsInside(self, point):
         px, py = point
         self.selectedElement = {}
+
         if self.computedDeepComponents:
             for i, e in enumerate(self.computedDeepComponents):
                 for dcName, (dcCoord, l) in e.items():
@@ -66,7 +67,7 @@ class CharacterGlyph(Glyph):
         elif self.computedDeepComponentsVariation:
             self.transform(self._glyphVariations[self.selectedSourceAxis], self.computedDeepComponentsVariation, keys)
 
-    def updateDeepComponentCoord(self,nameAxis, value):
+    def updateDeepComponentCoord(self, nameAxis, value):
         if self.selectedSourceAxis is not None:
             self._glyphVariations[self.selectedSourceAxis][self.selectedElement.get("index")]['coord'][nameAxis]=value
         else:

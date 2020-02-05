@@ -96,7 +96,7 @@ class Glyph(RGlyph):
             deepComponentAxisInfos = {}
 
             deepComponentAxisInfos = dc['coord'] 
-
+            
             deepdeepolatedDeepComponent = interpolation.deepdeepolation(
                 masterDeepComponent, 
                 deepComponentVariations, 

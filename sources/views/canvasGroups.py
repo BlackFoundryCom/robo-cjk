@@ -159,10 +159,10 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.updateListInterface()            
             
 
-        elif self. RCJKI.isCharacterGlyph:
+        elif self.RCJKI.isCharacterGlyph:
             sheets.SelectFontVariationSheet(self.RCJKI)
 
-        source =self.sourcesList.get()
+        source = self.sourcesList.get()
         isel = len(source)
         self.sourcesList.setSelection([isel])
         self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
