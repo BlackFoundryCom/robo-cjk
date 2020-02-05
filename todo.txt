@@ -2,7 +2,6 @@ BUG
 
 - Fixer la preview des deep components dans la sheet d'ajout (CG)
 - Fixer la sélection du premier deep composent dans la sheet d'ajout (CG) lors de l'initialisation
-- Après le renommage d'un character, Updater le self.prevGlyphName
 - Désactiver le changement de current glyph au click dans un space center
 
 TO_ADD

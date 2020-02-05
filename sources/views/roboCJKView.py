@@ -192,7 +192,7 @@ class RoboCJKView(BaseWindowController):
             return
         newGlyphName = sender.get()[sel[0]]
         self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName)
-        self.prevGlyphName = None
+        self.prevGlyphName = newGlyphName
 
     def GlyphsListSelectionCallback(self, sender):
         if not sender.getSelection(): return
