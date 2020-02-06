@@ -51,18 +51,18 @@ class RoboCJKController(object):
 
         self.atomicView = canvasGroups.AtomicView(
             self,
-            posSize = (20, 0, 200, -20), 
+            posSize = (20, 0, 300, -20), 
             delegate = self
             )
         self.deepComponentView = canvasGroups.DCCG_View(
             self,
-            posSize = (20, 0, 200, -20), 
+            posSize = (20, 0, 300, -20), 
             delegate = self
             )
 
         self.characterGlyphView = canvasGroups.DCCG_View(
             self,
-            posSize = (20, 0, 200, -20), 
+            posSize = (20, 0, 300, -20), 
             delegate = self
             )
 

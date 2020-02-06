@@ -41,7 +41,7 @@ class AtomicView(CanvasGroup):
             columnDescriptions = [
                     {"title": "Axis", "editable": False, "width": 50},
                     {"title": "Layer", "editable": False, "width": 40},
-                    {"title": "PreviewValue", "cell": slider, "width": 100}],
+                    {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
             editCallback = self.atomicElementsListEditCallback,
             allowsMultipleSelection = False
