@@ -1,12 +1,22 @@
-BUG
+BUG:
+- Protect the non-compatibility of an atomic element (remove print)
+- Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
 
-TO_ADD
+TO ADD:
+- Fontlib + fontInfos in storage file 
+- Variable Font generation with decomposition of Deep Components
+- Enable renaming of deep components axes
+- Glyphs-lists better control of Add and Delete (choose name, focus to item)
+- Link HanGlyphComposition DataBase (public git repo) and enable modification of the DB (customisation, errors fixing etc.)
+- Display all Character Glyphs using a Deep Component at its creation (to make the extremes of DC directly in CG)
+- Creating Character triggers Deep Components Creation
+- Search / filter glyphs field
+- Collaboration engine to set up with lock/unlock (GIT? SQL? …)
 
-- Fontlib + fontInfos dans un plist
-- Nommer les axes de deep components
-- Modifier la position d'origine avec une ancre
-- Protect the non-compatibility of an atomic element
-- Undo
-- Del glyphs
+
+NICE TO HAVE:
+- Multiple selection of items in glyph window
+- Use anchor to set tranformations origins of Atomic Element instance in Deep Component
 - Disable 'save project' and 'new project' while no git repo is loaded
-- sélection multiple d'élément dans la glyph window ?
+- Undo not working
+- Preview of selected glyph in the List (AE, DC, or CG) in the main window
