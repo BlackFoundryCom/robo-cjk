@@ -249,4 +249,3 @@ class EditPopoverAlignTool(EditPopover):
         if not sel: return
         d = {e["layer"]:float(str(e["value"]).replace(',','.')) for e in sender.get()}
         self.infos["coord"] = d
-        self.RCJKI.updateDeepComponent()

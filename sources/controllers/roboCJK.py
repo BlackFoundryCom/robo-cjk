@@ -41,6 +41,7 @@ from mojo.roboFont import *
 from utils import decorators
 reload(decorators)
 refresh = decorators.refresh
+lockedProtect = decorators.lockedProtect
 
 class RoboCJKController(object):
 
@@ -108,7 +109,7 @@ class RoboCJKController(object):
         if self.observers or forceKill:
             removeObserver(self, "fontDidSave")
             removeObserver(self, "glyphAdditionContextualMenuItems")
-            removeObserver(self, "glyphWindowWillOpen")
+            # removeObserver(self, "glyphWindowWillOpen")
             removeObserver(self, "glyphWindowWillClose")
             removeObserver(self, "draw")
             removeObserver(self, "drawPreview")
@@ -120,7 +121,7 @@ class RoboCJKController(object):
         else:
             addObserver(self, "fontDidSave", "fontDidSave")
             addObserver(self, "glyphAdditionContextualMenuItems", "glyphAdditionContextualMenuItems")
-            addObserver(self, "glyphWindowWillOpen", "glyphWindowWillOpen")
+            # addObserver(self, "glyphWindowWillOpen", "glyphWindowWillOpen")
             addObserver(self, "glyphWindowWillClose", "glyphWindowWillClose")
             addObserver(self, "observerDraw", "draw")
             addObserver(self, "observerDrawPreview", "drawPreview")
@@ -174,6 +175,7 @@ class RoboCJKController(object):
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
 
+    @lockedProtect
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
         if glyph is None: return
@@ -195,9 +197,9 @@ class RoboCJKController(object):
         self.addSubView()
         self.updateDeepComponent()
 
-    def glyphWindowWillOpen(self, notification):
-        self.addSubView()
-        self.updateDeepComponent()
+    # def glyphWindowWillOpen(self, notification):
+    #     self.addSubView()
+    #     self.updateDeepComponent()
 
     @refresh
     def addSubView(self):
@@ -412,6 +414,7 @@ class RoboCJKController(object):
         if [l for l in self.currentGlyph._RGlyph.layers if l.name != 'foreground']:
             sheets.SelectLayerSheet(self, availableLayers)
 
+    @lockedProtect
     @refresh
     def updateListInterface(self):
         if self.isAtomic:

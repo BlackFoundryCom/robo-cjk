@@ -31,12 +31,15 @@ def gitCoverage(msg='save'):
 def lockedProtect(func):
     def wrapper(self, *args, **kwargs):
         try:
-            if self.RCJKI.locked: return
-            self.RCJKI.locked = True
+            e = self
+            if hasattr(self, 'RCJKI'):
+                e = self.RCJKI
+            if e.locked: return
+            e.locked = True
 
             func(self, *args, **kwargs)
 
-            self.RCJKI.locked = False
+            e.locked = False
         except Exception as e:
             raise e
     return wrapper
