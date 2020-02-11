@@ -20,4 +20,3 @@ NICE TO HAVE:
 - Use anchor to set tranformations origins of Atomic Element instance in Deep Component
 - Disable 'save project' and 'new project' while no git repo is loaded
 - Undo not working
-- Preview of selected glyph in the List (AE, DC, or CG) in the main window
