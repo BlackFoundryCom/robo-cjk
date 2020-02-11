@@ -1,7 +1,7 @@
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from xml.etree import ElementTree as ET
 from mojo.roboFont import *
-
+import json
 import os
 
 from imp import reload
@@ -31,6 +31,12 @@ class Font():
         self._glyphs = {}
 
         self.getGlyphs()
+        if 'fontLib.json' in os.listdir(self.fontPath):
+            libPath = os.path.join(self.fontPath, 'fontLib.json')
+            with open(libPath, 'r') as file:
+                f = json.load(file)
+            for k, v in f.items():
+                self._RFont.lib[k] = v
 
     def __iter__(self):
         for name in self._RFont.keys():
@@ -163,6 +169,12 @@ class Font():
     @gitCoverage('font save')
     def save(self):
         self._RFont.save()
+
+        libPath = os.path.join(self.fontPath, 'fontLib.json')
+        with open(libPath, "w") as file:
+            file.write(json.dumps(self._RFont.lib.asDict(),
+                indent=4, separators=(',', ': ')))
+
         for rglyph in self._RFont.getLayer('foreground'):
             glyph = self[rglyph.name]
             glyph.save()
