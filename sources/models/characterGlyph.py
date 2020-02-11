@@ -206,7 +206,7 @@ class CharacterGlyph(Glyph):
                     previewGlyph = RGlyph()
                     previewGlyph._atomicElements = deepdeepolatedDeepComponent
             
-                    atomicInstancesPreview = self.currentFont.generateDeepComponent(previewGlyph, preview=True)
+                    atomicInstancesPreview = self.generateDeepComponent(previewGlyph, preview=True)
                     for e in atomicInstancesPreview:
                         for aeName, ae in e.items():
                             ae[0].scaleBy((dc['scalex'], dc['scaley']))

@@ -126,7 +126,7 @@ class Drawer():
                                 self.drawIndexOfElements(i, atomicInstanceGlyph, view)
                             mjdt.restore()
                             
-        elif self.RCJKI.currentGlyph.type == "characterGlyph" and self.RCJKI.get("computedDeepComponentsVariation"):            
+        elif self.RCJKI.currentGlyph.type == "characterGlyph" and hasattr(self.RCJKI.currentGlyph, "computedDeepComponentsVariation"):   
             for i, e in enumerate(self.RCJKI.currentGlyph.computedDeepComponentsVariation):
                 for dcName, (dcCoord, l) in e.items():
                     for j, dcAtomicElements in enumerate(l):

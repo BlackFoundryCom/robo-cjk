@@ -251,3 +251,55 @@ class SelectDeepComponentSheet():
                 mjdt.drawGlyph(atomicInstanceGlyph[0]) 
         mjdt.restore()
 
+class FontInfosSheet():
+
+    def __init__(self, RCJKI, parentWindow, posSize):
+        self.RCJKI = RCJKI
+        if not self.RCJKI.get("currentFont"): return
+        fontvariations = self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', [])
+
+        self.s = Sheet(posSize, parentWindow)
+        self.s.fontVariationAxisList = List(
+            (10, 10, 200, 100), 
+            fontvariations, 
+            editCallback = self.fontVariationAxisListEditCallback
+            )
+        self.s.addVariation = Button(
+            (10, 110, 100, 20), 
+            "+",
+            callback = self.addVariationCallback)
+        self.s.removeVariation = Button(
+            (110, 110, 100, 20), 
+            "-",
+            callback = self.removeVariationCallback)
+
+        self.s.closeButton = Button(
+            (10, -30, -10, 20), 
+            'close', 
+            self.closeCallback
+            )
+        self.s.open()
+
+    def fontVariationAxisListEditCallback(self, sender):
+        self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'] = sender.get()
+
+    def addVariationCallback(self, sender):
+        l = 0
+        name = files.normalizeCode(files.int_to_column_id(l), 4)
+        while name in self.s.fontVariationAxisList.get():
+            l += 1
+            name = files.normalizeCode(files.int_to_column_id(l), 4)
+        self.s.fontVariationAxisList.append(name)
+        self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'].append(name)
+
+    def removeVariationCallback(self, sender):
+        sel = self.s.fontVariationAxisList.getSelection()
+        if not sel: return
+        l = self.s.fontVariationAxisList.get()
+        l.pop(sel[0])
+        self.s.fontVariationAxisList.set(l)
+        self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']=self.s.fontVariationAxisList.get()
+        
+    def closeCallback(self, sender):
+        self.s.close()
+

@@ -12,6 +12,8 @@ reload(files)
 reload(canvasGroups)
 from models import font
 reload(font)
+from views import sheets
+reload(sheets)
 
 import os
 
@@ -41,6 +43,12 @@ class RoboCJKView(BaseWindowController):
             (410, 10, 200, 20), 
             "New project", 
             callback = self.newProjectButtonCallback,
+            )
+
+        self.w.fontInfos = Button(
+            (210, 40, 200, 20), 
+            "Fonts Infos", 
+            callback = self.fontInfosCallback,
             )
 
         self.w.debug = Button(
@@ -137,6 +145,9 @@ class RoboCJKView(BaseWindowController):
                 self.currentFont.save()
             self.RCJKI.toggleWindowController(False)
         self.RCJKI.toggleObservers(forceKill=True)
+
+    def fontInfosCallback(self, sender):
+        sheets.FontInfosSheet(self.RCJKI, self.w, (400, 400))
         
     def loadProjectButtonCallback(self, sender):
         folder = getFolder()
