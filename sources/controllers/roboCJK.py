@@ -181,18 +181,15 @@ class RoboCJKController(object):
         if glyph is None: return
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
+        self.currentGlyph.sourcesList = [
+            {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+            ]
         if self.isAtomic:
-            self.atomicView.atomicElementsList.set([
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
-                ])
+            self.atomicView.atomicElementsList.set(self.currentGlyph.sourcesList)
         elif self.isDeepComponent:
-            self.deepComponentView.sourcesList.set([
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
-                ])
+            self.deepComponentView.sourcesList.set(self.currentGlyph.sourcesList)
         elif self.isCharacterGlyph:
-            self.characterGlyphView.sourcesList.set([
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
-                ])
+            self.characterGlyphView.sourcesList.set(self.currentGlyph.sourcesList)
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()

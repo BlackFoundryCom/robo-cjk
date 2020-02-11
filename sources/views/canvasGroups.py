@@ -9,8 +9,9 @@ reload(decorators)
 from utils import files
 reload(files)
 
-from views import sheets
+from views import sheets, drawer
 reload(sheets)
+reload(drawer)
 
 lockedProtect = decorators.lockedProtect
 glyphUndo = decorators.glyphUndo
@@ -206,3 +207,49 @@ class DCCG_View(CanvasGroup):
         elif self.RCJKI.isCharacterGlyph:
             self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
         self.RCJKI.updateDeepComponent()
+
+
+class GlyphPreviewCanvas(CanvasGroup):
+
+    def __init__(self, posSize, RCJKI, glyphType):
+        super().__init__(posSize, delegate = self)
+        self.RCJKI = RCJKI
+        self.glyphType = glyphType
+        self.glyphName = ''
+        self.drawer = drawer.Drawer(RCJKI)
+
+    def draw(self):
+        if not self.RCJKI.get("currentFont"): return
+        if not self.glyphName: return
+        self.glyph = self.RCJKI.currentFont[self.glyphName]
+        d = self.glyph._glyphVariations
+        self.glyph.sourcesList = [
+            {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+            ]
+        scale = .15
+        mjdt.scale(scale, scale)
+        mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
+        self.glyph.computeDeepComponentsPreview()
+        if self.glyphType == 'atomicElement':
+            self.drawer.drawAtomicElementPreview(
+                self.glyph, 
+                scale, 
+                color = (0, 0, 0, 1), 
+                strokecolor = (0, 0, 0, 0)
+                )
+
+        elif self.glyphType == 'deepComponent':
+            self.drawer.drawDeepComponentPreview(
+                self.glyph, 
+                scale, 
+                color = (0, 0, 0, 1), 
+                strokecolor = (0, 0, 0, 0)
+                )
+
+        elif self.glyphType == 'characterGlyph':
+            self.drawer.drawCharacterGlyphPreview(
+                self.glyph, 
+                scale, 
+                color = (0, 0, 0, 1), 
+                strokecolor = (0, 0, 0, 0)
+                )

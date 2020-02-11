@@ -2,13 +2,14 @@ from vanilla import *
 from vanilla.dialogs import getFolder, putFile
 from mojo.UI import OpenGlyphWindow, AllWindows
 from defconAppKit.windows.baseWindow import BaseWindowController
+from views import canvasGroups
 # from lib.doodleDocument import DoodleDocument
 
 from imp import reload
 from utils import decorators, files
 reload(decorators)
 reload(files)
-
+reload(canvasGroups)
 from models import font
 reload(font)
 
@@ -22,7 +23,7 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI = RCJKI
         self.prevGlyphName = None
         self.w = Window(
-            (620, 400), 
+            (620, 600), 
             'RoboCJK'
             )
 
@@ -67,6 +68,10 @@ class RoboCJKView(BaseWindowController):
             "New AE",
             callback = self.newAtomicElementCallback
             )
+        self.w.atomicElementPreview = canvasGroups.GlyphPreviewCanvas(
+            (10, 372, 200, -0),
+            self.RCJKI,
+            glyphType = "atomicElement")
 
         self.w.deepComponent = List(
             (210, 150, 200, 200),
@@ -81,6 +86,10 @@ class RoboCJKView(BaseWindowController):
             "New DC",
             callback = self.newDeepComponentCallback
             )
+        self.w.deepComponentPreview = canvasGroups.GlyphPreviewCanvas(
+            (210, 372, 200, -0),
+            self.RCJKI,
+            glyphType = "deepComponent")
 
         self.w.characterGlyph = List(
             (410, 150, 200, 200),
@@ -95,6 +104,10 @@ class RoboCJKView(BaseWindowController):
             "New CG",
             callback = self.newCharacterGlyphCallback
             )
+        self.w.characterGlyphPreview = canvasGroups.GlyphPreviewCanvas(
+            (410, 372, 200, -0),
+            self.RCJKI,
+            glyphType = "characterGlyph")
         
         self.lists = [
             self.w.atomicElement,
@@ -200,6 +213,15 @@ class RoboCJKView(BaseWindowController):
             if lists != sender:
                 lists.setSelection([])
         self.prevGlyphName = sender.get()[sender.getSelection()[0]]
+        if sender == self.w.atomicElement:
+            self.w.atomicElementPreview.glyphName = self.prevGlyphName
+            self.w.atomicElementPreview.update()
+        elif sender == self.w.deepComponent:
+            self.w.deepComponentPreview.glyphName = self.prevGlyphName
+            self.w.deepComponentPreview.update()
+        elif sender == self.w.characterGlyph:
+            self.w.characterGlyphPreview.glyphName = self.prevGlyphName
+            self.w.characterGlyphPreview.update()
 
     @property
     def currentFont(self):
