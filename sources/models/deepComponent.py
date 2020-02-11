@@ -118,6 +118,20 @@ class DeepComponent(Glyph):
                 if d["name"] != self.name: continue
                 d['coord'][name] = 0
 
+    def renameVariationAxis(self, oldName, newName):
+        v = copy.deepcopy(self._glyphVariations[oldName])
+        del self._glyphVariations[oldName]
+        self._glyphVariations[newName] = v
+
+        for glyphname in self.currentFont.characterGlyphSet:
+            g2 = self.currentFont[glyphname]
+            for d in g2._deepComponents:
+                if d["name"] != self.name: continue
+                v = copy.deepcopy(d['coord'][oldName])
+                del d['coord'][oldName]
+                d['coord'][newName] = v
+        # self.selectedSourceAxis = newName
+
     def removeVariationAxis(self, name):
         del self._glyphVariations[name]
 

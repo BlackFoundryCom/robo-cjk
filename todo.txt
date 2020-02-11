@@ -4,8 +4,10 @@ BUG:
 
 TO ADD:
 - Fontlib + fontInfos in storage file 
+- Select a deep component while dragging with selection tool
 - Variable Font generation with decomposition of Deep Components
 - Enable renaming of deep components axes
+
 - Glyphs-lists better control of Add and Delete (choose name, focus to item)
 - Link HanGlyphComposition DataBase (public git repo) and enable modification of the DB (customisation, errors fixing etc.)
 - Display all Character Glyphs using a Deep Component at its creation (to make the extremes of DC directly in CG)

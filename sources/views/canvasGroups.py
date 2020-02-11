@@ -70,7 +70,7 @@ class DCCG_View(CanvasGroup):
             (0, -220, -0, -140), 
             [],
             columnDescriptions = [
-                    {"title": "Axis", "editable": False, "width": 50},
+                    {"title": "Axis", "editable": True, "width": 50},
                     {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
             selectionCallback = self.sourcesListSelectionCallback,
@@ -111,6 +111,7 @@ class DCCG_View(CanvasGroup):
             allowsMultipleSelection = False
             )
         setListAesthetic(self.slidersList)
+        self.selectedSourceAxis = None
 
     def setUI(self):
         if self.RCJKI.isDeepComponent:
@@ -137,11 +138,22 @@ class DCCG_View(CanvasGroup):
 
     @lockedProtect
     def sourcesListSelectionCallback(self, sender):
+        sel = self.sourcesList.getSelection()
+        if not sel:
+            self.selectedSourceAxis = None
+        else:
+            self.selectedSourceAxis = self.sourcesList.get()[sel[0]]["Axis"]
         self.RCJKI.updateDeepComponent()
 
     @lockedProtect
     def sourcesListEditCallback(self, sender):
-        if not sender.getSelection(): return
+        sel = sender.getSelection()
+        if not sel: return
+        edited = sender.getEditedColumnAndRow()
+        if edited[0] == 0:
+            name =  sender.get()[edited[1]]['Axis']
+            if name != self.selectedSourceAxis:
+                self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
         self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.updateDeepComponent()
 
