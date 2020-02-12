@@ -73,6 +73,9 @@ class CharacterGlyph(Glyph):
         else:
             self._deepComponents[self.selectedElement.get("index")]['coord'][nameAxis]=value
 
+    def removeVariationAxis(self, name):
+        del self._glyphVariations[name]
+
     def addDeepComponentNamed(self, deepComponentName, items = False):
         d = items
         if not items:
