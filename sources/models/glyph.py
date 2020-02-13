@@ -54,32 +54,6 @@ class Glyph(RGlyph):
             atomicInstances.append({atomicElement['name']:(atomicInstanceGlyph, atomicVariations, atomicElement['coord'])})
         return atomicInstances
 
-    # def generateDeepComponent(self, f, g, preview=True):
-    #     atomicInstances = []
-
-    #     for i, atomicElement in enumerate(g.lib['robocjk.deepComponent.atomicElements']):
-    #         layersInfos = {}
-            
-    #         atomicElementGlyph = f[atomicElement['name']].getLayer('foreground')
-    #         atomicVariations = atomicElementGlyph.lib['robocjk.atomicElement.glyphVariations']
-            
-    #         for axisName in atomicElement['coord'].keys():
-    #             if self.selected == (i, atomicElement['name']) and self.sliderName == axisName and preview == False and self.sliderValue:
-    #                 atomicElement['coord'][axisName] = float(self.sliderValue)
-    #             layersInfos[atomicVariations[axisName]] = atomicElement['coord'][axisName]
-                
-    #         atomicInstanceGlyph = interpolation.deepolation(
-    #             RGlyph(), 
-    #             atomicElementGlyph, 
-    #             layersInfos
-    #             )
-    
-    #         atomicInstanceGlyph.scaleBy((atomicElement['scalex'], atomicElement['scaley']))
-    #         atomicInstanceGlyph.rotateBy(atomicElement['rotation'])
-    #         atomicInstanceGlyph.moveBy((atomicElement['x'], atomicElement['y']))                          
-    #         atomicInstances.append({atomicElement['name']:(atomicInstanceGlyph, atomicVariations, atomicElement['coord'])})
-
-    #     return(atomicInstances)
 
     def generateCharacterGlyph(self, g, preview=True):
         ### CLEANING TODO ###
@@ -118,25 +92,26 @@ class Glyph(RGlyph):
 
     def transform(self, element, instance, keys):
         modifiers, inputKey, character = keys
-        index = self.selectedElement.get("index")
-        if index is None: return
-        d = element[index]
-        if modifiers[2]:
-            if character == "∂":
-                if self.type == "deepComponent":
-                    self.addAtomicElementNamed(d["name"], copy.deepcopy(d))
-                elif self.type == "characterGlyph":
-                    self.addDeepComponentNamed(d["name"], copy.deepcopy(d))
-                self.selectedElement = {}
+        # index = self.selectedElement.get("index")
+        for index in self.selectedElement:
+            # if index is None: return
+            d = element[index]
+            if modifiers[2]:
+                if character == "∂":
+                    if self.type == "deepComponent":
+                        self.addAtomicElementNamed(d["name"], copy.deepcopy(d))
+                    elif self.type == "characterGlyph":
+                        self.addDeepComponentNamed(d["name"], copy.deepcopy(d))
+                    self.selectedElement = []
+                else:
+                    d['rotation'] += (-10*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - inputKey[0])*.5
+            elif modifiers[1]:
+                d['scalex'] = round(d['scalex'] + (9*modifiers[0]*inputKey[0] + inputKey[0])*.01, 3)
+                d['scaley'] = round(d['scaley'] + (9*modifiers[0]*inputKey[1] + inputKey[1])*.01, 3)
+                print(d['scalex'], d['scaley'])
             else:
-                d['rotation'] += (-10*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - inputKey[0])*.5
-        elif modifiers[1]:
-            d['scalex'] = round(d['scalex'] + (9*modifiers[0]*inputKey[0] + inputKey[0])*.01, 3)
-            d['scaley'] = round(d['scaley'] + (9*modifiers[0]*inputKey[1] + inputKey[1])*.01, 3)
-            print(d['scalex'], d['scaley'])
-        else:
-            d['x'] += 90*modifiers[0]*modifiers[4]*inputKey[0] + 9*modifiers[0]*inputKey[0] + inputKey[0] 
-            d['y'] += 90*modifiers[0]*modifiers[4]*inputKey[1] + 9*modifiers[0]*inputKey[1] + inputKey[1]
+                d['x'] += 90*modifiers[0]*modifiers[4]*inputKey[0] + 9*modifiers[0]*inputKey[0] + inputKey[0] 
+                d['y'] += 90*modifiers[0]*modifiers[4]*inputKey[1] + 9*modifiers[0]*inputKey[1] + inputKey[1]
         self.computeDeepComponents()
         self.computeDeepComponentsPreview()
 

@@ -70,6 +70,7 @@ class RoboCJKController(object):
         self.sliderValue = None
         self.sliderName = None
         self.copy = []
+        self.px, self.py = 0,0
 
     def get(self, item):
         if hasattr(self, item):
@@ -116,6 +117,7 @@ class RoboCJKController(object):
             removeObserver(self, "spaceCenterDraw")
             removeObserver(self, "currentGlyphChanged")
             removeObserver(self, "mouseDown")
+            removeObserver(self, "mouseUp")
             removeObserver(self, "keyDown")
             removeObserver(self, "didUndo")
         else:
@@ -128,6 +130,7 @@ class RoboCJKController(object):
             addObserver(self, "observerspaceCenterDraw", "spaceCenterDraw")
             addObserver(self, "currentGlyphChanged", "currentGlyphChanged")
             addObserver(self, "mouseDown", "mouseDown")
+            addObserver(self, "mouseUp", "mouseUp")
             addObserver(self, "keyDown", "keyDown")
             addObserver(self, "didUndo", "didUndo")
         self.observers = not self.observers
@@ -238,6 +241,7 @@ class RoboCJKController(object):
             mjdt.restore()
 
         if self.isAtomic:
+            if self.currentGlyph.preview is None: return
             mjdt.save()
             mjdt.scale(.15, .15)
             mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
@@ -248,6 +252,7 @@ class RoboCJKController(object):
             mjdt.translate(0, 100)
             for i, d in enumerate(self.currentGlyph.preview):
                 for atomicInstanceGlyph in d.values():
+                    if atomicInstanceGlyph[0] is None: continue
                     drawGlyph(atomicInstanceGlyph[0])
             mjdt.restore()
         elif self.isCharacterGlyph:
@@ -257,6 +262,7 @@ class RoboCJKController(object):
                 for dcName, (dcCoord, l) in e.items():
                     for dcAtomicElements in l:
                         for atomicInstanceGlyph in dcAtomicElements.values():
+                            if atomicInstanceGlyph[0] is None: continue
                             drawGlyph(atomicInstanceGlyph[0])
             mjdt.restore()
         mjdt.restore()
@@ -272,47 +278,53 @@ class RoboCJKController(object):
 
     @refresh
     def mouseDown(self, point):
-        self.currentGlyph.selectedElement = {}
-        try: px, py = point['point'].x, point['point'].y
+        event = extractNSEvent(point)
+        if not event["shiftDown"]:
+            self.currentGlyph.selectedElement = []
+        try: self.px, self.py = point['point'].x, point['point'].y
         except: return
+        self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
+        self.clearUIList()
+        if self.currentGlyph.selectedElement: 
+            self.setListWithSelectedElement()
 
+            if point['clickCount'] == 2:
+                popover.EditPopoverAlignTool(
+                    self, 
+                    point['point'], 
+                    self.currentGlyph
+                    )
+
+    def clearUIList(self):
         if self.isDeepComponent:
             self.deepComponentView.slidersList.set([])
-            variation = self.currentGlyph.pointIsInside((px, py))
-            if variation:
-                # print(variation)
-                for axisName, value in variation.items():
-                    
-                    l = {'Axis':axisName, 'PreviewValue':value}
-                    self.deepComponentView.slidersList.append(l)
-                    self.sliderValue = None
-                if point['clickCount'] == 2:
-                    popover.EditPopoverAlignTool(
-                        self, 
-                        point['point'], 
-                        self.currentGlyph
-                        )
-                return
-
         elif self.isCharacterGlyph:
             self.characterGlyphView.slidersList.set([])
-            variation = self.currentGlyph.pointIsInside((px, py))
-            print(variation)
-            if variation:
-                for axisName, value in variation.items(): 
 
-                    l = {'Axis':axisName, 'PreviewValue':value}
+    def setListWithSelectedElement(self):
+        if self.isDeepComponent:
+            element = self.deepComponentView
+        elif self.isCharacterGlyph:
+            element = self.characterGlyphView
 
-                    self.characterGlyphView.slidersList.append(l)
-                    self.sliderValue = None
-                if point['clickCount'] == 2:
-                    popover.EditPopoverAlignTool(
-                        self, 
-                        point['point'], 
-                        self.currentGlyph
-                        )
-                return
+        l = []
+        if len(self.currentGlyph.selectedElement) == 1:
+            for axisName, value in self.currentGlyph.selectedElementCoord.items():
+                l.append({'Axis':axisName, 'PreviewValue':value})
+        element.slidersList.set(l)
+        self.sliderValue = None
 
+    @refresh
+    def mouseUp(self, info):
+        x, y = info['point'].x, info['point'].y
+        self.clearUIList()
+        self.currentGlyph.selectionRectTouch(
+            *sorted([x, self.px]), 
+            *sorted([y, self.py])
+            )
+        if self.currentGlyph.selectedElement:
+            self.setListWithSelectedElement()
+            
     @refresh
     def keyDown(self, info):
         if self.isDeepComponent:

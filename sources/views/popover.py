@@ -61,7 +61,7 @@ def resetDict(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
         lib = self.getLib()
-        lib[self.glyph.selectedElement.get("index")] = self.infos
+        lib[self.glyph.selectedElement[0]] = self.infos
     return wrapper
 
 
@@ -73,7 +73,7 @@ class EditPopoverAlignTool(EditPopover):
         self.glyph = glyph
 
         lib = self.getLib()
-        self.infos = lib[self.glyph.selectedElement.get("index")]
+        self.infos = lib[self.glyph.selectedElement[0]]
 
         y = 10
         if self.infos.get("name"):

@@ -130,6 +130,7 @@ class Font():
         self.insertGlyph(glyph, ET.tostring(root), layerName)
 
     def insertGlyph(self, glyph, string, layerName):  
+        if glyph is None: return
         glyph.setParent(self)
         pen = glyph.naked().getPointPen()
         readGlyphFromString(string, glyph.naked(), pen)

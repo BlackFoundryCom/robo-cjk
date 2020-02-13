@@ -130,7 +130,7 @@ class DCCG_View(CanvasGroup):
             isel = sender.getSelection()[0]
             self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['Axis']
 
-        self.RCJKI.currentGlyph.selectedElement = {}
+        self.RCJKI.currentGlyph.selectedElement = []
         self.slidersList.set([])
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
@@ -189,7 +189,7 @@ class DCCG_View(CanvasGroup):
         if self.sourcesList.getSelection():
             name = self.sourcesList.get()[self.sourcesList.getSelection()[0]]["Axis"]
             self.RCJKI.currentGlyph.removeVariationAxis(name)
-            self.RCJKI.currentGlyph.selectedElement = {}
+            self.RCJKI.currentGlyph.selectedElement = []
             self.RCJKI.currentGlyph.selectedSourceAxis = None
             self.sourcesList.setSelection([0])
             self.slidersList.set([])

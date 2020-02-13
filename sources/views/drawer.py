@@ -89,7 +89,7 @@ class Drawer():
                     mjdt.fill(.5, .25, 0, .2)
                     if color is not None:
                         mjdt.fill(*color)
-                    elif self.RCJKI.currentGlyph.selectedElement == dict(index = i, element = atomicElementName):
+                    elif i in self.RCJKI.currentGlyph.selectedElement:
                         mjdt.fill(0, .8, .8, .5)
                     mjdt.drawGlyph(atomicInstanceGlyph) 
                     if color is None: 
@@ -103,7 +103,7 @@ class Drawer():
                     mjdt.fill(0, .5, .25, .4)
                     if color is not None:
                         mjdt.fill(*color)
-                    elif self.RCJKI.currentGlyph.selectedElement == dict(index = i, element = atomicElementName):
+                    elif i in self.RCJKI.currentGlyph.selectedElement:
                         mjdt.fill(0, .8, .8, .5)
                     mjdt.drawGlyph(atomicInstanceGlyph)
                     if color is None:
@@ -119,7 +119,7 @@ class Drawer():
                             mjdt.fill(.25, 0, .5, .8)
                             if color is not None:
                                 mjdt.fill(*color)
-                            elif self.RCJKI.currentGlyph.selectedElement == dict(index = i, element = dcName):
+                            elif i in self.RCJKI.currentGlyph.selectedElement:
                                 mjdt.fill(0, .8, .8, .5)
                             mjdt.drawGlyph(atomicInstanceGlyph)  
                             if color is None and not j:
@@ -135,7 +135,7 @@ class Drawer():
                             mjdt.fill(.5, 0, .25, .4)
                             if color is not None:
                                 mjdt.fill(*color)
-                            elif self.RCJKI.currentGlyph.selectedElement == dict(index = i, element = dcName):
+                            elif i in self.RCJKI.currentGlyph.selectedElement:
                                 mjdt.fill(0, .8, .8, .5)
                             mjdt.drawGlyph(atomicInstanceGlyph)  
                             if color is None and not j:

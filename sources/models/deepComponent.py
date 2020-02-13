@@ -18,7 +18,7 @@ class DeepComponent(Glyph):
         self.selectedSourceAxis = None
         self.computedAtomicSelectedSourceInstances = []
         self.computedAtomicInstances = []
-        self.selectedElement = {}
+        self.selectedElement = []
         self.name = name
         self.type = "deepComponent"
         self.save()
@@ -35,23 +35,45 @@ class DeepComponent(Glyph):
         self._atomicElements = list(self._RGlyph.lib[atomicElementsKey])      
         self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])      
 
-    def pointIsInside(self, point):
-        px, py = point
-        self.selectedElement = {}
-        if self.computedAtomicSelectedSourceInstances:
-            for i, d in enumerate(self.computedAtomicSelectedSourceInstances):
-                for atomicElementName, (atomicInstanceGlyph, deepComponentSourceVariations, atomicCoord) in d.items():
+    def pointIsInside(self, point, multipleSelection = False):
+        def checkInside(elements: list):
+            for i, d in enumerate(elements):
+                for atomicInstanceGlyph, _, _ in d.values():
                     if atomicInstanceGlyph.pointInside((px, py)):
-                        self.selectedElement = dict(index = i, element = atomicElementName)
-                        return deepComponentSourceVariations[i]['coord']
+                        self.selectedElement.append(i)
+                        if not multipleSelection: return
+        px, py = point
+        if self.computedAtomicSelectedSourceInstances:
+            checkInside(self.computedAtomicSelectedSourceInstances)
 
         elif self.computedAtomicInstances:
-            for i, d in enumerate(self.computedAtomicInstances):
-                for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in d.items():
-                    if atomicInstanceGlyph.pointInside((px, py)):
-                        self.selectedElement = dict(index = i, element = atomicElementName)
-                        return atomicCoord
-        return False
+            checkInside(self.computedAtomicInstances)
+
+    def selectionRectTouch(self, x: int, w: int, y: int, h: int):
+        def checkInside(elements: list):
+            for i, d in enumerate(elements):
+                for atomicInstanceGlyph, _, _ in d.values():
+                    inside = False
+                    for c in atomicInstanceGlyph:
+                        for p in c.points:
+                            if p.x > x and p.x < w and p.y > y and p.y < h:
+                                inside = True
+                    if inside:
+                        self.selectedElement.append(i)
+
+        if self.computedAtomicSelectedSourceInstances:
+            checkInside(self.computedAtomicSelectedSourceInstances)
+
+        elif self.computedAtomicInstances:
+            checkInside(self.computedAtomicInstances)
+
+    @property
+    def selectedElementCoord(self) -> dict:
+        index = self.selectedElement[0]
+        if self.computedAtomicSelectedSourceInstances:
+            return list(self.computedAtomicSelectedSourceInstances[index].values())[0][1][index]['coord']
+        elif self.computedAtomicInstances:
+            return list(self.computedAtomicInstances[index].values())[0][2]
 
     def keyDown(self, keys):
         if self.computedAtomicInstances:
@@ -73,9 +95,9 @@ class DeepComponent(Glyph):
 
     def updateAtomicElementCoord(self, axisName, value):
         if self.selectedSourceAxis is not None:
-            self._glyphVariations[self.selectedSourceAxis][self.selectedElement.get('index')]['coord'][axisName]=value
+            self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]]['coord'][axisName]=value
         else:
-            self._atomicElements[self.selectedElement.get('index')]['coord'][axisName]=value
+            self._atomicElements[self.selectedElement[0]]['coord'][axisName]=value
 
     def addAtomicElementNamed(self, atomicElementName, items = False):
         d = items
@@ -100,10 +122,11 @@ class DeepComponent(Glyph):
 
     def removeAtomicElementAtIndex(self):
         if not self.selectedElement: return
-        self._atomicElements.pop(self.selectedElement.get("index"))
-        for k, v in self._glyphVariations.items():
-            v.pop(index)
-        self.selectedElement = {}
+        for index in self.selectedElement:
+            self._atomicElements.pop(index)
+            for k, v in self._glyphVariations.items():
+                v.pop(index)
+            self.selectedElement = []
 
     def addVariationToGlyph(self, name):
         dcgv = copy.deepcopy(self._atomicElements)
@@ -149,9 +172,10 @@ class DeepComponent(Glyph):
 
     def removeAtomicElement(self):
         if not self.selectedElement: return
-        self._atomicElements.pop(self.selectedElement.get("index"))
-        for k, v in self._glyphVariations.items():
-            v.pop(self.selectedElement.get("index"))
+        for index in self.selectedElement:
+            self._atomicElements.pop(index)
+            for k, v in self._glyphVariations.items():
+                v.pop(index)
 
     def addVariationAxisToAtomicElementNamed(self, axisName, atomicElementName):
         for d in self._atomicElements:

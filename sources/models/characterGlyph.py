@@ -21,7 +21,7 @@ class CharacterGlyph(Glyph):
         self.selectedSourceAxis = None
         self.computedDeepComponents = []
         self.computedDeepComponentsVariation = []
-        self.selectedElement = {}
+        self.selectedElement = []
         self.name = name
         self.type = "characterGlyph"
         self.save()
@@ -42,28 +42,52 @@ class CharacterGlyph(Glyph):
             self._deepComponents = []
             self._glyphVariations = {}
 
-    def pointIsInside(self, point):
-        px, py = point
-        self.selectedElement = {}
-
+    @property
+    def selectedElementCoord(self) -> dict:
+        index = self.selectedElement[0]
         if self.computedDeepComponents:
-            for i, e in enumerate(self.computedDeepComponents):
-                for dcName, (dcCoord, l) in e.items():
-                    for dcAtomicElements in l:
-                        for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in dcAtomicElements.items():
-                            if atomicInstanceGlyph.pointInside((px, py)):
-                                self.selectedElement = dict(index = i, element = dcName)
-                                return dcCoord
+            return list(self.computedDeepComponents[index].values())[0][0]
+        elif self.computedDeepComponentsVariation:
+            return list(self.computedDeepComponentsVariation[index].values())[0][0]
+
+    def pointIsInside(self, point, multipleSelection = False):
+        def checkInside(elements: list):
+            for i, atomicInstanceGlyph in self._getAtomicInstanceGlyph(elements):
+                if atomicInstanceGlyph.pointInside((px, py)):
+                    self.selectedElement.append(i)
+                    if not multipleSelection: return
+
+        px, py = point
+        if self.computedDeepComponents:
+            checkInside(self.computedDeepComponents)
                                 
         elif self.computedDeepComponentsVariation:
-            for i, e in enumerate(self.computedDeepComponentsVariation):
-                for dcName, (dcCoord, l) in e.items():
-                    for dcAtomicElements in l:
-                        for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in dcAtomicElements.items():
-                            if atomicInstanceGlyph.pointInside((px, py)):
-                                self.selectedElement = dict(index = i, element = dcName)
-                                return dcCoord
-        return False
+            checkInside(self.computedDeepComponentsVariation)
+
+    def _getAtomicInstanceGlyph(self, elements):
+        for i, e in enumerate(elements):
+            for dcCoord, l in e.values():
+                for dcAtomicElements in l:
+                    for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
+                        yield i, atomicInstanceGlyph
+
+    def selectionRectTouch(self, x: int, w: int, y: int, h: int):
+        def checkInside(elements: list):
+            for i, atomicInstanceGlyph in self._getAtomicInstanceGlyph(elements):
+                inside = False
+                for c in atomicInstanceGlyph:
+                    for p in c.points:
+                        if p.x > x and p.x < w and p.y > y and p.y < h:
+                            inside = True
+                if inside:
+                    if i in self.selectedElement: continue
+                    self.selectedElement.append(i)
+
+        if self.computedDeepComponents:
+            checkInside(self.computedDeepComponents)
+
+        elif self.computedDeepComponentsVariation:
+            checkInside(self.computedDeepComponentsVariation)
 
     def keyDown(self, keys):
         if self.computedDeepComponents:
@@ -73,9 +97,9 @@ class CharacterGlyph(Glyph):
 
     def updateDeepComponentCoord(self, nameAxis, value):
         if self.selectedSourceAxis is not None:
-            self._glyphVariations[self.selectedSourceAxis][self.selectedElement.get("index")]['coord'][nameAxis]=value
+            self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]]['coord'][nameAxis] = value
         else:
-            self._deepComponents[self.selectedElement.get("index")]['coord'][nameAxis]=value
+            self._deepComponents[self.selectedElement[0]]['coord'][nameAxis]=value
 
     def removeVariationAxis(self, name):
         del self._glyphVariations[name]
@@ -103,10 +127,11 @@ class CharacterGlyph(Glyph):
 
     def removeDeepComponentAtIndex(self):
         if not self.selectedElement: return
-        self._deepComponents.pop(self.selectedElement.get("index"))
-        for k, v in self._glyphVariations.items():
-            v.pop(index)
-        self.selectedElement = {}
+        for i in self.selectedElement:
+            self._deepComponents.pop(i)
+            for k, v in self._glyphVariations.items():
+                v.pop(i)
+            self.selectedElement = []
 
     def addVariationAxisToDeepComponentNamed(self, axisName, deepComponentName):
         for d in self._deepComponents:
@@ -200,8 +225,9 @@ class CharacterGlyph(Glyph):
                 _lib[characterGlyphAxisName] = []
                 
                 for j, dc in enumerate(characterGlyphVariation):
-                    if self.selectedElement == (j, cgdc[j]['name']) and self.sliderValue and preview==preview:
-                        dc['coord'][self.sliderName] = float(self.sliderValue)
+                    # for index in self.selectedElement:
+                    #     if index == j and self.sliderValue:
+                    #         dc['coord'][self.sliderName] = float(self.sliderValue)
                 
                     masterDeepComponent = self.currentFont[cgdc[j]['name']]._atomicElements
                     deepComponentVariations = self.currentFont[cgdc[j]['name']]._glyphVariations
@@ -235,9 +261,10 @@ class CharacterGlyph(Glyph):
 
     def removeDeepComponentAtIndexToGlyph(self):
         if not self.selectedElement: return
-        self._deepComponents.pop(self.selectedElement.get("index"))
-        for dcList in self._glyphVariations.values():
-            dcList.pop(self.selectedElement.get("index"))
+        for index in self.selectedElement:
+            self._deepComponents.pop(index)
+            for dcList in self._glyphVariations.values():
+                dcList.pop(index)
 
     def save(self):
         self.lib.clear()
