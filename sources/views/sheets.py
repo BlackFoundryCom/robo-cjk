@@ -92,9 +92,13 @@ class SelectAtomicElementSheet():
         self.parent = CurrentGlyphWindow()
         self.parent.sheet = Sheet((300, 400), self.parent.w)
         
+        self.parent.sheet.searchBox = SearchBox(
+            (0, 0, -0, 20),
+            callback = self.searchBoxCallback
+            )
         self.parent.sheet.atomicElementList = List(
-            (0, 0, -0, -220),
-            atomicElementsNames,
+            (0, 20, -0, -220),
+            self.atomicElementsNames,
             allowsMultipleSelection = False,
             selectionCallback = self.atomicElementListSelectionCallback
             )
@@ -118,6 +122,13 @@ class SelectAtomicElementSheet():
             )
         self.parent.sheet.setDefaultButton(self.parent.sheet.addButton)
         self.parent.sheet.open()
+
+    def searchBoxCallback(self, sender):
+        name = sender.get()
+        for i, e in enumerate(self.atomicElementsNames):
+            if e.startswith(name):
+                self.parent.sheet.atomicElementList.setSelection([i])
+                return
     
     def closeSheet(self, sender):
         self.parent.sheet.close()
@@ -191,20 +202,24 @@ class SelectDeepComponentSheet():
         self.previewGlyph = None
 
         self.parent.sheet.canvasPreview = Canvas(
-            (0, -320, -0, -20), 
+            (0, -220, -0, -20), 
             canvasSize=(300, 300), 
             delegate=self
             )
-        
+
+        self.parent.sheet.searchBox = SearchBox(
+            (0, 0, -0, 20),
+            callback = self.searchBoxCallback
+            )
         self.parent.sheet.deepComponentList = List(
-            (0, 0, -0, -320),
-            deepComponentsNames,
+            (0, 20, -0, -220),
+            self.deepComponentsNames,
             selectionCallback = self.deepComponentListSelectionCallback,
             allowsMultipleSelection = False
             )
-        if deepComponentsNames:
-            self.getDeepComponentPreview(deepComponentsNames[0])
-            self.deepComponentName = deepComponentsNames[0]
+        if self.deepComponentsNames:
+            self.getDeepComponentPreview(self.deepComponentsNames[0])
+            self.deepComponentName = self.deepComponentsNames[0]
         
         self.parent.sheet.addButton = Button(
             (-150,-20, 150, 20), 
@@ -218,6 +233,13 @@ class SelectDeepComponentSheet():
             )
         self.parent.sheet.setDefaultButton(self.parent.sheet.addButton)
         self.parent.sheet.open()
+
+    def searchBoxCallback(self, sender):
+        name = sender.get()
+        for i, e in enumerate(self.deepComponentsNames):
+            if e.startswith(name):
+                self.parent.sheet.deepComponentList.setSelection([i])
+                return
 
     def deepComponentListSelectionCallback(self, sender):
         sel = sender.getSelection()
