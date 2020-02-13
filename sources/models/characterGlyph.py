@@ -35,8 +35,12 @@ class CharacterGlyph(Glyph):
         return self._glyphVariations
 
     def _initWithLib(self):
-        self._deepComponents = list(self._RGlyph.lib[deepComponentsKey])      
-        self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])  
+        try:
+            self._deepComponents = list(self._RGlyph.lib[deepComponentsKey])      
+            self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])
+        except:
+            self._deepComponents = []
+            self._glyphVariations = {}
 
     def pointIsInside(self, point):
         px, py = point
