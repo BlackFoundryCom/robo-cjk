@@ -3,7 +3,6 @@ BUG:
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
 
 TO ADD:
-- Select a deep component while dragging with selection tool
 - Variable Font generation with decomposition of Deep Components
 - Factorisation of deep components (lower quality of design, for smaller file size)
 - Link HanGlyphComposition DataBase (public git repo) and enable modification of the DB (customisation, errors fixing etc.)
@@ -14,7 +13,6 @@ TO ADD:
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
 
 NICE TO HAVE:
-- Multiple selection of items in glyph window
 - Use anchor to set tranformations origins of Atomic Element instance in Deep Component
 - Disable 'save project' and 'new project' while no git repo is loaded
 - Undo not working
@@ -25,3 +23,5 @@ NICE TO HAVE:
 
 DONE:
 - Fontlib + fontInfos in storage file 
+- Select a deep component while dragging with selection tool
+- Multiple selection of items in glyph window
