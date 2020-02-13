@@ -63,6 +63,10 @@ class RoboCJKView(BaseWindowController):
             callback = self.rcjkFilesSelectionCallback
             )
 
+        self.w.atomicElementSearchBox = SearchBox(
+            (10, 130, 200, 20),
+            callback = self.atomicElementSearchBoxCallback
+            )
         self.w.atomicElement = List(
             (10, 150, 200, 200),
             [],
@@ -81,6 +85,10 @@ class RoboCJKView(BaseWindowController):
             self.RCJKI,
             glyphType = "atomicElement")
 
+        self.w.deepComponentSearchBox = SearchBox(
+            (210, 130, 200, 20),
+            callback = self.deepComponentSearchBoxCallback
+            )
         self.w.deepComponent = List(
             (210, 150, 200, 200),
             [],
@@ -99,6 +107,10 @@ class RoboCJKView(BaseWindowController):
             self.RCJKI,
             glyphType = "deepComponent")
 
+        self.w.characterGlyphSearchBox = SearchBox(
+            (410, 130, 200, 20),
+            callback = self.characterGlyphearchBoxCallback
+            )
         self.w.characterGlyph = List(
             (410, 150, 200, 200),
             [],
@@ -133,6 +145,39 @@ class RoboCJKView(BaseWindowController):
         print(self.RCJKI.currentGlyph._RGlyph.layers)
         # print(self.RCJKI.currentGlyph._RGlyph.name)
         # print(self.RCJKI.currentGlyph.lib.keys())
+
+    def atomicElementSearchBoxCallback(self, sender):
+        name = sender.get()
+        go = self.currentFont.atomicElementSet
+        for i, e in enumerate(go):
+            if e.startswith(name):
+                self.w.deepComponent.setSelection([])
+                self.w.characterGlyph.setSelection([])
+                self.w.atomicElement.setSelection([i])
+                return
+
+    def deepComponentSearchBoxCallback(self, sender):
+        name = sender.get()
+        go = self.currentFont.deepComponentSet
+        for i, e in enumerate(go):
+            if e.startswith(name):
+                self.w.atomicElement.setSelection([])
+                self.w.characterGlyph.setSelection([])
+                self.w.deepComponent.setSelection([i])
+                return
+
+    def characterGlyphearchBoxCallback(self, sender):
+        name = sender.get()
+        go = self.currentFont.characterGlyphSet
+        for i, e in enumerate(go):
+            try:
+                name = files.unicodeName(name)
+            except:pass
+            if e.startswith(name):
+                self.w.atomicElement.setSelection([])
+                self.w.deepComponent.setSelection([])
+                self.w.characterGlyph.setSelection([i])
+                return
 
     def windowCloses(self, sender):
         for w in AllWindows():

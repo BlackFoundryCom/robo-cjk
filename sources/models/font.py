@@ -162,7 +162,7 @@ class Font():
             root = tree.getroot()
             glyphName = root.get('name')
             l.append(glyphName)
-        return l
+        return sorted(l)
 
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
         self.addGlyph(*self.newGLIF(glyphType, glyphName), "foreground")
