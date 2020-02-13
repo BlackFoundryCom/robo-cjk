@@ -97,12 +97,12 @@ class Glyph(RGlyph):
             # if index is None: return
             d = element[index]
             if modifiers[2]:
-                if character == "∂":
+                if character == "∂" and d.get("name"):
                     if self.type == "deepComponent":
                         self.addAtomicElementNamed(d["name"], copy.deepcopy(d))
                     elif self.type == "characterGlyph":
                         self.addDeepComponentNamed(d["name"], copy.deepcopy(d))
-                    self.selectedElement = []
+                    # self.selectedElement = []
                 else:
                     d['rotation'] += (-10*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - inputKey[0])*.5
             elif modifiers[1]:

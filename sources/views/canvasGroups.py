@@ -169,19 +169,18 @@ class DCCG_View(CanvasGroup):
                 name = files.normalizeCode(files.int_to_column_id(l), 4)
 
             self.RCJKI.currentGlyph.addVariationToGlyph(name)
-            self.RCJKI.updateListInterface()     
 
-            source = self.sourcesList.get()
+            if self.RCJKI.currentGlyph._glyphVariations:
+                source = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.RCJKI.currentGlyph._glyphVariations]
+            self.sourcesList.set(source)
+            self.RCJKI.currentGlyph.sourcesList = source
             isel = len(source)
             self.sourcesList.setSelection([isel])
             self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
             self.RCJKI.updateDeepComponent()       
             
-
         elif self.RCJKI.isCharacterGlyph:
             sheets.SelectFontVariationSheet(self.RCJKI)
-
-        
 
     @lockedProtect
     @glyphUndo
