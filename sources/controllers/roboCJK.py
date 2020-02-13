@@ -187,19 +187,25 @@ class RoboCJKController(object):
         self.currentGlyph.sourcesList = [
             {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
             ]
-        if self.isAtomic:
-            self.atomicView.atomicElementsList.set(self.currentGlyph.sourcesList)
-        elif self.isDeepComponent:
-            self.deepComponentView.sourcesList.set(self.currentGlyph.sourcesList)
-        elif self.isCharacterGlyph:
-            self.characterGlyphView.sourcesList.set(self.currentGlyph.sourcesList)
+        self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()
 
-    # def glyphWindowWillOpen(self, notification):
-    #     self.addSubView()
-    #     self.updateDeepComponent()
+    @property 
+    def currentViewSourceList(self):
+        if self.isAtomic:
+            return self.atomicView.atomicElementsList
+        elif self.isDeepComponent:
+            return self.deepComponentView.sourcesList
+        elif self.isCharacterGlyph:
+            return self.characterGlyphView.sourcesList
+    @property 
+    def currentViewSliderList(self):
+        if self.isDeepComponent:
+            return self.deepComponentView.slidersList
+        elif self.isCharacterGlyph:
+            return self.characterGlyphView.slidersList
 
     @refresh
     def addSubView(self):
@@ -278,13 +284,15 @@ class RoboCJKController(object):
 
     @refresh
     def mouseDown(self, point):
+        if self.isAtomic:
+            return
         event = extractNSEvent(point)
         if not event["shiftDown"]:
             self.currentGlyph.selectedElement = []
         try: self.px, self.py = point['point'].x, point['point'].y
         except: return
         self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
-        self.clearUIList()
+        self.currentViewSliderList.set([])
         if self.currentGlyph.selectedElement: 
             self.setListWithSelectedElement()
 
@@ -294,12 +302,6 @@ class RoboCJKController(object):
                     point['point'], 
                     self.currentGlyph
                     )
-
-    def clearUIList(self):
-        if self.isDeepComponent:
-            self.deepComponentView.slidersList.set([])
-        elif self.isCharacterGlyph:
-            self.characterGlyphView.slidersList.set([])
 
     def setListWithSelectedElement(self):
         if self.isDeepComponent:
@@ -316,8 +318,11 @@ class RoboCJKController(object):
 
     @refresh
     def mouseUp(self, info):
-        x, y = info['point'].x, info['point'].y
-        self.clearUIList()
+        if self.isAtomic:
+            return
+        try: x, y = info['point'].x, info['point'].y
+        except: return
+        self.currentViewSliderList.set([])
         self.currentGlyph.selectionRectTouch(
             *sorted([x, self.px]), 
             *sorted([y, self.py])
@@ -327,12 +332,8 @@ class RoboCJKController(object):
             
     @refresh
     def keyDown(self, info):
-        if self.isDeepComponent:
-            interface = self.deepComponentView
-        elif self.isCharacterGlyph:
-            interface = self.characterGlyphView
-        else: return
-
+        if self.isAtomic:
+            return
         event = extractNSEvent(info)
         try:
             character = info["event"].characters()
@@ -363,7 +364,7 @@ class RoboCJKController(object):
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
             self.updateDeepComponent()
-            interface.sourcesList.setSelection([])
+            self.currentViewSourceList.setSelection([])
 
         self.currentGlyph.keyDown((modifiers, inputKey, character))
 
@@ -426,25 +427,19 @@ class RoboCJKController(object):
     @lockedProtect
     @refresh
     def updateListInterface(self):
+        l = []
         if self.isAtomic:
-            l = []
             for axisName, layerName in self.currentGlyph._glyphVariations.items():
                 l.append({"Axis":axisName, "Layer":layerName, "PreviewValue":.5})
-            self.atomicView.atomicElementsList.set(l)
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
                 l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations]
-                self.deepComponentView.sourcesList.set(l)
-            else:
-                l = []
-                self.deepComponentView.sourcesList.set(l)
             
         elif self.isCharacterGlyph:
-            l = []
-            self.characterGlyphView.sourcesList.set(l)
             if self.currentGlyph._glyphVariations:
                 l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.keys()]
-                self.characterGlyphView.sourcesList.set(l)
+
+        self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l
 
