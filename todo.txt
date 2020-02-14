@@ -9,7 +9,7 @@ TO ADD:
 
 - Display all Character Glyphs using a Deep Component at its creation (to make the extremes of DC directly in CG)
 - Creating Character triggers Deep Components Creation
-- Search / filter glyphs field
+- Filter glyphs field
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
 
 NICE TO HAVE:
@@ -25,3 +25,4 @@ DONE:
 - Fontlib + fontInfos in storage file 
 - Select a deep component while dragging with selection tool
 - Multiple selection of items in glyph window
+- Search glyphs
