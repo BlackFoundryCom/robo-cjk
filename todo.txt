@@ -16,7 +16,6 @@ NICE TO HAVE:
 - Use anchor to set tranformations origins of Atomic Element instance in Deep Component
 - Disable 'save project' and 'new project' while no git repo is loaded
 - Undo not working
-- Default glyph width
 - Glyphs-lists better control of Add and Delete (choose name, focus to item)
 
 
@@ -26,3 +25,4 @@ DONE:
 - Select a deep component while dragging with selection tool
 - Multiple selection of items in glyph window
 - Search glyphs
+- Default glyph width
