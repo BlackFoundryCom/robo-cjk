@@ -253,6 +253,9 @@ class RoboCJKView(BaseWindowController):
         glyphName = items[selection[0]]
 
         self.RCJKI.currentGlyph = self.currentFont[glyphName]
+        if self.RCJKI.currentGlyph._RGlyph.width == 0:
+            width = self.RCJKI.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+            self.RCJKI.currentGlyph._RGlyph.width = width
         OpenGlyphWindow(self.RCJKI.currentGlyph._RGlyph)
 
     def GlyphsListEditCallback(self, sender):

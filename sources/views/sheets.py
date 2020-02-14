@@ -3,7 +3,7 @@ from mojo.canvas import Canvas
 import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
 from utils import files
-
+from AppKit import NumberFormatter
 
 class SelectLayerSheet():
     def __init__(self, RCJKI, availableLayers):
@@ -273,12 +273,17 @@ class SelectDeepComponentSheet():
                 mjdt.drawGlyph(atomicInstanceGlyph[0]) 
         mjdt.restore()
 
+numberFormatter = NumberFormatter()
+
 class FontInfosSheet():
 
     def __init__(self, RCJKI, parentWindow, posSize):
         self.RCJKI = RCJKI
         if not self.RCJKI.get("currentFont"): return
         fontvariations = self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', [])
+        if 'robocjk.defaultGlyphWidth' not in self.RCJKI.currentFont._RFont.lib:
+            self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth'] = 1000
+        defaultGlyphWidth = self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth']
 
         self.s = Sheet(posSize, parentWindow)
         self.s.fontVariationAxisList = List(
@@ -294,6 +299,20 @@ class FontInfosSheet():
             (110, 110, 100, 20), 
             "-",
             callback = self.removeVariationCallback)
+
+        self.s.defaultGlyphWidthTitle = TextBox(
+            (10, 142, 150, 20),
+            'Default Glyph Width',
+            sizeStyle = "small"
+            ) 
+
+        self.s.defaultGlyphWidth = EditText(
+            (125, 140, 85, 20),
+            defaultGlyphWidth,
+            sizeStyle = 'small',
+            formatter = numberFormatter,
+            callback = self.defaultGlyphWidthCallback
+            )
 
         self.s.closeButton = Button(
             (10, -30, -10, 20), 
@@ -313,6 +332,11 @@ class FontInfosSheet():
             name = files.normalizeCode(files.int_to_column_id(l), 4)
         self.s.fontVariationAxisList.append(name)
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'].append(name)
+
+    def defaultGlyphWidthCallback(self, sender):
+        try:
+            self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth'] = sender.get()
+        except: pass
 
     def removeVariationCallback(self, sender):
         sel = self.s.fontVariationAxisList.getSelection()
