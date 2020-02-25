@@ -68,6 +68,13 @@ class DeepComponent(Glyph):
             checkInside(self.computedAtomicInstances)
 
     @property
+    def atomicInstances(self):
+        preview = self.generateDeepComponent(self,  preview=False)
+        for d in preview:
+            for a in d.values():
+                yield a[0]
+
+    @property
     def selectedElementCoord(self) -> dict:
         index = self.selectedElement[0]
         if self.computedAtomicSelectedSourceInstances:
@@ -75,11 +82,56 @@ class DeepComponent(Glyph):
         elif self.computedAtomicInstances:
             return list(self.computedAtomicInstances[index].values())[0][2]
 
-    def keyDown(self, keys):
+    # def keyDown(self, keys):
+    #     modifiers, inputKey, character = keys
+    #     element = self._getElementAndInstances()
+    #     if modifiers[2]:
+    #         if character == '∂':
+    #             self.duplicateSelectedElements()
+    #         else:
+    #             rotation = (-10*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - inputKey[0])*.5
+    #             self.setRotationAngleToSelectedElements(rotation)
+    #     else:
+    #         x = 90*modifiers[0]*modifiers[4]*inputKey[0] + 9*modifiers[0]*inputKey[0] + inputKey[0] 
+    #         y = 90*modifiers[0]*modifiers[4]*inputKey[1] + 9*modifiers[0]*inputKey[1] + inputKey[1]
+    #         self.setPositionToSelectedElements((x, y))
+        # self.transform(*self._getElementAndInstances, keys)
+
+    def duplicateSelectedElements(self):
+        element = self._getElementAndInstances()
+        if element is None: return
+        for index in self.selectedElement:
+            d = element[index]
+            if d.get("name"):
+                self.addAtomicElementNamed(d["name"], copy.deepcopy(d))
+
+    def _getElementAndInstances(self):
         if self.computedAtomicInstances:
-            self.transform(self._atomicElements, self.computedAtomicInstances, keys)
+            return self._atomicElements
         elif self.computedAtomicSelectedSourceInstances:
-            self.transform(self._glyphVariations[self.selectedSourceAxis], self.computedAtomicSelectedSourceInstances, keys)
+            return self._glyphVariations[self.selectedSourceAxis]
+
+    # def setRotationAngleToSelectedElements(self, rotation, append = True):
+    #     element = self._getElementAndInstances()
+    #     if element is None: return
+    #     for index in self.selectedElement:
+    #         d = element[index]
+    #         if append:
+    #             d["rotation"] += int(rotation)
+    #         else:
+    #             d["rotation"] = -int(rotation)
+    #     self.computeDeepComponents()
+    #     self.computeDeepComponentsPreview()
+
+    # def setPositionToSelectedElements(self, position):
+    #     element = self._getElementAndInstances()
+    #     if element is None: return
+    #     for index in self.selectedElement:
+    #         d = element[index]
+    #         d["x"] += position[0]
+    #         d["y"] += position[1]
+    #     self.computeDeepComponents()
+    #     self.computeDeepComponentsPreview()
 
     def addGlyphVariation(self, newAxisName):
         self._glyphVariations[newAxisName] = [{k:v for k,v in d.items() if k!='name'} for d in self._atomicElements]

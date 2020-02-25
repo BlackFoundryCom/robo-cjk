@@ -89,11 +89,26 @@ class CharacterGlyph(Glyph):
         elif self.computedDeepComponentsVariation:
             checkInside(self.computedDeepComponentsVariation)
 
-    def keyDown(self, keys):
+    # def keyDown(self, keys):
+    #     if self.computedDeepComponents:
+    #         self.transform(self._deepComponents, self.computedDeepComponents, keys)
+    #     elif self.computedDeepComponentsVariation:
+    #         self.transform(self._glyphVariations[self.selectedSourceAxis], self.computedDeepComponentsVariation, keys)
+
+    def duplicateSelectedElements(self):
+        element = self._getElementAndInstances()
+        if element is None: return
+        for index in self.selectedElement:
+            d = element[index]
+            if d.get("name"):
+                self.addDeepComponentNamed(d["name"], copy.deepcopy(d))
+
+    def _getElementAndInstances(self):
         if self.computedDeepComponents:
-            self.transform(self._deepComponents, self.computedDeepComponents, keys)
+            return self._deepComponents
         elif self.computedDeepComponentsVariation:
-            self.transform(self._glyphVariations[self.selectedSourceAxis], self.computedDeepComponentsVariation, keys)
+            return self._glyphVariations[self.selectedSourceAxis]
+
 
     def updateDeepComponentCoord(self, nameAxis, value):
         if self.selectedSourceAxis is not None:

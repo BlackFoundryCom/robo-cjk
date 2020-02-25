@@ -132,7 +132,7 @@ class Drawer():
                     for j, dcAtomicElements in enumerate(l):
                         for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in dcAtomicElements.items():
                             mjdt.save()
-                            mjdt.fill(.5, 0, .25, .4)
+                            mjdt.fill(.5, 0, .25, .4)                            
                             if color is not None:
                                 mjdt.fill(*color)
                             elif i in self.RCJKI.currentGlyph.selectedElement:

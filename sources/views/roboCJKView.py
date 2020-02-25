@@ -19,6 +19,8 @@ import os
 
 gitCoverage = decorators.gitCoverage
 
+from mojo.roboFont import *
+
 class RoboCJKView(BaseWindowController):
     
     def __init__(self, RCJKI):
@@ -61,6 +63,12 @@ class RoboCJKView(BaseWindowController):
             (10, 40, 200, 20),
             [],
             callback = self.rcjkFilesSelectionCallback
+            )
+
+        self.w.generateFontButton = Button(
+            (10, 70, 200, 20),
+            "generateFont",
+            callback = self.generateFontButtonCallback
             )
 
         self.w.atomicElementSearchBox = SearchBox(
@@ -193,6 +201,87 @@ class RoboCJKView(BaseWindowController):
 
     def fontInfosCallback(self, sender):
         sheets.FontInfosSheet(self.RCJKI, self.w, (400, 400))
+
+    def generateFontButtonCallback(self, sender):
+        # axis = self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']
+        # print(axis)
+
+        """
+        - Decompose les DC
+        - Crée un glyph pour chaque DC
+        - Dico équivalence reglage DC, glyphName
+        - Parse les CG
+        - import les DC comme Compo normal + offset
+        """
+        
+        f = NewFont(showUI = False)
+
+        deepCompo2Compo = {}
+        for n in self.RCJKI.currentFont.characterGlyphSet:
+            g = self.RCJKI.currentFont[n]
+            g.computeDeepComponents()
+            f.newGlyph(n)
+            f[n].width = g.width
+
+            for i, e in enumerate(g.computedDeepComponents):
+                index = 0
+
+                print(e, '\n')
+                
+                while True:
+                    name = list(e.keys())[0] + "_" + str(index).zfill(2)
+                    if name not in deepCompo2Compo.keys():
+                        break
+                    index += 1
+                # if e in deepCompo2Compo: continue
+                dc = RGlyph()
+                dc.width = g.width
+                for dcCoord, l in e.values():
+                    for dcAtomicElements in l:
+                        for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
+                            for c in atomicInstanceGlyph:
+                                dc.appendContour(c)
+                dc.name = name
+
+                f.insertGlyph(dc)
+
+                deepCompo2Compo[name] = [f[dc.name], list(e.values())[0]]
+                f[n].appendComponent(dc.name)
+                # print(list(e.values())[0], '\n')
+
+
+
+            # print(g.computedDeepComponents)
+            # # for deepComponent in g._deepComponents:
+            #     if deepComponent in deepCompo2Compo: continue
+
+            # print(g._deepComponents)
+            # f.newGlyph(n)
+            # f[n].width = g.width
+
+            # for atomicInstance in g.atomicInstances:
+            #     for c in atomicInstance:
+            #         f[n].appendContour(c) 
+
+            # preview = g.generateDeepComponent(g, False)
+            # for d in preview:
+            #     for a in d.values():
+            #         for c in a[0]:
+            #            f[n].appendContour(c) 
+                    
+
+
+        # for n in self.RCJKI.currentFont.characterGlyphSet:
+        #     g = self.RCJKI.currentFont[n]
+        #     preview = g.generateCharacterGlyph(g, False)
+        #     f.newGlyph(n)
+        #     f[n].width = g.width
+        #     for _, AEInstance in g._getAtomicInstanceGlyph(preview):
+        #         for c in AEInstance:
+        #             f[n].appendContour(c)
+
+
+        f.save(os.path.join(self.RCJKI.currentFont.fontPath, "teeest.ufo"))
         
     def loadProjectButtonCallback(self, sender):
         folder = getFolder()

@@ -1,4 +1,4 @@
-from mojo.events import addObserver, removeObserver, extractNSEvent
+from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, uninstallTool
 from imp import reload
 
 from utils import interpolation
@@ -33,10 +33,15 @@ reload(popover)
 from models import deepComponent
 reload(deepComponent)
 
+from tools import transformationTool
+reload(transformationTool)
+
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
 import mojo.drawingTools as mjdt
 from mojo.roboFont import *
+
+import math
 
 from utils import decorators
 reload(decorators)
@@ -48,6 +53,9 @@ class RoboCJKController(object):
     def __init__(self):
         self.observers = False
         self.drawer = drawer.Drawer(self)
+        self.transformationTool = transformationTool.TransformationTool(self)
+        # installTool(self.transformationTool)
+
         self.locked = False
 
         self.atomicView = canvasGroups.AtomicView(
@@ -188,6 +196,10 @@ class RoboCJKController(object):
             {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
             ]
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
+        if self.currentGlyph.type =='atomicElement':
+            uninstallTool(self.transformationTool)
+        else:
+            installTool(self.transformationTool)
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()
@@ -264,12 +276,15 @@ class RoboCJKController(object):
         elif self.isCharacterGlyph:
             mjdt.save()
             mjdt.translate(0, 100)
-            for i, e in enumerate(self.currentGlyph.preview):
-                for dcName, (dcCoord, l) in e.items():
-                    for dcAtomicElements in l:
-                        for atomicInstanceGlyph in dcAtomicElements.values():
-                            if atomicInstanceGlyph[0] is None: continue
-                            drawGlyph(atomicInstanceGlyph[0])
+            for i, atomicInstanceGlyph in self.currentGlyph._getAtomicInstanceGlyph(self.currentGlyph.preview):
+                if atomicInstanceGlyph[0] is None: continue
+                drawGlyph(atomicInstanceGlyph[0])
+            # for i, e in enumerate(self.currentGlyph.preview):
+            #     for dcName, (dcCoord, l) in e.items():
+            #         for dcAtomicElements in l:
+            #             for atomicInstanceGlyph in dcAtomicElements.values():
+            #                 if atomicInstanceGlyph[0] is None: continue
+            #                 drawGlyph(atomicInstanceGlyph[0])
             mjdt.restore()
         mjdt.restore()
 

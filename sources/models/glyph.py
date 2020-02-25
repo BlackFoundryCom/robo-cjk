@@ -13,6 +13,7 @@ class Glyph(RGlyph):
         self.type = None
         self.preview = None
         self.sourcesList = []
+        # self.transformationWithMouse = False
 
     def save(self):
         self.lib.clear()
@@ -89,6 +90,42 @@ class Glyph(RGlyph):
             _lib.append(dc)
         g._deepComponents = _lib
         return deepComponents
+
+    def keyDown(self, keys):
+        modifiers, inputKey, character = keys
+        element = self._getElementAndInstances()
+        if modifiers[2]:
+            if character == '∂':
+                self.duplicateSelectedElements()
+            else:
+                rotation = (-10*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - inputKey[0])*.5
+                self.setRotationAngleToSelectedElements(rotation)
+        else:
+            x = 90*modifiers[0]*modifiers[4]*inputKey[0] + 9*modifiers[0]*inputKey[0] + inputKey[0] 
+            y = 90*modifiers[0]*modifiers[4]*inputKey[1] + 9*modifiers[0]*inputKey[1] + inputKey[1]
+            self.setPositionToSelectedElements((x, y))
+
+    def setRotationAngleToSelectedElements(self, rotation, append = True):
+        element = self._getElementAndInstances()
+        if element is None: return
+        for index in self.selectedElement:
+            d = element[index]
+            if append:
+                d["rotation"] += int(rotation)
+            else:
+                d["rotation"] = -int(rotation)
+        self.computeDeepComponents()
+        self.computeDeepComponentsPreview()
+
+    def setPositionToSelectedElements(self, position):
+        element = self._getElementAndInstances()
+        if element is None: return
+        for index in self.selectedElement:
+            d = element[index]
+            d["x"] += position[0]
+            d["y"] += position[1]
+        self.computeDeepComponents()
+        self.computeDeepComponentsPreview()
 
     def transform(self, element, instance, keys):
         modifiers, inputKey, character = keys
