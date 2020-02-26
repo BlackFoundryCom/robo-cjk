@@ -19,11 +19,20 @@ class TransformationTool(BaseEventTool):
         self.px, self.py = self.deltax, self.deltay = point
 
     def mouseDragged(self, point, delta):
-        option = getActiveEventTool().getModifiers()['optionDown']
+        modifiers = getActiveEventTool().getModifiers()
+        option = modifiers['optionDown']
+        command = modifiers['commandDown']
         
         if option:
             rotation = angle(self.px, self.py, *point)
             self.RCJKI.currentGlyph.setRotationAngleToSelectedElements(rotation, append = False)
+        elif command:
+            deltax = int(point.x - self.deltax)
+            deltay = int(point.y - self.deltay)
+            sensibility = 250
+            deltax /= sensibility
+            deltay /= sensibility
+            self.RCJKI.currentGlyph.setScaleToSelectedElements(round(deltax, 3), round(deltay, 3))
         else:
             x = int(point.x - self.deltax)
             y = int(point.y - self.deltay)

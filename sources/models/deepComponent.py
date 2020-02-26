@@ -84,7 +84,7 @@ class DeepComponent(Glyph):
 
     # def keyDown(self, keys):
     #     modifiers, inputKey, character = keys
-    #     element = self._getElementAndInstances()
+    #     element = self._getElements()
     #     if modifiers[2]:
     #         if character == '∂':
     #             self.duplicateSelectedElements()
@@ -95,24 +95,21 @@ class DeepComponent(Glyph):
     #         x = 90*modifiers[0]*modifiers[4]*inputKey[0] + 9*modifiers[0]*inputKey[0] + inputKey[0] 
     #         y = 90*modifiers[0]*modifiers[4]*inputKey[1] + 9*modifiers[0]*inputKey[1] + inputKey[1]
     #         self.setPositionToSelectedElements((x, y))
-        # self.transform(*self._getElementAndInstances, keys)
+        # self.transform(*self._getElements, keys)
 
     def duplicateSelectedElements(self):
-        element = self._getElementAndInstances()
-        if element is None: return
-        for index in self.selectedElement:
-            d = element[index]
-            if d.get("name"):
-                self.addAtomicElementNamed(d["name"], copy.deepcopy(d))
+        for selectedElement in self._getSelectedElement():
+            if selectedElement.get("name"):
+                self.addAtomicElementNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
-    def _getElementAndInstances(self):
+    def _getElements(self):
         if self.computedAtomicInstances:
             return self._atomicElements
         elif self.computedAtomicSelectedSourceInstances:
             return self._glyphVariations[self.selectedSourceAxis]
 
     # def setRotationAngleToSelectedElements(self, rotation, append = True):
-    #     element = self._getElementAndInstances()
+    #     element = self._getElements()
     #     if element is None: return
     #     for index in self.selectedElement:
     #         d = element[index]
@@ -124,7 +121,7 @@ class DeepComponent(Glyph):
     #     self.computeDeepComponentsPreview()
 
     # def setPositionToSelectedElements(self, position):
-    #     element = self._getElementAndInstances()
+    #     element = self._getElements()
     #     if element is None: return
     #     for index in self.selectedElement:
     #         d = element[index]

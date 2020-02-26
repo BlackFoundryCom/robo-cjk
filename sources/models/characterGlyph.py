@@ -50,6 +50,13 @@ class CharacterGlyph(Glyph):
         elif self.computedDeepComponentsVariation:
             return list(self.computedDeepComponentsVariation[index].values())[0][0]
 
+    @property
+    def atomicInstances(self):
+        preview = self.generateDeepComponent(self,  preview=False)
+        for d in preview:
+            for a in d.values():
+                yield a[0]
+
     def pointIsInside(self, point, multipleSelection = False):
         def checkInside(elements: list):
             for i, atomicInstanceGlyph in self._getAtomicInstanceGlyph(elements):
@@ -96,19 +103,15 @@ class CharacterGlyph(Glyph):
     #         self.transform(self._glyphVariations[self.selectedSourceAxis], self.computedDeepComponentsVariation, keys)
 
     def duplicateSelectedElements(self):
-        element = self._getElementAndInstances()
-        if element is None: return
-        for index in self.selectedElement:
-            d = element[index]
-            if d.get("name"):
-                self.addDeepComponentNamed(d["name"], copy.deepcopy(d))
+        for selectedElement in self._getSelectedElement():
+            if selectedElement.get("name"):
+                self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
-    def _getElementAndInstances(self):
+    def _getElements(self):
         if self.computedDeepComponents:
             return self._deepComponents
         elif self.computedDeepComponentsVariation:
             return self._glyphVariations[self.selectedSourceAxis]
-
 
     def updateDeepComponentCoord(self, nameAxis, value):
         if self.selectedSourceAxis is not None:
