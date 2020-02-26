@@ -18,6 +18,7 @@ NICE TO HAVE:
 - Undo not working
 - Glyphs-lists better control of Add and Delete (choose name, focus to item)
 - Rectangle on scale tool
+- Color for clockwise contours
 
 
 
