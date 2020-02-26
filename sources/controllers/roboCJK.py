@@ -281,16 +281,6 @@ class RoboCJKController(object):
                     for dcAtomicElements in l:
                         for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
                             drawGlyph(atomicInstanceGlyph)
-
-            # for i, atomicInstanceGlyph in self.currentGlyph._getAtomicInstanceGlyph(self.currentGlyph.preview):
-            #     if atomicInstanceGlyph[0] is None: continue
-            #     drawGlyph(atomicInstanceGlyph[0])
-            # for i, e in enumerate(self.currentGlyph.preview):
-            #     for dcName, (dcCoord, l) in e.items():
-            #         for dcAtomicElements in l:
-            #             for atomicInstanceGlyph in dcAtomicElements.values():
-            #                 if atomicInstanceGlyph[0] is None: continue
-            #                 drawGlyph(atomicInstanceGlyph[0])
             mjdt.restore()
         mjdt.restore()
 

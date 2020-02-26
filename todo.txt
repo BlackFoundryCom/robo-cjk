@@ -18,11 +18,9 @@ NICE TO HAVE:
 - Undo not working
 - Glyphs-lists better control of Add and Delete (choose name, focus to item)
 - Rectangle on scale tool
-- Color for clockwise contours
-
-
 
 DONE:
+- Color for clockwise contours
 - Transformation tool
 - Fontlib + fontInfos in storage file 
 - Select a deep component while dragging with selection tool
