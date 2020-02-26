@@ -25,8 +25,8 @@ class TransformationTool(BaseEventTool):
             rotation = angle(self.px, self.py, *point)
             self.RCJKI.currentGlyph.setRotationAngleToSelectedElements(rotation, append = False)
         else:
-            x = point.x - self.deltax
-            y = point.y - self.deltay
+            x = int(point.x - self.deltax)
+            y = int(point.y - self.deltay)
             self.RCJKI.currentGlyph.setPositionToSelectedElements((x, y))
 
         self.deltax, self.deltay = point
