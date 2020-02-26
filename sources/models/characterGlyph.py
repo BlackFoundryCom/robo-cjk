@@ -96,11 +96,15 @@ class CharacterGlyph(Glyph):
         elif self.computedDeepComponentsVariation:
             checkInside(self.computedDeepComponentsVariation)
 
-    # def keyDown(self, keys):
-    #     if self.computedDeepComponents:
-    #         self.transform(self._deepComponents, self.computedDeepComponents, keys)
-    #     elif self.computedDeepComponentsVariation:
-    #         self.transform(self._glyphVariations[self.selectedSourceAxis], self.computedDeepComponentsVariation, keys)
+    @property
+    def atomicInstancesGlyphs(self):
+        if self.computedDeepComponentsVariation:
+            elements = self.computedDeepComponentsVariation
+        elif self.computedDeepComponents:
+            elements = self.computedDeepComponents
+
+        for i, atomicInstanceGlyph in self._getAtomicInstanceGlyph(elements):
+            yield i, atomicInstanceGlyph
 
     def duplicateSelectedElements(self):
         for selectedElement in self._getSelectedElement():

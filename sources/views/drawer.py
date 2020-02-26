@@ -53,14 +53,13 @@ class Drawer():
         mjdt.drawGlyph(glyph.preview)  
         mjdt.restore()
         
-    def draw(self, info, color=None):
-        g = self.RCJKI.currentGlyph
-        f = self.RCJKI.currentFont
+    def draw(self, info, customColor = None):
         view = info["view"]
         scale = info['scale']
+        color = customColor
         if self.RCJKI.currentGlyph.type == "characterGlyph" and self.RCJKI.currentGlyph.preview:
             self.drawCharacterGlyphPreview(
-                g,
+                self.RCJKI.currentGlyph,
                 scale, 
                 color = (0, 0, 0, 0), 
                 strokecolor = (0, 0, 0, .2)
@@ -68,7 +67,7 @@ class Drawer():
                             
         if self.RCJKI.currentGlyph.type == "deepComponent" and self.RCJKI.currentGlyph.preview:
             self.drawDeepComponentPreview(
-                g,
+                self.RCJKI.currentGlyph,
                 scale, 
                 color = (0, 0, 0, 0), 
                 strokecolor = (0, 0, 0, .2)
@@ -76,84 +75,34 @@ class Drawer():
 
         elif self.RCJKI.currentGlyph.type == "atomicElement" and self.RCJKI.currentGlyph.preview:
             self.drawAtomicElementPreview(
-                g,
+                self.RCJKI.currentGlyph,
                 scale, 
                 color = (0, 0, 0, 0), 
                 strokecolor = (0, 0, 0, .2) 
                 )
-        
-        if self.RCJKI.currentGlyph.type == "deepComponent" and hasattr(self.RCJKI.currentGlyph, "computedAtomicSelectedSourceInstances") and self.RCJKI.currentGlyph.computedAtomicSelectedSourceInstances:            
-            for i, d in enumerate(self.RCJKI.currentGlyph.computedAtomicSelectedSourceInstances):
-                for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in d.items():
-                    mjdt.save()
-                    mjdt.fill(.5, .25, 0, .2)
-                    if color is not None:
-                        mjdt.fill(*color)
-                    elif i in self.RCJKI.currentGlyph.selectedElement:
-                        mjdt.fill(0, .8, .8, .5)
-                    for c in atomicInstanceGlyph:
-                        if c.clockwise:
-                            mjdt.stroke(1, 0, 0, 1)
-                            mjdt.strokeWidth(2*scale)
-                    mjdt.drawGlyph(atomicInstanceGlyph) 
-                    if color is None: 
-                        self.drawIndexOfElements(i, atomicInstanceGlyph, view)
-                    mjdt.restore()
-            
-        elif self.RCJKI.currentGlyph.type == "deepComponent" and hasattr(self.RCJKI.currentGlyph, "computedAtomicInstances"):            
-            for i, d in enumerate(self.RCJKI.currentGlyph.computedAtomicInstances):
-                for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in d.items():
-                    mjdt.save()
-                    mjdt.fill(0, .5, .25, .4)
-                    if color is not None:
-                        mjdt.fill(*color)
-                    elif i in self.RCJKI.currentGlyph.selectedElement:
-                        mjdt.fill(0, .8, .8, .5)
-                    for c in atomicInstanceGlyph:
-                        if c.clockwise:
-                            mjdt.stroke(1, 0, 0, 1)
-                            mjdt.strokeWidth(2*scale)
-                    mjdt.drawGlyph(atomicInstanceGlyph)
-                    if color is None:
-                        self.drawIndexOfElements(i, atomicInstanceGlyph, view)
-                    mjdt.restore()
-                    
-        elif self.RCJKI.currentGlyph.type == "characterGlyph" and hasattr(self.RCJKI.currentGlyph, "computedDeepComponents") and self.RCJKI.currentGlyph.computedDeepComponents:            
-            for i, e in enumerate(self.RCJKI.currentGlyph.computedDeepComponents):
-                for dcName, (dcCoord, l) in e.items():
-                    for j, dcAtomicElements in enumerate(l):
-                        for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in dcAtomicElements.items():
-                            mjdt.save()
-                            mjdt.fill(.25, 0, .5, .8)
-                            if color is not None:
-                                mjdt.fill(*color)
-                            elif i in self.RCJKI.currentGlyph.selectedElement:
-                                mjdt.fill(0, .8, .8, .5)
-                            for c in atomicInstanceGlyph:
-                                if c.clockwise:
-                                    mjdt.stroke(1, 0, 0, 1)
-                                    mjdt.strokeWidth(2*scale)
-                            mjdt.drawGlyph(atomicInstanceGlyph)  
-                            if color is None and not j:
-                                self.drawIndexOfElements(i, atomicInstanceGlyph, view)
-                            mjdt.restore()
-                            
-        elif self.RCJKI.currentGlyph.type == "characterGlyph" and hasattr(self.RCJKI.currentGlyph, "computedDeepComponentsVariation"):   
-            for i, e in enumerate(self.RCJKI.currentGlyph.computedDeepComponentsVariation):
-                for dcName, (dcCoord, l) in e.items():
-                    for j, dcAtomicElements in enumerate(l):
-                        for atomicElementName, (atomicInstanceGlyph, atomicVariations, atomicCoord) in dcAtomicElements.items():
-                            mjdt.save()
-                            mjdt.fill(.5, 0, .25, .4)                            
-                            if color is not None:
-                                mjdt.fill(*color)
-                            elif i in self.RCJKI.currentGlyph.selectedElement:
-                                mjdt.fill(0, .8, .8, .5)
-                            for c in atomicInstanceGlyph:
-                                if c.clockwise:
-                                    mjdt.stroke(1, 0, 0, 1)
-                                    mjdt.strokeWidth(2*scale)
-                            mjdt.drawGlyph(atomicInstanceGlyph)  
-                            if color is None and not j:
-                                self.drawIndexOfElements(i, atomicInstanceGlyph, view)
-                            mjdt.restore()
+        if self.RCJKI.currentGlyph.type == "atomicElement": return
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            if not color:
+                if self.RCJKI.currentGlyph.computedAtomicInstances:
+                    color = (0, .5, .25, .4)
+                else: color = (.5, .25, 0, .2)
+
+        elif self.RCJKI.currentGlyph.type == "characterGlyph":
+            if not color:
+                if self.RCJKI.currentGlyph.computedDeepComponents:
+                    color = (.25, 0, .5, .8)
+                else: color = (.5, 0, .25, .4)
+
+        for i, atomicInstanceGlyph in self.RCJKI.currentGlyph.atomicInstancesGlyphs:
+            mjdt.save()
+            mjdt.fill(*color)
+            if i in self.RCJKI.currentGlyph.selectedElement:
+                mjdt.fill(0, .8, .8, .5)
+            for c in atomicInstanceGlyph:
+                if c.clockwise:
+                    mjdt.stroke(1, 0, 0, 1)
+                    mjdt.strokeWidth(2*scale)
+            mjdt.drawGlyph(atomicInstanceGlyph) 
+            if customColor is None: 
+                self.drawIndexOfElements(i, atomicInstanceGlyph, view)
+            mjdt.restore()
