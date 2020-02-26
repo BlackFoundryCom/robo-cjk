@@ -50,13 +50,6 @@ class CharacterGlyph(Glyph):
         elif self.computedDeepComponentsVariation:
             return list(self.computedDeepComponentsVariation[index].values())[0][0]
 
-    def _getAtomicInstanceGlyph(self, elements):
-        for i, e in enumerate(elements):
-            for dcCoord, l in e.values():
-                for dcAtomicElements in l:
-                    for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
-                        yield i, atomicInstanceGlyph
-
     @property
     def atomicInstancesGlyphs(self):
         if self.computedDeepComponentsVariation:
