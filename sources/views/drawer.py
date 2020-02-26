@@ -91,6 +91,10 @@ class Drawer():
                         mjdt.fill(*color)
                     elif i in self.RCJKI.currentGlyph.selectedElement:
                         mjdt.fill(0, .8, .8, .5)
+                    for c in atomicInstanceGlyph:
+                        if c.clockwise:
+                            mjdt.stroke(1, 0, 0, 1)
+                            mjdt.strokeWidth(2*scale)
                     mjdt.drawGlyph(atomicInstanceGlyph) 
                     if color is None: 
                         self.drawIndexOfElements(i, atomicInstanceGlyph, view)
@@ -105,6 +109,10 @@ class Drawer():
                         mjdt.fill(*color)
                     elif i in self.RCJKI.currentGlyph.selectedElement:
                         mjdt.fill(0, .8, .8, .5)
+                    for c in atomicInstanceGlyph:
+                        if c.clockwise:
+                            mjdt.stroke(1, 0, 0, 1)
+                            mjdt.strokeWidth(2*scale)
                     mjdt.drawGlyph(atomicInstanceGlyph)
                     if color is None:
                         self.drawIndexOfElements(i, atomicInstanceGlyph, view)
@@ -121,6 +129,10 @@ class Drawer():
                                 mjdt.fill(*color)
                             elif i in self.RCJKI.currentGlyph.selectedElement:
                                 mjdt.fill(0, .8, .8, .5)
+                            for c in atomicInstanceGlyph:
+                                if c.clockwise:
+                                    mjdt.stroke(1, 0, 0, 1)
+                                    mjdt.strokeWidth(2*scale)
                             mjdt.drawGlyph(atomicInstanceGlyph)  
                             if color is None and not j:
                                 self.drawIndexOfElements(i, atomicInstanceGlyph, view)
@@ -137,6 +149,10 @@ class Drawer():
                                 mjdt.fill(*color)
                             elif i in self.RCJKI.currentGlyph.selectedElement:
                                 mjdt.fill(0, .8, .8, .5)
+                            for c in atomicInstanceGlyph:
+                                if c.clockwise:
+                                    mjdt.stroke(1, 0, 0, 1)
+                                    mjdt.strokeWidth(2*scale)
                             mjdt.drawGlyph(atomicInstanceGlyph)  
                             if color is None and not j:
                                 self.drawIndexOfElements(i, atomicInstanceGlyph, view)
