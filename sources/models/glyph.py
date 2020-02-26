@@ -72,6 +72,17 @@ class Glyph(RGlyph):
     @compute
     def setScaleToSelectedElements(self, x: int, y: int):
         for selectedElement in self._getSelectedElement():
+            rotation = selectedElement["rotation"]
+            if -45 < rotation < 45:
+                x, y = x, y
+            elif -135 < rotation < -45 or 225 < rotation < 315:
+                x, y = -y, x
+            elif 45 < rotation < 135 or -315 < rotation < -225:
+                x, y = y, -x
+            elif -225 < rotation < -135 or 135 < rotation < 225:
+                x, y = -x, -y
+            elif -360 < rotation < -315 or 315 < rotation < 360:
+                x, y = -x, -y
             selectedElement["scalex"] += x
             selectedElement["scaley"] += y
 
