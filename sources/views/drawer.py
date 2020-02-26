@@ -5,7 +5,7 @@ attributes = {
             NSFontAttributeName : NSFont.boldSystemFontOfSize_(9),
             NSForegroundColorAttributeName : NSColor.whiteColor(),
             }
-red = transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(.8, .2, .2, .5)
+red = NSColor.colorWithCalibratedRed_green_blue_alpha_(.8, .2, .2, .5)
 
 class Drawer():
 
@@ -57,29 +57,30 @@ class Drawer():
         view = info["view"]
         scale = info['scale']
         color = customColor
-        if self.RCJKI.currentGlyph.type == "characterGlyph" and self.RCJKI.currentGlyph.preview:
-            self.drawCharacterGlyphPreview(
-                self.RCJKI.currentGlyph,
-                scale, 
-                color = (0, 0, 0, 0), 
-                strokecolor = (0, 0, 0, .2)
-                )
-                            
-        if self.RCJKI.currentGlyph.type == "deepComponent" and self.RCJKI.currentGlyph.preview:
-            self.drawDeepComponentPreview(
-                self.RCJKI.currentGlyph,
-                scale, 
-                color = (0, 0, 0, 0), 
-                strokecolor = (0, 0, 0, .2)
-                )
+        if self.RCJKI.currentGlyph.preview:
+            if self.RCJKI.currentGlyph.type == "characterGlyph":
+                self.drawCharacterGlyphPreview(
+                    self.RCJKI.currentGlyph,
+                    scale, 
+                    color = (0, 0, 0, 0), 
+                    strokecolor = (0, 0, 0, .2)
+                    )
+                                
+            if self.RCJKI.currentGlyph.type == "deepComponent":
+                self.drawDeepComponentPreview(
+                    self.RCJKI.currentGlyph,
+                    scale, 
+                    color = (0, 0, 0, 0), 
+                    strokecolor = (0, 0, 0, .2)
+                    )
 
-        elif self.RCJKI.currentGlyph.type == "atomicElement" and self.RCJKI.currentGlyph.preview:
-            self.drawAtomicElementPreview(
-                self.RCJKI.currentGlyph,
-                scale, 
-                color = (0, 0, 0, 0), 
-                strokecolor = (0, 0, 0, .2) 
-                )
+            elif self.RCJKI.currentGlyph.type == "atomicElement":
+                self.drawAtomicElementPreview(
+                    self.RCJKI.currentGlyph,
+                    scale, 
+                    color = (0, 0, 0, 0), 
+                    strokecolor = (0, 0, 0, .2) 
+                    )
         if self.RCJKI.currentGlyph.type == "atomicElement": return
         if self.RCJKI.currentGlyph.type == "deepComponent":
             if not color:
