@@ -50,51 +50,12 @@ class CharacterGlyph(Glyph):
         elif self.computedDeepComponentsVariation:
             return list(self.computedDeepComponentsVariation[index].values())[0][0]
 
-    @property
-    def atomicInstances(self):
-        preview = self.generateDeepComponent(self,  preview=False)
-        for d in preview:
-            for a in d.values():
-                yield a[0]
-
-    def pointIsInside(self, point, multipleSelection = False):
-        def checkInside(elements: list):
-            for i, atomicInstanceGlyph in self._getAtomicInstanceGlyph(elements):
-                if atomicInstanceGlyph.pointInside((px, py)):
-                    self.selectedElement.append(i)
-                    if not multipleSelection: return
-
-        px, py = point
-        if self.computedDeepComponents:
-            checkInside(self.computedDeepComponents)
-                                
-        elif self.computedDeepComponentsVariation:
-            checkInside(self.computedDeepComponentsVariation)
-
     def _getAtomicInstanceGlyph(self, elements):
         for i, e in enumerate(elements):
             for dcCoord, l in e.values():
                 for dcAtomicElements in l:
                     for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
                         yield i, atomicInstanceGlyph
-
-    def selectionRectTouch(self, x: int, w: int, y: int, h: int):
-        def checkInside(elements: list):
-            for i, atomicInstanceGlyph in self._getAtomicInstanceGlyph(elements):
-                inside = False
-                for c in atomicInstanceGlyph:
-                    for p in c.points:
-                        if p.x > x and p.x < w and p.y > y and p.y < h:
-                            inside = True
-                if inside:
-                    if i in self.selectedElement: continue
-                    self.selectedElement.append(i)
-
-        if self.computedDeepComponents:
-            checkInside(self.computedDeepComponents)
-
-        elif self.computedDeepComponentsVariation:
-            checkInside(self.computedDeepComponentsVariation)
 
     @property
     def atomicInstancesGlyphs(self):
@@ -103,8 +64,11 @@ class CharacterGlyph(Glyph):
         elif self.computedDeepComponents:
             elements = self.computedDeepComponents
 
-        for i, atomicInstanceGlyph in self._getAtomicInstanceGlyph(elements):
-            yield i, atomicInstanceGlyph
+        for i, e in enumerate(elements):
+            for dcCoord, l in e.values():
+                for dcAtomicElements in l:
+                    for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
+                        yield i, atomicInstanceGlyph
 
     def duplicateSelectedElements(self):
         for selectedElement in self._getSelectedElement():

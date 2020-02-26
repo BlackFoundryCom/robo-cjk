@@ -35,38 +35,6 @@ class DeepComponent(Glyph):
         self._atomicElements = list(self._RGlyph.lib[atomicElementsKey])      
         self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])      
 
-    def pointIsInside(self, point, multipleSelection = False):
-        def checkInside(elements: list):
-            for i, d in enumerate(elements):
-                for atomicInstanceGlyph, _, _ in d.values():
-                    if atomicInstanceGlyph.pointInside((px, py)):
-                        self.selectedElement.append(i)
-                        if not multipleSelection: return
-        px, py = point
-        if self.computedAtomicSelectedSourceInstances:
-            checkInside(self.computedAtomicSelectedSourceInstances)
-
-        elif self.computedAtomicInstances:
-            checkInside(self.computedAtomicInstances)
-
-    def selectionRectTouch(self, x: int, w: int, y: int, h: int):
-        def checkInside(elements: list):
-            for i, d in enumerate(elements):
-                for atomicInstanceGlyph, _, _ in d.values():
-                    inside = False
-                    for c in atomicInstanceGlyph:
-                        for p in c.points:
-                            if p.x > x and p.x < w and p.y > y and p.y < h:
-                                inside = True
-                    if inside:
-                        self.selectedElement.append(i)
-
-        if self.computedAtomicSelectedSourceInstances:
-            checkInside(self.computedAtomicSelectedSourceInstances)
-
-        elif self.computedAtomicInstances:
-            checkInside(self.computedAtomicInstances)
-
     @property
     def atomicInstancesGlyphs(self):
         if self.computedAtomicSelectedSourceInstances:
@@ -77,7 +45,6 @@ class DeepComponent(Glyph):
         for i, d in enumerate(elements):
             for atomicInstanceGlyph, _, _ in d.values():
                 yield i, atomicInstanceGlyph
-
 
     @property
     def selectedElementCoord(self) -> dict:

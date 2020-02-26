@@ -91,6 +91,25 @@ class Glyph(RGlyph):
             selectedElement["scalex"] += x
             selectedElement["scaley"] += y
 
+    def pointIsInside(self, point, multipleSelection = False):
+        px, py = point
+        for index, atomicInstanceGlyph in self.atomicInstancesGlyphs:
+            if atomicInstanceGlyph.pointInside((px, py)):
+                if index not in self.selectedElement:
+                    self.selectedElement.append(index)
+                if not multipleSelection: return
+
+    def selectionRectTouch(self, x: int, w: int, y: int, h: int):
+        for index, atomicInstanceGlyph in self.atomicInstancesGlyphs:
+            inside = False
+            for c in atomicInstanceGlyph:
+                for p in c.points:
+                    if p.x > x and p.x < w and p.y > y and p.y < h:
+                        inside = True
+            if inside:
+                if index in self.selectedElement: continue
+                self.selectedElement.append(index)
+
     def generateDeepComponent(self, g, preview=True):
         atomicInstances = []
         if not hasattr(g,"_atomicElements"): return
