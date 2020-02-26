@@ -22,20 +22,32 @@ class TransformationTool(BaseEventTool):
         modifiers = getActiveEventTool().getModifiers()
         option = modifiers['optionDown']
         command = modifiers['commandDown']
+        shift = modifiers['shiftDown']
+
+        def shiftLock(dx, dy, x, y):
+            if abs(dx) > abs(dy):
+                return x, 0
+            return 0, y
         
         if option:
             rotation = angle(self.px, self.py, *point)
             self.RCJKI.currentGlyph.setRotationAngleToSelectedElements(rotation, append = False)
+            
         elif command:
             deltax = int(point.x - self.deltax)
             deltay = int(point.y - self.deltay)
-            sensibility = 250
+            sensibility = 100
             deltax /= sensibility
             deltay /= sensibility
-            self.RCJKI.currentGlyph.setScaleToSelectedElements(round(deltax, 3), round(deltay, 3))
+            if shift:
+                deltax, deltay = shiftLock(delta.x, delta.y, deltax, deltay)
+            self.RCJKI.currentGlyph.setScaleToSelectedElements((round(deltax, 3), round(deltay, 3)))
+            
         else:
             x = int(point.x - self.deltax)
             y = int(point.y - self.deltay)
+            if shift:
+                x, y = shiftLock(delta.x, delta.y, x, y)
             self.RCJKI.currentGlyph.setPositionToSelectedElements((x, y))
 
         self.deltax, self.deltay = point

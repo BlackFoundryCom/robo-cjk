@@ -44,6 +44,10 @@ class Glyph(RGlyph):
             else:
                 rotation = (-10*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - inputKey[0])*.5
                 self.setRotationAngleToSelectedElements(rotation)
+        elif modifiers[3]:
+            x = round((9*modifiers[0]*inputKey[0] + inputKey[0])*.01, 3)
+            y = round((9*modifiers[0]*inputKey[1] + inputKey[1])*.01, 3)
+            self.setScaleToSelectedElements((x, y))
         else:
             x = 90*modifiers[0]*modifiers[4]*inputKey[0] + 9*modifiers[0]*inputKey[0] + inputKey[0] 
             y = 90*modifiers[0]*modifiers[4]*inputKey[1] + 9*modifiers[0]*inputKey[1] + inputKey[1]
@@ -70,7 +74,8 @@ class Glyph(RGlyph):
             selectedElement["y"] += position[1]
 
     @compute
-    def setScaleToSelectedElements(self, x: int, y: int):
+    def setScaleToSelectedElements(self, scale: list):
+        x, y = scale
         for selectedElement in self._getSelectedElement():
             rotation = selectedElement["rotation"]
             if -45 < rotation < 45:
