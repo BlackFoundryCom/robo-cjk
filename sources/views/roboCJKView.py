@@ -3,8 +3,10 @@ from vanilla.dialogs import getFolder, putFile
 from mojo.UI import OpenGlyphWindow, AllWindows
 from defconAppKit.windows.baseWindow import BaseWindowController
 from views import canvasGroups
+from mojo.canvas import CanvasGroup
+import mojo.drawingTools as mjdt
 # from lib.doodleDocument import DoodleDocument
-
+from AppKit import NSFont
 from imp import reload
 from utils import decorators, files
 reload(decorators)
@@ -15,11 +17,104 @@ reload(font)
 from views import sheets
 reload(sheets)
 
-import os
+import os, json
 
 gitCoverage = decorators.gitCoverage
 
 from mojo.roboFont import *
+
+class SmartTextBox(TextBox):
+    def __init__(self, posSize, text="", alignment="natural", selectable=False, callback=None, sizeStyle=40.0,red=0,green=0,blue=0, alpha=1.0):
+        super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, selectable=selectable, sizeStyle=sizeStyle)
+        
+    def _setSizeStyle(self, sizeStyle):
+        value = sizeStyle
+        self._nsObject.cell().setControlSize_(value)
+        font = NSFont.systemFontOfSize_(value)
+        self._nsObject.setFont_(font)
+
+class ComponentWindow():
+
+    def __init__(self, RCJKI):
+        self.RCJKI = RCJKI
+        self.previewGlyph = None
+        self.w = FloatingWindow(
+            (240, 80),
+            "Composition Rules",
+            closable = False,
+            textured = False,
+            )
+        self.w.char = SmartTextBox(
+            (0, 0, 80, -0),
+            "",
+            sizeStyle = 65,
+            alignment = "center"
+            )
+        self.w.componentList = List(
+            (80, 0, 40, -0), 
+            [],
+            selectionCallback = self.componentListCallback
+            )
+        self.w.variantComponentList = List(
+            (120, 0, 40, -0), 
+            [],
+            selectionCallback = self.variantComponentListCallback,
+            doubleClickCallback = self.variantComponentListdoubleClickCallback
+            )
+        self.w.canvas = CanvasGroup(
+            (160, 0, -0, -0), 
+            delegate = self
+            )
+
+    def draw(self):
+        if self.previewGlyph is None: return
+        mjdt.save()
+        mjdt.translate(20, 25)
+        mjdt.scale(.04)
+        mjdt.fill(0, 0, 0, 1)
+        for i, d in enumerate(self.previewGlyph):
+            for atomicInstanceGlyph in d.values():
+                mjdt.drawGlyph(atomicInstanceGlyph[0]) 
+        mjdt.restore()
+
+    def componentListCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        char = sender.get()[sel[0]]
+        self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())
+        dcName = "DC_%s_00"%self.code
+        index = self.RCJKI.currentFont.deepComponentSet.index(dcName)
+        l = ["00"]
+        i = 1
+        while True:
+            name = "DC_%s_%s"%(self.code, str(i).zfill(2))
+            if not name in self.RCJKI.currentFont.deepComponentSet:
+                break
+            l.append(str(i).zfill(2))
+            i += 1
+        self.w.variantComponentList.set(l)
+
+    def variantComponentListCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        index = sender.get()[sel[0]]
+        self.deepComponentName = "DC_%s_%s"%(self.code, index)
+        glyph = self.RCJKI.currentFont[self.deepComponentName]
+        self.previewGlyph = glyph.generateDeepComponent(
+                glyph, 
+                preview=False,
+                )
+        self.w.canvas.update()
+
+    def variantComponentListdoubleClickCallback(self, sender):
+        self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
+        self.RCJKI.updateDeepComponent()
+
+    # def open(self):
+    #     self.w.open()
+
+    # def close(self):
+        self.w.close()
 
 class RoboCJKView(BaseWindowController):
     
@@ -223,6 +318,12 @@ class RoboCJKView(BaseWindowController):
             f.newGlyph(n)
             f[n].width = g.width
 
+            # print(g.computedDeepComponentsVariation)
+            # print("\n")
+            # print(g.computedDeepComponents)
+            # print("\n")
+            # print("\n")
+
             for i, e in enumerate(g.computedDeepComponents):
                 index = 0
 
@@ -328,6 +429,11 @@ class RoboCJKView(BaseWindowController):
         self.currentrcjkFile = sender.getItem() 
         fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
         self.RCJKI.currentFont = font.Font(fontPath)
+        self.RCJKI.dataBase = {}
+        
+        if 'database.json' in os.listdir(fontPath):
+            with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
+                self.RCJKI.dataBase = json.load(file)
 
         self.RCJKI.toggleWindowController()
 

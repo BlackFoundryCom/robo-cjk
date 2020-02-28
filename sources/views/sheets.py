@@ -1,9 +1,11 @@
 from vanilla import *
+from vanilla.dialogs import getFile
 from mojo.canvas import Canvas
 import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
 from utils import files
 from AppKit import NumberFormatter
+import json, os
 
 class SelectLayerSheet():
     def __init__(self, RCJKI, availableLayers):
@@ -294,11 +296,15 @@ class FontInfosSheet():
         self.s.addVariation = Button(
             (10, 110, 100, 20), 
             "+",
-            callback = self.addVariationCallback)
+            callback = self.addVariationCallback,
+            sizeStyle = 'small'
+            )
         self.s.removeVariation = Button(
             (110, 110, 100, 20), 
             "-",
-            callback = self.removeVariationCallback)
+            callback = self.removeVariationCallback,
+            sizeStyle = 'small'
+            )
 
         self.s.defaultGlyphWidthTitle = TextBox(
             (10, 142, 150, 20),
@@ -314,10 +320,25 @@ class FontInfosSheet():
             callback = self.defaultGlyphWidthCallback
             )
 
+        self.s.loadDataBase = Button(
+            (10, 170, 200, 20),
+            'Load Data Base',
+            callback = self.loadDataBaseCallback,
+            sizeStyle = 'small'
+            )
+
+        self.s.exportDataBase = Button(
+            (10, 190, 200, 20),
+            'Export Data Base',
+            callback = self.exportDataBaseCallback,
+            sizeStyle = 'small'
+            )
+
         self.s.closeButton = Button(
             (10, -30, -10, 20), 
             'close', 
-            self.closeCallback
+            self.closeCallback,
+            sizeStyle = 'small'
             )
         self.s.open()
 
@@ -345,6 +366,27 @@ class FontInfosSheet():
         l.pop(sel[0])
         self.s.fontVariationAxisList.set(l)
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']=self.s.fontVariationAxisList.get()
+
+    def loadDataBaseCallback(self, sender):
+        path = getFile()[0]
+        if path.endswith("txt"):
+            with open(path, 'r', encoding = 'utf-8') as file:
+                txt = file.readlines()
+            self.RCJKI.dataBase = {}
+            for line in txt:
+                k, v = line.strip('\n').split(':')
+                self.RCJKI.dataBase[k] = v
+        elif path.endswith("json"):
+            with open(path, 'r', encoding = 'utf-8') as file:
+                self.RCJKI.dataBase = json.load(file)
+        self.exportDataBase()
+
+    def exportDataBaseCallback(self, sender):
+        self.exportDataBase()
+
+    def exportDataBase(self):
+        with open(os.path.join(self.RCJKI.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
+            file.write(json.dumps(self.RCJKI.dataBase))
         
     def closeCallback(self, sender):
         self.s.close()

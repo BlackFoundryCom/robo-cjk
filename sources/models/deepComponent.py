@@ -39,7 +39,8 @@ class DeepComponent(Glyph):
     def atomicInstancesGlyphs(self):
         if self.computedAtomicSelectedSourceInstances:
             elements = self.computedAtomicSelectedSourceInstances
-        elif self.computedAtomicInstances:
+        # elif self.computedAtomicInstances:
+        else:
             elements = self.computedAtomicInstances
 
         for i, d in enumerate(elements):

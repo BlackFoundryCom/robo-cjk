@@ -54,7 +54,8 @@ class CharacterGlyph(Glyph):
     def atomicInstancesGlyphs(self):
         if self.computedDeepComponentsVariation:
             elements = self.computedDeepComponentsVariation
-        elif self.computedDeepComponents:
+        # elif self.computedDeepComponents:
+        else:
             elements = self.computedDeepComponents
 
         for i, e in enumerate(elements):

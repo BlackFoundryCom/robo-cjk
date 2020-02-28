@@ -54,6 +54,7 @@ class RoboCJKController(object):
         self.observers = False
         self.drawer = drawer.Drawer(self)
         self.transformationTool = transformationTool.TransformationTool(self)
+        self.componentWindow = None
         # installTool(self.transformationTool)
 
         self.locked = False
@@ -77,6 +78,7 @@ class RoboCJKController(object):
 
         self.sliderValue = None
         self.sliderName = None
+        self.dataBase = {}
         self.copy = []
         self.px, self.py = 0,0
 
@@ -185,6 +187,7 @@ class RoboCJKController(object):
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
+        self.closecomponentWindow()
 
     @lockedProtect
     def currentGlyphChanged(self, notification):
@@ -198,11 +201,32 @@ class RoboCJKController(object):
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
+            self.closecomponentWindow()
         else:
             installTool(self.transformationTool)
+            if self.dataBase:
+                if self.currentGlyph.type =='characterGlyph':
+                    if self.currentGlyph.name.startswith("uni"):
+                        if self.componentWindow is None:
+                            self.componentWindow = roboCJKView.ComponentWindow(self)
+                        char = chr(int(self.currentGlyph.name[3:], 16))
+                        if char in self.dataBase:
+                            self.componentWindow.w.componentList.set(self.dataBase[char])
+                        self.componentWindow.w.char.set(char)
+                        self.componentWindow.w.open()
+                    else:
+                        self.closecomponentWindow()
+                else:
+                    self.closecomponentWindow()
+
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()
+
+    def closecomponentWindow(self):
+        if self.componentWindow is not None:
+            self.componentWindow.w.close()
+            self.componentWindow = None
 
     @property 
     def currentViewSourceList(self):
@@ -265,6 +289,7 @@ class RoboCJKController(object):
             mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
             mjdt.drawGlyph(self.currentGlyph.preview)  
             mjdt.restore()
+
         elif self.isDeepComponent:
             mjdt.save()
             mjdt.translate(0, 100)
@@ -273,6 +298,7 @@ class RoboCJKController(object):
                     if atomicInstanceGlyph[0] is None: continue
                     drawGlyph(atomicInstanceGlyph[0])
             mjdt.restore()
+
         elif self.isCharacterGlyph:
             mjdt.save()
             mjdt.translate(0, 100)
@@ -291,7 +317,7 @@ class RoboCJKController(object):
 
     def observerDrawPreview(self, notification):
         if self.currentGlyph is None: return
-        self.drawer.draw(notification, color=(0, 0, 0, 1))
+        self.drawer.draw(notification, customColor=(0, 0, 0, 1))
 
     @refresh
     def mouseDown(self, point):
