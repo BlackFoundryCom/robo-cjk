@@ -23,6 +23,8 @@ gitCoverage = decorators.gitCoverage
 
 from mojo.roboFont import *
 
+EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
+
 class SmartTextBox(TextBox):
     def __init__(self, posSize, text="", alignment="natural", selectable=False, callback=None, sizeStyle=40.0,red=0,green=0,blue=0, alpha=1.0):
         super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, selectable=selectable, sizeStyle=sizeStyle)
@@ -32,6 +34,38 @@ class SmartTextBox(TextBox):
         self._nsObject.cell().setControlSize_(value)
         font = NSFont.systemFontOfSize_(value)
         self._nsObject.setFont_(font)
+
+class EditingSheet():
+
+    def __init__(self, controller, RCJKI):
+        self.RCJKI = RCJKI
+        self.c = controller
+        self.w = Sheet((240, 80), self.c.w)
+        self.char =  self.c.w.char.get()
+        self.w.char = SmartTextBox(
+            (0, 0, 80, -0),
+            self.char,
+            sizeStyle = 65,
+            alignment = "center"
+            )
+        self.w.editField = TextEditor(
+            (80, 0, -0, -20),
+            "".join(self.RCJKI.dataBase[self.char])
+            )
+        self.w.closeButton = Button(
+            (80, -20, -0, -0),
+            "Close",
+            sizeStyle = "small",
+            callback = self.closeCallback
+            )
+        self.w.open()
+
+    def closeCallback(self, sender):
+        components = list(self.w.editField.get())
+        self.RCJKI.dataBase[self.char] = components
+        self.c.w.componentList.set(components)
+        self.RCJKI.exportDataBase()
+        self.w.close()
 
 class ComponentWindow():
 
@@ -50,6 +84,12 @@ class ComponentWindow():
             sizeStyle = 65,
             alignment = "center"
             )
+        self.w.editButton = ImageButton(
+            (0, -15, 15, -0),
+            EditButtonImagePath,
+            bordered = False,
+            callback = self.editButtonCallback
+            )
         self.w.componentList = List(
             (80, 0, 40, -0), 
             [],
@@ -61,10 +101,13 @@ class ComponentWindow():
             selectionCallback = self.variantComponentListCallback,
             doubleClickCallback = self.variantComponentListdoubleClickCallback
             )
-        self.w.canvas = CanvasGroup(
+        self.w.canvas2 = CanvasGroup(
             (160, 0, -0, -0), 
             delegate = self
             )
+
+    def editButtonCallback(self, sender):
+        EditingSheet(self, self.RCJKI)
 
     def draw(self):
         if self.previewGlyph is None: return
@@ -107,7 +150,7 @@ class ComponentWindow():
                 glyph, 
                 preview=False,
                 )
-        self.w.canvas.update()
+        self.w.canvas2.update()
 
     def variantComponentListdoubleClickCallback(self, sender):
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)

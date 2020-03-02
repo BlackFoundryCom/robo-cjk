@@ -379,14 +379,10 @@ class FontInfosSheet():
         elif path.endswith("json"):
             with open(path, 'r', encoding = 'utf-8') as file:
                 self.RCJKI.dataBase = json.load(file)
-        self.exportDataBase()
+        self.RCJKI.exportDataBase()
 
     def exportDataBaseCallback(self, sender):
-        self.exportDataBase()
-
-    def exportDataBase(self):
-        with open(os.path.join(self.RCJKI.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
-            file.write(json.dumps(self.RCJKI.dataBase))
+        self.RCJKI.exportDataBase()
         
     def closeCallback(self, sender):
         self.s.close()

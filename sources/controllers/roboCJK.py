@@ -42,6 +42,7 @@ import mojo.drawingTools as mjdt
 from mojo.roboFont import *
 
 import math
+import json 
 
 from utils import decorators
 reload(decorators)
@@ -222,6 +223,10 @@ class RoboCJKController(object):
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()
+
+    def exportDataBase(self):
+        with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
+            file.write(json.dumps(self.dataBase))
 
     def closecomponentWindow(self):
         if self.componentWindow is not None:
