@@ -2,15 +2,15 @@ BUG:
 - Interpolation bug with scale
 - Protect the non-compatibility of an atomic element (remove print)
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
+- Comma on popover
+- remove multi deep component
 
 TO ADD:
 - Offset on deep component
-- Comma on popover
 - scale 1000/1000
-- remove multi deep component
 - icone transformation tool
 - Filter on sheets
-- powerruler
+- Powerruler
 - Shift on copy/Paste for different layer
 
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
