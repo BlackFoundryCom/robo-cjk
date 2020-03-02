@@ -30,6 +30,13 @@ def normalizeCode(s, dec):
 def unicodeName(char):
     return "uni" + normalizeUnicode(hex(ord(char))[2:].upper())
 
+def _getSubsettedListFromName(fullList: list, name: str) -> list:
+    subset = []
+    for e in fullList:
+        if name in e:
+            subset.append(e)
+    return subset
+
 ALPHABET = string.ascii_uppercase
 N = len(ALPHABET)
 ALPHABET_INDEX = {d: i for i, d in enumerate(ALPHABET, 1)}

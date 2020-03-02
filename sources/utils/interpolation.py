@@ -89,6 +89,7 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
             outputAE['coord'][axisName] = value - deltaDC[i]['coord'][axisName]
         outputDC.append(outputAE)
     return(outputDC)
+
         
 from fontTools.ufoLib.pointPen import PointToSegmentPen
 

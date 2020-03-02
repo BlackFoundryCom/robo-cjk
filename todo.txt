@@ -1,15 +1,16 @@
 BUG:
+- Interpolation bug with scale
 - Protect the non-compatibility of an atomic element (remove print)
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
 
 TO ADD:
+- Remove axis on atomic element
 - Variable Font generation with decomposition of Deep Components
 - Factorisation of deep components (lower quality of design, for smaller file size)
 - Enable modification of the DB (customisation, errors fixing etc.)
 
 - Display all Character Glyphs using a Deep Component at its creation (to make the extremes of DC directly in CG)
 - Creating Character triggers Deep Components Creation
-- Filter glyphs field
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
 
 NICE TO HAVE:
@@ -19,6 +20,7 @@ NICE TO HAVE:
 - Rectangle on scale tool
 
 DONE:
+- Filter glyphs field
 - Link HanGlyphComposition DataBase (public git repo) 
 - Disable 'save project' and 'new project' while no git repo is loaded
 - Color for clockwise contours

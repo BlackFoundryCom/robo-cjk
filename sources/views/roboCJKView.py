@@ -258,37 +258,37 @@ class RoboCJKView(BaseWindowController):
         # print(self.RCJKI.currentGlyph.lib.keys())
 
     def atomicElementSearchBoxCallback(self, sender):
-        name = sender.get()
-        go = self.currentFont.atomicElementSet
-        for i, e in enumerate(go):
-            if e.startswith(name):
-                self.w.deepComponent.setSelection([])
-                self.w.characterGlyph.setSelection([])
-                self.w.atomicElement.setSelection([i])
-                return
+        name = str(sender.get())
+        l = files._getSubsettedListFromName(self.currentFont.atomicElementSet, name)
+        if not l:
+            l = self.currentFont.atomicElementSet
+
+        self.w.deepComponent.setSelection([])
+        self.w.characterGlyph.setSelection([])
+        self.w.atomicElement.set(l)
 
     def deepComponentSearchBoxCallback(self, sender):
-        name = sender.get()
-        go = self.currentFont.deepComponentSet
-        for i, e in enumerate(go):
-            if e.startswith(name):
-                self.w.atomicElement.setSelection([])
-                self.w.characterGlyph.setSelection([])
-                self.w.deepComponent.setSelection([i])
-                return
+        name = str(sender.get())
+        l = files._getSubsettedListFromName(self.currentFont.deepComponentSet, name)
+        if not l:
+            l = self.currentFont.deepComponentSet
+
+        self.w.atomicElement.setSelection([])
+        self.w.characterGlyph.setSelection([])
+        self.w.deepComponent.set(l)
 
     def characterGlyphearchBoxCallback(self, sender):
-        name = sender.get()
-        go = self.currentFont.characterGlyphSet
-        for i, e in enumerate(go):
-            try:
-                name = files.unicodeName(name)
-            except:pass
-            if e.startswith(name):
-                self.w.atomicElement.setSelection([])
-                self.w.deepComponent.setSelection([])
-                self.w.characterGlyph.setSelection([i])
-                return
+        try:
+            name = files.unicodeName(sender.get())
+        except:
+            name = str(sender.get())
+        l = files._getSubsettedListFromName(self.currentFont.characterGlyphSet, name)
+        if not l:
+            l = self.currentFont.characterGlyphSet
+
+        self.w.atomicElement.setSelection([])
+        self.w.deepComponent.setSelection([])
+        self.w.characterGlyph.set(l)
 
     def windowCloses(self, sender):
         for w in AllWindows():
