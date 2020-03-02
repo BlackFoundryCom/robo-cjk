@@ -36,10 +36,9 @@ class DeepComponent(Glyph):
         self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])      
 
     @property
-    def atomicInstancesGlyphs(self):
+    def atomicInstancesGlyphs(self) -> "Index, AtomicInstanceGlyph":
         if self.computedAtomicSelectedSourceInstances:
             elements = self.computedAtomicSelectedSourceInstances
-        # elif self.computedAtomicInstances:
         else:
             elements = self.computedAtomicInstances
 

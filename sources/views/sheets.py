@@ -327,12 +327,12 @@ class FontInfosSheet():
             sizeStyle = 'small'
             )
 
-        self.s.exportDataBase = Button(
-            (10, 190, 200, 20),
-            'Export Data Base',
-            callback = self.exportDataBaseCallback,
-            sizeStyle = 'small'
-            )
+        # self.s.exportDataBase = Button(
+        #     (10, 190, 200, 20),
+        #     'Export Data Base',
+        #     callback = self.exportDataBaseCallback,
+        #     sizeStyle = 'small'
+        #     )
 
         self.s.closeButton = Button(
             (10, -30, -10, 20), 
@@ -365,7 +365,7 @@ class FontInfosSheet():
         l = self.s.fontVariationAxisList.get()
         l.pop(sel[0])
         self.s.fontVariationAxisList.set(l)
-        self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']=self.s.fontVariationAxisList.get()
+        self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'] = self.s.fontVariationAxisList.get()
 
     def loadDataBaseCallback(self, sender):
         path = getFile()[0]
@@ -381,8 +381,8 @@ class FontInfosSheet():
                 self.RCJKI.dataBase = json.load(file)
         self.RCJKI.exportDataBase()
 
-    def exportDataBaseCallback(self, sender):
-        self.RCJKI.exportDataBase()
+    # def exportDataBaseCallback(self, sender):
+    #     self.RCJKI.exportDataBase()
         
     def closeCallback(self, sender):
         self.s.close()

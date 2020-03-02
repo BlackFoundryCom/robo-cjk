@@ -33,11 +33,11 @@ class AtomicView(CanvasGroup):
         slider = SliderListCell(minValue = 0, maxValue = 1)
 
         self.AETextBox = TextBox(
-            (0, -120, -0, 20), 
+            (0, -140, -0, 20), 
             "Atomic Element's Axis"
             )
         self.atomicElementsList = List(
-            (0, -100, -0, -0), 
+            (0, -120, -0, -20), 
             [],
             columnDescriptions = [
                     {"title": "Axis", "editable": False, "width": 50},
@@ -49,10 +49,48 @@ class AtomicView(CanvasGroup):
             )
         setListAesthetic(self.atomicElementsList)
 
+        self.addLayerToAtomicElement = Button(
+            (0, -20, 100, 20),
+            "+",
+            sizeStyle = 'mini',
+            callback = self.addLayerToAtomicElementCallback
+            )
+        self.addLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
+
+        self.removeLayerToAtomicElement = Button(
+            (100, -20, -0, 20),
+            "-",
+            sizeStyle = 'mini',
+            callback = self.removeLayerToAtomicElementCallback
+            )
+        self.removeLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
+
+    @lockedProtect
+    def addLayerToAtomicElementCallback(self, sender):
+        availableLayers = [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
+        if [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.name != 'foreground']:
+            sheets.SelectLayerSheet(self.RCJKI, availableLayers)
+
+    @refresh
+    @lockedProtect
+    def removeLayerToAtomicElementCallback(self, sender):
+        sel = self.atomicElementsList.getSelection()
+        if not sel:
+            return
+        layers = self.atomicElementsList.get()
+        layerName = layers[sel[0]]["Axis"]
+        self.RCJKI.currentGlyph.removeGlyphVariation(layerName)
+        layers.pop(sel[0])
+        self.atomicElementsList.set(layers)
+        self.computeCurrentGlyph(self.atomicElementsList)
+
     @refresh
     @lockedProtect
     def atomicElementsListEditCallback(self, sender):
         if not sender.getSelection(): return
+        self.computeCurrentGlyph(sender)
+
+    def computeCurrentGlyph(self, sender):
         self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.currentGlyph.computeDeepComponentsPreview()
 

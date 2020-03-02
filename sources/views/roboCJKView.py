@@ -26,8 +26,11 @@ from mojo.roboFont import *
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
 
 class SmartTextBox(TextBox):
-    def __init__(self, posSize, text="", alignment="natural", selectable=False, callback=None, sizeStyle=40.0,red=0,green=0,blue=0, alpha=1.0):
-        super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, selectable=selectable, sizeStyle=sizeStyle)
+    def __init__(self, posSize, text="", alignment="natural", 
+        selectable=False, callback=None, sizeStyle=40.0,
+        red=0,green=0,blue=0, alpha=1.0):
+        super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, 
+            selectable=selectable, sizeStyle=sizeStyle)
         
     def _setSizeStyle(self, sizeStyle):
         value = sizeStyle
@@ -76,7 +79,7 @@ class ComponentWindow():
             (240, 80),
             "Composition Rules",
             closable = False,
-            textured = False,
+            textured = True,
             )
         self.w.char = SmartTextBox(
             (0, 0, 80, -0),
@@ -156,11 +159,6 @@ class ComponentWindow():
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
         self.RCJKI.updateDeepComponent()
 
-    # def open(self):
-    #     self.w.open()
-
-    # def close(self):
-        # self.w.close()
 
 class RoboCJKView(BaseWindowController):
     

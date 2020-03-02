@@ -430,10 +430,10 @@ class RoboCJKController(object):
 
     def glyphAdditionContextualMenuItems(self, notification):
         menuItems = []
-        if self.isAtomic:
-            item = ('Attach Layer to Atomic Element', self.addLayerToAtomicElement)
-            menuItems.append(item)
-        elif self.isDeepComponent:
+        # if self.isAtomic:
+        #     item = ('Attach Layer to Atomic Element', self.addLayerToAtomicElement)
+        #     menuItems.append(item)
+        if self.isDeepComponent:
             item = ('Add Atomic Element', self.addAtomicElement)
             menuItems.append(item)
             if self.currentGlyph.selectedElement:
@@ -461,10 +461,10 @@ class RoboCJKController(object):
         self.currentGlyph.removeDeepComponentAtIndexToGlyph()
         self.updateDeepComponent()
  
-    def addLayerToAtomicElement(self, sender):
-        availableLayers = [l for l in self.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
-        if [l for l in self.currentGlyph._RGlyph.layers if l.name != 'foreground']:
-            sheets.SelectLayerSheet(self, availableLayers)
+    # def addLayerToAtomicElement(self, sender):
+    #     availableLayers = [l for l in self.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
+    #     if [l for l in self.currentGlyph._RGlyph.layers if l.name != 'foreground']:
+    #         sheets.SelectLayerSheet(self, availableLayers)
 
     @lockedProtect
     @refresh

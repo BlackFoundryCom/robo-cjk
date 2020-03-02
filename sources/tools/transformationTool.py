@@ -2,7 +2,7 @@ from mojo.events import BaseEventTool, getActiveEventTool
 from mojo.UI import UpdateCurrentGlyphView
 import math
 
-def angle( cx, cy, ex, ey):
+def angle(cx: int, cy: int, ex: int, ey: int) -> int:
         dy = ey - cy
         dx = ex - cx
         theta = math.atan2(dx, dy)
