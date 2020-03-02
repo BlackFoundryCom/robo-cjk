@@ -67,6 +67,7 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
 
     for deepComponentAxisName, sourceDeepComponent in sourceDeepComponents.items():
         ratio = deepComponentAxisInfos.get(deepComponentAxisName, 0)
+        # print(sourceDeepComponent, '\n')
         for i, sourceAtomicElement in enumerate(sourceDeepComponent):
 
             for e in ['x', 'y', 'rotation']:

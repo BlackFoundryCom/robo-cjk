@@ -4,9 +4,7 @@ BUG:
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
 
 TO ADD:
-- offset on deep component
-- Variable Font generation with decomposition of Deep Components
-- Factorisation of deep components (lower quality of design, for smaller file size)
+- Offset on deep component
 - Comma on popover
 - scale 1000/1000
 - remove multi deep component
@@ -14,9 +12,14 @@ TO ADD:
 - Filter on sheets
 - powerruler
 - Shift on copy/Paste for different layer
+
+- Collaboration engine to set up with lock/unlock (GIT? SQL? …)
+- Variable Font generation with decomposition of Deep Components
+- Factorisation of deep components (lower quality of design, for smaller file size)
+
 - Display all Character Glyphs using a Deep Component at its creation (to make the extremes of DC directly in CG)
 - Creating Character triggers Deep Components Creation
-- Collaboration engine to set up with lock/unlock (GIT? SQL? …)
+
 
 NICE TO HAVE:
 - Use anchor to set tranformations origins of Atomic Element instance in Deep Component
