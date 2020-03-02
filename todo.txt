@@ -4,7 +4,6 @@ BUG:
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
 
 TO ADD:
-- Remove axis on atomic element
 - Variable Font generation with decomposition of Deep Components
 - Factorisation of deep components (lower quality of design, for smaller file size)
 
@@ -19,6 +18,7 @@ NICE TO HAVE:
 - Rectangle on scale tool
 
 DONE:
+- Remove axis on atomic element
 - Enable modification of the DB (customisation, errors fixing etc.)
 - Filter glyphs field
 - Link HanGlyphComposition DataBase (public git repo) 
