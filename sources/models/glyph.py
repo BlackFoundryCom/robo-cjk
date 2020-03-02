@@ -42,7 +42,7 @@ class Glyph(RGlyph):
             if character == '∂':
                 self.duplicateSelectedElements()
             else:
-                rotation = (-10*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - inputKey[0])*.5
+                rotation = (-7*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - 2*inputKey[0])*.5
                 self.setRotationAngleToSelectedElements(rotation)
         elif modifiers[3]:
             x = round((9*modifiers[0]*inputKey[0] + inputKey[0])*.01, 3)
