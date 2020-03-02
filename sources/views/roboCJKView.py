@@ -300,7 +300,7 @@ class RoboCJKView(BaseWindowController):
 
     def atomicElementSearchBoxCallback(self, sender):
         name = str(sender.get())
-        l = files._getSubsettedListFromName(self.currentFont.atomicElementSet, name)
+        l = files._getFilteredListFromName(self.currentFont.atomicElementSet, name)
         if not l:
             l = self.currentFont.atomicElementSet
 
@@ -310,7 +310,7 @@ class RoboCJKView(BaseWindowController):
 
     def deepComponentSearchBoxCallback(self, sender):
         name = str(sender.get())
-        l = files._getSubsettedListFromName(self.currentFont.deepComponentSet, name)
+        l = files._getFilteredListFromName(self.currentFont.deepComponentSet, name)
         if not l:
             l = self.currentFont.deepComponentSet
 
@@ -323,7 +323,7 @@ class RoboCJKView(BaseWindowController):
             name = files.unicodeName(sender.get())
         except:
             name = str(sender.get())
-        l = files._getSubsettedListFromName(self.currentFont.characterGlyphSet, name)
+        l = files._getFilteredListFromName(self.currentFont.characterGlyphSet, name)
         if not l:
             l = self.currentFont.characterGlyphSet
 

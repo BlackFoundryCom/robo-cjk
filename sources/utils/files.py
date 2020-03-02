@@ -30,7 +30,7 @@ def normalizeCode(s, dec):
 def unicodeName(char):
     return "uni" + normalizeUnicode(hex(ord(char))[2:].upper())
 
-def _getSubsettedListFromName(fullList: list, name: str) -> list:
+def _getFilteredListFromName(fullList: list, name: str) -> list:
     return [e for e in fullList if name in e]
 
 ALPHABET = string.ascii_uppercase
