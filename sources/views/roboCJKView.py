@@ -83,6 +83,9 @@ class ComponentWindow():
         char = sender.get()[sel[0]]
         self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())
         dcName = "DC_%s_00"%self.code
+        if dcName not in self.RCJKI.currentFont.deepComponentSet: 
+            self.w.variantComponentList.set([])
+            return
         index = self.RCJKI.currentFont.deepComponentSet.index(dcName)
         l = ["00"]
         i = 1
@@ -114,7 +117,7 @@ class ComponentWindow():
     #     self.w.open()
 
     # def close(self):
-        self.w.close()
+        # self.w.close()
 
 class RoboCJKView(BaseWindowController):
     
@@ -136,17 +139,21 @@ class RoboCJKView(BaseWindowController):
             "Save project", 
             callback = self.saveProjectButtonCallback,
             )
+        self.w.saveProjectButton.enable(False)
+
         self.w.newProjectButton = Button(
             (410, 10, 200, 20), 
             "New project", 
             callback = self.newProjectButtonCallback,
             )
+        self.w.newProjectButton.enable(False)
 
         self.w.fontInfos = Button(
             (210, 40, 200, 20), 
             "Fonts Infos", 
             callback = self.fontInfosCallback,
             )
+        self.w.fontInfos.enable(False)
 
         self.w.debug = Button(
             (410, 40, 200, 20), 
@@ -163,8 +170,9 @@ class RoboCJKView(BaseWindowController):
         self.w.generateFontButton = Button(
             (10, 70, 200, 20),
             "generateFont",
-            callback = self.generateFontButtonCallback
+            callback = self.generateFontButtonCallback,
             )
+        self.w.generateFontButton.enable(False)
 
         self.w.atomicElementSearchBox = SearchBox(
             (10, 130, 200, 20),
@@ -430,12 +438,17 @@ class RoboCJKView(BaseWindowController):
         fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
         self.RCJKI.currentFont = font.Font(fontPath)
         self.RCJKI.dataBase = {}
-        
+
         if 'database.json' in os.listdir(fontPath):
             with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
                 self.RCJKI.dataBase = json.load(file)
 
         self.RCJKI.toggleWindowController()
+
+        self.w.saveProjectButton.enable(True)
+        self.w.newProjectButton.enable(True)
+        self.w.fontInfos.enable(True)
+        self.w.generateFontButton.enable(True)
 
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
         self.w.deepComponent.set(self.currentFont.deepComponentSet)
@@ -460,6 +473,7 @@ class RoboCJKView(BaseWindowController):
         newGlyphName = sender.get()[sel[0]]
         self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName)
         self.prevGlyphName = newGlyphName
+        self.setGlyphNameToCansvas(sender, self.prevGlyphName)
 
     def GlyphsListSelectionCallback(self, sender):
         if not sender.getSelection(): return
@@ -467,14 +481,17 @@ class RoboCJKView(BaseWindowController):
             if lists != sender:
                 lists.setSelection([])
         self.prevGlyphName = sender.get()[sender.getSelection()[0]]
+        self.setGlyphNameToCansvas(sender, self.prevGlyphName)
+
+    def setGlyphNameToCansvas(self, sender, glyphName):
         if sender == self.w.atomicElement:
-            self.w.atomicElementPreview.glyphName = self.prevGlyphName
+            self.w.atomicElementPreview.glyphName = glyphName
             self.w.atomicElementPreview.update()
         elif sender == self.w.deepComponent:
-            self.w.deepComponentPreview.glyphName = self.prevGlyphName
+            self.w.deepComponentPreview.glyphName = glyphName
             self.w.deepComponentPreview.update()
         elif sender == self.w.characterGlyph:
-            self.w.characterGlyphPreview.glyphName = self.prevGlyphName
+            self.w.characterGlyphPreview.glyphName = glyphName
             self.w.characterGlyphPreview.update()
 
     @property

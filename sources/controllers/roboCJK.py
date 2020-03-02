@@ -471,7 +471,7 @@ class RoboCJKController(object):
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations]
+                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.keys()]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:

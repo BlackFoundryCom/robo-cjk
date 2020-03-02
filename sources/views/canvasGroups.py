@@ -191,10 +191,13 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.selectedElement = []
             self.RCJKI.currentGlyph.selectedSourceAxis = None
             self.sourcesList.setSelection([0])
+            glyphVaritaions = self.RCJKI.currentGlyph._glyphVariations.keys()
+            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVaritaions]
+            self.RCJKI.currentGlyph.sourcesList = l
+            self.sourcesList.set(l)
             self.slidersList.set([])
             self.RCJKI.sliderValue = None
             self.RCJKI.sliderName = None
-            self.RCJKI.updateListInterface()
             self.RCJKI.updateDeepComponent()
 
     @lockedProtect

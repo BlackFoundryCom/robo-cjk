@@ -5,7 +5,7 @@ BUG:
 TO ADD:
 - Variable Font generation with decomposition of Deep Components
 - Factorisation of deep components (lower quality of design, for smaller file size)
-- Link HanGlyphComposition DataBase (public git repo) and enable modification of the DB (customisation, errors fixing etc.)
+- Enable modification of the DB (customisation, errors fixing etc.)
 
 - Display all Character Glyphs using a Deep Component at its creation (to make the extremes of DC directly in CG)
 - Creating Character triggers Deep Components Creation
@@ -14,12 +14,13 @@ TO ADD:
 
 NICE TO HAVE:
 - Use anchor to set tranformations origins of Atomic Element instance in Deep Component
-- Disable 'save project' and 'new project' while no git repo is loaded
 - Undo not working
 - Glyphs-lists better control of Add and Delete (choose name, focus to item)
 - Rectangle on scale tool
 
 DONE:
+- Link HanGlyphComposition DataBase (public git repo) 
+- Disable 'save project' and 'new project' while no git repo is loaded
 - Color for clockwise contours
 - Transformation tool
 - Fontlib + fontInfos in storage file 
