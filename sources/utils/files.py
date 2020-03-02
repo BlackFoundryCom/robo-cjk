@@ -31,11 +31,7 @@ def unicodeName(char):
     return "uni" + normalizeUnicode(hex(ord(char))[2:].upper())
 
 def _getSubsettedListFromName(fullList: list, name: str) -> list:
-    subset = []
-    for e in fullList:
-        if name in e:
-            subset.append(e)
-    return subset
+    return [e for e in fullList if name in e]
 
 ALPHABET = string.ascii_uppercase
 N = len(ALPHABET)
