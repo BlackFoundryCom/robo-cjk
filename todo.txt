@@ -1,14 +1,9 @@
-- Interpolation bug with scale
-- Powerruler
-
 BUG:
-- Interpolation bug with scale
+- Bug rename axis on deep component
 - Protect the non-compatibility of an atomic element (remove print)
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
 
 TO ADD:
-- Powerruler
-
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
 - Variable Font generation with decomposition of Deep Components
 - Factorisation of deep components (lower quality of design, for smaller file size)
@@ -18,12 +13,14 @@ TO ADD:
 
 
 NICE TO HAVE:
+- Powerruler
 - Use anchor to set tranformations origins of Atomic Element instance in Deep Component
 - Undo not working
 - Glyphs-lists better control of Add and Delete (choose name, focus to item)
 - Rectangle on scale tool
 
 DONE:
+- Interpolation bug with scale
 - Shift on copy/Paste for different layer
 - Filter on sheets
 - size of buttons + - in canvasGroups
