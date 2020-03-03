@@ -454,7 +454,7 @@ class RoboCJKController(object):
         sheets.SelectDeepComponentSheet(self, self.currentFont.deepComponentSet)
 
     def removeAtomicElement(self, sender):
-        self.currentGlyph.removeAtomicElement()
+        self.currentGlyph.removeAtomicElementAtIndex()
         self.updateDeepComponent()
 
     def removeDeepComponent(self, sender):

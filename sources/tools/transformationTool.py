@@ -1,6 +1,10 @@
 from mojo.events import BaseEventTool, getActiveEventTool
 from mojo.UI import UpdateCurrentGlyphView
+from AppKit import NSImage
 import math
+import os
+
+toolbarIcon = NSImage.alloc().initByReferencingFile_(os.path.join(os.getcwd(), "resources/TransformationTool.pdf"))
 
 def angle(cx: int, cy: int, ex: int, ey: int) -> int:
         dy = ey - cy
@@ -14,6 +18,9 @@ class TransformationTool(BaseEventTool):
     def __init__(self, RCJKI):
         super().__init__()
         self.RCJKI = RCJKI
+
+    def getToolbarIcon(self):
+        return toolbarIcon
 
     def mouseDown(self, point, clickcount):
         self.px, self.py = self.deltax, self.deltay = point
@@ -36,7 +43,7 @@ class TransformationTool(BaseEventTool):
         elif command:
             deltax = int(point.x - self.deltax)
             deltay = int(point.y - self.deltay)
-            sensibility = 100
+            sensibility = 500
             deltax /= sensibility
             deltay /= sensibility
             if shift:

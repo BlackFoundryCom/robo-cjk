@@ -50,7 +50,7 @@ class AtomicView(CanvasGroup):
         setListAesthetic(self.atomicElementsList)
 
         self.addLayerToAtomicElement = Button(
-            (0, -20, 100, 20),
+            (0, -20, 150, 20),
             "+",
             sizeStyle = 'mini',
             callback = self.addLayerToAtomicElementCallback
@@ -58,7 +58,7 @@ class AtomicView(CanvasGroup):
         self.addLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
 
         self.removeLayerToAtomicElement = Button(
-            (100, -20, -0, 20),
+            (150, -20, -0, 20),
             "-",
             sizeStyle = 'mini',
             callback = self.removeLayerToAtomicElementCallback
@@ -120,7 +120,7 @@ class DCCG_View(CanvasGroup):
         setListAesthetic(self.sourcesList)
 
         self.addVarAxis = Button(
-            (0, -140, 100, 20),
+            (0, -140, 150, 20),
             "+",
             sizeStyle = 'mini',
             callback = self.addVarAxisCallback
@@ -128,7 +128,7 @@ class DCCG_View(CanvasGroup):
         self.addVarAxis.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
 
         self.removeVarAxis = Button(
-            (100, -140, -0, 20),
+            (150, -140, -0, 20),
             "-",
             sizeStyle = 'mini',
             callback = self.removeVarAxisCallback

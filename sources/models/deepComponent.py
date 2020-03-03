@@ -155,12 +155,12 @@ class DeepComponent(Glyph):
                     if name in d['coord']:
                         del d['coord'][name]
 
-    def removeAtomicElement(self):
-        if not self.selectedElement: return
-        for index in self.selectedElement:
-            self._atomicElements.pop(index)
-            for k, v in self._glyphVariations.items():
-                v.pop(index)
+    # def removeAtomicElement(self):
+    #     if not self.selectedElement: return
+    #     for index in self.selectedElement:
+    #         self._atomicElements.pop(index)
+    #         for k, v in self._glyphVariations.items():
+    #             v.pop(index)
 
     def addVariationAxisToAtomicElementNamed(self, axisName, atomicElementName):
         for d in self._atomicElements:

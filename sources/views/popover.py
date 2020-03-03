@@ -1,9 +1,10 @@
 from mojo.events import getActiveEventTool
 from vanilla import *
-from AppKit import NSColor, NSNoBorder
+from AppKit import NSColor, NSNoBorder, NumberFormatter
 import copy
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
+numberFormatter = NumberFormatter()
 
 def makeEmptyPopover(size, pos, view):
     p = Popover(size)
@@ -68,7 +69,7 @@ def resetDict(func):
 class EditPopoverAlignTool(EditPopover):
 
     def __init__(self, RCJKI, point, glyph):
-        super(EditPopoverAlignTool, self).__init__((170,150), point)
+        super(EditPopoverAlignTool, self).__init__((170,190), point)
         self.RCJKI = RCJKI
         self.glyph = glyph
 
@@ -104,8 +105,9 @@ class EditPopoverAlignTool(EditPopover):
             )
         self.popover.scalexEditText = EditText(
             (90, y, 30, 20), 
-            self.infos["scalex"], 
+            self.infos["scalex"]*1000, 
             sizeStyle = "mini",
+            formatter = numberFormatter, 
             callback = self.scalexCallback
             )
         editTextAesthetic(self.popover.scalexEditText)
@@ -144,8 +146,9 @@ class EditPopoverAlignTool(EditPopover):
             )
         self.popover.scaleyEditText = EditText(
             (90, y, 30, 20), 
-            self.infos["scaley"], 
+            self.infos["scaley"]*1000, 
             sizeStyle = "mini",
+            formatter = numberFormatter, 
             callback = self.scaleyCallback
             )
 
@@ -205,15 +208,25 @@ class EditPopoverAlignTool(EditPopover):
             return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
 
     def copyCallback(self, sender):
-        self.RCJKI.copy = copy.deepcopy(self.infos)
+        self.RCJKI.copy = [self.sourceAxis, copy.deepcopy(self.infos)]
+
+    @property
+    def sourceAxis(self):
+        if self.glyph.selectedSourceAxis is not None:
+            return self.glyph.selectedSourceAxis
+        return "Foreground"
 
     @tryfunc
     @resetDict
     def pasteCallback(self, sender):
-        c = copy.deepcopy(self.RCJKI.copy)
+        source, c = copy.deepcopy(self.RCJKI.copy)
         self.infos["scalex"] = c["scalex"]
         self.infos["scaley"] = c["scaley"]
         self.infos["rotation"] = c["rotation"]
+        if source != self.sourceAxis:
+            self.infos["x"] = c["x"]
+            self.infos["y"] = c["y"]
+            self.infos["coord"] = c["coord"]
         if self.infos.get("name") == c.get("name"):
             self.infos["coord"] = c["coord"]
 
@@ -230,12 +243,12 @@ class EditPopoverAlignTool(EditPopover):
     @tryfunc
     @resetDict
     def scalexCallback(self, sender):
-        self.infos["scalex"] = float(sender.get())
+        self.infos["scalex"] = int(sender.get()) / 1000
 
     @tryfunc
     @resetDict
     def scaleyCallback(self, sender):
-        self.infos["scaley"] = float(sender.get())
+        self.infos["scaley"] = int(sender.get()) / 1000
 
     @tryfunc
     @resetDict

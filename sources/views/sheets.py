@@ -127,10 +127,10 @@ class SelectAtomicElementSheet():
 
     def searchBoxCallback(self, sender):
         name = sender.get()
-        for i, e in enumerate(self.atomicElementsNames):
-            if e.startswith(name):
-                self.parent.sheet.atomicElementList.setSelection([i])
-                return
+        l = files._getFilteredListFromName(self.atomicElementsNames, name)
+        if not l:
+            l = self.atomicElementsNamest
+        self.parent.sheet.atomicElementList.set(l)
     
     def closeSheet(self, sender):
         self.parent.sheet.close()
@@ -238,10 +238,10 @@ class SelectDeepComponentSheet():
 
     def searchBoxCallback(self, sender):
         name = sender.get()
-        for i, e in enumerate(self.deepComponentsNames):
-            if e.startswith(name):
-                self.parent.sheet.deepComponentList.setSelection([i])
-                return
+        l = files._getFilteredListFromName(self.deepComponentsNames, name)
+        if not l:
+            l = self.deepComponentsNames
+        self.parent.sheet.deepComponentList.set(l)
 
     def deepComponentListSelectionCallback(self, sender):
         sel = sender.getSelection()

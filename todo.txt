@@ -1,17 +1,13 @@
+- Interpolation bug with scale
+- Powerruler
+
 BUG:
 - Interpolation bug with scale
 - Protect the non-compatibility of an atomic element (remove print)
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
-- Comma on popover
-- remove multi deep component
 
 TO ADD:
-- Offset on deep component
-- scale 1000/1000
-- icone transformation tool
-- Filter on sheets
 - Powerruler
-- Shift on copy/Paste for different layer
 
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
 - Variable Font generation with decomposition of Deep Components
@@ -28,6 +24,14 @@ NICE TO HAVE:
 - Rectangle on scale tool
 
 DONE:
+- Shift on copy/Paste for different layer
+- Filter on sheets
+- size of buttons + - in canvasGroups
+- Sensibility of scale in transformation tool
+- scale 1000/1000
+- List coord higher in popover
+- icone transformation tool
+- remove multi deep component
 - Remove axis on atomic element
 - Enable modification of the DB (customisation, errors fixing etc.)
 - Filter glyphs field
