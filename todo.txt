@@ -1,5 +1,4 @@
 BUG:
-- Bug rename axis on deep component
 - Protect the non-compatibility of an atomic element (remove print)
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
 
@@ -20,6 +19,7 @@ NICE TO HAVE:
 - Rectangle on scale tool
 
 DONE:
+- Bug rename axis on deep component
 - Interpolation bug with scale
 - Shift on copy/Paste for different layer
 - Filter on sheets
