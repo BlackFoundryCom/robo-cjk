@@ -1,7 +1,7 @@
 BUG:
 - Protect the non-compatibility of an atomic element (remove print)
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
-- Bug refresh preview after renamed deep component axis
+
 
 TO ADD:
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
@@ -22,6 +22,7 @@ NICE TO HAVE:
 - memo values
 
 DONE:
+- Bug refresh preview after renamed deep component axis
 - Bug rename axis on deep component
 - Interpolation bug with scale
 - Shift on copy/Paste for different layer

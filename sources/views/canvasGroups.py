@@ -193,6 +193,7 @@ class DCCG_View(CanvasGroup):
             name =  sender.get()[edited[1]]['Axis']
             if name != self.selectedSourceAxis:
                 self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
+                self.RCJKI.currentGlyph.selectedSourceAxis = name
         self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.updateDeepComponent()
 
