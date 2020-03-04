@@ -132,6 +132,7 @@ class DeepComponent(Glyph):
         self._glyphVariations[newName] = v
 
         def _rename(d, oldName, newName):
+            if oldName not in d['coord']: return
             v = copy.deepcopy(d['coord'][oldName])
             del d['coord'][oldName]
             d['coord'][newName] = v
