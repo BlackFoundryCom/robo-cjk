@@ -142,14 +142,8 @@ class DeepComponent(Glyph):
             for i, d in enumerate(g2._deepComponents):
                 if d["name"] != self.name: continue
                 _rename(d, oldName, newName)
-                # v = copy.deepcopy(d['coord'][oldName])
-                # del d['coord'][oldName]
-                # d['coord'][newName] = v
                 for e in g2._glyphVariations.values():
                     _rename(e[i], oldName, newName)
-                    # v = copy.deepcopy(e[i]['coord'][oldName])
-                    # del e[i]['coord'][oldName]
-                    # e[i]['coord'][newName] = v
         # self.selectedSourceAxis = newName
 
     def removeVariationAxis(self, name):
@@ -157,15 +151,17 @@ class DeepComponent(Glyph):
 
         for glyphname in self.currentFont.characterGlyphSet:
             g2 = self.currentFont[glyphname]
-            for d in g2._deepComponents:
-                if d["name"] != self.name: continue
+
+            def _remove(d, name):
                 if name in d['coord']:
                     del d['coord'][name]
-            for v, l in g2._glyphVariations.items():
-                for d in l:
-                    if d["name"] != self.name: continue
-                    if name in d['coord']:
-                        del d['coord'][name]
+
+            for i, d in enumerate(g2._deepComponents):
+                if d["name"] != self.name: continue
+                _remove(d, name)
+                for e in g2._glyphVariations.values():
+                    _remove(e[i], name)
+
 
     # def removeAtomicElement(self):
     #     if not self.selectedElement: return
