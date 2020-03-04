@@ -108,11 +108,11 @@ class DeepComponent(Glyph):
     def removeAtomicElementAtIndex(self):
         if not self.selectedElement: return
         for index in self.selectedElement:
-            self._atomicElements.pop(index)
             for k, v in self._glyphVariations.items():
                 v.pop(index)
-            self.selectedElement = []
-
+        self._atomicElements = [e for i, e in enumerate(self._atomicElements) if i not in self.selectedElement]
+        self.selectedElement = []
+        
     def addVariationToGlyph(self, name):
         dcgv = copy.deepcopy(self._atomicElements)
         for e in dcgv:

@@ -1,6 +1,7 @@
 BUG:
 - Protect the non-compatibility of an atomic element (remove print)
 - Remove abilty to duplicate of Atomic Element in Deep Component sources (remove print)
+- Bug refresh preview after renamed deep component axis
 
 TO ADD:
 - Collaboration engine to set up with lock/unlock (GIT? SQL? …)
@@ -17,6 +18,8 @@ NICE TO HAVE:
 - Undo not working
 - Glyphs-lists better control of Add and Delete (choose name, focus to item)
 - Rectangle on scale tool
+- Remove focus ring on editbutton on composition rule window
+- memo values
 
 DONE:
 - Bug rename axis on deep component
