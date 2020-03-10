@@ -181,12 +181,13 @@ Character Glyphs themselves also have Axis descriptors containing specific delta
 </gvar>
 ```
 
-Finaly, the font's FVAR table hosts the actual font variations axis (registered or custom) as described by OT 1.8 specifications
+Finaly, the font's FVAR table hosts the actual font variations axis (registered or custom) as described by OT 1.8 specifications. It can be noted that here the default value is relevant as with traditional Variable Fonts.
 ```
 <fvar>
     <Axis>
         <AxisTag>wght</AxisTag>
         <MinValue>0.0</MinValue>
+        <DefaultValue>0.0</DefaultValue>
         <MaxValue>1.0</MaxValue>
     </Axis>
 </fvar>
