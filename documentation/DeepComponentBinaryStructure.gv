@@ -1,0 +1,39 @@
+graph "Deep Component Binary Structure" {
+	rankdir=BL
+	node [shape=cds]
+	GLYF [label=GLYF color=cyan shape=circle style=filled]
+	GVAR [label=GVAR color=pink shape=circle style=filled]
+	FVAR [label=FVAR color=yellow shape=circle style=filled]
+	ae [label="Atomic Element" color=black fillcolor=cyan shape=cylinder style=filled]
+	dc [label="Deep Component" color=black fillcolor=cyan shape=cylinder style=filled]
+	cg [label="Character Glyph" color=black fillcolor=cyan shape=cylinder style=filled]
+	ae -- GLYF
+	dc -- GLYF
+	cg -- GLYF
+	aelg [label="n <contour>" color=cyan style=filled]
+	dcog [label="n <atomicElement>" color=cyan style=filled]
+	cglg [label="n <deepComponent>" color=cyan style=filled]
+	ae -- aelg
+	dc -- dcog
+	cg -- cglg
+	aelv [label=" <delta>" color=pink style=filled]
+	dcov [label=" <deltaAtomicElement>" color=pink style=filled]
+	cglv [label=" <deltaDeepComponent>" color=pink style=filled]
+	aelv -- aelg
+	dcov -- dcog
+	cglv -- cglg
+	aelv -- GVAR
+	dcov -- GVAR
+	cglv -- GVAR
+	faev [label=" <AxisAtomicElement>" color=yellow style=filled]
+	fdcv [label=" <AxisDeepComponent>" color=yellow style=filled]
+	fcgv [label=" <Axis>" color=yellow style=filled]
+	aelv -- faev
+	dcov -- fdcv
+	cglv -- fcgv
+	FVAR -- faev
+	FVAR -- fdcv
+	FVAR -- fcgv
+	cglg -- fdcv
+	dcog -- faev
+}
