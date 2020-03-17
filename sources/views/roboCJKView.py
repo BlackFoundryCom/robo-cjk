@@ -88,6 +88,100 @@ class EditingSheet():
         self.RCJKI.exportDataBase()
         self.w.close()
 
+class CharacterWindow:
+
+    filterRules = [
+        "All",
+        "Exist",
+        "Do not Exist",
+        "Can be designed with current deep components",
+        "Can't be designed with current deep components"
+        ]
+
+    def __init__(self, RCJKI):
+        self.RCJKI = RCJKI
+        self.w = FloatingWindow(
+            (240, 100),
+            minSize = (240, 120),
+            maxSize = (240, 800),
+            closable = False,
+            textured = True,
+            )
+        self.filter = 0
+        self.w.filter = PopUpButton(
+            (0, 0, -0, 20),
+            self.filterRules,
+            callback = self.filterCallback,
+            sizeStyle = "mini"
+            )
+        self.w.component = SmartTextBox(
+            (0, 16, 80, -0),
+            "",
+            sizeStyle = 65,
+            alignment = "center"
+            )
+        self.w.charactersList = List(
+            (80, 16, 40, -0), 
+            [],
+            selectionCallback = self.charactersListCallback,
+            drawFocusRing = False
+            )
+
+    def filterCallback(self, sender):
+        self.filter = sender.get()
+        self.filterCharacters()
+
+    def filterCharacters(self):
+        l = []
+
+        if self.filter == 0:
+            l = list(self.relatedChars)
+            title = "Related Characters"
+
+        elif self.filter in [1, 2]:
+            names = [files.unicodeName(c) for c in self.relatedChars]
+            if self.filter == 1:
+                result = set(names) & set(self.RCJKI.currentFont.characterGlyphSet)
+            else:
+                result = set(names) - set(self.RCJKI.currentFont.characterGlyphSet)
+            title = self.filterRules[self.filter]
+            l = [chr(int(n[3:], 16)) for n in result]
+
+        elif self.filter in [3, 4]:
+            DCSet = set(self.RCJKI.currentFont.deepComponentSet)
+            for c in self.relatedChars:
+                compo = ["DC_%s_00"%hex(ord(v))[2:].upper() for v in self.RCJKI.dataBase[c]]
+                inside = len(set(compo) - DCSet) == 0
+                if self.filter == 3 and inside:
+                    l.append(c)
+                elif self.filter == 4 and not inside:
+                    l.append(c)
+            title = " ".join(self.filterRules[self.filter].split(' ')[:3])
+
+        self.w.charactersList.set(l)
+        self.w.setTitle("%s %s"%(len(l), title))
+
+    def setUI(self):
+        self.relatedChars = set()
+        try:
+            _, code, _ = self.RCJKI.currentGlyph.name.split("_") 
+            char = chr(int(code, 16))
+            for k, v in self.RCJKI.dataBase.items():
+                if char in v:
+                    self.relatedChars.add(k)
+        except: pass
+        self.filterCharacters()
+        self.w.component.set(char)
+
+    def open(self):
+        self.w.open()
+
+    def close(self):
+        self.w.close()
+
+    def charactersListCallback(self, sender):
+        pass
+
 class ComponentWindow():
 
     def __init__(self, RCJKI):
@@ -126,6 +220,18 @@ class ComponentWindow():
             (160, 0, -0, -0), 
             delegate = self
             )
+
+    def open(self):
+        self.w.open()
+
+    def close(self):
+        self.w.close()
+
+    def setUI(self):
+        char = chr(int(self.RCJKI.currentGlyph.name[3:], 16))
+        if char in self.RCJKI.dataBase:
+            self.w.componentList.set(self.RCJKI.dataBase[char])
+        self.w.char.set(char)
 
     def editButtonCallback(self, sender):
         EditingSheet(self, self.RCJKI)

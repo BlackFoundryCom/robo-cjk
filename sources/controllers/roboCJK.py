@@ -74,6 +74,7 @@ class RoboCJKController(object):
         self.drawer = drawer.Drawer(self)
         self.transformationTool = transformationTool.TransformationTool(self)
         self.componentWindow = None
+        self.characterWindow = None
         # installTool(self.transformationTool)
 
         self.locked = False
@@ -206,7 +207,8 @@ class RoboCJKController(object):
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
-        self.closecomponentWindow()
+        self.closeComponentWindow()
+        self.closeCharacterWindow()
 
     @lockedProtect
     def currentGlyphChanged(self, notification):
@@ -220,23 +222,28 @@ class RoboCJKController(object):
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
-            self.closecomponentWindow()
+            self.closeComponentWindow()
         else:
             installTool(self.transformationTool)
             if self.dataBase:
                 if self.currentGlyph.type =='characterGlyph':
+                    self.closeCharacterWindow()
                     if self.currentGlyph.name.startswith("uni"):
                         if self.componentWindow is None:
                             self.componentWindow = roboCJKView.ComponentWindow(self)
-                        char = chr(int(self.currentGlyph.name[3:], 16))
-                        if char in self.dataBase:
-                            self.componentWindow.w.componentList.set(self.dataBase[char])
-                        self.componentWindow.w.char.set(char)
-                        self.componentWindow.w.open()
+                        self.componentWindow.setUI()
+                        self.componentWindow.open()
                     else:
-                        self.closecomponentWindow()
-                else:
-                    self.closecomponentWindow()
+                        self.closeComponentWindow()
+                elif self.currentGlyph.type == 'deepComponent':
+                    self.closeComponentWindow()
+                    if self.currentGlyph.name.startswith("DC_"):
+                        if self.characterWindow is None:
+                            self.characterWindow = roboCJKView.CharacterWindow(self)
+                        self.characterWindow.setUI()
+                        self.characterWindow.open()
+                    else:
+                        self.closeCharacterWindow()
 
         self.showCanvasGroups()
         self.addSubView()
@@ -246,9 +253,14 @@ class RoboCJKController(object):
         with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
             file.write(json.dumps(self.dataBase))
 
-    def closecomponentWindow(self):
+    def closeCharacterWindow(self):
+        if self.characterWindow is not None:
+            self.characterWindow.close()
+            self.characterWindow = None
+
+    def closeComponentWindow(self):
         if self.componentWindow is not None:
-            self.componentWindow.w.close()
+            self.componentWindow.close()
             self.componentWindow = None
 
     @property 
