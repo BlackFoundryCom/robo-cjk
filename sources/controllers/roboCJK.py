@@ -337,11 +337,12 @@ class RoboCJKController(object):
         elif self.isCharacterGlyph:
             mjdt.save()
             mjdt.translate(0, 100)
-            for i, e in enumerate(self.currentGlyph.preview):
-                for dcCoord, l in e.values():
-                    for dcAtomicElements in l:
-                        for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
-                            drawGlyph(atomicInstanceGlyph)
+            if self.currentGlyph.preview is not None:
+                for i, e in enumerate(self.currentGlyph.preview):
+                    for dcCoord, l in e.values():
+                        for dcAtomicElements in l:
+                            for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
+                                drawGlyph(atomicInstanceGlyph)
             mjdt.restore()
         mjdt.restore()
 

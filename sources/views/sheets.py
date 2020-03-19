@@ -22,8 +22,10 @@ from mojo.canvas import Canvas
 import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
 from utils import files
-from AppKit import NumberFormatter
+from AppKit import NumberFormatter, NSColor
 import json, os
+
+transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 
 class SelectLayerSheet():
     def __init__(self, RCJKI, availableLayers):
@@ -404,4 +406,176 @@ class FontInfosSheet():
         
     def closeCallback(self, sender):
         self.s.close()
+
+class NewCharacterGlyph:
+
+    def __init__(self, RCJKI, parentWindow):
+        self.RCJKI = RCJKI
+        self.window = parentWindow
+        self.w = Sheet((400, 300), self.window)
+        self.w.segmentedButton = SegmentedButton(
+            (10, 10, -10, 20),
+            [dict(title = "Custom"), dict(title = "Related to deep components")],
+            callback = self.segmentedButtonCallback
+            )
+        self.w.segmentedButton.set(0)
+
+        self.w.custom = Group((0, 25, -0, -0))
+        self.w.custom.show(True)
+        self.w.related = Group((0, 25, -0, -0))
+        self.w.related.show(False)
+        self.groups = [self.w.custom, self.w.related]
+
+        self.DCSet = set(self.RCJKI.currentFont.deepComponentSet)
+
+        self.w.custom.remind = TextBox(
+            (10, 10, -10, 20),
+            "Glyphs names (separate with space) or characters",
+            sizeStyle = 'small'
+            )
+        self.w.custom.characterField = TextEditor(
+            (10, 30, -10, -30),
+            ""
+            )
+        self.w.custom.relatedDeepComponents = CheckBox(
+            (10, -25, -10, -10),
+            "Create related deep components",
+            value = True,
+            sizeStyle = "small"
+            )
+        self.w.custom.addButton = Button(
+            (-195, -30, -30, -10),
+            "Add",
+            callback = self.addButtonCallback,
+            )
+
+        self.w.related.deepComponentsTitle = TextBox(
+            (10, 10, -10, 20),
+            "Deep Components",
+            sizeStyle = 'small'
+            )
+        checkBoxList = CheckBoxListCell()
+        self.deepComponentList = []
+        for n in self.RCJKI.currentFont.deepComponentSet:
+            if not n.startswith("DC"): continue
+            cell = dict(sel = 0, char = chr(int(n.split('_')[1], 16)))
+            if cell not in self.deepComponentList:
+                self.deepComponentList.append(cell)
+
+        self.w.related.deepComponentsList = List(
+            (10, 30, 100, -40),
+            self.deepComponentList,
+            columnDescriptions = [
+                {"title":"sel", "cell":checkBoxList, "width":20}, 
+                {"title":"char"}
+                ],
+            drawFocusRing = False,
+            showColumnTitles = False,
+            editCallback = self.deepComponentsListEditCallback
+            )
+        self.w.related.characterField = TextEditor(
+            (110, 30, -10, -60),
+            "",
+            readOnly = True
+            )
+        self.w.related.addfromField = Button(
+            (110, -60, -10, -40),
+            "Add",
+            callback = self.addfromFieldCallback
+            )
+        self.w.related.addAllPossibleButton = Button(
+            (10, -30, -30, -10),
+            "Add all possible characters",
+            callback = self.addAllPossibleCallback
+            )
+        self.w.closeButton = SquareButton(
+            (-30, -30, -10, -10),
+            "x",
+            callback = self.closeCallback,
+            sizeStyle = "small"
+            )
+        self.w.closeButton.getNSButton().setFocusRingType_(1)
+        self.w.closeButton.getNSButton().setBackgroundColor_(transparentColor)
+        self.w.closeButton.getNSButton().setBordered_(False)
+
+        self.w.open()
+
+    def addGlyph(self, name, addRelatedDC=False):
+        try:
+            self.RCJKI.currentFont[name]
+            return
+        except:
+            self.RCJKI.currentFont.newGlyph("characterGlyph", name)
+            if addRelatedDC and self.RCJKI.dataBase:
+                dcChars = self.RCJKI.dataBase[chr(int(name[3:], 16))]
+                DC = set(["DC_%s_00"%hex(ord(c))[2:].upper() for c in dcChars])
+                for name in DC-self.DCSet:
+                    self.RCJKI.currentFont.newGlyph("deepComponent", name)
+
+    def addButtonCallback(self, sender):
+        addRelatedDC = self.w.custom.relatedDeepComponents.get()
+        txt = self.w.custom.characterField.get().split(" ")
+
+        for e in txt:
+            if e.startswith("uni"):
+                self.addGlyph(e, addRelatedDC)
+            else:
+                for c in e:
+                    name = files.unicodeName(c)
+                    self.addGlyph(name, addRelatedDC)
+
+        self.window.deepComponent.set(self.RCJKI.currentFont.deepComponentSet)
+        self.window.characterGlyph.set(self.RCJKI.currentFont.characterGlyphSet)
+        self.w.close()
+
+    def deepComponentsListEditCallback(self, sender):
+        deepComponents = []
+        for i, e in enumerate(sender.get()):
+            if e["sel"]:
+                deepComponents.append(self.deepComponentList[i]["char"])
+        characters = self.getRelatedCharacterToSelected(deepComponents) 
+        self.w.related.characterField.set(characters)
+
+    def addfromFieldCallback(self, sender):
+        characters = self.w.related.characterField.get()
+        for character in characters:
+            name = files.unicodeName(character)
+            self.addGlyph(name)
+        self.w.close()
+
+    def addAllPossibleCallback(self, sender):
+        deepComponents = [e["char"] for e in self.deepComponentList]
+        characters = self.getRelatedCharacterToSelected(deepComponents)
+        for character in characters:
+            name = files.unicodeName(character)
+            self.addGlyph(name)
+        self.w.close()
+
+    def getRelatedCharacterToSelected(self, deepComponents):
+        relatedChars = set()
+        deepComponentsSet = set(deepComponents)
+        for k, v in self.RCJKI.dataBase.items():
+            setv = set(v)
+            if setv & deepComponentsSet:
+                if not setv - deepComponentsSet:
+                    relatedChars.add(k)
+        return "".join(sorted(list(relatedChars)))
+
+    def closeCallback(self, sender):
+        self.w.close()
+
+    def segmentedButtonCallback(self, sender):
+        for i, g in enumerate(self.groups):
+            g.show(i == sender.get())
+
+
+
+
+
+
+
+
+
+
+
 

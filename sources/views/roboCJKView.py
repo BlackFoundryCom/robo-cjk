@@ -92,10 +92,11 @@ class CharacterWindow:
 
     filterRules = [
         "All",
-        "Exist",
-        "Do not Exist",
+        "In font",
+        "Not in font",
         "Can be designed with current deep components",
-        "Can't be designed with current deep components"
+        "Can't be designed with current deep components",
+        # "Custom list"
         ]
 
     def __init__(self, RCJKI):
@@ -107,6 +108,7 @@ class CharacterWindow:
             closable = False,
             textured = True,
             )
+        self.w.backgroundCanvas = CanvasGroup((0, 0, -0, -0), delegate = self)
         self.filter = 0
         self.w.filter = PopUpButton(
             (0, 0, -0, 20),
@@ -123,9 +125,18 @@ class CharacterWindow:
         self.w.charactersList = List(
             (80, 16, 40, -0), 
             [],
-            selectionCallback = self.charactersListCallback,
+            selectionCallback = self.charactersListSelectionCallback,
+            doubleClickCallback = self.charactersListDoubleClickCallback,
             drawFocusRing = False
             )
+        self.w.previewCheckBox = CheckBox(
+            (130, 20, -10, 20),
+            'Preview',
+            value = False,
+            sizeStyle = "small",
+            callback = self.previewCheckBoxCallback
+            )
+        self.w.previewCheckBox.show(False)
 
     def filterCallback(self, sender):
         self.filter = sender.get()
@@ -156,6 +167,9 @@ class CharacterWindow:
                     l.append(c)
                 elif self.filter == 4 and not inside:
                     l.append(c)
+            if self.filter == 3:
+                result = set([files.unicodeName(c) for c in l]) - set(self.RCJKI.currentFont.characterGlyphSet)
+                l = [chr(int(n[3:], 16)) for n in result]
             title = " ".join(self.filterRules[self.filter].split(' ')[:3])
 
         self.w.charactersList.set(l)
@@ -179,7 +193,30 @@ class CharacterWindow:
     def close(self):
         self.w.close()
 
-    def charactersListCallback(self, sender):
+    def charactersListSelectionCallback(self, sender):
+        self.w.previewCheckBox.show(self.filter == 1)
+
+        sel = sender.getSelection()
+        if not sel:
+            return
+        char = sender.get()[sel[0]]
+        if self.filter in [0, 3]:
+            if files.unicodeName(char) in self.RCJKI.currentFont.characterGlyphSet:
+                self.w.previewCheckBox.show(True)
+
+    def charactersListDoubleClickCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        char = sender.get()[sel[0]]
+        name = files.unicodeName(char)
+        try:
+            self.RCJKI.currentFont[name]
+        except:
+            self.RCJKI.currentFont.newGlyph("characterGlyph", name)
+        finally:
+            OpenGlyphWindow(self.RCJKI.currentFont[name]._RGlyph)
+        
+    def previewCheckBoxCallback(self, sender):
         pass
 
 class ComponentWindow():
@@ -668,9 +705,10 @@ class RoboCJKView(BaseWindowController):
         return self.RCJKI.currentGlyph
 
     def newCharacterGlyphCallback(self, sender):
-        name = self.dumpName('characterGlyph', self.currentFont.characterGlyphSet)
-        self.currentFont.newGlyph('characterGlyph', name)
-        self.w.characterGlyph.set(self.currentFont.characterGlyphSet)
+        sheets.NewCharacterGlyph(self.RCJKI, self.w)
+        # name = self.dumpName('characterGlyph', self.currentFont.characterGlyphSet)
+        # self.currentFont.newGlyph('characterGlyph', name)
+        # self.w.characterGlyph.set(self.currentFont.characterGlyphSet)
 
     def newDeepComponentCallback(self, sender):
         name = self.dumpName('deepComponent', self.currentFont.deepComponentSet)
