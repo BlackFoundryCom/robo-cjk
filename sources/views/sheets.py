@@ -510,7 +510,10 @@ class NewCharacterGlyph:
                 dcChars = self.RCJKI.dataBase[chr(int(name[3:], 16))]
                 DC = set(["DC_%s_00"%hex(ord(c))[2:].upper() for c in dcChars])
                 for name in DC-self.DCSet:
-                    self.RCJKI.currentFont.newGlyph("deepComponent", name)
+                    try:
+                        self.RCJKI.currentFont[name]
+                    except:
+                        self.RCJKI.currentFont.newGlyph("deepComponent", name)
 
     def addButtonCallback(self, sender):
         addRelatedDC = self.w.custom.relatedDeepComponents.get()
@@ -541,6 +544,9 @@ class NewCharacterGlyph:
         for character in characters:
             name = files.unicodeName(character)
             self.addGlyph(name)
+        print("-----------------")
+        print("ADDED CHARACTERS: \n%s"%characters)
+        print("-----------------")
         self.w.close()
 
     def addAllPossibleCallback(self, sender):
@@ -549,6 +555,9 @@ class NewCharacterGlyph:
         for character in characters:
             name = files.unicodeName(character)
             self.addGlyph(name)
+        print("-----------------")
+        print("ADDED CHARACTERS: \n%s"%characters)
+        print("-----------------")
         self.w.close()
 
     def getRelatedCharacterToSelected(self, deepComponents):
@@ -567,15 +576,4 @@ class NewCharacterGlyph:
     def segmentedButtonCallback(self, sender):
         for i, g in enumerate(self.groups):
             g.show(i == sender.get())
-
-
-
-
-
-
-
-
-
-
-
 
