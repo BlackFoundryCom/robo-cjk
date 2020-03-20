@@ -62,7 +62,7 @@ class Glyph(RGlyph):
             else:
                 rotation = (-7*modifiers[0]*modifiers[4]*inputKey[0] - 4*modifiers[0]*inputKey[0] - 2*inputKey[0])*.5
                 self.setRotationAngleToSelectedElements(rotation)
-        elif modifiers[3]:
+        elif modifiers[1]:
             x = round((9*modifiers[0]*inputKey[0] + inputKey[0])*.01, 3)
             y = round((9*modifiers[0]*inputKey[1] + inputKey[1])*.01, 3)
             self.setScaleToSelectedElements((x, y))
