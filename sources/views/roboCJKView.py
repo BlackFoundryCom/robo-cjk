@@ -624,6 +624,13 @@ class RoboCJKView(BaseWindowController):
 
     def rcjkFilesSelectionCallback(self, sender):
         self.currentrcjkFile = sender.getItem()
+        self.w.saveProjectButton.enable(True)
+        self.w.newProjectButton.enable(True)
+        self.w.fontInfos.enable(True)
+        self.w.generateFontButton.enable(True)
+        
+        if self.currentrcjkFile is None: 
+            return
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
@@ -637,6 +644,8 @@ class RoboCJKView(BaseWindowController):
                 self.currentFont.save()
                 # self.currentFont.close()
         self.currentrcjkFile = sender.getItem() 
+        # if self.currentrcjkFile is None:
+        #     self.currentrcjkFile = ""
         fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
         self.RCJKI.currentFont = font.Font(fontPath)
         self.RCJKI.dataBase = {}
@@ -647,10 +656,7 @@ class RoboCJKView(BaseWindowController):
 
         self.RCJKI.toggleWindowController()
 
-        self.w.saveProjectButton.enable(True)
-        self.w.newProjectButton.enable(True)
-        self.w.fontInfos.enable(True)
-        self.w.generateFontButton.enable(True)
+        
 
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
         self.w.deepComponent.set(self.currentFont.deepComponentSet)
