@@ -505,7 +505,7 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.toggleObservers(forceKill=True)
 
     def fontInfosCallback(self, sender):
-        sheets.FontInfosSheet(self.RCJKI, self.w, (400, 400))
+        sheets.FontInfosSheet(self.RCJKI, self.w, (220, 225))
 
     def generateFontButtonCallback(self, sender):
         # axis = self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']
