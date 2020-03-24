@@ -1,0 +1,113 @@
+::selection {
+  color: #f6cb34;
+  background: #E74C3C;
+
+}
+
+body {
+	background-color: black;
+}
+
+h1 {
+	color: white;
+	font-family: "Grtsk";
+	font-variation-settings: "wght" 1000, "slnt" 0, "wdth" 0;
+	font-size: 28.5vw;
+}
+
+a {
+	color: #f6cb34;
+	text-decoration: inherit; 
+	font-variation-settings: "wght" 800, "slnt" -15, "wdth" 300;
+}
+
+a:hover{
+	font-variation-settings: "wght" 800, "slnt" -15, "wdth" 1000;
+}
+
+h2 {
+	font-family: "Grtsk";
+	font-variation-settings: "wght" 600, "slnt" 0, "wdth" 500;
+	font-size: 7vw;
+	color: #48799c;	
+}
+
+h3{
+	color: white;
+	font-family: "Grtsk";
+	font-variation-settings: "wght" 600, "slnt" 0, "wdth" 300;
+	font-size: 16px;
+}
+
+footer{
+	border-top: 1px solid white;
+	padding-top: 50px;
+	padding-bottom: 10px;
+	margin-top: 100px;
+	width: 100%;
+}
+
+@font-face {
+    font-family: "Grtsk";
+    src: url("./fonts/TRY_Grtsk Variable.ttf");
+    font-style: normal;
+    font-weight: normal;
+}
+
+.subsection{
+	border-top: 1px solid white;
+	margin-top: 20px!important;
+	padding-top: 30px;
+	padding-bottom: 10px;
+}
+
+.title{
+	width: 100%;
+	text-align: left;
+	margin-top: -23vw;
+	margin-bottom: -15vw;
+}
+
+.section{
+	padding-top: -220px;
+	margin-left: 6%;
+	margin-right: 6%;
+	text-align: left;
+}
+
+.text{
+	margin-left: 6%;
+}
+
+.cell{
+	font-family: "Grtsk";
+	font-variation-settings: "wght" 300, "slnt" 0, "wdth" 300;
+	font-size: 16px;
+	color: white;
+	text-align: left;
+	margin-top: -2vw;
+}
+
+.warning{
+	font-family: "Grtsk";
+	font-variation-settings: "wght" 800, "slnt" 15, "wdth" 100;
+	color: #E74C3C;		
+	font-size: 20px;
+}
+
+.ready{
+	font-family: "Grtsk";
+	font-variation-settings: "wght" 800, "slnt" 15, "wdth" 100;
+	font-size: 20px;
+}
+
+.column{
+	float: left;
+	width: 50%;
+}
+
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}

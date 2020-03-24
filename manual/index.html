@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>RoboCJK</title>
+	<link rel="stylesheet" href="./style.css">
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<link rel="icon" type="image/png" href="./img/RoboCJKIcon.png" />
+
+</head>
+<body>
+
+	<div>
+		<div class = "title"><h1>RoboCJK</h1></div>
+		
+		<div class='section'>
+			<h2>Introduction</h2>
+			<div class= "row cell text">
+				<div class="column">
+					<p>
+						First of all, the RoboCJK work only on Git repository. <br> 
+						The tool will commit / push / pull automatically. 
+					</p>
+					<p> 
+						First step you have to open the terminal and type the next command:<br> 
+						<div STYLE="padding-left: 4%; color:#48799c;"> cd my/repository/path<br> </div>
+						<div STYLE="padding-left: 4%; color:#48799c;"> git pull </div>
+					</p>
+					<p>
+						The terminal will ask your git username and password.<br> 
+						Then the roboCJK is ready to use.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class='section'>
+			<h2>Create new project</h2>
+			<div class= "row cell">
+				<div class="column" STYLE="text-align:center;"> 
+					<video width="90%" controls="controls" outline="none">
+						<source src="./img/newProject.mp4" type="video/mp4"/>
+					  	New project Demo
+					</video>
+				</div>
+				<div class="column"> 
+					<p>
+						Load a git Repository, and then click on «New project » <br>  
+					</p>
+					<p>
+						Save the project in your repo.<br>  
+						Then it will appear on the pop up button with .rcjk extension ( myProject.rcjk )<br> 
+					</p>
+					<p>
+						You can have as many as you want .rcjk project in the same repository. 
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class='section'>
+			<h2>Fonts infos</h2>
+			<div class= "row cell">
+						
+				<div class="column" STYLE="text-align:center;">
+					<p>
+						<img src="./img/fontsinfos.png" width=50%> 
+					</p>
+				</div>
+
+				<div class="column">
+					<p>
+					The font infos button will open a sheet above the main window
+					</p>
+					<p>
+						• You can create the axis of the final variable font <br>	
+					</p>
+					<p>
+						• Put a default glyph width<br> 
+					</p>
+					• Load a data base, which should be a .txt file, listing character to components. Example:<br><br>
+							<div STYLE="padding-left: 6%; color:#48799c;">觇:占见</div>
+							<div STYLE="padding-left: 6%; color:#48799c;">俰:亻禾口</div>
+							<div STYLE="padding-left: 6%; color:#48799c;">縻:广木木幺小 <br><br></div>
+					<p>
+						Find out our own free database on our GitHub <a href="https://github.com/BlackFoundryCom/HanGlyphComposition/blob/master/GlyphsDeepComposition/Characters2DeepComponents.txt" target="_blank">BlackFoundryCom / HanGlyphComposition </a>
+					</p>
+				</div>
+				
+			</div>
+		</div>
+
+		<div class='section'>
+			<h2>Atomic Element</h2>
+			<div class= "row cell">
+				<span>
+					<div class="column" STYLE="text-align:center;">
+						<video width="90%" controls="controls" outline="none">
+						  <source src="./img/atomicElement.mp4" type="video/mp4"/>
+						  	Atomic Element Demo
+						</video>
+					</div>
+
+					<div class="column">
+						<p>
+							Click on the button ‘new AE’ to create a new atomic element. Rename it as you want. <br>
+							Double click on the item, it will open a glyph window.
+						</p>
+
+						<p class="warning">
+							An atomic element is only made of outlines.
+						</p>
+
+						<p>
+							To have a variability of it, you have to draw the variants in different layers of the glyph
+							To link the layers between them, click on ‘+’. A sheet will open above the glyph window. Select the layer you want, name it and add it.
+							Then an item will appear on the glyph window’s bottom left with the name of the layer and a slider. 
+							By moving the slider, you will see the result of the interpolation between the foreground and layers.
+							You can link as many layer as you want.
+							Be careful, all outlines in layers have to be interpolatable with the foreground.
+						</p>
+
+						<p class = "ready">
+							Your atomic element is ready!
+						</p>
+					</div>
+
+				</span>
+				
+			</div>
+		</div>
+
+
+		<div class='section'>
+			<h2>Deep Component</h2>
+			<div class= "row cell">
+				<div class="column" STYLE="text-align:center;">
+				<video width="90%" controls="controls" outline="none">
+					<source src="./img/deepComponent.mp4" type="video/mp4"/>
+					Deep Component Demo
+				</video>
+				</div>
+
+				<div class="column">
+					<p>
+						Click on the button ‘new DC’ to create a new deep component. Rename it as you want. <br>
+						Double click on the item, it will open a glyph window.
+
+					<p class="warning">
+						A deep component can be made only of atomic elements, no outline are allowed.
+					</p>
+
+					<p>
+						To add an atomic element, right click -> add atomic element. <br>
+						A sheet will open above the glyph window. Select the atomic element you want, add it.
+					</p>
+
+					<p>
+						The atomic element will appear in green color. (Green means master axis on deep component) 
+						By clicking inside an atomic element, the atomic element will be selected (color will change to turquoise color).  
+						All its axis will appear in the bottom left list (Atomic element’s Axis section). Drag their slider to modify the selected instance.
+					</p>
+
+					<p>
+						The atomic element instance can receive three kind of additional transformation, such as:<br>
+						<div STYLE="padding-left: 6%;">– Offset x / y</div>
+						<div STYLE="padding-left: 6%;">– Scale x / y</div>
+						<div STYLE="padding-left: 6%;">– Rotation<br><br></div>
+						For more information about how to manage the transformation look out <a class = "js-scrollTo" href="#transformation">Transformation section</a> 
+					</p>
+
+					<p>
+						In the Deep component’s Axis section, by clicking on ‘+’ button you will add a new Axis on your deep component. 
+						You cans rename it, and add as many axis as you want.
+						An item will appear and it will automatically copy the master in your axis. The color will become light orange.
+						Double click in any axis item to go in. Then hit space bar to go back on the master (the color will go back to green)
+						Then add the transformation you want on atomic elements in this deep component axis.
+					</p>
+
+					<p class = "ready">
+						Your deep component is ready!
+					</p>
+				</div>
+				
+			</div>
+			<div class="row cell subsection">
+					<div class="column" STYLE="text-align:center;">
+						<p>
+							<img src="./img/deepComponentFloatinWindow.png" width=50%> 
+						</p>
+					</div>
+
+					<div class="column">
+						<p>
+							This Floating Window appear automatically while opening a deep component window, if there is a loaded database.
+							The aim is to display all the related character glyph. And If they have been drawn in outline, to display the character above the deep component to test the extrems
+						</p>
+						<p>
+							Double click on a character and, if it do not already exist in the font will create it, and open it.
+						</p>
+
+					</div>
+					
+				</div>
+		</div>
+
+		<div class='section'>
+			<h2>Character Glyph</h2>
+			<div class= "row cell">
+				<div>
+					<div class="column" STYLE="text-align:center;">
+					<video width="90%" controls="controls" outline="none">
+						<source src="./img/characterGlyph.mp4" type="video/mp4"/>
+						Character Glyph Demo
+					</video>
+					</div>
+
+					<div class="column">
+						<p>
+							By clicking on ‘new DC’ a sheet will open, with different option of creation.
+						</p>
+						<p>
+							On the first section « custom », you can type all characters or glyphs names (separate with space) you want to add.
+							If there is a database loaded you can create in the same time the deep components they need (by keeping active the bottom left check box)
+						</p>
+						<p>
+							On the second section « Related to deep components » will work only if a database is loaded.
+							On the left a list display all the deep components existing in the current font. 
+							By selecting items, it will display on the right all the characters you can entirely draw.
+							Then add it.
+							Or by clicking on the Bottom button « Add all possible characters » it will add all the characters you can entirely do with your current set of deep components.
+						</p>
+
+						<p class="warning">
+							A character glyph can be made only of deep components, no outline are allowed.
+						</p>
+
+						<p>
+							To add a deep component,  right click -> add deep component. <br>
+							A sheet will open above the glyph window. Select the deep component you want, add it.
+						</p>
+
+						<p>
+							The deep component will appear in purple color. (Purple means master axis on character glyph) 
+							By clicking inside a deep component, the deep component will be selected (color will change to turquoise color). 
+							All its axis will appear in the bottom left list (Deep Component’s Axis section). Drag their slider to modify the selected instance.
+						</p>
+
+						<p>
+							The deep component instance can receive three kind of additional transformation, such as:<br>
+							<div STYLE="padding-left: 6%;">– Offset x / y</div>
+							<div STYLE="padding-left: 6%;">– Scale x / y</div>
+							<div STYLE="padding-left: 6%;">– Rotation<br><br></div>
+							For more information about how to manage the transformation look out <a class = "js-scrollTo" href="#transformation">Transformation section</a> 
+						</p>
+
+						<p>
+							In the Font Variation’s Axis section, by clicking on ‘+’ button you will add a new Axis on your character glyph. 
+							A sheet will open above the glyph window, to choose an axis already existing in the font infos.	
+						</p>
+
+						<p>
+							An item will appear and it will automatically copy the master in your axis. The color will become light red. 
+							Double click in any axis item to go in. Then hit space bar to go back on the master (the color will go back to purple) 
+							Then add the transformation you want on deep components in this character glyph axis.
+						</p>
+
+						<p class = "ready">
+							Your character glyph is ready!
+						</p>
+					</div>
+				</div>
+
+				
+				
+			</div>
+			<div class="row cell subsection">
+					<div class="column" STYLE="text-align:center;">
+						<p>
+							<img src="./img/characterGlyphFloatinWindow.png" width=50%> 
+						</p>
+					</div>
+
+					<div class="column">
+						<p>
+							This Floating Window appear automatically while opening a character glyph window, if there is a loaded database.
+							The aim is to display the composition of the character glyph. The firts column show the structure and the second column show the version existing in font of each deep component.
+						</p>
+						<p>
+							Double click on a version and it import the deep component.
+						</p>
+						<p>
+							By clicking on the bottom left button, you can edit the database.
+						</p>
+					</div>
+					
+				</div>
+		</div>
+
+		<div class='section' id="transformation">
+			<h2>Transformation</h2>
+			<div class= "cell text">
+				<span>
+					<p>
+					Each elements can receive three kind of transformation, such as: <br>
+						<div STYLE="padding-left: 4%;">– Offset x / y</div>
+						<div STYLE="padding-left: 4%;">– Scale x / y</div>
+						<div STYLE="padding-left: 4%;">– Rotation </div>
+					</p>
+					<p>
+					There is three way to do a transformation:<br>
+						<div STYLE="padding-left: 4%;">– with the keyboard</div>
+						<div STYLE="padding-left: 4%;">– with mouse with a specific tool, in the glyphwindow</div>
+						<div STYLE="padding-left: 4%;">– with a popover above the selected element</div>
+					</p>
+					<p>
+						<h3>
+							Key board (On the selected elements):
+						</h3>
+					
+						<p>
+						<div STYLE="padding-left: 4%;">Offset:</div>
+							<div STYLE="padding-left: 6%;">1 unit with ←, →, ↑, ↓</div>
+							<div STYLE="padding-left: 6%;">10 unit with ⇧←, ⇧→, ⇧↑, ⇧↓</div>
+							<div STYLE="padding-left: 6%;">100 unit with ⌘⇧←, ⌘⇧→, ⌘⇧↑, ⌘⇧↓</div>
+						</p><p>
+						<div STYLE="padding-left: 4%;">Rotation:</div>
+							<div STYLE="padding-left: 6%;">1° with ⌥←, ⌥→</div>
+							<div STYLE="padding-left: 6%;">3° with ⌥⇧←, ⌥⇧→</div>
+							<div STYLE="padding-left: 6%;">6° with ⌘⌥⇧←, ⌘⌥⇧→</div>
+						</p><p>
+						<div STYLE="padding-left: 4%;">Scale:</div>
+							<div STYLE="padding-left: 6%;">10/1000 ⇪←, ⇪→, ⇪↑, ⇪↓</div>
+							<div STYLE="padding-left: 6%;">100/1000 ⇪⇧←, ⇪⇧→, ⇪⇧↑, ⇪⇧↓</div>
+						</p><p>
+						<div STYLE="padding-left: 4%;">Duplicate selected elements:</div>
+							<div STYLE="padding-left: 6%;">⌥ d	</div>
+						</p>
+					</p>
+					<p>
+						<h3>
+							Mouse (On the selected elements):
+						</h3>
+					
+						<div STYLE="padding-left: 4%;">Select the transformation tool in the glyph window tool bar</div>
+						<p>
+						<div STYLE="padding-left: 4%;">Offset:</div>
+							<div STYLE="padding-left: 6%;">click and drag</div>
+						</p>
+						<p>
+						<div STYLE="padding-left: 4%;">Rotation:</div>
+							<div STYLE="padding-left: 6%;">⌥ click and drag</div>
+						</p>
+						<p>
+						<div STYLE="padding-left: 4%;">Scale:</div>
+							<div STYLE="padding-left: 6%;">⌘ click and drag</div>
+						</p>
+					</p>
+					<p>
+						<h3>
+							Popover (On one selected element):		
+						</h3>
+					
+						<div STYLE="padding-left: 4%;">Double click on the selected element, with any tool, a popover will open. <br>Displaying all the transformations datas, which are all editable. <br>You can as well copy the data, and paste it in another element</div>
+					</p>
+				</span>
+				
+			</div>
+		</div>
+
+		<div class='section'>
+			<h2>Additional tools</h2>
+			<div class= "cell text">
+				<span>
+					<p>
+						Find out our free additional tools on our <a href="https://github.com/BlackFoundryCom" target="_blank">github</a>
+					</p>
+					<p>
+						<a href="https://github.com/BlackFoundryCom/CJK-Design-Frame" target="_blank">• CJK design frame</a> <br>
+						<div STYLE="padding-left: 4%;">A RoboFont extension to display a design frame useful for Chinese, Japanese or Korean typeface design in the glyph window.</div>
+					</p>
+					<p>
+						<a href="https://github.com/BlackFoundryCom/reference-viewer" target="_blank">• Reference Viewer</a> <br>
+						<div STYLE="padding-left: 4%;">A Robofont extension to display reference fonts in the glyph window.</div>
+					</p>
+				</span>
+				
+			</div>
+		</div>
+
+	</div>
+
+	<footer>	
+		<div class="cell text" STYLE="text-align: right; margin-right:5%;">
+        	<p> 
+        		<a href="https://github.com/BlackFoundryCom/black-robo-cjk"  target="_blank">RoboCJK</a> is under ​<a href="https://github.com/BlackFoundryCom/black-robo-cjk/blob/master/LICENSE" target="_blank">GNU GENERAL PUBLIC LICENSE</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; © Copyright 2020 <a href="https://www.black-foundry.com" target="_blank">Black[Foundry]</a>
+        	</p>
+        </div>
+    </footer>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script>
+			$(document).ready(function() {
+				$('.js-scrollTo').on('click', function() {
+					var page = $(this).attr('href');
+					var speed = 750;
+					$('html, body').animate( { scrollTop: $(page).offset().top }, speed );
+					return false;
+				});
+			});
+		</script>
+
+</body>
+</html>
