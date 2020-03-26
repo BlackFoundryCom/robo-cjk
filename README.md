@@ -1,4 +1,7 @@
 # robo-cjk
+**User Guide:**
+https://blackfoundrycom.github.io/black-robo-cjk/index.html
+
 **Deep Component binary structure proposal:**
 We propose an update to the data structure of OpenType Variable fonts.
 We use variable Atomic Elements glyphs that have each their own design-space. 
