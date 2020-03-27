@@ -23,8 +23,9 @@ import json
 import os
 
 from imp import reload
-from utils import decorators, files
+from utils import decorators, files, locker
 reload(decorators)
+reload(locker)
 gitCoverage = decorators.gitCoverage
 from utils import interpolation
 reload(interpolation)
@@ -38,6 +39,7 @@ class Font():
 
     def __init__(self, fontPath):
         self.fontPath = fontPath
+        self.locker = locker.Locker(fontPath)
         name = os.path.split(fontPath)[1].split('.')[0]
         self._RFont = NewFont(
             familyName=name, 
