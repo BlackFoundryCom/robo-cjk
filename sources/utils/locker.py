@@ -43,14 +43,19 @@ class Locker():
     def getLockInfo(self, filepath):
         self.update()
         if not os.path.exists(filepath): return LockInfo()
-        with open(filepath,'r') as f: line = f.readline()
-        if line[-1] == '\n': line = line[:-1]
-        lock, user, refcount = line.split()
+        with open(filepath,'r', encoding='utf-8') as f: line = f.readline()
+        if not line: 
+            lock = 0 
+            user = self._username
+            refcount = 0
+        else:
+            if line[-1] == '\n': line = line[:-1]
+            lock, user, refcount = line.split()
         print("Locker getLockInfo", lock, user, refcount)
         return LockInfo(int(lock), user, int(refcount))
 
     def setLockInfo(self, filepath, li):
-        with open(filepath,'w') as f:
+        with open(filepath,'w', encoding='utf-8') as f:
             f.write("{} {} {}".format(li.lock, li.user, li.refcount))
         try:
             self._git.commit()
