@@ -35,7 +35,7 @@ class GitEngine():
         if os.path.isfile(os.path.join(self._path, '.gitignore')): return
         f = open(os.path.join(self._path, '.gitignore'), 'w')
         gitignore = '''*.ufo
-        locker__
+        */locker__
         '''
         f.write(gitignore)
         f.close()
