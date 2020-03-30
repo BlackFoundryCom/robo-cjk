@@ -54,6 +54,9 @@ reload(deepComponent)
 from tools import transformationTool
 reload(transformationTool)
 
+from views import PDFProofer
+reload(PDFProofer)
+
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
 import mojo.drawingTools as mjdt
@@ -95,7 +98,7 @@ class RoboCJKController(object):
             posSize = (20, 0, 300, -20), 
             delegate = self
             )
-
+        self.pdf = PDFProofer.PDFEngine(self)
         self.sliderValue = None
         self.sliderName = None
         self.dataBase = {}

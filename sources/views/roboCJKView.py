@@ -35,6 +35,8 @@ reload(font)
 from views import sheets
 reload(sheets)
 
+
+
 import os, json
 
 gitCoverage = decorators.gitCoverage
@@ -357,10 +359,10 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.fontInfos.enable(False)
 
-        self.w.debug = Button(
+        self.w.pdfProoferButton = Button(
             (410, 40, 200, 20), 
-            "Debug", 
-            callback = self.debugButtonCallback,
+            "PDF Proofer", 
+            callback = self.pdfProoferButtonCallback,
             )
 
         self.w.rcjkFiles = PopUpButton(
@@ -451,13 +453,9 @@ class RoboCJKView(BaseWindowController):
         self.w.bind('close', self.windowCloses)
         self.w.open()
 
-    def debugButtonCallback(self, sender):
-        pass
-        print(self.RCJKI.currentGlyph)
-        print(self.RCJKI.currentGlyph.layers)
-        print(self.RCJKI.currentGlyph._RGlyph.layers)
-        # print(self.RCJKI.currentGlyph._RGlyph.name)
-        # print(self.RCJKI.currentGlyph.lib.keys())
+    def pdfProoferButtonCallback(self, sender):
+        # self.RCJKI.pdf = PDFProofer.PDFEngine(self)
+        self.RCJKI.pdf.interface.open()
 
     def atomicElementSearchBoxCallback(self, sender):
         name = str(sender.get())
@@ -628,9 +626,10 @@ class RoboCJKView(BaseWindowController):
         self.w.newProjectButton.enable(True)
         self.w.fontInfos.enable(True)
         self.w.generateFontButton.enable(True)
-        
+
         if self.currentrcjkFile is None: 
             return
+
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
