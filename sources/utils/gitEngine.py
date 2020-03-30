@@ -20,40 +20,67 @@ import os
 import codecs
 import subprocess
 
+subprocessThrowException = False
+
 class GitEngine():
 
     def __init__(self, path):
         self._path = path
+        self._ok = self.isInGitRepository()
 
     def isInGitRepository(self):
-        if not os.path.exists(os.path.join(self._path, ".git")):
-            return False
-        return True
+        return os.path.exists(os.path.join(self._path, ".git"))
 
     def createGitignore(self):
         if os.path.isfile(os.path.join(self._path, '.gitignore')): return
         f = open(os.path.join(self._path, '.gitignore'), 'w')
-        gitignore = '*.ufo'
+        gitignore = '''*.ufo
+        */locker__
+        '''
         f.write(gitignore)
-        self.commit('add gitignore')
+        f.close()
+        self.commit('add .gitignore')
         self.push()
 
+    def runCommand(self, command):
+        # check=True will raise exception of the process does not terminates properly
+        cp = subprocess.run(command, cwd=self._path, check=subprocessThrowException)
+        if cp.returncode == 0: return True
+        print("GIT ERROR", command, "retcode =", cp.returncode, self._path)
+        return False
+
+    def getHeadSHA(self):
+        cp = subprocess.run(['git','rev-parse','HEAD'], stdout=subprocess.PIPE, cwd=self._path)
+        if cp.returncode != 0:
+            print("SHA-SHIT")
+            return None
+        sha = cp.stdout.decode('utf-8')[:-1]
+        return sha
+
     def commit(self, stamp):
-        if not self.isInGitRepository(): return False
-        comment =  str(stamp)
-        subprocess.call(['git', 'add', '.', self._path], cwd=self._path)
-        subprocess.call(['git', 'commit', '-am', comment], cwd=self._path)
-        return True
-        
+        if not self._ok: return False
+        self.runCommand(['git', 'add', '.']) # Purposefully ignore returned boolean
+        return self.runCommand(['git', 'commit', '-am', str(stamp)])
+
     def push(self):
-        subprocess.call(['git', 'push'], cwd=self._path)
+        if not self._ok: return
+        return self.runCommand(['git', 'push'])
+
+    def commitPushOrFail(self, stamp):
+        curCommit = self.getHeadSHA()
+        self.commit(stamp)
+        nextCommit = self.getHeadSHA()
+        if curCommit == nextCommit: return True # there was nothing to push
+        if self.push(): return True
+        self.runCommand(['git', 'reset', '--hard', curCommit])
+        return False
 
     def pull(self):
-        if not self.isInGitRepository(): return False
-        subprocess.call(['git', 'pull'], cwd=self._path)
-        return True
+        if not self._ok: return False
+        return self.runCommand(['git', 'pull'])
 
     def user(self):
-        return codecs.decode(subprocess.check_output(
-                ['git', 'config', 'user.name'], 
-                cwd=self._path), 'utf-8')
+        u = codecs.decode(
+                subprocess.check_output(['git', 'config', 'user.name'], cwd=self._path),
+                'utf-8')
+        return u[:-1].replace(' ','_')

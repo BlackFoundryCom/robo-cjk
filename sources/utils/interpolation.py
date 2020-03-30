@@ -70,17 +70,17 @@ def deepdeepdeepolation(masterCharacterGlyph, characterGlyphVariations, characte
 def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxisInfos={}):
     deltaDC = []
     for masterAtomicElement in masterDeepComponent:
-        deltaAE = {}
-        deltaAE['name'] = masterAtomicElement['name']
-        deltaAE['x'] = 0#masterAtomicElement['x']
-        deltaAE['y'] = 0#masterAtomicElement['y']
-        deltaAE['scalex'] = 1#masterAtomicElement['scalex']
-        deltaAE['scaley'] = 1#masterAtomicElement['scaley']
-        deltaAE['rotation'] = 0#masterAtomicElement['rotation']
+        coord = dict((axisName, 0) for axisName, value in masterAtomicElement['coord'].items())
+        deltaAE = {
+                'name'     : masterAtomicElement['name'],
+                'x'        : 0, #masterAtomicElement['x']
+                'y'        : 0, #masterAtomicElement['y']
+                'scalex'   : 1, #masterAtomicElement['scalex']
+                'scaley'   : 1, #masterAtomicElement['scaley']
+                'rotation' : 0, #masterAtomicElement['rotation']
+                'coord'    : coord
+                }
 
-        deltaAE['coord'] = {}
-        for axisName, value in masterAtomicElement['coord'].items():
-            deltaAE['coord'][axisName] = 0#value
         deltaDC.append(deltaAE)
 
     for deepComponentAxisName, sourceDeepComponent in sourceDeepComponents.items():

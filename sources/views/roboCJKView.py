@@ -211,12 +211,15 @@ class CharacterWindow:
         if not sel: return
         char = sender.get()[sel[0]]
         name = files.unicodeName(char)
+        font = self.RCJKI.currentFont
         try:
-            self.RCJKI.currentFont[name]
+            font[name]
         except:
-            self.RCJKI.currentFont.newGlyph("characterGlyph", name)
+            font.newGlyph("characterGlyph", name)
         finally:
-            OpenGlyphWindow(self.RCJKI.currentFont[name]._RGlyph)
+            g = font[name]._RGlyph
+            font.locker.lock(g)
+            OpenGlyphWindow(g)
         
     def previewCheckBoxCallback(self, sender):
         pass
@@ -655,8 +658,6 @@ class RoboCJKView(BaseWindowController):
 
         self.RCJKI.toggleWindowController()
 
-        
-
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
         self.w.deepComponent.set(self.currentFont.deepComponentSet)
         self.w.characterGlyph.set(self.currentFont.characterGlyphSet)
@@ -667,11 +668,14 @@ class RoboCJKView(BaseWindowController):
         if not selection: return
         glyphName = items[selection[0]]
 
-        self.RCJKI.currentGlyph = self.currentFont[glyphName]
-        if self.RCJKI.currentGlyph._RGlyph.width == 0:
-            width = self.RCJKI.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
-            self.RCJKI.currentGlyph._RGlyph.width = width
-        OpenGlyphWindow(self.RCJKI.currentGlyph._RGlyph)
+        g = self.currentFont[glyphName]
+        font = self.RCJKI.currentFont
+        self.RCJKI.currentGlyph = g
+        if g._RGlyph.width == 0:
+            width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+            g._RGlyph.width = width
+        font.locker.lock(g)
+        OpenGlyphWindow(g._RGlyph)
 
     def GlyphsListEditCallback(self, sender):
         sel = sender.getSelection()
