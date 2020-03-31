@@ -38,7 +38,7 @@ class Locker():
             if cp.returncode != 0 and githubHostLockerPassword is not None:
                 cp = subprocess.run(['curl', '-u', githubHostLocker+":"+githubHostLockerPassword, "https://api.github.com/user/repos", "-d", "{\"name\":\""+repoName+"\", \"private\": true}"])
                 print(cp.returncode)
-                cp = subprocess.run(['git', 'clone', "https://"+githubUsername+":"+githubPassword+"@github.com/"+githubUsername+"/"+repoName+".git", "locker__"], cwd=path)
+                cp = subprocess.run(['git', 'clone', "https://"+githubHostLocker+":"+githubHostLockerPassword+"@github.com/"+githubHostLocker+"/"+repoName+".git", "locker__"], cwd=path)
                 print(cp.returncode)
 
                 with open(os.path.join(self._path, "README.txt"), 'w') as f:
