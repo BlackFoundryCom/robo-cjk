@@ -581,7 +581,7 @@ class UsersInfos:
 
     def __init__(self, RCJKI, parentWindow):
         self.RCJKI = RCJKI
-        self.w = Sheet((300, 100), parentWindow)
+        self.w = Sheet((300, 150), parentWindow)
         self.w.userNameTitle = TextBox(
             (10, 10, 100, 20),
             "UserName"
@@ -598,6 +598,14 @@ class UsersInfos:
             (90, 40, -10, 20),
             ""
             )
+        self.w.hostlockerTitle = TextBox(
+            (10, 70, 100, 20),
+            "hostlocker"
+            )
+        self.w.hostlocker = EditText(
+            (90, 70, -10, 20),
+            ""
+            )
         self.w.closeButton = Button(
             (10, -30, -10, -10),
             "Login",
@@ -609,6 +617,7 @@ class UsersInfos:
         if not self.w.userName.get() or not self.w.password.get(): return
         self.RCJKI.gitUserName = self.w.userName.get()
         self.RCJKI.gitPassword = self.w.password.get()
+        self.RCJKI.gitHostLocker = self.w.hostlocker.get()
         self.w.close()
         self.RCJKI.setGitEngine()
         self.RCJKI.roboCJKView.setrcjkFiles()
