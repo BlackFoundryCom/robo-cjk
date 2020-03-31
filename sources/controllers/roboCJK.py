@@ -223,6 +223,7 @@ class RoboCJKController(object):
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
         if glyph is None: return
+        self.currentFont.locker.unlock(self.currentGlyph)
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
         self.currentGlyph.sourcesList = [
@@ -257,7 +258,7 @@ class RoboCJKController(object):
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()
-        self.currentFont.locker.unlock(self.currentGlyph)
+
 
     def exportDataBase(self):
         with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
