@@ -81,6 +81,7 @@ class RoboCJKController(object):
         self.gitUserName = None
         self.gitPassword = None
         self.gitHostLocker = None
+        self.gitHoslLockerPassword = None
         # installTool(self.transformationTool)
 
         self.locked = False

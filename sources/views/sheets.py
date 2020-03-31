@@ -581,7 +581,7 @@ class UsersInfos:
 
     def __init__(self, RCJKI, parentWindow):
         self.RCJKI = RCJKI
-        self.w = Sheet((300, 150), parentWindow)
+        self.w = Sheet((300, 160), parentWindow)
         self.w.userNameTitle = TextBox(
             (10, 10, 100, 20),
             "UserName"
@@ -606,6 +606,14 @@ class UsersInfos:
             (90, 70, -10, 20),
             ""
             )
+        self.w.hostLockerPasswordTitle = TextBox(
+            (10, 100, 150, 20),
+            "HostLocker optional"
+            )
+        self.w.hostLockerPassword = SecureEditText(
+            (140, 100, -10, 20),
+            ""
+            )
         self.w.closeButton = Button(
             (10, -30, -10, -10),
             "Login",
@@ -614,10 +622,11 @@ class UsersInfos:
         self.w.open()
 
     def closeCallback(self, sender):
-        if not self.w.userName.get() or not self.w.password.get(): return
+        if not self.w.userName.get() or not self.w.password.get() or not self.w.hostlocker.get(): return
         self.RCJKI.gitUserName = self.w.userName.get()
         self.RCJKI.gitPassword = self.w.password.get()
         self.RCJKI.gitHostLocker = self.w.hostlocker.get()
+        self.RCJKI.gitHoslLockerPassword = self.w.hostLockerPassword.get()
         self.w.close()
         self.RCJKI.setGitEngine()
         self.RCJKI.roboCJKView.setrcjkFiles()
