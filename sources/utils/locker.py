@@ -69,6 +69,13 @@ class Locker():
             f.write("{} {} {}".format(li.lock, li.user, li.refcount))
         return self._git.commitPushOrFail('lock '+g.name)
 
+    def isLocked(self, g):
+        filepath = os.path.join(self._path, files.userNameToFileName(g.name))
+        li = self.getLockInfo(filepath)
+        if li.lock == 0:
+            return None
+        return li.user
+
     def lock(self, g):
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))
         li = self.getLockInfo(filepath)

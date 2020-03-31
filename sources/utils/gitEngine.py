@@ -32,9 +32,26 @@ class GitEngine():
         return os.path.exists(os.path.join(self._path, ".git"))
 
     def createGitignore(self):
-        if os.path.isfile(os.path.join(self._path, '.gitignore')): return
+        if os.path.isfile(os.path.join(self._path, '.gitignore')): 
+            f = open(os.path.join(self._path, '.gitignore'), 'r+')
+            content = [e.strip() for e in f.readlines()]
+            gitignore = set(content)
+            changed = False
+            if '*/*.ufo' not in content:
+                gitignore.add('*/*.ufo')
+                changed = True
+            if '*/locker__' not in content:
+                gitignore.add('*/locker__')
+                changed = True
+            if changed:
+                f.write('\n'.join(list(gitignore))+'\n')
+                self.commit('update .gitignore')
+                self.push()
+            f.close()
+            return
+            
         f = open(os.path.join(self._path, '.gitignore'), 'w')
-        gitignore = '''*.ufo
+        gitignore = '''*/*.ufo
         */locker__
         '''
         f.write(gitignore)

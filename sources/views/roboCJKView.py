@@ -218,8 +218,9 @@ class CharacterWindow:
             font.newGlyph("characterGlyph", name)
         finally:
             g = font[name]._RGlyph
-            font.locker.lock(g)
-            OpenGlyphWindow(g)
+            if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
+                font.locker.lock(g)
+                OpenGlyphWindow(g)
         
     def previewCheckBoxCallback(self, sender):
         pass
@@ -380,6 +381,12 @@ class RoboCJKView(BaseWindowController):
             callback = self.generateFontButtonCallback,
             )
         self.w.generateFontButton.enable(False)
+
+        self.w.lockerInfoTextBox = TextBox(
+            (210, 70, 200, 20),
+            "",
+            alignment='center'
+            )
 
         self.w.atomicElementSearchBox = SearchBox(
             (10, 130, 200, 20),
@@ -674,8 +681,9 @@ class RoboCJKView(BaseWindowController):
         if g._RGlyph.width == 0:
             width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
             g._RGlyph.width = width
-        font.locker.lock(g)
-        OpenGlyphWindow(g._RGlyph)
+        if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
+            font.locker.lock(g)
+            OpenGlyphWindow(g._RGlyph)
 
     def GlyphsListEditCallback(self, sender):
         sel = sender.getSelection()
@@ -693,6 +701,11 @@ class RoboCJKView(BaseWindowController):
                 lists.setSelection([])
         self.prevGlyphName = sender.get()[sender.getSelection()[0]]
         self.setGlyphNameToCansvas(sender, self.prevGlyphName)
+        user = self.RCJKI.currentFont.locker.isLocked(self.currentFont[self.prevGlyphName])
+        if user: 
+            self.w.lockerInfoTextBox.set('Locked by: ' + user)
+        else:
+            self.w.lockerInfoTextBox.set("")
 
     def setGlyphNameToCansvas(self, sender, glyphName):
         if sender == self.w.atomicElement:
