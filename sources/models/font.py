@@ -37,9 +37,9 @@ reload(characterGlyph)
 
 class Font():
 
-    def __init__(self, fontPath):
+    def __init__(self, fontPath, gitUserName, gitPassword):
         self.fontPath = fontPath
-        self.locker = locker.Locker(fontPath)
+        self.locker = locker.Locker(fontPath, gitUserName, gitPassword)
         name = os.path.split(fontPath)[1].split('.')[0]
         self._RFont = NewFont(
             familyName=name, 

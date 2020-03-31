@@ -577,3 +577,41 @@ class NewCharacterGlyph:
         for i, g in enumerate(self.groups):
             g.show(i == sender.get())
 
+class UsersInfos:
+
+    def __init__(self, RCJKI, parentWindow):
+        self.RCJKI = RCJKI
+        self.w = Sheet((300, 100), parentWindow)
+        self.w.userNameTitle = TextBox(
+            (10, 10, 100, 20),
+            "UserName"
+            )
+        self.w.userName = EditText(
+            (90, 10, -10, 20),
+            ""
+            )
+        self.w.passwordTitle = TextBox(
+            (10, 40, 100, 20),
+            "password"
+            )
+        self.w.password = SecureEditText(
+            (90, 40, -10, 20),
+            ""
+            )
+        self.w.closeButton = Button(
+            (10, -30, -10, -10),
+            "Login",
+            callback = self.closeCallback
+            )
+        self.w.open()
+
+    def closeCallback(self, sender):
+        if not self.w.userName.get() or not self.w.password.get(): return
+        self.RCJKI.gitUserName = self.w.userName.get()
+        self.RCJKI.gitPassword = self.w.password.get()
+        self.w.close()
+
+
+
+
+

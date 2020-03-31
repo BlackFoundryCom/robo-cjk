@@ -608,6 +608,7 @@ class RoboCJKView(BaseWindowController):
         folder = getFolder()
         if not folder: return
         self.RCJKI.projectRoot = folder[0]
+        sheets.UsersInfos(self, self.w)
         self.RCJKI.setGitEngine()
         self.setrcjkFiles()
 
@@ -658,7 +659,7 @@ class RoboCJKView(BaseWindowController):
         # if self.currentrcjkFile is None:
         #     self.currentrcjkFile = ""
         fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
-        self.RCJKI.currentFont = font.Font(fontPath)
+        self.RCJKI.currentFont = font.Font(fontPath, self.RCJKI.gitUserName, self.RCJKI.gitPassword)
         self.RCJKI.dataBase = {}
 
         if 'database.json' in os.listdir(fontPath):
