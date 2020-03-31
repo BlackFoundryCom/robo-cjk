@@ -214,6 +214,7 @@ class RoboCJKController(object):
         self.closeComponentWindow()
         self.closeCharacterWindow()
         self.currentFont.locker.unlock(self.currentGlyph)
+        self.currentFont.save()
 
     @lockedProtect
     def currentGlyphChanged(self, notification):

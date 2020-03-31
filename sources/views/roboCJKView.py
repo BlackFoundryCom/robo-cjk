@@ -221,8 +221,8 @@ class CharacterWindow:
             if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
                 self.RCJKI.gitEngine.pull()
                 font.getGlyphs()
-                font.locker.lock(g)
-                OpenGlyphWindow(g)
+                font.locker.lock(font[name])
+                OpenGlyphWindow(font[name]._RGlyph)
         
     def previewCheckBoxCallback(self, sender):
         pass
@@ -684,9 +684,10 @@ class RoboCJKView(BaseWindowController):
             width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
             g._RGlyph.width = width
         if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
+            self.RCJKI.gitEngine.pull()
             font.getGlyphs()
-            font.locker.lock(g)
-            OpenGlyphWindow(g._RGlyph)
+            font.locker.lock(self.currentFont[glyphName])
+            OpenGlyphWindow(self.currentFont[glyphName]._RGlyph)
 
     def GlyphsListEditCallback(self, sender):
         sel = sender.getSelection()
