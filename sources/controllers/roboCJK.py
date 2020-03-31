@@ -138,6 +138,7 @@ class RoboCJKController(object):
         global gitEngine
         gitEngine = git.GitEngine(self.projectRoot)
         self.user = gitEngine.user()
+        self.gitEngine = gitEngine
 
     def toggleObservers(self, forceKill=False):
         if self.observers or forceKill:

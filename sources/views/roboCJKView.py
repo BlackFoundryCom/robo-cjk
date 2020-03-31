@@ -219,6 +219,7 @@ class CharacterWindow:
         finally:
             g = font[name]._RGlyph
             if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
+                self.RCJKI.gitEngine.pull()
                 font.getGlyph(g)
                 font.locker.lock(g)
                 OpenGlyphWindow(g)
