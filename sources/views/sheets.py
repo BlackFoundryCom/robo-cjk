@@ -592,7 +592,7 @@ class UsersInfos:
             )
         self.w.passwordTitle = TextBox(
             (10, 40, 100, 20),
-            "password"
+            "Password"
             )
         self.w.password = SecureEditText(
             (90, 40, -10, 20),
@@ -610,7 +610,8 @@ class UsersInfos:
         self.RCJKI.gitUserName = self.w.userName.get()
         self.RCJKI.gitPassword = self.w.password.get()
         self.w.close()
-
+        self.RCJKI.setGitEngine()
+        self.RCJKI.roboCJKView.setrcjkFiles()
 
 
 
