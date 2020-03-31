@@ -121,6 +121,47 @@ class Font():
                     layerName
                     )
 
+    def getGlyph(self, glyph):
+        glyphType = glyph.type
+        glyphName = glyph.name
+        if glyphType == 'atomicElement':
+            fileName = files.userNameToFileName(glyphName)
+            self.addGlyph(
+                atomicElement.AtomicElement(glyphName), 
+                fileName, 
+                "foreground"
+                )
+        elif glyphType == 'deepComponent':
+            fileName = files.userNameToFileName(glyphName)
+            self.addGlyph(
+                deepComponent.DeepComponent(glyphName), 
+                fileName, 
+                "foreground"
+                )
+        elif glyphType == 'characterGlyph':
+            fileName = files.userNameToFileName(glyphName)
+            self.addGlyph(
+                characterGlyph.CharacterGlyph(glyphName), 
+                fileName, 
+                "foreground"
+                )
+            
+        path = os.path.join(self.fontPath, 'atomicElement')
+
+        for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
+            layerName = os.path.split(layerPath)[1]
+            if layerName not in self._fontLayers:
+                self._RFont.newLayer(layerName)
+
+            for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
+                layerfileName = glifFile.split('.')[0]
+                self.addGlyph(
+                    atomicElement.AtomicElement(glyphName), 
+                    layerfileName, 
+                    layerName
+                    )
+
+
     def newGLIF(self, glyphType, glyphName):
         if glyphType == 'atomicElement':
             emptyGlyph = atomicElement.AtomicElement(glyphName)

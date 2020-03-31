@@ -219,6 +219,7 @@ class CharacterWindow:
         finally:
             g = font[name]._RGlyph
             if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
+                font.getGlyph(g)
                 font.locker.lock(g)
                 OpenGlyphWindow(g)
         
@@ -682,6 +683,7 @@ class RoboCJKView(BaseWindowController):
             width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
             g._RGlyph.width = width
         if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
+            font.getGlyph(g)
             font.locker.lock(g)
             OpenGlyphWindow(g._RGlyph)
 
