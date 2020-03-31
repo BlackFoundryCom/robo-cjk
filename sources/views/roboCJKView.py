@@ -18,7 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from vanilla.dialogs import getFolder, putFile
-from mojo.UI import OpenGlyphWindow, AllWindows
+from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow
 from defconAppKit.windows.baseWindow import BaseWindowController
 from views import canvasGroups
 from mojo.canvas import CanvasGroup
@@ -677,6 +677,8 @@ class RoboCJKView(BaseWindowController):
         selection = sender.getSelection()
         if not selection: return
         glyphName = items[selection[0]]
+        if CurrentGlyphWindow():
+            CurrentGlyphWindow().close()
 
         g = self.currentFont[glyphName]
         font = self.RCJKI.currentFont

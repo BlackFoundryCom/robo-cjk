@@ -600,7 +600,7 @@ class UsersInfos:
             )
         self.w.hostlockerTitle = TextBox(
             (10, 70, 100, 20),
-            "hostlocker"
+            "HostLocker"
             )
         self.w.hostlocker = EditText(
             (90, 70, -10, 20),
