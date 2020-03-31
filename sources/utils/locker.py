@@ -35,7 +35,7 @@ class Locker():
             githubPassword = gitPassword
             repoName = 'locker_'+os.path.split(path)[1].split('.')[0]
             cp = subprocess.run(['git', 'clone', "https://"+githubUsername+":"+githubPassword+"@github.com/"+githubHostLocker+"/"+repoName+".git", "locker__"], cwd=path)
-            if cp.returncode != 0 and githubHostLockerPassword is not None:
+            if cp.returncode != 0 and githubHostLockerPassword != '':
                 cp = subprocess.run(['curl', '-u', githubHostLocker+":"+githubHostLockerPassword, "https://api.github.com/user/repos", "-d", "{\"name\":\""+repoName+"\", \"private\": true}"])
                 print(cp.returncode)
                 cp = subprocess.run(['git', 'clone', "https://"+githubHostLocker+":"+githubHostLockerPassword+"@github.com/"+githubHostLocker+"/"+repoName+".git", "locker__"], cwd=path)

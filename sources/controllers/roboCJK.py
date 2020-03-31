@@ -78,10 +78,10 @@ class RoboCJKController(object):
         self.transformationTool = transformationTool.TransformationTool(self)
         self.componentWindow = None
         self.characterWindow = None
-        self.gitUserName = None
-        self.gitPassword = None
-        self.gitHostLocker = None
-        self.gitHostLockerPassword = None
+        self.gitUserName = ''
+        self.gitPassword = ''
+        self.gitHostLocker = ''
+        self.gitHostLockerPassword = ''
         # installTool(self.transformationTool)
 
         self.locked = False
