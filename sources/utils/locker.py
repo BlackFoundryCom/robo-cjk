@@ -26,13 +26,14 @@ class LockInfo():
         self.refcount = r # reference count
 
 class Locker():
-    def __init__(self, path, gitUserName, gitPassword):
+    def __init__(self, path, gitUserName, gitPassword, gitHostLocker):
         self._path = os.path.join(path, 'locker__')
         if not os.path.exists(self._path):
+            githubHostLocker = gitHostLocker
             githubUsername = gitUserName
             githubPassword = gitPassword
             repoName = 'locker_'+os.path.split(path)[1].split('.')[0]
-            cp = subprocess.run(['git', 'clone', "https://"+githubUsername+":"+githubPassword+"@github.com/"+githubUsername+"/"+repoName+".git", "locker__"], cwd=path)
+            cp = subprocess.run(['git', 'clone', "https://"+githubUsername+":"+githubPassword+"@github.com/"+githubHostLocker+"/"+repoName+".git", "locker__"], cwd=path)
             if cp.returncode != 0:
                 cp = subprocess.run(['curl', '-u', githubUsername+":"+githubPassword, "https://api.github.com/user/repos", "-d", "{\"name\":\""+repoName+"\", \"private\": true}"])
                 print(cp.returncode)
