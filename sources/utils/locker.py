@@ -32,15 +32,18 @@ class Locker():
             githubUsername = gitUserName
             githubPassword = gitPassword
             repoName = 'locker_'+os.path.split(path)[1].split('.')[0]
-            cp = subprocess.run(['curl', '-u', githubUsername+":"+githubPassword, "https://api.github.com/user/repos", "-d", "{\"name\":\""+repoName+"\", \"private\": true}"])
-            print(cp.returncode)
             cp = subprocess.run(['git', 'clone', "https://"+githubUsername+":"+githubPassword+"@github.com/"+githubUsername+"/"+repoName+".git", "locker__"], cwd=path)
-            print(cp.returncode)
-            with open(os.path.join(self._path, "README.txt"), 'w') as f:
-                f.write("This is a git repo for locking elements from "+path+"\n")
-            subprocess.run(['git', 'add', 'README.txt'], cwd=self._path)
-            subprocess.run(['git', 'commit', '-m', 'init'], cwd=self._path)
-            subprocess.run(['git', 'push'], cwd=self._path)
+            if cp.returncode != 0:
+                cp = subprocess.run(['curl', '-u', githubUsername+":"+githubPassword, "https://api.github.com/user/repos", "-d", "{\"name\":\""+repoName+"\", \"private\": true}"])
+                print(cp.returncode)
+                cp = subprocess.run(['git', 'clone', "https://"+githubUsername+":"+githubPassword+"@github.com/"+githubUsername+"/"+repoName+".git", "locker__"], cwd=path)
+                print(cp.returncode)
+
+                with open(os.path.join(self._path, "README.txt"), 'w') as f:
+                    f.write("This is a git repo for locking elements from "+path+"\n")
+                subprocess.run(['git', 'add', 'README.txt'], cwd=self._path)
+                subprocess.run(['git', 'commit', '-m', 'init'], cwd=self._path)
+                subprocess.run(['git', 'push'], cwd=self._path)
             
         self._git = gitEngine.GitEngine(self._path)
         self._username = self._git.user()
