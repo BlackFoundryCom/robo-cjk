@@ -23,7 +23,10 @@ import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
 from utils import files
 from AppKit import NumberFormatter, NSColor
+from mojo.extensions import getExtensionDefault, setExtensionDefault
+
 import json, os
+blackrobocjk_locker = "com.black-foundry.blackrobocjk_locker"
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 
@@ -581,14 +584,14 @@ class UsersInfos:
 
     def __init__(self, RCJKI, parentWindow):
         self.RCJKI = RCJKI
-        self.w = Sheet((300, 160), parentWindow)
+        self.w = Sheet((400, 160), parentWindow)
         self.w.userNameTitle = TextBox(
             (10, 10, 100, 20),
             "UserName"
             )
         self.w.userName = EditText(
             (90, 10, -10, 20),
-            ""
+            getExtensionDefault(blackrobocjk_locker+"username", "")
             )
         self.w.passwordTitle = TextBox(
             (10, 40, 100, 20),
@@ -596,7 +599,7 @@ class UsersInfos:
             )
         self.w.password = SecureEditText(
             (90, 40, -10, 20),
-            ""
+            getExtensionDefault(blackrobocjk_locker+"password", "")
             )
         self.w.hostlockerTitle = TextBox(
             (10, 70, 100, 20),
@@ -604,15 +607,15 @@ class UsersInfos:
             )
         self.w.hostlocker = EditText(
             (90, 70, -10, 20),
-            ""
+            getExtensionDefault(blackrobocjk_locker+"hostlocker", "")
             )
         self.w.hostLockerPasswordTitle = TextBox(
-            (10, 100, 150, 20),
-            "HostLocker optional"
+            (10, 100, 200, 20),
+            "HostLocker password optional"
             )
         self.w.hostLockerPassword = SecureEditText(
-            (140, 100, -10, 20),
-            ""
+            (200, 100, -10, 20),
+            getExtensionDefault(blackrobocjk_locker+"hostlockerpassword", "")
             )
         self.w.closeButton = Button(
             (10, -30, -10, -10),
@@ -623,10 +626,16 @@ class UsersInfos:
 
     def closeCallback(self, sender):
         if not self.w.userName.get() or not self.w.password.get() or not self.w.hostlocker.get(): return
+
         self.RCJKI.gitUserName = self.w.userName.get()
         self.RCJKI.gitPassword = self.w.password.get()
         self.RCJKI.gitHostLocker = self.w.hostlocker.get()
         self.RCJKI.gitHoslLockerPassword = self.w.hostLockerPassword.get()
+
+        setExtensionDefault(blackrobocjk_locker+"username", self.RCJKI.gitUserName)
+        setExtensionDefault(blackrobocjk_locker+"password", self.RCJKI.gitPassword)
+        setExtensionDefault(blackrobocjk_locker+"hostlocker", self.RCJKI.gitHostLocker)
+        setExtensionDefault(blackrobocjk_locker+"hostlockerpassword", self.RCJKI.gitHoslLockerPassword)
         self.w.close()
         self.RCJKI.setGitEngine()
         self.RCJKI.roboCJKView.setrcjkFiles()
