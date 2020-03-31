@@ -223,7 +223,8 @@ class RoboCJKController(object):
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
         if glyph is None: return
-        self.currentFont.locker.unlock(self.currentGlyph)
+        if glyph.name != self.currentGlyph.name:
+            self.currentFont.locker.unlock(self.currentGlyph)
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
         self.currentGlyph.sourcesList = [
