@@ -257,6 +257,7 @@ class RoboCJKController(object):
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()
+        self.currentFont.locker.unlock(self.currentGlyph)
 
     def exportDataBase(self):
         with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
