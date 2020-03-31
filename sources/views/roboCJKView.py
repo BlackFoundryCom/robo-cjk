@@ -659,7 +659,7 @@ class RoboCJKView(BaseWindowController):
         # if self.currentrcjkFile is None:
         #     self.currentrcjkFile = ""
         fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
-        self.RCJKI.currentFont = font.Font(fontPath, self.RCJKI.gitUserName, self.RCJKI.gitPassword, self.RCJKI.gitHostLocker, self.RCJKI.gitHoslLockerPassword)
+        self.RCJKI.currentFont = font.Font(fontPath, self.RCJKI.gitUserName, self.RCJKI.gitPassword, self.RCJKI.gitHostLocker, self.RCJKI.gitHostLockerPassword)
         self.RCJKI.dataBase = {}
 
         if 'database.json' in os.listdir(fontPath):
