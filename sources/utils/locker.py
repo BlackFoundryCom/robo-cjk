@@ -29,12 +29,19 @@ class Locker():
     def __init__(self, path):
         self._path = os.path.join(path, 'locker__')
         if not os.path.exists(self._path):
-            os.mkdir(self._path)
-            subprocess.run(['git', 'init'], cwd=self._path)
+            githubUsername = 'BlackFoundry'
+            githubPassword = 'xxxx'
+            repoName = 'locker_'+os.path.split(path)[1].split('.')[0]
+            cp = subprocess.run(['curl', '-u', githubUsername+":"+githubPassword, "https://api.github.com/user/repos", "-d", "{\"name\":\""+repoName+"\", \"private\": true}"])
+            print(cp.returncode)
+            cp = subprocess.run(['git', 'clone', "https://"+githubUsername+":"+githubPassword+"@github.com/"+githubUsername+"/"+repoName+".git", "locker__"], cwd=path)
+            print(cp.returncode)
             with open(os.path.join(self._path, "README.txt"), 'w') as f:
                 f.write("This is a git repo for locking elements from "+path+"\n")
             subprocess.run(['git', 'add', 'README.txt'], cwd=self._path)
             subprocess.run(['git', 'commit', '-m', 'init'], cwd=self._path)
+            subprocess.run(['git', 'push'], cwd=self._path)
+            
         self._git = gitEngine.GitEngine(self._path)
         self._username = self._git.user()
         print("Locker inited for {} at {}".format(self._username, self._path))
@@ -63,11 +70,11 @@ class Locker():
         print("Locker getLockInfo", lock, user, refcount)
         return LockInfo(int(lock), user, int(refcount))
 
-    def setLockInfo(self, filepath, li, g):
+    def setLockInfo(self, filepath, li, g, lock_unlock):
         print("Locker setLockInfo", li.lock, li.user, li.refcount)
         with open(filepath,'w', encoding='utf-8') as f:
             f.write("{} {} {}".format(li.lock, li.user, li.refcount))
-        return self._git.commitPushOrFail('lock '+g.name)
+        return self._git.commitPushOrFail(lock_unlock + ' ' + g.name)
 
     def isLocked(self, g):
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))
@@ -83,7 +90,7 @@ class Locker():
         if li.lock: return li.user == self._username
         li.lock = 1
         li.user = self._username
-        self.setLockInfo(filepath, li, g)
+        self.setLockInfo(filepath, li, g, 'lock')
         return True
 
     def unlock(self, g):
@@ -94,5 +101,5 @@ class Locker():
         if li.user != self._username: return False
         li.lock = 0
         li.user = '__None__'
-        self.setLockInfo(filepath, li, g)
+        self.setLockInfo(filepath, li, g, 'unlock')
         return True
