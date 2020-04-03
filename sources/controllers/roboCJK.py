@@ -103,7 +103,7 @@ class RoboCJKController(object):
             posSize = (20, 0, 300, -20), 
             delegate = self
             )
-        self.pdf = PDFProofer.PDFEngine(self)
+        # self.pdf = PDFProofer.PDFEngine(self)
         self.importDCFromCG = None
         self.sliderValue = None
         self.sliderName = None

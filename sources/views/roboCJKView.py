@@ -34,6 +34,8 @@ from models import font
 reload(font)
 from views import sheets
 reload(sheets)
+from views import PDFProofer
+reload(PDFProofer)
 
 
 
@@ -467,7 +469,7 @@ class RoboCJKView(BaseWindowController):
         self.w.open()
 
     def pdfProoferButtonCallback(self, sender):
-        # self.RCJKI.pdf = PDFProofer.PDFEngine(self)
+        self.RCJKI.pdf = PDFProofer.PDFEngine(self)
         self.RCJKI.pdf.interface.open()
 
     def atomicElementSearchBoxCallback(self, sender):
