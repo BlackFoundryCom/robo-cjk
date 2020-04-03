@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
-from vanilla.dialogs import getFolder, putFile
+from vanilla.dialogs import getFolder, putFile, askYesNo
 from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow
 from defconAppKit.windows.baseWindow import BaseWindowController
 from views import canvasGroups
@@ -620,11 +620,15 @@ class RoboCJKView(BaseWindowController):
     def newProjectButtonCallback(self, sender):
         folder = putFile()
         if not folder: return
+        askYesNo('Would you create a private locker repository?', resultCallback = self.askYesNocallback)
         path = '{}.rcjk'.format(folder)
         files.makepath(os.path.join(path, 'folder.proofer'))
         self.RCJKI.projectRoot = os.path.split(path)[0]
         self.RCJKI.setGitEngine()
         self.setrcjkFiles()
+
+    def askYesNocallback(self, sender):
+        self.RCJKI.privateLocker = sender
 
     @gitCoverage()
     def setrcjkFiles(self):
@@ -659,7 +663,14 @@ class RoboCJKView(BaseWindowController):
         # if self.currentrcjkFile is None:
         #     self.currentrcjkFile = ""
         fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
-        self.RCJKI.currentFont = font.Font(fontPath, self.RCJKI.gitUserName, self.RCJKI.gitPassword, self.RCJKI.gitHostLocker, self.RCJKI.gitHostLockerPassword)
+        self.RCJKI.currentFont = font.Font(
+            fontPath, 
+            self.RCJKI.gitUserName, 
+            self.RCJKI.gitPassword, 
+            self.RCJKI.gitHostLocker, 
+            self.RCJKI.gitHostLockerPassword, 
+            self.RCJKI.privateLocker
+            )
         self.RCJKI.dataBase = {}
 
         if 'database.json' in os.listdir(fontPath):

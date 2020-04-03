@@ -26,7 +26,7 @@ class LockInfo():
         self.refcount = r # reference count
 
 class Locker():
-    def __init__(self, path, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword):
+    def __init__(self, path, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
         self._path = os.path.join(path, 'locker__')
         if not os.path.exists(self._path):
             githubHostLocker = gitHostLocker

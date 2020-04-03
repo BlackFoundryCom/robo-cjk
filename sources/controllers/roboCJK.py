@@ -82,6 +82,7 @@ class RoboCJKController(object):
         self.gitPassword = ''
         self.gitHostLocker = ''
         self.gitHostLockerPassword = ''
+        self.privateLocker = True
         # installTool(self.transformationTool)
 
         self.locked = False
