@@ -231,7 +231,7 @@ class Interface:
         self.w.delPage = Button(
             (50, 210, 40, 20),
             '-',
-            callback = self.newPageCallback,
+            callback = self.delPageCallback,
             sizeStyle = "small"
             )
 
@@ -494,6 +494,14 @@ class Interface:
 
     def newPageCallback(self, sender):
         self.newPage()
+        self.refresh()
+
+    def delPageCallback(self, sender):
+        sel = self.w.pagesList.getSelection()
+        if not sel:
+            return
+        index = sel[0]
+        self.pdf.removePage(index)
         self.refresh()
 
     def setPageGroupsUI(self):
