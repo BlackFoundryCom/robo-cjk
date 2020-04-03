@@ -620,7 +620,7 @@ class RoboCJKView(BaseWindowController):
     def newProjectButtonCallback(self, sender):
         folder = putFile()
         if not folder: return
-        askYesNo('Would you create a private locker repository?', resultCallback = self.askYesNocallback)
+        askYesNo('Would you like to create a private locker repository?', resultCallback = self.askYesNocallback)
         path = '{}.rcjk'.format(folder)
         files.makepath(os.path.join(path, 'folder.proofer'))
         self.RCJKI.projectRoot = os.path.split(path)[0]
@@ -688,8 +688,9 @@ class RoboCJKView(BaseWindowController):
         selection = sender.getSelection()
         if not selection: return
         glyphName = items[selection[0]]
-        if CurrentGlyphWindow() is not None:
+        try:
             CurrentGlyphWindow().close()
+        except:pass
 
         g = self.currentFont[glyphName]
         font = self.RCJKI.currentFont
