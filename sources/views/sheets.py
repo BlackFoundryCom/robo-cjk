@@ -622,6 +622,7 @@ class UsersInfos:
             "Login",
             callback = self.closeCallback
             )
+        self.w.setDefaultButton(self.w.closeButton)
         self.w.open()
 
     def closeCallback(self, sender):
