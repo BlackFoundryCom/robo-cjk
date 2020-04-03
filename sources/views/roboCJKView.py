@@ -677,7 +677,7 @@ class RoboCJKView(BaseWindowController):
         selection = sender.getSelection()
         if not selection: return
         glyphName = items[selection[0]]
-        if CurrentGlyphWindow():
+        if CurrentGlyphWindow() is not None:
             CurrentGlyphWindow().close()
 
         g = self.currentFont[glyphName]
@@ -757,3 +757,91 @@ class RoboCJKView(BaseWindowController):
             if not name in sets:
                 return name
             index+=1
+
+
+class ImportDeepComponentFromAnotherCharacterGlyph:
+
+    def updateView(func):
+        def wrapper(self, *args, **kwargs):
+            func(self, *args, **kwargs)
+            self.w.canvas.update()
+        return wrapper
+
+    def __init__(self, RCJKI):
+        self.RCJKI = RCJKI
+        self.w = FloatingWindow((200, 150), "Import DC From CG")
+        self.previewGlyph = None
+        self.index = None
+        self.w.searchGlyph = SearchBox(
+            (10, 10, -10, 20),
+            callback = self.searchGlyphCallback
+            )
+        self.w.deepComponentList = List(
+            (10, 40, 50, -10),
+            [],
+            doubleClickCallback = self.deepComponentListDoubleClickCallback,
+            selectionCallback = self.deepComponentListSelectionCallback
+            )
+        self.w.canvas = CanvasGroup(
+            (60, 40, -0, -0), 
+            delegate = self
+            )
+
+    def open(self):
+        self.w.open()
+
+    def close(self):
+        self.w.close()
+
+    @updateView
+    def searchGlyphCallback(self, sender):
+        try:
+            name = files.unicodeName(sender.get())
+        except:
+            name = str(sender.get())
+        if not name in self.RCJKI.currentFont.characterGlyphSet:
+            return
+        self.charName = name
+        self.refGlyph = self.RCJKI.currentFont[name]
+        self.previewGlyph = self.refGlyph.generateCharacterGlyph(
+                            self.refGlyph, 
+                            preview=True,
+                            )
+        self.deepComponents = self.refGlyph._deepComponents
+        self.deepComponentsName = [chr(int(dc["name"].split("_")[1], 16)) for dc in self.deepComponents]
+        self.w.deepComponentList.set(self.deepComponentsName)
+
+    @updateView
+    def deepComponentListDoubleClickCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.index = None
+            return
+        self.index = sel[0]
+        dc = self.deepComponents[self.index]
+        self.RCJKI.currentGlyph.addDeepComponentNamed(dc["name"], dc)
+        self.RCJKI.updateDeepComponent()
+
+    def draw(self):
+        if self.previewGlyph is None: return
+        mjdt.save()
+        mjdt.translate(20, 21)
+        mjdt.scale(.09)
+        for i, e in enumerate(self.previewGlyph):
+            if i == self.index:
+                mjdt.fill(.7, 0, .15, 1)
+            else:
+                mjdt.fill(0, 0, 0, 1)
+            for dcCoord, l in e.values():
+                for dcAtomicElements in l:
+                    for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
+                        mjdt.drawGlyph(atomicInstanceGlyph)
+        mjdt.restore()
+
+    @updateView
+    def deepComponentListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: 
+            self.index = None
+            return
+        self.index = sel[0]

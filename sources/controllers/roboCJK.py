@@ -103,6 +103,7 @@ class RoboCJKController(object):
             delegate = self
             )
         self.pdf = PDFProofer.PDFEngine(self)
+        self.importDCFromCG = None
         self.sliderValue = None
         self.sliderName = None
         self.dataBase = {}
@@ -219,6 +220,12 @@ class RoboCJKController(object):
         self.closeCharacterWindow()
         self.currentFont.locker.unlock(self.currentGlyph)
         self.currentFont.save()
+        self.closeimportDCFromCG()
+
+    def closeimportDCFromCG(self):
+        if self.importDCFromCG is not None:
+            self.importDCFromCG.close()
+            self.importDCFromCG = None
 
     @lockedProtect
     def currentGlyphChanged(self, notification):
@@ -226,6 +233,7 @@ class RoboCJKController(object):
         if glyph is None: return
         if glyph.name != self.currentGlyph.name:
             self.currentFont.locker.unlock(self.currentGlyph)
+            self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
         self.currentGlyph.sourcesList = [
@@ -486,6 +494,8 @@ class RoboCJKController(object):
         elif self.isCharacterGlyph:
             item = ('Add Deep Component', self.addDeepComponent)
             menuItems.append(item)
+            item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
+            menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
@@ -504,7 +514,10 @@ class RoboCJKController(object):
     def removeDeepComponent(self, sender):
         self.currentGlyph.removeDeepComponentAtIndexToGlyph()
         self.updateDeepComponent()
- 
+
+    def importDeepComponentFromAnotherCharacterGlyph(self, sender):
+        self.importDCFromCG = roboCJKView.ImportDeepComponentFromAnotherCharacterGlyph(self)
+        self.importDCFromCG.open()
     # def addLayerToAtomicElement(self, sender):
     #     availableLayers = [l for l in self.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
     #     if [l for l in self.currentGlyph._RGlyph.layers if l.name != 'foreground']:
