@@ -328,70 +328,126 @@
 		<div class='section' id="transformation">
 			<h2>Transformation</h2>
 			<div class= "cell text">
-				<span>
+				<p>
+				Each elements can receive three kind of transformation, such as: <br>
+					<div STYLE="padding-left: 4%;">– Offset x / y</div>
+					<div STYLE="padding-left: 4%;">– Scale x / y</div>
+					<div STYLE="padding-left: 4%;">– Rotation </div>
+				</p>
+				<p>
+				There is three way to do a transformation:<br>
+					<div STYLE="padding-left: 4%;">– with the keyboard</div>
+					<div STYLE="padding-left: 4%;">– with mouse with a specific tool, in the glyphwindow</div>
+					<div STYLE="padding-left: 4%;">– with a popover above the selected element</div>
+				</p>
+				<p>
+					<h3>
+						Key board (On the selected elements):
+					</h3>
+				
 					<p>
-					Each elements can receive three kind of transformation, such as: <br>
-						<div STYLE="padding-left: 4%;">– Offset x / y</div>
-						<div STYLE="padding-left: 4%;">– Scale x / y</div>
-						<div STYLE="padding-left: 4%;">– Rotation </div>
+					<div STYLE="padding-left: 4%;">Offset:</div>
+						<div STYLE="padding-left: 6%;">1 unit with ←, →, ↑, ↓</div>
+						<div STYLE="padding-left: 6%;">10 unit with ⇧←, ⇧→, ⇧↑, ⇧↓</div>
+						<div STYLE="padding-left: 6%;">100 unit with ⌘⇧←, ⌘⇧→, ⌘⇧↑, ⌘⇧↓</div>
+					</p><p>
+					<div STYLE="padding-left: 4%;">Rotation:</div>
+						<div STYLE="padding-left: 6%;">1° with ⌥←, ⌥→</div>
+						<div STYLE="padding-left: 6%;">3° with ⌥⇧←, ⌥⇧→</div>
+						<div STYLE="padding-left: 6%;">6° with ⌘⌥⇧←, ⌘⌥⇧→</div>
+					</p><p>
+					<div STYLE="padding-left: 4%;">Scale:</div>
+						<div STYLE="padding-left: 6%;">10/1000 ⇪←, ⇪→, ⇪↑, ⇪↓</div>
+						<div STYLE="padding-left: 6%;">100/1000 ⇪⇧←, ⇪⇧→, ⇪⇧↑, ⇪⇧↓</div>
+					</p><p>
+					<div STYLE="padding-left: 4%;">Duplicate selected elements:</div>
+						<div STYLE="padding-left: 6%;">⌥ d	</div>
+					</p>
+				</p>
+				<p>
+					<h3>
+						Mouse (On the selected elements):
+					</h3>
+				
+					<div STYLE="padding-left: 4%;">Select the transformation tool in the glyph window tool bar</div>
+					<p>
+					<div STYLE="padding-left: 4%;">Offset:</div>
+						<div STYLE="padding-left: 6%;">click and drag</div>
 					</p>
 					<p>
-					There is three way to do a transformation:<br>
-						<div STYLE="padding-left: 4%;">– with the keyboard</div>
-						<div STYLE="padding-left: 4%;">– with mouse with a specific tool, in the glyphwindow</div>
-						<div STYLE="padding-left: 4%;">– with a popover above the selected element</div>
+					<div STYLE="padding-left: 4%;">Rotation:</div>
+						<div STYLE="padding-left: 6%;">⌥ click and drag</div>
 					</p>
 					<p>
-						<h3>
-							Key board (On the selected elements):
-						</h3>
-					
-						<p>
-						<div STYLE="padding-left: 4%;">Offset:</div>
-							<div STYLE="padding-left: 6%;">1 unit with ←, →, ↑, ↓</div>
-							<div STYLE="padding-left: 6%;">10 unit with ⇧←, ⇧→, ⇧↑, ⇧↓</div>
-							<div STYLE="padding-left: 6%;">100 unit with ⌘⇧←, ⌘⇧→, ⌘⇧↑, ⌘⇧↓</div>
-						</p><p>
-						<div STYLE="padding-left: 4%;">Rotation:</div>
-							<div STYLE="padding-left: 6%;">1° with ⌥←, ⌥→</div>
-							<div STYLE="padding-left: 6%;">3° with ⌥⇧←, ⌥⇧→</div>
-							<div STYLE="padding-left: 6%;">6° with ⌘⌥⇧←, ⌘⌥⇧→</div>
-						</p><p>
-						<div STYLE="padding-left: 4%;">Scale:</div>
-							<div STYLE="padding-left: 6%;">10/1000 ⇪←, ⇪→, ⇪↑, ⇪↓</div>
-							<div STYLE="padding-left: 6%;">100/1000 ⇪⇧←, ⇪⇧→, ⇪⇧↑, ⇪⇧↓</div>
-						</p><p>
-						<div STYLE="padding-left: 4%;">Duplicate selected elements:</div>
-							<div STYLE="padding-left: 6%;">⌥ d	</div>
-						</p>
+					<div STYLE="padding-left: 4%;">Scale:</div>
+						<div STYLE="padding-left: 6%;">⌘ click and drag</div>
+					</p>
+				</p>
+				<p>
+					<h3>
+						Popover (On one selected element):		
+					</h3>
+				
+					<div STYLE="padding-left: 4%;">Double click on the selected element, with any tool, a popover will open. <br>Displaying all the transformations datas, which are all editable. <br>You can as well copy the data, and paste it in another element</div>
+				</p>
+				
+			</div>
+		</div>
+
+		<div class='section'>
+			<h2>PDF proofer</h2>
+			<div class= "row cell">
+				<div class="column" STYLE="text-align:center;">
+					<video width="90%" controls="controls" outline="none">
+					  <source src="manual/img/pdfProoferPage.mp4" type="video/mp4"/>
+					  	PDF Proofer Page Section
+					</video>
+				</div>
+
+				<div class="column">
+					<p>
+						The PDF Proofer allows to export PDF files supporting deep components.
 					</p>
 					<p>
-						<h3>
-							Mouse (On the selected elements):
-						</h3>
-					
-						<div STYLE="padding-left: 4%;">Select the transformation tool in the glyph window tool bar</div>
-						<p>
-						<div STYLE="padding-left: 4%;">Offset:</div>
-							<div STYLE="padding-left: 6%;">click and drag</div>
-						</p>
-						<p>
-						<div STYLE="padding-left: 4%;">Rotation:</div>
-							<div STYLE="padding-left: 6%;">⌥ click and drag</div>
-						</p>
-						<p>
-						<div STYLE="padding-left: 4%;">Scale:</div>
-							<div STYLE="padding-left: 6%;">⌘ click and drag</div>
-						</p>
+						The first section is the page manager.
 					</p>
 					<p>
-						<h3>
-							Popover (On one selected element):		
-						</h3>
-					
-						<div STYLE="padding-left: 4%;">Double click on the selected element, with any tool, a popover will open. <br>Displaying all the transformations datas, which are all editable. <br>You can as well copy the data, and paste it in another element</div>
+						You can add/remove pages, change their size, change number of columns/lines, change the weight of margins and the background color.
 					</p>
-				</span>
+					<p>
+						On the right side, the lines and columns are represented by grey rectangles. (These rectangles won't be exported in the final pdf).
+					</p>
+				</div>
+			</div>
+			<div class="row cell subsection">
+				<div class="column" STYLE="text-align:center;">
+					<video width="90%" controls="controls" outline="none">
+						<source src="manual/img/pdfProoferTextBoxes.mp4" type="video/mp4"/>
+						PDF Proofer Text Section
+					</video>
+					</div>
+
+				<div class="column">
+					<p>
+						The second section manages the texts.
+					</p>
+					<p>
+						Select a text box in the Box list. A Red stroke will show you the selected box (This red stroke won't be exported in the final pdf).
+					</p>
+					<p>
+						In the selected box you can select the font. It can be your current .rcjk project font, or a font from your fontbook.
+					</p>
+					<p>
+						Then type your text, change the fontsize, the color, tracking, lineheight and alignment.
+					</p>
+
+					<p class = "ready">
+						Your PDF is ready, export it with the bottom button.
+					</p>
+<!-- 					<p>
+						And finally export your PDF with the bottom button.
+					</p> -->
+				</div>
 				
 			</div>
 		</div>
@@ -399,7 +455,6 @@
 		<div class='section'>
 			<h2>Additional tools</h2>
 			<div class= "cell text">
-				<span>
 					<p>
 						Find out our free additional tools on our <a href="https://github.com/BlackFoundryCom" target="_blank">github</a>
 					</p>
@@ -411,7 +466,6 @@
 						<a href="https://github.com/BlackFoundryCom/reference-viewer" target="_blank">• Reference Viewer</a> <br>
 						<div STYLE="padding-left: 4%;">A Robofont extension to display reference fonts in the glyph window.</div>
 					</p>
-				</span>
 				
 			</div>
 		</div>
