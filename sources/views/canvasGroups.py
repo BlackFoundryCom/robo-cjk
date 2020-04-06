@@ -309,7 +309,12 @@ class GlyphPreviewCanvas(CanvasGroup):
                     )
             else:
                 self.glyph.computeDeepComponents()
-                self.drawer.drawGlyphAtomicInstance(self.glyph, (0, 0, 0, 1), scale, (0, 0, 0, 1))
+                self.drawer.drawGlyphAtomicInstance(
+                    self.glyph, 
+                    (0, 0, 0, 1), 
+                    scale, 
+                    (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
+                    )
 
         elif self.glyphType == 'characterGlyph':
             if self.glyph.preview:
@@ -321,6 +326,11 @@ class GlyphPreviewCanvas(CanvasGroup):
                     )
             else:
                 self.glyph.computeDeepComponents()
-                self.drawer.drawGlyphAtomicInstance(self.glyph, (0, 0, 0, 1), scale, (0, 0, 0, 1))
+                self.drawer.drawGlyphAtomicInstance(
+                    self.glyph, 
+                    (0, 0, 0, 1), 
+                    scale, 
+                    (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
+                    )
 
 

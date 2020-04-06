@@ -90,6 +90,32 @@ class UfoText(Textbox):
     def __str__(self):
         return super().__str__() 
 
+    ###### RECURSIVITY TEST (FAIL) ######
+    # @property
+    # def glyphs(self):
+    #     x = 0
+    #     y = (self.position[3]-self.fontSize)*(1000/self.fontSize)
+        
+    #     for char in self.text:
+    #         charName = files.unicodeName(char)
+    #         try:
+    #             def yieldAtomicInstanceGlyph(glyph):
+    #                 glyph.computeDeepComponents()
+    #                 yield (x, y), glyph, glyph.atomicInstancesGlyphs
+    #                 for c in glyph.flatComponents:
+    #                     yield from yieldAtomicInstanceGlyph(self.RCJKI.currentFont[c.baseGlyph])
+
+    #             rglyph = self.RCJKI.currentFont[charName] 
+    #             # rglyph.computeDeepComponents()
+    #             yield from yieldAtomicInstanceGlyph(rglyph)
+                
+    #             x += rglyph.width + self.tracking * (1000 / self.fontSize)
+    #             if (x + rglyph.width) // (1000/self.fontSize) > self.position[2]:
+    #                 y -= self.lineHeight
+    #                 x = 0
+    #         except:
+    #             continue    
+
     @property
     def glyphs(self):
         x = 0
@@ -98,13 +124,13 @@ class UfoText(Textbox):
         for char in self.text:
             charName = files.unicodeName(char)
             try:
-                rglyph = self.RCJKI.currentFont[charName]    
-                rglyph.computedDeepComponents = rglyph.generateCharacterGlyph(
-                    rglyph,
-                    False
-                    )
-
+                rglyph = self.RCJKI.currentFont[charName] 
+                rglyph.computeDeepComponents()
                 yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
+                for c in rglyph.flatComponents:
+                    g = self.RCJKI.currentFont[c.baseGlyph]
+                    g.computeDeepComponents()
+                    yield (x, y), g, g.atomicInstancesGlyphs
                 
                 x += rglyph.width + self.tracking * (1000 / self.fontSize)
                 if (x + rglyph.width) // (1000/self.fontSize) > self.position[2]:

@@ -53,6 +53,11 @@ class Glyph(RGlyph):
     def _RGlyph(self):
         return self.currentFont._RFont[self.name]
 
+    @property
+    def flatComponents(self):
+        return self._RGlyph.components
+
+
     def keyDown(self, keys):
         modifiers, inputKey, character = keys
         element = self._getElements()
