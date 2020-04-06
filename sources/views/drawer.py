@@ -42,6 +42,7 @@ class Drawer():
             )
 
     def drawCharacterGlyphPreview(self, glyph, scale, color, strokecolor):
+
         for i, e in enumerate(glyph.preview):
             for dcName, (dcCoord, l) in e.items():
                 for dcAtomicElements in l:
@@ -112,16 +113,19 @@ class Drawer():
                     color = (.25, 0, .5, .8)
                 else: color = (.5, 0, .25, .4)
 
-        for i, atomicInstanceGlyph in self.RCJKI.currentGlyph.atomicInstancesGlyphs:
+        self.drawGlyphAtomicInstance(self.RCJKI.currentGlyph, color, scale, customColor, view)
+
+    def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False):
+        for i, atomicInstanceGlyph in glyph.atomicInstancesGlyphs:
             mjdt.save()
             mjdt.fill(*color)
-            if i in self.RCJKI.currentGlyph.selectedElement:
+            if i in glyph.selectedElement:
                 mjdt.fill(0, .8, .8, .5)
             for c in atomicInstanceGlyph:
                 if c.clockwise:
                     mjdt.stroke(1, 0, 0, 1)
                     mjdt.strokeWidth(2*scale)
             mjdt.drawGlyph(atomicInstanceGlyph) 
-            if customColor is None: 
+            if customColor is None and view: 
                 self.drawIndexOfElements(i, atomicInstanceGlyph, view)
             mjdt.restore()

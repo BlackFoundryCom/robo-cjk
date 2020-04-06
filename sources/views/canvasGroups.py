@@ -300,17 +300,27 @@ class GlyphPreviewCanvas(CanvasGroup):
                 )
 
         elif self.glyphType == 'deepComponent':
-            self.drawer.drawDeepComponentPreview(
-                self.glyph, 
-                scale, 
-                color = (0, 0, 0, 1), 
-                strokecolor = (0, 0, 0, 0)
-                )
+            if self.glyph.preview:
+                self.drawer.drawDeepComponentPreview(
+                    self.glyph, 
+                    scale, 
+                    color = (0, 0, 0, 1), 
+                    strokecolor = (0, 0, 0, 0)
+                    )
+            else:
+                self.glyph.computeDeepComponents()
+                self.drawer.drawGlyphAtomicInstance(self.glyph, (0, 0, 0, 1), scale, (0, 0, 0, 1))
 
         elif self.glyphType == 'characterGlyph':
-            self.drawer.drawCharacterGlyphPreview(
-                self.glyph, 
-                scale, 
-                color = (0, 0, 0, 1), 
-                strokecolor = (0, 0, 0, 0)
-                )
+            if self.glyph.preview:
+                self.drawer.drawCharacterGlyphPreview(
+                    self.glyph, 
+                    scale, 
+                    color = (0, 0, 0, 1), 
+                    strokecolor = (0, 0, 0, 0)
+                    )
+            else:
+                self.glyph.computeDeepComponents()
+                self.drawer.drawGlyphAtomicInstance(self.glyph, (0, 0, 0, 1), scale, (0, 0, 0, 1))
+
+
