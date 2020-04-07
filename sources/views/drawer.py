@@ -29,6 +29,7 @@ class Drawer():
 
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
+        self.refGlyph = None
 
     def drawIndexOfElements(self, d, glyph, view):
         x, y = glyph[0].points[0].x, glyph[0].points[0].y
@@ -72,7 +73,7 @@ class Drawer():
         mjdt.drawGlyph(glyph.preview)  
         mjdt.restore()
         
-    def draw(self, info, customColor = None):
+    def draw(self, info, customColor = None, refGlyph = None):
         view = info["view"]
         scale = info['scale']
         color = customColor
@@ -114,6 +115,11 @@ class Drawer():
                 else: color = (.5, 0, .25, .4)
 
         self.drawGlyphAtomicInstance(self.RCJKI.currentGlyph, color, scale, customColor, view)
+        if self.refGlyph is not None:
+            mjdt.save()
+            mjdt.fill(0, 0, 0, .2)
+            mjdt.drawGlyph(self.refGlyph)
+            mjdt.restore()
 
     def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7)):
         for i, atomicInstanceGlyph in glyph.atomicInstancesGlyphs:

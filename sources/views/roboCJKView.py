@@ -18,7 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from vanilla.dialogs import getFolder, putFile, askYesNo
-from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow
+from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView
 from defconAppKit.windows.baseWindow import BaseWindowController
 from views import canvasGroups
 from mojo.canvas import CanvasGroup
@@ -97,11 +97,11 @@ class EditingSheet():
 class CharacterWindow:
 
     filterRules = [
-        "All",
         "In font",
         "Not in font",
         "Can be designed with current deep components",
         "Can't be designed with current deep components",
+        "All",
         # "Custom list"
         ]
 
@@ -116,6 +116,7 @@ class CharacterWindow:
             )
         self.w.backgroundCanvas = CanvasGroup((0, 0, -0, -0), delegate = self)
         self.filter = 0
+        self.preview = 1
         self.w.filter = PopUpButton(
             (0, 0, -0, 20),
             self.filterRules,
@@ -138,7 +139,7 @@ class CharacterWindow:
         self.w.previewCheckBox = CheckBox(
             (130, 20, -10, 20),
             'Preview',
-            value = False,
+            value = self.preview,
             sizeStyle = "small",
             callback = self.previewCheckBoxCallback
             )
@@ -151,33 +152,35 @@ class CharacterWindow:
     def filterCharacters(self):
         l = []
 
-        if self.filter == 0:
+        if self.filter == 4:
             l = list(self.relatedChars)
             title = "Related Characters"
 
-        elif self.filter in [1, 2]:
+        elif self.filter in [0, 1]:
             names = [files.unicodeName(c) for c in self.relatedChars]
-            if self.filter == 1:
+            if self.filter == 0:
                 result = set(names) & set(self.RCJKI.currentFont.characterGlyphSet)
             else:
                 result = set(names) - set(self.RCJKI.currentFont.characterGlyphSet)
             title = self.filterRules[self.filter]
             l = [chr(int(n[3:], 16)) for n in result]
 
-        elif self.filter in [3, 4]:
+        elif self.filter in [2, 3]:
             DCSet = set(self.RCJKI.currentFont.deepComponentSet)
             for c in self.relatedChars:
                 compo = ["DC_%s_00"%hex(ord(v))[2:].upper() for v in self.RCJKI.dataBase[c]]
                 inside = len(set(compo) - DCSet) == 0
-                if self.filter == 3 and inside:
+                if self.filter == 2 and inside:
                     l.append(c)
-                elif self.filter == 4 and not inside:
+                elif self.filter == 3 and not inside:
                     l.append(c)
-            if self.filter == 3:
+            if self.filter == 2:
                 result = set([files.unicodeName(c) for c in l]) - set(self.RCJKI.currentFont.characterGlyphSet)
                 l = [chr(int(n[3:], 16)) for n in result]
             title = " ".join(self.filterRules[self.filter].split(' ')[:3])
 
+        self.RCJKI.drawer.refGlyph = None 
+        UpdateCurrentGlyphView()
         self.w.charactersList.set(l)
         self.w.setTitle("%s %s"%(len(l), title))
 
@@ -197,10 +200,13 @@ class CharacterWindow:
         self.w.open()
 
     def close(self):
+        self.RCJKI.drawer.refGlyph = None
         self.w.close()
 
     def charactersListSelectionCallback(self, sender):
         self.w.previewCheckBox.show(self.filter == 1)
+        if self.preview:
+            self.setRefGlyph(sender)
 
         sel = sender.getSelection()
         if not sel:
@@ -228,9 +234,25 @@ class CharacterWindow:
                 ulock = font.locker.lock(font[name])
                 if ulock == True:
                     OpenGlyphWindow(font[name]._RGlyph)
+
+    def setRefGlyph(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.RCJKI.drawer.refGlyph = None
+            return
+        char = sender.get()[sel[0]]
+        if self.preview:
+            glyph = self.RCJKI.currentFont[files.unicodeName(char)]
+            self.RCJKI.drawer.refGlyph = glyph
+            UpdateCurrentGlyphView()
         
     def previewCheckBoxCallback(self, sender):
-        pass
+        self.preview = sender.get()
+        if self.preview:
+            self.setRefGlyph(self.w.charactersList)
+        else:
+            self.RCJKI.drawer.refGlyph = None 
+            UpdateCurrentGlyphView()
 
 class ComponentWindow():
 
