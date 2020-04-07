@@ -30,6 +30,7 @@ class Drawer():
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.refGlyph = None
+        self.refGlyphPos = [0, 0]
 
     def drawIndexOfElements(self, d, glyph, view):
         x, y = glyph[0].points[0].x, glyph[0].points[0].y
@@ -118,6 +119,7 @@ class Drawer():
         if self.refGlyph is not None:
             mjdt.save()
             mjdt.fill(0, 0, 0, .2)
+            mjdt.translate(*self.refGlyphPos)
             mjdt.drawGlyph(self.refGlyph)
             mjdt.restore()
 

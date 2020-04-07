@@ -143,7 +143,24 @@ class CharacterWindow:
             sizeStyle = "small",
             callback = self.previewCheckBoxCallback
             )
-        self.w.previewCheckBox.show(False)
+        self.w.previewCheckBox.show(self.preview)
+        self.w.sliders = Group((120, 45, -0, -0))
+        self.w.sliders.show(False)
+
+        self.w.sliders.x = Slider((0, 0, -0, 20),
+            minValue = -1000,
+            maxValue = 1000,
+            value = 0,
+            callback = self.sliderCallback)
+        self.w.sliders.y = Slider((0, 20, -0, 20),
+            minValue = -1000,
+            maxValue = 1000,
+            value = 0,
+            callback = self.sliderCallback)
+
+    def sliderCallback(self, sender):
+        self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
+        UpdateCurrentGlyphView()
 
     def filterCallback(self, sender):
         self.filter = sender.get()
@@ -179,7 +196,8 @@ class CharacterWindow:
                 l = [chr(int(n[3:], 16)) for n in result]
             title = " ".join(self.filterRules[self.filter].split(' ')[:3])
 
-        self.RCJKI.drawer.refGlyph = None 
+        self.RCJKI.drawer.refGlyph = None
+        self.RCJKI.drawer.refGlyphPos = [0, 0]   
         UpdateCurrentGlyphView()
         self.w.charactersList.set(l)
         self.w.setTitle("%s %s"%(len(l), title))
@@ -201,10 +219,12 @@ class CharacterWindow:
 
     def close(self):
         self.RCJKI.drawer.refGlyph = None
+        self.RCJKI.drawer.refGlyphPos = [0, 0]
         self.w.close()
 
     def charactersListSelectionCallback(self, sender):
-        self.w.previewCheckBox.show(self.filter == 1)
+        self.w.previewCheckBox.show(self.filter == 0)
+        self.w.sliders.show(self.filter == 0)
         if self.preview:
             self.setRefGlyph(sender)
 
@@ -212,6 +232,8 @@ class CharacterWindow:
         if not sel:
             return
         char = sender.get()[sel[0]]
+        self.w.sliders.x.set(0)
+        self.w.sliders.y.set(0)
         if self.filter in [0, 3]:
             if files.unicodeName(char) in self.RCJKI.currentFont.characterGlyphSet:
                 self.w.previewCheckBox.show(True)
@@ -239,19 +261,23 @@ class CharacterWindow:
         sel = sender.getSelection()
         if not sel:
             self.RCJKI.drawer.refGlyph = None
+            self.RCJKI.drawer.refGlyphPos = [0, 0]
             return
         char = sender.get()[sel[0]]
         if self.preview:
             glyph = self.RCJKI.currentFont[files.unicodeName(char)]
             self.RCJKI.drawer.refGlyph = glyph
+            self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
             UpdateCurrentGlyphView()
         
     def previewCheckBoxCallback(self, sender):
         self.preview = sender.get()
+        self.w.sliders.show(self.preview)
         if self.preview:
             self.setRefGlyph(self.w.charactersList)
         else:
             self.RCJKI.drawer.refGlyph = None 
+            self.RCJKI.drawer.refGlyphPos = [0, 0]
             UpdateCurrentGlyphView()
 
 class ComponentWindow():
