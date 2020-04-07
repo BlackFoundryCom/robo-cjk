@@ -392,7 +392,7 @@ class RoboCJKView(BaseWindowController):
 
         self.w.charactersUsingDCButton = Button(
             (410, 70, 200, 20),
-            "Character using a DC",
+            "Characters with same DC",
             callback = self.charactersUsingDCButtonCallback,
             )
         self.w.charactersUsingDCButton.enable(False)

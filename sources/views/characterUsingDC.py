@@ -36,7 +36,7 @@ class CharacterUsingDCInterface:
         self.c = controller
         self.char = ""
         self.charactersNamesList = []
-        self.w = Window((220, 200), "Character Using DC", minSize = (200, 200))
+        self.w = Window((220, 200), "Characters with same DC", minSize = (200, 200))
         self.w.search = SearchBox((10, 10, 100, 20),
             callback = self.searchCallback)
         self.deepComponentList = set()
