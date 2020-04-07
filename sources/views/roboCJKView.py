@@ -36,6 +36,8 @@ from views import sheets
 reload(sheets)
 from views import PDFProofer
 reload(PDFProofer)
+from views import characterUsingDC
+reload(characterUsingDC)
 
 
 
@@ -373,6 +375,7 @@ class RoboCJKView(BaseWindowController):
             "PDF Proofer", 
             callback = self.pdfProoferButtonCallback,
             )
+        self.w.pdfProoferButton.enable(False)
 
         self.w.rcjkFiles = PopUpButton(
             (10, 40, 200, 20),
@@ -386,6 +389,13 @@ class RoboCJKView(BaseWindowController):
             callback = self.generateFontButtonCallback,
             )
         self.w.generateFontButton.enable(False)
+
+        self.w.charactersUsingDCButton = Button(
+            (410, 70, 200, 20),
+            "Character using a DC",
+            callback = self.charactersUsingDCButtonCallback,
+            )
+        self.w.charactersUsingDCButton.enable(False)
 
         self.w.lockerInfoTextBox = TextBox(
             (210, 70, 200, 20),
@@ -520,6 +530,10 @@ class RoboCJKView(BaseWindowController):
     def fontInfosCallback(self, sender):
         sheets.FontInfosSheet(self.RCJKI, self.w, (220, 225))
 
+    def charactersUsingDCButtonCallback(self, sender):
+        self.characterUsingDC = characterUsingDC.CharacterUsingDC(self.RCJKI)
+        self.characterUsingDC.interface.open()
+
     def generateFontButtonCallback(self, sender):
         # axis = self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']
         # print(axis)
@@ -645,6 +659,8 @@ class RoboCJKView(BaseWindowController):
         self.w.newProjectButton.enable(True)
         self.w.fontInfos.enable(True)
         self.w.generateFontButton.enable(True)
+        self.w.charactersUsingDCButton.enable(True)
+        self.w.pdfProoferButton.enable(True)
 
         if self.currentrcjkFile is None: 
             return
