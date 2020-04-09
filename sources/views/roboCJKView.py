@@ -539,6 +539,7 @@ class RoboCJKView(BaseWindowController):
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
         self.w.atomicElement.set(l)
+        self.w.atomicElement.setSelection([])
 
     def deepComponentSearchBoxCallback(self, sender):
         name = str(sender.get())
@@ -549,19 +550,24 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.setSelection([])
         self.w.characterGlyph.setSelection([])
         self.w.deepComponent.set(l)
+        self.w.deepComponent.setSelection([])
 
     def characterGlyphearchBoxCallback(self, sender):
-        try:
-            name = files.unicodeName(sender.get())
-        except:
-            name = str(sender.get())
-        l = files._getFilteredListFromName(self.currentFont.characterGlyphSet, name)
+        if not sender.get():
+            l = self.currentFont.characterGlyphSet
+        else:
+            try:
+                name = files.unicodeName(sender.get())
+            except:
+                name = str(sender.get())
+            l = files._getFilteredListFromName(self.currentFont.characterGlyphSet, name)
         if not l:
             l = self.currentFont.characterGlyphSet
 
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.set(l)
+        self.w.characterGlyph.setSelection([])
 
     def windowCloses(self, sender):
         for w in AllWindows():
