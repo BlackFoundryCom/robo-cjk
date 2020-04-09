@@ -58,7 +58,7 @@ class AtomicView(CanvasGroup):
             (0, -120, -0, -20), 
             [],
             columnDescriptions = [
-                    {"title": "Axis", "editable": False, "width": 50},
+                    {"title": "Axis", "editable": False, "width": 100},
                     {"title": "Layer", "editable": False, "width": 40},
                     {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
@@ -127,7 +127,7 @@ class DCCG_View(CanvasGroup):
             (0, -220, -0, -140), 
             [],
             columnDescriptions = [
-                    {"title": "Axis", "editable": True, "width": 50},
+                    {"title": "Axis", "editable": True, "width": 100},
                     {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
             selectionCallback = self.sourcesListSelectionCallback,
