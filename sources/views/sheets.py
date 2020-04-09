@@ -23,6 +23,7 @@ import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
 from utils import files
 from AppKit import NumberFormatter, NSColor
+from mojo.UI import PostBannerNotification
 from mojo.extensions import getExtensionDefault, setExtensionDefault
 
 import json, os
@@ -83,6 +84,9 @@ class SelectLayerSheet():
     def addLayer(self, sender):
         newAxisName = self.parent.sheet.newAxisNameEditText.get()
         newLayerName = self.parent.sheet.layerList.get()[self.parent.sheet.layerList.getSelection()[0]]
+        if newAxisName in self.RCJKI.currentGlyph._glyphVariations.keys():
+            PostBannerNotification('Impossible', "Layer name already exist")
+            return
         self.RCJKI.currentGlyph.addGlyphVariation(newAxisName, newLayerName)
         self.RCJKI.updateListInterface()
         self.RCJKI.updateDeepComponent()

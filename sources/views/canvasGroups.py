@@ -209,9 +209,22 @@ class DCCG_View(CanvasGroup):
         edited = sender.getEditedColumnAndRow()
         if edited[0] == 0:
             name =  sender.get()[edited[1]]['Axis']
+            if len([x for x in sender.get() if x['Axis'] == name]) > 1:
+                i = 0
+                while True:
+                    name = sender.get()[edited[1]]['Axis'] + "_" + str(i).zfill(2)
+                    if name not in [x["Axis"] for x in sender.get()]:
+                        print(name)
+                        break
+                    i += 1
+
             if name != self.selectedSourceAxis:
                 self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
                 self.RCJKI.currentGlyph.selectedSourceAxis = name
+            glyphVaritaions = self.RCJKI.currentGlyph._glyphVariations.keys()
+            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVaritaions]
+            sender.set(l)
+            sender.setSelection(sel)
         self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.updateDeepComponent()
 
@@ -262,7 +275,8 @@ class DCCG_View(CanvasGroup):
     def slidersListEditCallback(self, sender):
         if not sender.getSelection(): return
         self.RCJKI.sliderValue = round(float(self.slidersList[sender.getSelection()[0]]['PreviewValue']), 3)
-        self.RCJKI.sliderName = self.slidersList[sender.getSelection()[0]]['Axis']
+        sliderName = self.slidersList[sender.getSelection()[0]]['Axis']
+        self.RCJKI.sliderName = sliderName
         if self.RCJKI.isDeepComponent:
             self.RCJKI.currentGlyph.updateAtomicElementCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
         elif self.RCJKI.isCharacterGlyph:
