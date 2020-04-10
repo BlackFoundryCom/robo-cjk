@@ -238,6 +238,19 @@ class CharacterWindow:
             if files.unicodeName(char) in self.RCJKI.currentFont.characterGlyphSet:
                 self.w.previewCheckBox.show(True)
 
+    def openGlyphWindowIfLockAcquired(self, glyphName):
+        font = self.RCJKI.currentFont
+        g = font[glyphName]._RGlyph
+        locked, alreadyLocked = font.locker.lock(g)
+        if not locked: return
+        if not alreadyLocked:
+            self.RCJKI.gitEngine.pull()
+            font.getGlyphs()
+        if not g._RGlyph.width:
+            width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+            self.currentFont[glyphName]._RGlyph.width = width
+        OpenGlyphWindow(font[glyphName]._RGlyph)
+
     def charactersListDoubleClickCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
@@ -249,22 +262,7 @@ class CharacterWindow:
         except:
             font.newGlyph("characterGlyph", name)
         finally:
-            g = font[name]._RGlyph
-            locker = font.locker.lockedToMe(self.currentFont[glyphName])
-            if not locker:
-                locker = font.locker.isLocked(self.currentFont[glyphName])
-            if locker != self.RCJKI.user:
-                self.RCJKI.gitEngine.pull()
-                font.getGlyphs()
-            if locker == None or locker == self.RCJKI.user:
-                
-                ulock = font.locker.lock(font[name])
-                if ulock == True:
-                    if not g._RGlyph.width:
-                        width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
-                        self.currentFont[glyphName]._RGlyph.width = width
-                    OpenGlyphWindow(font[name]._RGlyph)
-
+            self.openGlyphWindowIfLockAcquired(name)
 
     def setRefGlyph(self, sender):
         sel = sender.getSelection()
@@ -788,20 +786,7 @@ class RoboCJKView(BaseWindowController):
         g = self.currentFont[glyphName]
         font = self.RCJKI.currentFont
         self.RCJKI.currentGlyph = g
-        locker = font.locker.lockedToMe(self.currentFont[glyphName])
-        if not locker:
-            locker = font.locker.isLocked(self.currentFont[glyphName])
-        if locker != self.RCJKI.user:
-            self.RCJKI.gitEngine.pull()
-            font.getGlyphs()
-        if locker == None or locker == self.RCJKI.user: 
-            
-            ulock = font.locker.lock(self.currentFont[glyphName])
-            if ulock == True:
-                if not g._RGlyph.width:
-                    width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
-                    self.currentFont[glyphName]._RGlyph.width = width
-                OpenGlyphWindow(self.currentFont[glyphName]._RGlyph)
+        openGlyphWindowIfLockAcquired(glyphName)
 
     def GlyphsListEditCallback(self, sender):
         sel = sender.getSelection()
@@ -819,7 +804,7 @@ class RoboCJKView(BaseWindowController):
                 lists.setSelection([])
         self.prevGlyphName = sender.get()[sender.getSelection()[0]]
         self.setGlyphNameToCansvas(sender, self.prevGlyphName)
-        user = self.RCJKI.currentFont.locker.isLocked(self.currentFont[self.prevGlyphName])
+        user = self.RCJKI.currentFont.locker.lockingUser(self.currentFont[self.prevGlyphName])
         if user: 
             self.w.lockerInfoTextBox.set('Locked by: ' + user)
         else:

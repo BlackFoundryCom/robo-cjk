@@ -80,7 +80,7 @@ class GitEngine():
         return self.runCommand(['git', 'commit', '-am', str(stamp)])
 
     def push(self):
-        if not self._ok: return
+        if not self._ok: return False
         return self.runCommand(['git', 'push'])
 
     def commitPushOrFail(self, stamp):

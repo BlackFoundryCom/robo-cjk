@@ -59,8 +59,7 @@ class Locker():
             pass
         print("Locker update")
 
-    def getLockInfo(self, filepath):
-        self.update()
+    def UNSAFEgetLockInfo(self, filepath):
         if not os.path.exists(filepath):
             print("Locker getLockInfo DEFAULT")
             return LockInfo()
@@ -75,31 +74,30 @@ class Locker():
         print("Locker getLockInfo", lock, user, refcount)
         return LockInfo(int(lock), user, int(refcount))
 
+    def getLockInfo(self, filepath):
+        self.update()
+        return UNSAFEgetLockInfo(filepath)
+
     def setLockInfo(self, filepath, li, g, lock_unlock):
         print("Locker setLockInfo", li.lock, li.user, li.refcount)
         with open(filepath,'w', encoding='utf-8') as f:
             f.write("{} {} {}".format(li.lock, li.user, li.refcount))
         return self._git.commitPushOrFail(lock_unlock + ' ' + g.name)
 
-    def isLocked(self, g):
+    def lockingUser(self, g):
+        """Returns the user having the lock on 'g', or None"""
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))
         li = self.getLockInfo(filepath)
         if li.lock == 0:
             return None
         return li.user
 
-    def lockedToMe(self, glyph):
+    def userHasLock(self, glyph):
         filepath = os.path.join(self._path, files.userNameToFileName(glyph.name))
-
-        if not os.path.exists(filepath):
-            print("Locker getLockInfo DEFAULT")
-            return False
-            
-        with open(filepath, 'r', encoding = 'utf-8') as file:
-            _, username, _ = file.read().split()
-            if username == self._username:
-                return username
-            return False
+        # UNSAFE is OK because if we have the lock, then the file cannot (in
+        # theory!) be changed by someone else
+        li = UNSAFEgetLockInfo(filepath)
+        return li.user == self._username
 
     @property           
     def myLockedGlyphs(self):
@@ -112,22 +110,25 @@ class Locker():
             except: continue
 
     def lock(self, g):
+        """ First returned boolean indicate if lock was succesful.
+            Second returned boolean indicate if user already had the lock."""
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))
         li = self.getLockInfo(filepath)
         print("Locker LOCK", filepath)
-        if li.lock: return li.user == self._username
+        if li.lock:
+            lockedByMe = li.user == self._username
+            return (lockedByMe, lockedByMe) # return True if its already locked by local user
         li.lock = 1
         li.user = self._username
-        self.setLockInfo(filepath, li, g, 'lock')
-        return True
+        # return True if remote repo succesfully updated
+        return (self.setLockInfo(filepath, li, g, 'lock'), False)
 
     def unlock(self, g):
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))
         li = self.getLockInfo(filepath)
         print("Locker UNLOCK", filepath)
-        if not li.lock: return True
-        if li.user != self._username: return False
+        if not li.lock: return True # Already unlocked
+        if li.user != self._username: return False # Locked by someone else
         li.lock = 0
         li.user = '__None__'
-        self.setLockInfo(filepath, li, g, 'unlock')
-        return True
+        return self.setLockInfo(filepath, li, g, 'unlock')

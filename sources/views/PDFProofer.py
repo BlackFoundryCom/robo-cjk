@@ -236,7 +236,7 @@ class Interface:
     def __init__(self, pdf):
         self.pdf = pdf
         self.w = Window((1200, 800),"PDF Proofer", minSize= (200, 200))    
-        self.w.canvas = DrawView((400, 0, -0, -0))
+        self.w.canvas = None#DrawView((400, 0, -0, -0))
         self.w.pageTitle = TextBox(
             (10, 10, 100, 20),
             "Pages",
