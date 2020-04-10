@@ -250,7 +250,9 @@ class CharacterWindow:
             font.newGlyph("characterGlyph", name)
         finally:
             g = font[name]._RGlyph
-            locker = font.locker.isLocked(self.currentFont[glyphName])
+            locker = font.locker.lockedToMe(self.currentFont[glyphName])
+            if not locker:
+                locker = font.locker.isLocked(self.currentFont[glyphName])
             if locker != self.RCJKI.user:
                 self.RCJKI.gitEngine.pull()
                 font.getGlyphs()
@@ -786,8 +788,9 @@ class RoboCJKView(BaseWindowController):
         g = self.currentFont[glyphName]
         font = self.RCJKI.currentFont
         self.RCJKI.currentGlyph = g
-
-        locker = font.locker.isLocked(self.currentFont[glyphName])
+        locker = font.locker.lockedToMe(self.currentFont[glyphName])
+        if not locker:
+            locker = font.locker.isLocked(self.currentFont[glyphName])
         if locker != self.RCJKI.user:
             self.RCJKI.gitEngine.pull()
             font.getGlyphs()

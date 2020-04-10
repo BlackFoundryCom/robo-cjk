@@ -198,6 +198,7 @@ class Font():
                 indent=4, separators=(',', ': ')))
 
         for rglyph in self._RFont.getLayer('foreground'):
+            if not self.locker.lockedToMe(rglyph): continue
             glyph = self[rglyph.name]
             glyph.save()
             glyphType = glyph.type
