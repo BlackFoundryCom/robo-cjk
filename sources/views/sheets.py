@@ -707,6 +707,11 @@ class LockController:
         for items in self.w.lokedGlyphsList.get():
             if items["sel"]:
                 self.RCJKI.currentFont.locker.unlock(self.RCJKI.currentFont[items["name"]])
+        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        self.w.lokedGlyphsList.set(self.lockedList)
+        self.w.lokedGlyphsList.setSelection([])
+        self.currentGlyphName = None
+        self.w.canvas.update()
 
     def unlockAllButtonCallback(self, sender):
         for items in self.w.lokedGlyphsList.get():
