@@ -219,7 +219,7 @@ class RoboCJKController(object):
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
         self.closeComponentWindow()
         self.closeCharacterWindow()
-        self.currentFont.locker.unlock(self.currentGlyph)
+        # self.currentFont.locker.unlock(self.currentGlyph)
         self.currentFont.save()
         self.closeimportDCFromCG()
 

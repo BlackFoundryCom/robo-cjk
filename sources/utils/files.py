@@ -63,6 +63,17 @@ def int_to_column_id(num):
     else:
         q, r = divmod(num - 1, N)
         return int_to_column_id(q) + ALPHABET[r]
+
+def fileNameToUserName(filename):
+    toskip = None
+    userName = ""
+    for i, character in enumerate(filename):
+        if i == toskip:
+            continue
+        if character != character.lower():
+            toskip = i + 1
+        userName += character
+    return userName
       
 def userNameToFileName(userName, existing=[], prefix="", suffix=""):
 	

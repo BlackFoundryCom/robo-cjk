@@ -83,10 +83,30 @@ class Locker():
 
     def isLocked(self, g):
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))
+
+        if not os.path.exists(filepath):
+            print("Locker getLockInfo DEFAULT")
+            return LockInfo().user
+            
+        with open(filepath, 'r', encoding = 'utf-8') as file:
+            _, username, _ = file.read().split()
+            if username == self._username:
+                return username
+
         li = self.getLockInfo(filepath)
         if li.lock == 0:
             return None
         return li.user
+
+    @property           
+    def myLockedGlyphs(self):
+        for filepath in os.listdir(self._path):
+            try:
+                with open(os.path.join(self._path, filepath), 'r', encoding = 'utf-8') as file:
+                    _, username, _ = file.read().split()
+                    if username == self._username:
+                        yield files.fileNameToUserName(filepath)
+            except: continue
 
     def lock(self, g):
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))

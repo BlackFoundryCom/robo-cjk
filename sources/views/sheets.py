@@ -646,5 +646,110 @@ class UsersInfos:
         self.RCJKI.roboCJKView.setrcjkFiles()
 
 
+class LockController:
 
+    def __init__(self, RCJKI, parentWindow):
+        self.RCJKI = RCJKI
+        self.w = Sheet((340, 200), parentWindow)
+        self.w.searchBox = SearchBox(
+            (10, 10, 150, 20),
+            callback = self.filterListCallback
+            )
+        self.currentGlyphName = None
+        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        self.w.lokedGlyphsList = List(
+            (10, 30, 150, -40),
+            self.lockedList,
+            columnDescriptions = [dict(title = "sel", cell = CheckBoxListCell(), width = 20), dict(title = "name")],
+            showColumnTitles = False,
+            allowsMultipleSelection = False,
+            drawFocusRing = False,
+            selectionCallback = self.lokedGlyphsListSelectionCallback
+            )
+        self.w.canvas = Canvas(
+            (160, 10, -10, -40),
+            delegate = self
+            )
+        self.w.unlockSelectedButton = Button(
+            (10, -30, 150, -10),
+            "Unlock selected",
+            callback = self.unlockSelectedButtonCallback
+            )
+        self.w.unlockAllButton = Button(
+            (160, -30, 150, -10),
+            "Unlock all",
+            callback = self.unlockAllButtonCallback
+            )
+        self.w.closeButton = SquareButton(
+            (-30, -30, -0, -10),
+            "x",
+            callback = self.closeCallback
+            )
+        self.w.closeButton.getNSButton().setFocusRingType_(1)
+        self.w.closeButton.getNSButton().setBackgroundColor_(transparentColor)
+        self.w.closeButton.getNSButton().setBordered_(False)
+
+        if self.lockedList:
+            self.w.lokedGlyphsList.setSelection([0])
+            self.lokedGlyphsListSelectionCallback(self.w.lokedGlyphsList)
+        else:
+            self.w.lokedGlyphsList.setSelection([])
+
+    def lokedGlyphsListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.currentGlyphName = None
+            return
+        self.currentGlyphName = sender.get()[sel[0]]["name"]
+        self.w.canvas.update()
+
+    def unlockSelectedButtonCallback(self, sender):
+        for items in self.w.lokedGlyphsList.get():
+            if items["sel"]:
+                self.RCJKI.currentFont.locker.unlock(self.RCJKI.currentFont[items["name"]])
+
+    def unlockAllButtonCallback(self, sender):
+        for items in self.w.lokedGlyphsList.get():
+            self.RCJKI.currentFont.locker.unlock(self.RCJKI.currentFont[items["name"]])
+        self.w.close()        
+
+    def filterListCallback(self, sender):
+        if not sender.get():
+            l = self.lockedList
+        else:
+            try:
+                name = files.unicodeName(sender.get())
+            except:
+                name = str(sender.get())
+            lockedNames = [x["name"] for x in self.lockedList]
+            l = [dict(sel = 0, name = x) for x in files._getFilteredListFromName(lockedNames, name)]
+        if not l:
+            l = self.lockedList
+
+        self.w.lokedGlyphsList.set(l)
+        self.w.lokedGlyphsList.setSelection([])
+
+    def draw(self):
+        if self.currentGlyphName is None: return
+        glyph = self.RCJKI.currentFont[self.currentGlyphName]
+        mjdt.save()
+        s = .1
+        mjdt.scale(s, s)
+        mjdt.translate(350, 350)
+        if glyph.type != "atomicElement":
+            glyph.computeDeepComponents()
+            self.RCJKI.drawer.drawGlyphAtomicInstance(
+                glyph,
+                (0, 0, 0, 1),
+                s,
+                (0, 0, 0, 1)
+                )
+        mjdt.drawGlyph(glyph)
+        mjdt.restore()
+
+    def open(self):
+        self.w.open()
+
+    def closeCallback(self, sender):
+        self.w.close()
 

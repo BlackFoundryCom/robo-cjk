@@ -250,12 +250,19 @@ class CharacterWindow:
             font.newGlyph("characterGlyph", name)
         finally:
             g = font[name]._RGlyph
-            if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user:
+            locker = font.locker.isLocked(self.currentFont[glyphName])
+            if locker != self.RCJKI.user:
                 self.RCJKI.gitEngine.pull()
                 font.getGlyphs()
+            if locker == None or locker == self.RCJKI.user:
+                
                 ulock = font.locker.lock(font[name])
                 if ulock == True:
+                    if not g._RGlyph.width:
+                        width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+                        self.currentFont[glyphName]._RGlyph.width = width
                     OpenGlyphWindow(font[name]._RGlyph)
+
 
     def setRefGlyph(self, sender):
         sel = sender.getSelection()
@@ -445,8 +452,15 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.charactersUsingDCButton.enable(False)
 
-        self.w.lockerInfoTextBox = TextBox(
+        self.w.lockControllerDCButton = Button(
             (210, 70, 200, 20),
+            "Lock controller",
+            callback = self.lockControllerDCButtonCallback,
+            )
+        self.w.lockControllerDCButton.enable(False)
+
+        self.w.lockerInfoTextBox = TextBox(
+            (210, 100, 200, 20),
             "",
             alignment='center'
             )
@@ -588,6 +602,10 @@ class RoboCJKView(BaseWindowController):
         self.characterUsingDC = characterUsingDC.CharacterUsingDC(self.RCJKI)
         self.characterUsingDC.interface.open()
 
+    def lockControllerDCButtonCallback(self, sender):
+        self.lockController = sheets.LockController(self.RCJKI, self.w)
+        self.lockController.open()
+
     def generateFontButtonCallback(self, sender):
         # axis = self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']
         # print(axis)
@@ -714,6 +732,7 @@ class RoboCJKView(BaseWindowController):
         self.w.fontInfos.enable(True)
         self.w.generateFontButton.enable(True)
         self.w.charactersUsingDCButton.enable(True)
+        self.w.lockControllerDCButton.enable(True)
         self.w.pdfProoferButton.enable(True)
 
         if self.currentrcjkFile is None: 
@@ -763,12 +782,17 @@ class RoboCJKView(BaseWindowController):
         try:
             CurrentGlyphWindow().close()
         except:pass
-        self.RCJKI.gitEngine.pull()
+        
         g = self.currentFont[glyphName]
         font = self.RCJKI.currentFont
         self.RCJKI.currentGlyph = g
-        if font.locker.isLocked(g) == None or font.locker.isLocked(g) == self.RCJKI.user: 
+
+        locker = font.locker.isLocked(self.currentFont[glyphName])
+        if locker != self.RCJKI.user:
+            self.RCJKI.gitEngine.pull()
             font.getGlyphs()
+        if locker == None or locker == self.RCJKI.user: 
+            
             ulock = font.locker.lock(self.currentFont[glyphName])
             if ulock == True:
                 if not g._RGlyph.width:
