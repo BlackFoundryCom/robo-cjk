@@ -176,7 +176,7 @@ class RoboCJKController(object):
         self.observers = not self.observers
 
     def fontDidSave(self, info):
-        if self.currentFont:
+        if self.currentFont and self.currentFont._RFont == CurrentFont():
             self.currentFont.save()
         else:
             print('no font object')

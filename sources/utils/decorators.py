@@ -33,13 +33,18 @@ def gitCoverage(msg='save'):
                         'Impossible', "Project is not is GIT repository"
                         )
                     return
+                
                 gitEngine.createGitignore()
                 gitEngine.pull()
 
                 func(self, *args, **kwargs)
 
                 gitEngine.commit(msg)   
-                gitEngine.push() 
+                gitEngine.push()
+
+                PostBannerNotification(
+                        'font did save', ""
+                        ) 
 
             except Exception as e:
                 raise e

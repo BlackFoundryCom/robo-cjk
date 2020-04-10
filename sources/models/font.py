@@ -188,7 +188,7 @@ class Font():
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
         self.addGlyph(*self.newGLIF(glyphType, glyphName), "foreground")
 
-    @gitCoverage('font save')
+    @gitCoverage(msg = 'font save')
     def save(self):
         self._RFont.save()
 
