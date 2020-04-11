@@ -50,6 +50,7 @@ class Locker():
         self._git = gitEngine.GitEngine(self._path)
         self._username = self._git.user()
         print("Locker inited for {} at {}".format(self._username, self._path))
+        self.update()
 
     def update(self):
         if not self._git._ok: return
@@ -84,10 +85,10 @@ class Locker():
             f.write("{} {} {}".format(li.lock, li.user, li.refcount))
         return self._git.commitPushOrFail(lock_unlock + ' ' + g.name)
 
-    def lockingUser(self, g):
+    def potentiallyOutdatedLockingUser(self, g):
         """Returns the user having the lock on 'g', or None"""
         filepath = os.path.join(self._path, files.userNameToFileName(g.name))
-        li = self.getLockInfo(filepath)
+        li = self.UNSAFEgetLockInfo(filepath)
         if li.lock == 0:
             return None
         return li.user
