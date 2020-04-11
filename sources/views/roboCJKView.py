@@ -94,6 +94,19 @@ class EditingSheet():
         self.RCJKI.exportDataBase()
         self.w.close()
 
+# This function is outside of any class
+def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
+    font = RCJKI.currentFont
+    g = font[glyphName]._RGlyph
+    locked, alreadyLocked = font.locker.lock(g)
+    if not locked: return
+    if not alreadyLocked:
+        RCJKI.gitEngine.pull()
+        font.getGlyphs()
+    if not g.width:
+        g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+    OpenGlyphWindow(g)
+
 class CharacterWindow:
 
     filterRules = [
@@ -238,19 +251,6 @@ class CharacterWindow:
             if files.unicodeName(char) in self.RCJKI.currentFont.characterGlyphSet:
                 self.w.previewCheckBox.show(True)
 
-    def openGlyphWindowIfLockAcquired(self, glyphName):
-        font = self.RCJKI.currentFont
-        g = font[glyphName]._RGlyph
-        locked, alreadyLocked = font.locker.lock(g)
-        if not locked: return
-        if not alreadyLocked:
-            self.RCJKI.gitEngine.pull()
-            font.getGlyphs()
-        if not g._RGlyph.width:
-            width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
-            self.currentFont[glyphName]._RGlyph.width = width
-        OpenGlyphWindow(font[glyphName]._RGlyph)
-
     def charactersListDoubleClickCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
@@ -262,7 +262,7 @@ class CharacterWindow:
         except:
             font.newGlyph("characterGlyph", name)
         finally:
-            self.openGlyphWindowIfLockAcquired(name)
+            openGlyphWindowIfLockAcquired(self.RCJKI, name)
 
     def setRefGlyph(self, sender):
         sel = sender.getSelection()
@@ -782,11 +782,8 @@ class RoboCJKView(BaseWindowController):
         try:
             CurrentGlyphWindow().close()
         except:pass
-        
-        g = self.currentFont[glyphName]
-        font = self.RCJKI.currentFont
-        self.RCJKI.currentGlyph = g
-        openGlyphWindowIfLockAcquired(glyphName)
+        self.RCJKI.currentGlyph = self.currentFont[glyphName]
+        openGlyphWindowIfLockAcquired(self.RCJKI, glyphName)
 
     def GlyphsListEditCallback(self, sender):
         sel = sender.getSelection()

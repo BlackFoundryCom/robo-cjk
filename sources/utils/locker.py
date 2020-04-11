@@ -76,7 +76,7 @@ class Locker():
 
     def getLockInfo(self, filepath):
         self.update()
-        return UNSAFEgetLockInfo(filepath)
+        return self.UNSAFEgetLockInfo(filepath)
 
     def setLockInfo(self, filepath, li, g, lock_unlock):
         print("Locker setLockInfo", li.lock, li.user, li.refcount)
@@ -96,7 +96,7 @@ class Locker():
         filepath = os.path.join(self._path, files.userNameToFileName(glyph.name))
         # UNSAFE is OK because if we have the lock, then the file cannot (in
         # theory!) be changed by someone else
-        li = UNSAFEgetLockInfo(filepath)
+        li = self.UNSAFEgetLockInfo(filepath)
         return li.user == self._username
 
     @property           
