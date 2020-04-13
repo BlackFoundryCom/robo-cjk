@@ -62,7 +62,7 @@ class Locker():
 
     def UNSAFEgetLockInfo(self, filepath):
         if not os.path.exists(filepath):
-            print("Locker getLockInfo DEFAULT")
+            #print("Locker getLockInfo DEFAULT")
             return LockInfo()
         with open(filepath,'r', encoding='utf-8') as f: line = f.readline()
         if not line: 
@@ -72,18 +72,24 @@ class Locker():
         else:
             if line[-1] == '\n': line = line[:-1]
             lock, user, refcount = line.split()
-        print("Locker getLockInfo", lock, user, refcount)
+        #print("Locker getLockInfo", lock, user, refcount)
         return LockInfo(int(lock), user, int(refcount))
 
     def getLockInfo(self, filepath):
         self.update()
         return self.UNSAFEgetLockInfo(filepath)
 
-    def setLockInfo(self, filepath, li, g, lock_unlock):
-        print("Locker setLockInfo", li.lock, li.user, li.refcount)
+    def UNSAFEsetLockInfo(self, filepath, li, g):
+        """Write to file but does not commit"""
+        #print("Locker UNSAFEsetLockInfo", li.lock, li.user, li.refcount)
         with open(filepath,'w', encoding='utf-8') as f:
             f.write("{} {} {}".format(li.lock, li.user, li.refcount))
-        return self._git.commitPushOrFail(lock_unlock + ' ' + g.name)
+
+    def setLockInfo(self, filepath, li, g, message):
+        """Write to file and commit, or revert"""
+        #print("Locker setLockInfo", li.lock, li.user, li.refcount)
+        self.UNSAFEsetLockInfo(filepath, li, g)
+        return self._git.commitPushOrFail(message + ' ' + g.name)
 
     def potentiallyOutdatedLockingUser(self, g):
         """Returns the user having the lock on 'g', or None"""
@@ -133,3 +139,16 @@ class Locker():
         li.lock = 0
         li.user = '__None__'
         return self.setLockInfo(filepath, li, g, 'unlock')
+
+    def batchUnlock(self, glyphs):
+        self.update()
+        print("Locker BATCH UNLOCK")
+        for g in glyphs:
+            filepath = os.path.join(self._path, files.userNameToFileName(g.name))
+            li = self.UNSAFEgetLockInfo(filepath)
+            if not li.lock: continue
+            if li.user != self._username: continue
+            li.lock = 0
+            li.user = '__None__'
+            self.UNSAFEsetLockInfo(filepath, li, g)
+        return self._git.commitPushOrFail("BATCH UNLOCK for {}".format(self._username))
