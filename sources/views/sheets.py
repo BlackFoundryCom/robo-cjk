@@ -806,7 +806,7 @@ class LockController:
         f = self.RCJKI.currentFont
         glyphs = []
         for x in self.w.unlock.lockedGlyphsList.get():
-            try:f[x["name"]]
+            try:glyph.append(f[x["name"]])
             except: pass
         self.unlockGlyphs(glyphs)
         self.resetList()        
