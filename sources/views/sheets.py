@@ -565,8 +565,8 @@ class NewCharacterGlyph:
 
     def lockGlyphs(self, glyphs):
         if self.lockNewGlyph:
-            unlock = self.RCJKI.currentFont.locker.batchLock(glyphs)
-            PostBannerNotification("Unlock %s"%["failed", "succeeded"][unlock], "")
+            lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+            PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
 
     def deepComponentsListEditCallback(self, sender):
         deepComponents = []
@@ -686,32 +686,56 @@ class LockController:
 
     def __init__(self, RCJKI, parentWindow):
         self.RCJKI = RCJKI
-        self.w = Sheet((340, 200), parentWindow)
-        self.w.searchBox = SearchBox(
+        self.w = Sheet((340, 230), parentWindow)
+        self.w.unlock = Group((0, 30, -0, -0))
+        self.w.unlock.show(False)
+        self.w.lock = Group((0, 30, -0, -0))
+        self.locksGroup = [self.w.lock, self.w.unlock]
+        self.w.segmentedButton = SegmentedButton(
+            (10, 10, -10, 20),
+            [dict(title = "Lock"), dict(title = "Unlock")],
+            callback = self.segmentedButtonCallback
+            )
+        self.w.segmentedButton.set(0)
+        self.w.lock.remind = TextBox(
+            (10, 10, -10, 20),
+            "Glyphs names (separate with space) or characters",
+            sizeStyle = 'small'
+            )
+        self.w.lock.field = TextEditor(
+            (10, 30, -10, -40),
+            ""
+            )
+        self.w.lock.lockButton = Button(
+            (10, -30, -30, 20),
+            'lock',
+            callback = self.lockButtonCallback
+            )
+        self.w.unlock.searchBox = SearchBox(
             (10, 10, 150, 20),
             callback = self.filterListCallback
             )
         self.currentGlyphName = None
         self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
-        self.w.lokedGlyphsList = List(
+        self.w.unlock.lockedGlyphsList = List(
             (10, 30, 150, -40),
             self.lockedList,
             columnDescriptions = [dict(title = "sel", cell = CheckBoxListCell(), width = 20), dict(title = "name")],
             showColumnTitles = False,
             allowsMultipleSelection = False,
             drawFocusRing = False,
-            selectionCallback = self.lokedGlyphsListSelectionCallback
+            selectionCallback = self.lockedGlyphsListSelectionCallback
             )
-        self.w.canvas = Canvas(
+        self.w.unlock.canvas = Canvas(
             (160, 10, -10, -40),
             delegate = self
             )
-        self.w.unlockSelectedButton = Button(
+        self.w.unlock.unlockSelectedButton = Button(
             (10, -30, 150, -10),
             "Unlock selected",
             callback = self.unlockSelectedButtonCallback
             )
-        self.w.unlockAllButton = Button(
+        self.w.unlock.unlockAllButton = Button(
             (160, -30, 150, -10),
             "Unlock all",
             callback = self.unlockAllButtonCallback
@@ -726,29 +750,53 @@ class LockController:
         self.w.closeButton.getNSButton().setBordered_(False)
 
         if self.lockedList:
-            self.w.lokedGlyphsList.setSelection([0])
-            self.lokedGlyphsListSelectionCallback(self.w.lokedGlyphsList)
+            self.w.unlock.lockedGlyphsList.setSelection([0])
+            self.lockedGlyphsListSelectionCallback(self.w.unlock.lockedGlyphsList)
         else:
-            self.w.lokedGlyphsList.setSelection([])
+            self.w.unlock.lockedGlyphsList.setSelection([])
 
-    def lokedGlyphsListSelectionCallback(self, sender):
+    def segmentedButtonCallback(self, sender):
+        for i, group in enumerate(self.locksGroup):
+            group.show(i == sender.get())
+        self.resetList()
+
+    def lockedGlyphsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
             self.currentGlyphName = None
             return
         self.currentGlyphName = sender.get()[sel[0]]["name"]
-        self.w.canvas.update()
+        self.w.unlock.canvas.update()
+
+    def lockGlyphs(self, glyphs):
+        lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+        PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
+
+    def lockButtonCallback(self, sender):
+        txt = self.w.lock.field.get().split()
+        glyphs = []
+        for e in txt:
+            try:
+                glyphs.append(self.RCJKI.currentFont[e])
+            except:
+                for c in e:
+                    try: glyphs.append(self.RCJKI.currentFont[files.unicodeName(c)])
+                    except: continue
+        self.lockGlyphs(glyphs)
 
     def unlockSelectedButtonCallback(self, sender):
         f = self.RCJKI.currentFont
-        glyphs = [f[x["name"]] for x in self.w.lokedGlyphsList.get() if x["sel"]]
+        glyphs = [f[x["name"]] for x in self.w.unlock.lockedGlyphsList.get() if x["sel"]]
         if glyphs:
             self.unlockGlyphs(glyphs)
+        self.resetList()
+
+    def resetList(self):
         self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
-        self.w.lokedGlyphsList.set(self.lockedList)
-        self.w.lokedGlyphsList.setSelection([])
+        self.w.unlock.lockedGlyphsList.set(self.lockedList)
+        self.w.unlock.lockedGlyphsList.setSelection([])
         self.currentGlyphName = None
-        self.w.canvas.update()
+        self.w.unlock.canvas.update()
 
     def unlockGlyphs(self, glyphs):
         unlock = self.RCJKI.currentFont.locker.batchUnlock(glyphs)
@@ -756,9 +804,9 @@ class LockController:
 
     def unlockAllButtonCallback(self, sender):
         f = self.RCJKI.currentFont
-        glyphs = [f[x["name"]] for x in self.w.lokedGlyphsList.get()]
+        glyphs = [f[x["name"]] for x in self.w.unlock.lockedGlyphsList.get()]
         self.unlockGlyphs(glyphs)
-        self.w.close()        
+        self.resetList()        
 
     def filterListCallback(self, sender):
         if not sender.get():
@@ -773,8 +821,8 @@ class LockController:
         if not l:
             l = self.lockedList
 
-        self.w.lokedGlyphsList.set(l)
-        self.w.lokedGlyphsList.setSelection([])
+        self.w.unlock.lockedGlyphsList.set(l)
+        self.w.unlock.lockedGlyphsList.setSelection([])
 
     def draw(self):
         if self.currentGlyphName is None: return
