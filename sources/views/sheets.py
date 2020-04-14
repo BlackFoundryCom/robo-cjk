@@ -441,14 +441,22 @@ class NewCharacterGlyph:
             sizeStyle = 'small'
             )
         self.w.custom.characterField = TextEditor(
-            (10, 30, -10, -30),
+            (10, 30, -10, -50),
             ""
             )
         self.w.custom.relatedDeepComponents = CheckBox(
-            (10, -25, -10, -10),
+            (10, -60, -10, -10),
             "Create related deep components",
             value = True,
             sizeStyle = "small"
+            )
+        self.lockNewGlyph = True
+        self.w.custom.lockNewGlyphs = CheckBox(
+            (10, -25, -10, -10),
+            "Lock new glyphs",
+            value = self.lockNewGlyph,
+            sizeStyle = "small",
+            callback = self.lockNewGlyphsCallback
             )
         self.w.custom.addButton = Button(
             (-195, -30, -30, -10),
@@ -490,8 +498,15 @@ class NewCharacterGlyph:
             "Add",
             callback = self.addfromFieldCallback
             )
+        self.w.related.lockNewGlyphs = CheckBox(
+            (10, -25, -10, -10),
+            "Lock new glyphs",
+            value = self.lockNewGlyph,
+            sizeStyle = "small",
+            callback = self.lockNewGlyphsCallback
+            )
         self.w.related.addAllPossibleButton = Button(
-            (10, -30, -30, -10),
+            (-225, -30, -30, -10),
             "Add all possible characters",
             callback = self.addAllPossibleCallback
             )
@@ -507,36 +522,51 @@ class NewCharacterGlyph:
 
         self.w.open()
 
+    def lockNewGlyphsCallback(self, sender):
+        self.lockNewGlyph = sender.get()
+
     def addGlyph(self, name, addRelatedDC=False):
+        added = set()
         try:
             self.RCJKI.currentFont[name]
-            return
+            return [name]
         except:
             self.RCJKI.currentFont.newGlyph("characterGlyph", name)
+            added.add(name)
             if addRelatedDC and self.RCJKI.dataBase:
                 dcChars = self.RCJKI.dataBase[chr(int(name[3:], 16))]
                 DC = set(["DC_%s_00"%hex(ord(c))[2:].upper() for c in dcChars])
+                for name in DC:
+                    added.add(name)
                 for name in DC-self.DCSet:
                     try:
                         self.RCJKI.currentFont[name]
                     except:
                         self.RCJKI.currentFont.newGlyph("deepComponent", name)
+            return list(added)
 
     def addButtonCallback(self, sender):
         addRelatedDC = self.w.custom.relatedDeepComponents.get()
         txt = self.w.custom.characterField.get().split(" ")
-
+        glyphs = []
         for e in txt:
             if e.startswith("uni"):
-                self.addGlyph(e, addRelatedDC)
+                for dcname in self.addGlyph(e, addRelatedDC):
+                    glyphs.append(self.RCJKI.currentFont[dcname])
             else:
                 for c in e:
                     name = files.unicodeName(c)
-                    self.addGlyph(name, addRelatedDC)
-
+                    for dcname in self.addGlyph(name, addRelatedDC):
+                        glyphs.append(self.RCJKI.currentFont[dcname])
+        self.lockGlyphs(glyphs)
         self.window.deepComponent.set(self.RCJKI.currentFont.deepComponentSet)
         self.window.characterGlyph.set(self.RCJKI.currentFont.characterGlyphSet)
         self.w.close()
+
+    def lockGlyphs(self, glyphs):
+        if self.lockNewGlyph:
+            unlock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+            PostBannerNotification("Unlock %s"%["failed", "succeeded"][unlock], "")
 
     def deepComponentsListEditCallback(self, sender):
         deepComponents = []
@@ -548,9 +578,12 @@ class NewCharacterGlyph:
 
     def addfromFieldCallback(self, sender):
         characters = self.w.related.characterField.get()
+        glyphs = []
         for character in characters:
             name = files.unicodeName(character)
-            self.addGlyph(name)
+            for dcname in self.addGlyph(name):
+                glyphs.append(self.RCJKI.currentFont[dcname])
+        self.lockGlyphs(glyphs)
         print("-----------------")
         print("ADDED CHARACTERS: \n%s"%characters)
         print("-----------------")
@@ -559,9 +592,12 @@ class NewCharacterGlyph:
     def addAllPossibleCallback(self, sender):
         deepComponents = [e["char"] for e in self.deepComponentList]
         characters = self.getRelatedCharacterToSelected(deepComponents)
+        glyphs = []
         for character in characters:
             name = files.unicodeName(character)
-            self.addGlyph(name)
+            for dcname in self.addGlyph(name):
+                glyphs.append(self.RCJKI.currentFont[dcname])
+        self.lockGlyphs(glyphs)
         print("-----------------")
         print("ADDED CHARACTERS: \n%s"%characters)
         print("-----------------")

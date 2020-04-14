@@ -152,3 +152,16 @@ class Locker():
             li.user = '__None__'
             self.UNSAFEsetLockInfo(filepath, li, g)
         return self._git.commitPushOrFail("BATCH UNLOCK for {}".format(self._username))
+
+    def batchLock(self, glyphs):
+        self.update()
+        print("Locker BATCH LOCK")
+        for g in glyphs:
+            filepath = os.path.join(self._path, files.userNameToFileName(g.name))
+            li = self.UNSAFEgetLockInfo(filepath)
+            if li.lock: continue
+            if li.user == self._username: continue
+            li.lock = 1
+            li.user = self._username
+            self.UNSAFEsetLockInfo(filepath, li, g)
+        return self._git.commitPushOrFail("BATCH UNLOCK for {}".format(self._username))
