@@ -704,18 +704,24 @@ class LockController:
         self.w.canvas.update()
 
     def unlockSelectedButtonCallback(self, sender):
-        for items in self.w.lokedGlyphsList.get():
-            if items["sel"]:
-                self.RCJKI.currentFont.locker.unlock(self.RCJKI.currentFont[items["name"]])
+        f = self.RCJKI.currentFont
+        glyphs = [f[x["name"]] for x in self.w.lokedGlyphsList.get() if x["sel"]]
+        if glyphs:
+            self.unlockGlyphs(glyphs)
         self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
         self.w.lokedGlyphsList.set(self.lockedList)
         self.w.lokedGlyphsList.setSelection([])
         self.currentGlyphName = None
         self.w.canvas.update()
 
+    def unlockGlyphs(self, glyphs):
+        unlock = self.RCJKI.currentFont.locker.batchUnlock(glyphs)
+        PostBannerNotification("Unlock %s"%["failed", "succeeded"][unlock], "")
+
     def unlockAllButtonCallback(self, sender):
-        for items in self.w.lokedGlyphsList.get():
-            self.RCJKI.currentFont.locker.unlock(self.RCJKI.currentFont[items["name"]])
+        f = self.RCJKI.currentFont
+        glyphs = [f[x["name"]] for x in self.w.lokedGlyphsList.get()]
+        self.unlockGlyphs(glyphs)
         self.w.close()        
 
     def filterListCallback(self, sender):
