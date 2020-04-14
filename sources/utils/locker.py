@@ -79,7 +79,7 @@ class Locker():
         self.update()
         return self.UNSAFEgetLockInfo(filepath)
 
-    def UNSAFEsetLockInfo(self, filepath, li, g):
+    def UNSAFEsetLockInfo(self, filepath, li, g = None):
         """Write to file but does not commit"""
         #print("Locker UNSAFEsetLockInfo", li.lock, li.user, li.refcount)
         with open(filepath,'w', encoding='utf-8') as f:
@@ -165,3 +165,12 @@ class Locker():
             li.user = self._username
             self.UNSAFEsetLockInfo(filepath, li, g)
         return self._git.commitPushOrFail("BATCH UNLOCK for {}".format(self._username))
+
+    def changeLockName(self, oldName, newName):
+        self.update()
+        oldfilepath = os.path.join(self._path, files.userNameToFileName(oldName))
+        newNamepath = os.path.join(self._path, files.userNameToFileName(newName))
+        self.UNSAFEsetLockInfo(newNamepath, self.UNSAFEgetLockInfo(oldfilepath))
+        os.remove(oldfilepath)
+        return self._git.commitPushOrFail("CHANGE LOCK NAME {}".format(oldName, newName))
+

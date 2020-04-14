@@ -273,7 +273,10 @@ class CharacterWindow:
             return
         char = sender.get()[sel[0]]
         if self.preview:
-            glyph = self.RCJKI.currentFont[files.unicodeName(char)]
+            try:
+                glyph = self.RCJKI.currentFont[files.unicodeName(char)]
+            except:
+                glyph = None
             self.RCJKI.drawer.refGlyph = glyph
             self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
             UpdateCurrentGlyphView()
@@ -791,9 +794,12 @@ class RoboCJKView(BaseWindowController):
         if not sel or self.prevGlyphName is None or self.currentFont is None: 
             return
         newGlyphName = sender.get()[sel[0]]
-        self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName)
-        self.prevGlyphName = newGlyphName
-        self.setGlyphNameToCansvas(sender, self.prevGlyphName)
+        if newGlyphName == self.prevGlyphName: return
+        if not self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName):
+            sender.set([[x, self.prevGlyphName][x == newGlyphName] for x in sender.get()])
+        else:
+            self.prevGlyphName = newGlyphName
+            self.setGlyphNameToCansvas(sender, self.prevGlyphName)
 
     def GlyphsListSelectionCallback(self, sender):
         if not sender.getSelection(): return

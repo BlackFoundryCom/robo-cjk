@@ -225,10 +225,11 @@ class Font():
                         file.write(txt)
 
     def renameGlyph(self, oldName, newName):
+        if not self.locker.userHasLock(self[oldName]): return False
         self.save()
-        print(oldName,newName )
+        print(oldName,newName)
         f = self._RFont.getLayer('foreground')
-        if newName in f.keys(): return
+        if newName in f.keys(): return False
         self[oldName].name = newName
         f[oldName].name = newName
         glyph = f[newName]
@@ -267,3 +268,5 @@ class Font():
                 file.write(txt)
             os.remove(oldPath)
 
+        self.locker.changeLockName(oldName, newName)
+        return True
