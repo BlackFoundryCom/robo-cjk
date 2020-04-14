@@ -804,7 +804,10 @@ class LockController:
 
     def unlockAllButtonCallback(self, sender):
         f = self.RCJKI.currentFont
-        glyphs = [f[x["name"]] for x in self.w.unlock.lockedGlyphsList.get()]
+        glyphs = []
+        for x in self.w.unlock.lockedGlyphsList.get():
+            try:f[x["name"]]
+            except: pass
         self.unlockGlyphs(glyphs)
         self.resetList()        
 
