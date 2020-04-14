@@ -197,17 +197,17 @@ class CharacterWindow:
             l = [chr(int(n[3:], 16)) for n in result]
 
         elif self.filter in [2, 3]:
-            DCSet = set(self.RCJKI.currentFont.deepComponentSet)
+            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponent.atomicElements"]])
             for c in self.relatedChars:
-                compo = ["DC_%s_00"%hex(ord(v))[2:].upper() for v in self.RCJKI.dataBase[c]]
+                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.dataBase[c]]
                 inside = len(set(compo) - DCSet) == 0
                 if self.filter == 2 and inside:
                     l.append(c)
                 elif self.filter == 3 and not inside:
                     l.append(c)
-            if self.filter == 2:
-                result = set([files.unicodeName(c) for c in l]) - set(self.RCJKI.currentFont.characterGlyphSet)
-                l = [chr(int(n[3:], 16)) for n in result]
+            # if self.filter == 2:
+            #     result = set([files.unicodeName(c) for c in l]) - set(self.RCJKI.currentFont.characterGlyphSet)
+            #     l = [chr(int(n[3:], 16)) for n in result]
             title = " ".join(self.filterRules[self.filter].split(' ')[:3])
 
         self.RCJKI.drawer.refGlyph = None
