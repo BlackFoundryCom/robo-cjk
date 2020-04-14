@@ -155,6 +155,7 @@ def deepolation(newGlyph, masterGlyph, layersInfo = {}):
                 p = [nextp[0]+ d*dnext[0], nextp[1]+d*dnext[1]]
             pen.addPoint((int(p[0]), int(p[1])), t)
         pen.endPath()
+    newGlyph.round()
     return newGlyph
 
 def deepCompatible(masterGlyph, layersNames):
