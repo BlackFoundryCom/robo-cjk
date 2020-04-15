@@ -36,10 +36,8 @@ from views import sheets
 reload(sheets)
 from views import PDFProofer
 reload(PDFProofer)
-from views import characterUsingDC
-reload(characterUsingDC)
-
-
+from views import textCenter
+reload(textCenter)
 
 import os, json
 
@@ -457,12 +455,12 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.generateFontButton.enable(False)
 
-        self.w.charactersUsingDCButton = Button(
+        self.w.textCenterButton = Button(
             (410, 70, 200, 20),
-            "Characters with same DC",
-            callback = self.charactersUsingDCButtonCallback,
+            "Text Center",
+            callback = self.textCenterButtonCallback,
             )
-        self.w.charactersUsingDCButton.enable(False)
+        self.w.textCenterButton.enable(False)
 
         self.w.lockControllerDCButton = Button(
             (210, 70, 200, 20),
@@ -556,6 +554,9 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.pdf = PDFProofer.PDFEngine(self)
         self.RCJKI.pdf.interface.open()
 
+    def textCenterButtonCallback(self, sender):
+        textCenter.TextCenter(self.RCJKI)
+
     def atomicElementSearchBoxCallback(self, sender):
         name = str(sender.get())
         l = files._getFilteredListFromName(self.currentFont.atomicElementSet, name)
@@ -609,10 +610,6 @@ class RoboCJKView(BaseWindowController):
 
     def fontInfosCallback(self, sender):
         sheets.FontInfosSheet(self.RCJKI, self.w, (220, 225))
-
-    def charactersUsingDCButtonCallback(self, sender):
-        self.characterUsingDC = characterUsingDC.CharacterUsingDC(self.RCJKI)
-        self.characterUsingDC.interface.open()
 
     def lockControllerDCButtonCallback(self, sender):
         self.lockController = sheets.LockController(self.RCJKI, self.w)
@@ -743,7 +740,7 @@ class RoboCJKView(BaseWindowController):
         self.w.newProjectButton.enable(True)
         self.w.fontInfos.enable(True)
         self.w.generateFontButton.enable(True)
-        self.w.charactersUsingDCButton.enable(True)
+        self.w.textCenterButton.enable(True)
         self.w.lockControllerDCButton.enable(True)
         self.w.pdfProoferButton.enable(True)
 

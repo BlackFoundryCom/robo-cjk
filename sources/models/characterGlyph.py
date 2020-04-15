@@ -164,12 +164,15 @@ class CharacterGlyph(Glyph):
                 preview=False
                 )
 
-    def computeDeepComponentsPreview(self):
+    def computeDeepComponentsPreview(self, sourcelist = []):
         self.preview = []
         deepComponentsSelectedVariation = []
 
+        if not sourcelist:
+            sourcelist = self.sourcesList
+
         characterGlyphAxisInfos = {}
-        for UICharacterGlyphVariation in self.sourcesList:
+        for UICharacterGlyphVariation in sourcelist:
             characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']
 
         if not characterGlyphAxisInfos: return

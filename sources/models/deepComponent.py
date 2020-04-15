@@ -224,11 +224,14 @@ class DeepComponent(Glyph):
                 preview=False,
                 )
 
-    def computeDeepComponentsPreview(self):
+    def computeDeepComponentsPreview(self, sourcelist = []):
         self.preview = []
 
+        if not sourcelist:
+            sourcelist = self.sourcesList
+
         deepComponentAxisInfos = {}
-        for UIDeepComponentVariation in self.sourcesList:
+        for UIDeepComponentVariation in sourcelist:
             deepComponentAxisInfos[UIDeepComponentVariation['Axis']] = UIDeepComponentVariation['PreviewValue']
         if not deepComponentAxisInfos: return
 

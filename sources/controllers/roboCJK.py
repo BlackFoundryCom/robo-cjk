@@ -154,7 +154,6 @@ class RoboCJKController(object):
             removeObserver(self, "glyphWindowWillClose")
             removeObserver(self, "draw")
             removeObserver(self, "drawPreview")
-            removeObserver(self, "spaceCenterDraw")
             removeObserver(self, "currentGlyphChanged")
             removeObserver(self, "mouseDown")
             removeObserver(self, "mouseUp")
@@ -167,7 +166,6 @@ class RoboCJKController(object):
             addObserver(self, "glyphWindowWillClose", "glyphWindowWillClose")
             addObserver(self, "observerDraw", "draw")
             addObserver(self, "observerDrawPreview", "drawPreview")
-            addObserver(self, "observerspaceCenterDraw", "spaceCenterDraw")
             addObserver(self, "currentGlyphChanged", "currentGlyphChanged")
             addObserver(self, "mouseDown", "mouseDown")
             addObserver(self, "mouseUp", "mouseUp")
@@ -183,29 +181,6 @@ class RoboCJKController(object):
 
     def didUndo(self, info):
         self.updateDeepComponent()
-
-    def observerspaceCenterDraw(self, info):
-        _rglyph = info['glyph']
-        glyphName = _rglyph.name
-        glyph = self.currentFont[glyphName]
-        if glyph.type == 'deepComponent':
-            preview = glyph.generateDeepComponent(glyph, False)
-            mjdt.save()
-            for d in preview:
-                for a in d.values():
-                    mjdt.drawGlyph(a[0])
-            mjdt.restore()
-        elif glyph.type == 'characterGlyph':
-            preview = glyph.generateCharacterGlyph(glyph, False)
-            mjdt.save()
-            for deepComponent in preview:
-                for instance in deepComponent.values():
-                    for atomicElement in instance[1]:
-                        for AEInstance in atomicElement.values():
-                            mjdt.drawGlyph(AEInstance[0])
-            mjdt.restore()
-        else:
-            return
 
     @refresh
     def updateDeepComponent(self):
