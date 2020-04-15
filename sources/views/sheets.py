@@ -536,12 +536,13 @@ class NewCharacterGlyph:
             if addRelatedDC and self.RCJKI.dataBase:
                 dcChars = self.RCJKI.dataBase[chr(int(name[3:], 16))]
                 DC = set(["DC_%s_00"%hex(ord(c))[2:].upper() for c in dcChars])
-                for name in DC:
-                    added.add(name)
+                # for name in DC:
+                #     added.add(name)
                 for name in DC-self.DCSet:
                     try:
                         self.RCJKI.currentFont[name]
                     except:
+                        added.add(name)
                         self.RCJKI.currentFont.newGlyph("deepComponent", name)
             return list(added)
 
