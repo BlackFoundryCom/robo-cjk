@@ -106,6 +106,9 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         g = font[glyphName]._RGlyph
     if not g.width:
         g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+    try:
+        CurrentGlyphWindow().close()
+    except: pass
     OpenGlyphWindow(g)
 
 class CharacterWindow:
@@ -258,10 +261,15 @@ class CharacterWindow:
         char = sender.get()[sel[0]]
         name = files.unicodeName(char)
         font = self.RCJKI.currentFont
+        self.RCJKI.gitEngine.createGitignore()
+        self.RCJKI.gitEngine.pull()
         try:
             font[name]
         except:
             font.newGlyph("characterGlyph", name)
+            font.locker.batchLock([font[name]])
+            self.RCJKI.gitEngine.commit("new glyph")
+            self.RCJKI.gitEngine.push()
         finally:
             openGlyphWindowIfLockAcquired(self.RCJKI, name)
 
