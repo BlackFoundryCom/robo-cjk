@@ -67,7 +67,7 @@ class AtomicView(CanvasGroup):
             [],
             columnDescriptions = [
                     {"title": "Axis", "editable": False, "width": 100},
-                    {"title": "Layer", "editable": False, "width": 40},
+                    {"title": "Layer", "editable": False, "width": 100},
                     {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
             editCallback = self.atomicElementsListEditCallback,
@@ -182,7 +182,7 @@ class DCCG_View(CanvasGroup):
             (0, -100, -0, -20), 
             [],
             columnDescriptions = [
-                    {"title": "Axis", "editable": False, "width": 50},
+                    {"title": "Axis", "editable": False, "width": 100},
                     {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
             editCallback = self.slidersListEditCallback,
