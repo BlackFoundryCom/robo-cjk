@@ -847,11 +847,13 @@ class RoboCJKView(BaseWindowController):
     def newDeepComponentCallback(self, sender):
         name = self.dumpName('deepComponent', self.currentFont.deepComponentSet)
         self.currentFont.newGlyph('deepComponent', name)
+        self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
         self.w.deepComponent.set(self.currentFont.deepComponentSet)
 
     def newAtomicElementCallback(self, sender):
         name = self.dumpName('atomicElement', self.currentFont.atomicElementSet)
         self.currentFont.newGlyph('atomicElement', name)
+        self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
     def dumpName(self, glyphType, sets):
