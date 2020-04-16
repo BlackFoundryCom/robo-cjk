@@ -160,6 +160,7 @@ class DeepComponent(Glyph):
 
             for i, d in enumerate(g2._deepComponents):
                 if d["name"] != self.name: continue
+                print(glyphname)
                 _rename(d, oldName, newName)
                 for e in g2._glyphVariations.values():
                     _rename(e[i], oldName, newName)

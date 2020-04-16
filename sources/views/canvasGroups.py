@@ -229,8 +229,7 @@ class DCCG_View(CanvasGroup):
 
     @lockedProtect
     def sourcesListEditCallback(self, sender):
-        if self.RCJKI.currentGlyph.type == 'characterGlyph':
-            return
+
         sel = sender.getSelection()
         if not sel: return
         edited = sender.getEditedColumnAndRow()
@@ -246,8 +245,10 @@ class DCCG_View(CanvasGroup):
                     i += 1
 
             if name != self.selectedSourceAxis:
-                self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
-                self.RCJKI.currentGlyph.selectedSourceAxis = name
+                if self.RCJKI.currentGlyph.type != 'characterGlyph':
+                    
+                    self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
+                    self.RCJKI.currentGlyph.selectedSourceAxis = name
             glyphVaritaions = self.RCJKI.currentGlyph._glyphVariations.keys()
             l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVaritaions]
             sender.set(l)
