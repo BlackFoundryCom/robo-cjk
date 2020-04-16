@@ -186,8 +186,9 @@ class SelectAtomicElementSheet():
         mjdt.restore()
 
 class SelectFontVariationSheet():
-    def __init__(self, RCJKI):
+    def __init__(self, RCJKI, view):
         self.RCJKI = RCJKI
+        self.view = view
         self.parent = CurrentGlyphWindow()
         self.parent.sheet = Sheet((300, 40), self.parent.w)
         l = [axis for axis in self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', []) if axis not in self.RCJKI.currentGlyph.lib['robocjk.characterGlyph.glyphVariations'].keys()]
@@ -216,6 +217,13 @@ class SelectFontVariationSheet():
         name = self.parent.sheet.fontVariationsList.get()[self.parent.sheet.fontVariationsList.getSelection()[0]]['AxisName']
         self.RCJKI.currentGlyph.addCharacterGlyphNamedVariationToGlyph(name)
         self.RCJKI.updateListInterface()
+
+        source = []
+        if self.RCJKI.currentGlyph._glyphVariations:
+            source = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.RCJKI.currentGlyph._glyphVariations]
+        isel = len(source)
+        self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
+        self.view.sourcesList.setSelection([isel-1])
         self.RCJKI.updateDeepComponent()
         
     def closeSheet(self, sender):

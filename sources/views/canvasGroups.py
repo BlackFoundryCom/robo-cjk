@@ -229,6 +229,8 @@ class DCCG_View(CanvasGroup):
 
     @lockedProtect
     def sourcesListEditCallback(self, sender):
+        if self.RCJKI.currentGlyph.type == 'characterGlyph':
+            return
         sel = sender.getSelection()
         if not sel: return
         edited = sender.getEditedColumnAndRow()
@@ -270,12 +272,20 @@ class DCCG_View(CanvasGroup):
             self.sourcesList.set(source)
             self.RCJKI.currentGlyph.sourcesList = source
             isel = len(source)
-            self.sourcesList.setSelection([isel])
+            self.sourcesList.setSelection([isel-1])
+            self.selectedSourceAxis = source[isel-1]['Axis']
             self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
             self.RCJKI.updateDeepComponent()       
             
         elif self.RCJKI.isCharacterGlyph:
-            sheets.SelectFontVariationSheet(self.RCJKI)
+            sheets.SelectFontVariationSheet(self.RCJKI, self)
+
+            # source = []
+            #  if self.RCJKI.currentGlyph._glyphVariations:
+            #     source = [{'Axis':axis, 'PreviewValue':1} for axis in self.RCJKI.currentGlyph._glyphVariations]
+            # isel = len(source)
+            # self.sourcesList.setSelection([isel])
+            # self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
 
     @lockedProtect
     @glyphUndo
