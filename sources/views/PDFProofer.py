@@ -676,7 +676,9 @@ class Interface:
                         db.save()
                         db.translate(*pos)
                         for _, instanceGlyph in atomicInstanceGlyph:
+                            instanceGlyph.round()
                             db.drawGlyph(instanceGlyph)
+                        glyph.round()
                         db.drawGlyph(glyph)
                         db.restore()
                     db.restore()

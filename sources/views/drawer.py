@@ -43,6 +43,11 @@ class Drawer():
             backgroundStrokeColor = NSColor.whiteColor()
             )
 
+    def roundGlyph(self, g):
+        if self.RCJKI.roundToGrid:
+            g.round()
+        return g
+
     def drawCharacterGlyphPreview(self, glyph, scale, color, strokecolor):
 
         for i, e in enumerate(glyph.preview):
@@ -53,7 +58,7 @@ class Drawer():
                         mjdt.fill(*color)
                         mjdt.stroke(*strokecolor)
                         mjdt.strokeWidth(scale)
-                        mjdt.drawGlyph(atomicInstanceGlyph[0])  
+                        mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph[0]))  
                         mjdt.restore()
 
     def drawDeepComponentPreview(self, glyph, scale, color, strokecolor):
@@ -63,7 +68,7 @@ class Drawer():
                 mjdt.fill(*color)
                 mjdt.stroke(*strokecolor)
                 mjdt.strokeWidth(scale)
-                mjdt.drawGlyph(atomicInstanceGlyph[0])  
+                mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph[0]))  
                 mjdt.restore()
 
     def drawAtomicElementPreview(self, glyph, scale, color, strokecolor):
@@ -71,7 +76,7 @@ class Drawer():
         mjdt.fill(*color)
         mjdt.stroke(*strokecolor)
         mjdt.strokeWidth(scale)
-        mjdt.drawGlyph(glyph.preview)  
+        mjdt.drawGlyph(self.roundGlyph(glyph.preview))  
         mjdt.restore()
         
     def draw(self, info, customColor = None, refGlyph = None):
@@ -120,7 +125,7 @@ class Drawer():
             mjdt.save()
             mjdt.fill(0, 0, 0, .2)
             mjdt.translate(*self.refGlyphPos)
-            mjdt.drawGlyph(self.refGlyph)
+            mjdt.drawGlyph(self.roundGlyph(self.refGlyph))
             mjdt.restore()
 
     def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7)):
@@ -133,14 +138,14 @@ class Drawer():
                 if c.clockwise:
                     mjdt.stroke(1, 0, 0, 1)
                     mjdt.strokeWidth(2*scale)
-            mjdt.drawGlyph(atomicInstanceGlyph) 
+            mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph)) 
             if customColor is None and view: 
                 self.drawIndexOfElements(i, atomicInstanceGlyph, view)
             mjdt.restore()
 
         for c in glyph.flatComponents:
             if self.RCJKI.currentFont[c.baseGlyph].type == "atomicElement":
-                mjdt.drawGlyph(self.RCJKI.currentFont[c.baseGlyph])
+                mjdt.drawGlyph(self.roundGlyph(self.RCJKI.currentFont[c.baseGlyph]))
             else:
                 self.RCJKI.currentFont[c.baseGlyph].computeDeepComponents()
                 self.drawGlyphAtomicInstance(self.RCJKI.currentFont[c.baseGlyph],

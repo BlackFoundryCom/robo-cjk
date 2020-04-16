@@ -157,7 +157,7 @@ class Glyph(RGlyph):
             atomicInstanceGlyph.scaleBy((atomicElement['scalex'], atomicElement['scaley']))
             atomicInstanceGlyph.rotateBy(atomicElement['rotation'])
             atomicInstanceGlyph.moveBy((atomicElement['x'], atomicElement['y']))  
-            atomicInstanceGlyph.round()
+            # atomicInstanceGlyph.round()
             atomicInstances.append({atomicElement['name']:(atomicInstanceGlyph, atomicVariations, atomicElement['coord'])})
         return atomicInstances
 
@@ -192,7 +192,7 @@ class Glyph(RGlyph):
                     ae[0].scaleBy((dc['scalex'], dc['scaley']))
                     ae[0].moveBy((dc['x'], dc['y']))
                     ae[0].rotateBy(dc['rotation'])
-                    ae[0].round()
+                    # ae[0].round()
             deepComponents.append({dc['name']: (dc['coord'], atomicInstancesPreview)})
             _lib.append(dc)
         g._deepComponents = _lib

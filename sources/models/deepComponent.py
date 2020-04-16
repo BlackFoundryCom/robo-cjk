@@ -283,7 +283,7 @@ class DeepComponent(Glyph):
                     atomicSelectedSourceInstanceGlyph.scaleBy((sourceAtomicElements['scalex'], sourceAtomicElements['scaley']))
                     atomicSelectedSourceInstanceGlyph.rotateBy(sourceAtomicElements['rotation'])
                     atomicSelectedSourceInstanceGlyph.moveBy((sourceAtomicElements['x'], sourceAtomicElements['y']))
-                    atomicSelectedSourceInstanceGlyph.round()
+                    # atomicSelectedSourceInstanceGlyph.round()
                     atomicSelectedSourceInstances.append({masterAtomicElement['name']:(atomicSelectedSourceInstanceGlyph, deepComponentVariation, deepComponentVariation[i]['coord'])})
                 
                     _deepComponentVariation.append(_atomicElement)   

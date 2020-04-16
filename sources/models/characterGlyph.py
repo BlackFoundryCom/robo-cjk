@@ -209,7 +209,7 @@ class CharacterGlyph(Glyph):
                     ae[0].moveBy((self._deepComponents[j]['x'], self._deepComponents[j]['y']))
                     ae[0].moveBy((masterDeepComponentInstance['x'], masterDeepComponentInstance['y']))
                     ae[0].rotateBy(masterDeepComponentInstance['rotation'])
-                    ae[0].round()
+                    # ae[0].round()
             deepComponentsSelectedVariation.append({self._deepComponents[j]['name']: (masterDeepComponentInstance['coord'], atomicInstancesPreview)})                
         self.preview = deepComponentsSelectedVariation
 

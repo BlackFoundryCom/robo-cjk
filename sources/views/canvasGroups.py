@@ -50,6 +50,14 @@ class AtomicView(CanvasGroup):
         self.RCJKI = RCJKI
         slider = SliderListCell(minValue = 0, maxValue = 1)
 
+        self.roundToGrid = CheckBox(
+            (5, -165, -0, 20),
+            'Round to grid',
+            value = self.RCJKI.roundToGrid,
+            callback = self.roundToGridCallback,
+            sizeStyle = "small"
+            )
+
         self.AETextBox = TextBox(
             (0, -140, -0, 20), 
             "Atomic Element's Axis"
@@ -82,6 +90,11 @@ class AtomicView(CanvasGroup):
             callback = self.removeLayerToAtomicElementCallback
             )
         self.removeLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
+
+    @refresh
+    def roundToGridCallback(self, sender):
+        self.RCJKI.roundToGrid = sender.get()
+        self.computeCurrentGlyph(self.atomicElementsList)
 
     @lockedProtect
     def addLayerToAtomicElementCallback(self, sender):
@@ -118,6 +131,14 @@ class DCCG_View(CanvasGroup):
         super().__init__(*args, **kwargs)
         self.RCJKI = RCJKI
         slider = SliderListCell(minValue = 0, maxValue = 1)
+
+        self.roundToGrid = CheckBox(
+            (5, -265, -0, 20),
+            'Round to grid',
+            value = self.RCJKI.roundToGrid,
+            callback = self.roundToGridCallback,
+            sizeStyle = "small"
+            )
         
         self.sourcesTitle = TextBox(
             (0, -240, -0, 20), 
@@ -169,6 +190,10 @@ class DCCG_View(CanvasGroup):
             )
         setListAesthetic(self.slidersList)
         self.selectedSourceAxis = None
+
+    def roundToGridCallback(self, sender):
+        self.RCJKI.roundToGrid = sender.get()
+        self.RCJKI.updateDeepComponent()
 
     def setUI(self):
         if self.RCJKI.isDeepComponent:

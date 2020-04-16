@@ -87,6 +87,7 @@ class RoboCJKController(object):
 
         self.locked = False
 
+        self.roundToGrid = False
         self.atomicView = canvasGroups.AtomicView(
             self,
             posSize = (20, 0, 300, -20), 
@@ -306,12 +307,17 @@ class RoboCJKController(object):
         mjdt.translate(0, 200)
         mjdt.fill(.15)
 
+        def roundGlyph(g):
+            if self.roundToGrid:
+                g.round()
+            return g
+
         def drawGlyph(g):
             mjdt.save()
             mjdt.fill(0)
             mjdt.scale(.15, .15)
             mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
-            mjdt.drawGlyph(g)  
+            mjdt.drawGlyph(roundGlyph(g))
             mjdt.restore()
 
         if self.isAtomic:
@@ -319,7 +325,7 @@ class RoboCJKController(object):
             mjdt.save()
             mjdt.scale(.15, .15)
             mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
-            mjdt.drawGlyph(self.currentGlyph.preview)  
+            mjdt.drawGlyph(roundGlyph(self.currentGlyph.preview))  
             mjdt.restore()
 
         elif self.isDeepComponent:
@@ -328,7 +334,7 @@ class RoboCJKController(object):
             for i, d in enumerate(self.currentGlyph.preview):
                 for atomicInstanceGlyph in d.values():
                     if atomicInstanceGlyph[0] is None: continue
-                    drawGlyph(atomicInstanceGlyph[0])
+                    drawGlyph(roundGlyph(atomicInstanceGlyph[0]))
             mjdt.restore()
 
         elif self.isCharacterGlyph:
@@ -339,7 +345,7 @@ class RoboCJKController(object):
                     for dcCoord, l in e.values():
                         for dcAtomicElements in l:
                             for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
-                                drawGlyph(atomicInstanceGlyph)
+                                drawGlyph(roundGlyph(atomicInstanceGlyph))
             mjdt.restore()
         mjdt.restore()
 
