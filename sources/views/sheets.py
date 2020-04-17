@@ -420,6 +420,7 @@ class FontInfosSheet():
     #     self.RCJKI.exportDataBase()
         
     def closeCallback(self, sender):
+        self.RCJKI.currentFont.createLayersFromVariationAxis()
         self.s.close()
 
 class NewCharacterGlyph:

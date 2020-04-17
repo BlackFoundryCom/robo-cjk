@@ -34,7 +34,8 @@ class TextCenter:
             )
         self.w.multiLineView = MultiLineView(
             (200, 20, -0, -0),
-            pointSize=120
+            pointSize=120,
+            displayOptions = {"Fill":False, "Center":True, "Stroke":False}
             )
         self.w.multiLineView.setFont(self.RCJKI.currentFont._RFont)
 
@@ -165,7 +166,6 @@ class TextCenter:
     def draw(self, info):
         glyph = self.RCJKI.currentFont[info["glyph"].name]
         scale = info["scale"]
-
         if self.sourcesList and glyph.glyphVariations:
             glyph.computeDeepComponentsPreview(self.sourcesList)
             self.RCJKI.drawer.drawCharacterGlyphPreview(

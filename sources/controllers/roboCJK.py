@@ -348,6 +348,8 @@ class RoboCJKController(object):
                         for dcAtomicElements in l:
                             for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
                                 drawGlyph(roundGlyph(atomicInstanceGlyph))
+                if self.currentGlyph.outlinesPreview is not None:
+                    drawGlyph(roundGlyph(self.currentGlyph.outlinesPreview))
             mjdt.restore()
         mjdt.restore()
 

@@ -49,17 +49,18 @@ class Drawer():
         return g
 
     def drawCharacterGlyphPreview(self, glyph, scale, color, strokecolor):
-
+        mjdt.save()
+        mjdt.fill(*color)
+        mjdt.stroke(*strokecolor)
+        mjdt.strokeWidth(scale)
         for i, e in enumerate(glyph.preview):
             for dcName, (dcCoord, l) in e.items():
                 for dcAtomicElements in l:
                     for atomicInstanceGlyph in dcAtomicElements.values():
-                        mjdt.save()
-                        mjdt.fill(*color)
-                        mjdt.stroke(*strokecolor)
-                        mjdt.strokeWidth(scale)
                         mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph[0]))  
-                        mjdt.restore()
+        if glyph.outlinesPreview is not None:
+            mjdt.drawGlyph(self.roundGlyph(glyph.outlinesPreview))  
+        mjdt.restore()
 
     def drawDeepComponentPreview(self, glyph, scale, color, strokecolor):
         for i, d in enumerate(glyph.preview):

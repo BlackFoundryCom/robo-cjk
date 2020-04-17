@@ -42,7 +42,12 @@ class CharacterGlyph(Glyph):
         self.selectedElement = []
         self.name = name
         self.type = "characterGlyph"
+        self.outlinesPreview = None
         self.save()
+
+    @property
+    def foreground(self):
+        return self.currentFont._RFont[self.name].getLayer('foreground')
 
     @property
     def deepComponents(self):
@@ -119,6 +124,7 @@ class CharacterGlyph(Glyph):
         self._deepComponents.append(d)
 
         variation_d = {k:v for k, v in d.items() if k!='name'}
+        variation_d['coord'] = {k:v for k,v in variation_d['coord'].items()}
         for k, v in self._glyphVariations.items():
             v.append(variation_d)
 
@@ -211,6 +217,23 @@ class CharacterGlyph(Glyph):
                     ae[0].rotateBy(masterDeepComponentInstance['rotation'])
                     # ae[0].round()
             deepComponentsSelectedVariation.append({self._deepComponents[j]['name']: (masterDeepComponentInstance['coord'], atomicInstancesPreview)})                
+
+        if self.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
+
+            layersInfos = {}
+            for d in sourcelist:
+                layer = d['Axis']
+                value = d['PreviewValue']
+                if layer in self.currentFont._RFont.lib['robocjk.fontVariations']:
+                    if len(self._RGlyph.getLayer(layer)):
+                        layersInfos[layer] = value
+
+            self.outlinesPreview = interpolation.deepolation(
+                RGlyph(), 
+                self.foreground, 
+                layersInfos
+                )
+
         self.preview = deepComponentsSelectedVariation
 
     def generateCharacterGlyphVariation(self, selectedSourceAxis, preview=True):

@@ -59,6 +59,8 @@ class Font():
             for k, v in f.items():
                 self._RFont.lib[k] = v
 
+        self.createLayersFromVariationAxis()
+
     def __iter__(self):
         for name in self._RFont.keys():
             yield self[name]
@@ -81,6 +83,13 @@ class Font():
     @property
     def _fontLayers(self):
         return [l.name for l in self._RFont.layers if l.name != 'foreground']
+
+
+    def createLayersFromVariationAxis(self):
+        if not self._RFont.lib.get('robocjk.fontVariations', ""): return
+        for variation in self._RFont.lib['robocjk.fontVariations']:
+            if variation not in [x.name for x in self._RFont.layers]:
+                self._RFont.newLayer(variation)
 
     def getGlyphs(self):
         for glyphName in self.deepComponentSet:
@@ -107,20 +116,29 @@ class Font():
                 "foreground"
                 )
 
-        path = os.path.join(self.fontPath, 'atomicElement')
+        # paths = [os.path.join(self.fontPath, 'atomicElement'), os.path.join(self.fontPath, 'characterGlyph')]
+        glyphtypes = ["atomicElement", "characterGlyph"]
+        for glyphtype in glyphtypes:
+            path = os.path.join(self.fontPath, glyphtype)
+            for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
+                layerName = os.path.split(layerPath)[1]
+                if layerName not in self._fontLayers:
+                    self._RFont.newLayer(layerName)
 
-        for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
-            layerName = os.path.split(layerPath)[1]
-            if layerName not in self._fontLayers:
-                self._RFont.newLayer(layerName)
-
-            for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
-                layerfileName = glifFile.split('.')[0]
-                self.addGlyph(
-                    atomicElement.AtomicElement(glyphName), 
-                    layerfileName, 
-                    layerName
-                    )
+                for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
+                    layerfileName = glifFile.split('.')[0]
+                    if glyphtype == "atomicElement":
+                        self.addGlyph(
+                            atomicElement.AtomicElement(glyphName), 
+                            layerfileName, 
+                            layerName
+                            )
+                    else:
+                        self.addGlyph(
+                            characterGlyph.CharacterGlyph(glyphName), 
+                            layerfileName, 
+                            layerName
+                            )
 
     def newGLIF(self, glyphType, glyphName):
         if glyphType == 'atomicElement':

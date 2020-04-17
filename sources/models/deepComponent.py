@@ -120,6 +120,7 @@ class DeepComponent(Glyph):
         self._atomicElements.append(d)
 
         variation_d = {k:v for k, v in d.items() if k!='name'}
+        variation_d['coord'] = {k:v for k,v in variation_d['coord'].items()}
         for k, v in self._glyphVariations.items():
             v.append(variation_d)
 

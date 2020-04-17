@@ -164,6 +164,7 @@ def deepCompatible(masterGlyph, layersNames):
     for layerName in layersNames:
         glyph = masterGlyph.getLayer(layerName)
         if len(glyph) != len(masterGlyph):
+            print(layerName, len(glyph), len(masterGlyph))
             return False
         for c1, c2 in zip(glyph, masterGlyph):
             if len(c1) != len(c2):
