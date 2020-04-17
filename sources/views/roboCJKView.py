@@ -475,12 +475,25 @@ class RoboCJKView(BaseWindowController):
             alignment='center'
             )
 
+        self.w.firstFilterAtomicElement = PopUpButton(
+            (10, 120, 80, 20),
+            ["All those", "Locked and"],
+            callback = self.filterAtomicElementCallback,
+            sizeStyle = "mini"
+            )
+        self.w.secondFilterAtomicElement = PopUpButton(
+            (90, 120, 120, 20),
+            ["that are in font", "that are empty", "that have outlines", "that are locked"],
+            callback = self.filterAtomicElementCallback,
+            sizeStyle = "mini"
+            )
+
         self.w.atomicElementSearchBox = SearchBox(
-            (10, 130, 200, 20),
+            (10, 140, 200, 20),
             callback = self.atomicElementSearchBoxCallback
             )
         self.w.atomicElement = List(
-            (10, 150, 200, 200),
+            (10, 160, 200, 190),
             [],
             allowsMultipleSelection = False,
             doubleClickCallback = self.GlyphsListDoubleClickCallback,
@@ -497,12 +510,25 @@ class RoboCJKView(BaseWindowController):
             self.RCJKI,
             glyphType = "atomicElement")
 
+        self.w.firstFilterDeepComponent = PopUpButton(
+            (210, 120, 80, 20),
+            ["All those", "Locked and"],
+            callback = self.filterDeepComponentCallback,
+            sizeStyle = "mini"
+            )
+        self.w.secondFilterDeepComponent = PopUpButton(
+            (290, 120, 120, 20),
+            ["that are in font", "that are empty", "that have outlines", "that are locked"],
+            callback = self.filterDeepComponentCallback,
+            sizeStyle = "mini"
+            )
+
         self.w.deepComponentSearchBox = SearchBox(
-            (210, 130, 200, 20),
+            (210, 140, 200, 20),
             callback = self.deepComponentSearchBoxCallback
             )
         self.w.deepComponent = List(
-            (210, 150, 200, 200),
+            (210, 160, 200, 190),
             [],
             allowsMultipleSelection = False,
             doubleClickCallback = self.GlyphsListDoubleClickCallback,
@@ -519,12 +545,24 @@ class RoboCJKView(BaseWindowController):
             self.RCJKI,
             glyphType = "deepComponent")
 
+        self.w.firstFilterCharacterGlyph = PopUpButton(
+            (410, 120, 80, 20),
+            ["All those", "Locked and"],
+            callback = self.filterCharacterGlyphCallback,
+            sizeStyle = "mini"
+            )
+        self.w.secondFilterCharacterGlyph = PopUpButton(
+            (490, 120, 120, 20),
+            ["that are in font", "that can be fully designed", "that are empty", "that have outlines", "that are locked"],
+            callback = self.filterCharacterGlyphCallback,
+            sizeStyle = "mini"
+            )
         self.w.characterGlyphSearchBox = SearchBox(
-            (410, 130, 200, 20),
+            (410, 140, 200, 20),
             callback = self.characterGlyphearchBoxCallback
             )
         self.w.characterGlyph = List(
-            (410, 150, 200, 200),
+            (410, 160, 200, 190),
             [],
             allowsMultipleSelection = False,
             doubleClickCallback = self.GlyphsListDoubleClickCallback,
@@ -558,44 +596,135 @@ class RoboCJKView(BaseWindowController):
         textCenter.TextCenter(self.RCJKI)
 
     def atomicElementSearchBoxCallback(self, sender):
-        name = str(sender.get())
-        l = files._getFilteredListFromName(self.currentFont.atomicElementSet, name)
-        if not l:
-            l = self.currentFont.atomicElementSet
-
-        self.w.deepComponent.setSelection([])
-        self.w.characterGlyph.setSelection([])
-        self.w.atomicElement.set(l)
-        self.w.atomicElement.setSelection([])
-
+        if not sender.get():
+            self.filterAtomicElementCallback(None)
+        else:
+            name = str(sender.get())
+            l = files._getFilteredListFromName(self.currentFont.atomicElementSet, name)
+            if l:
+                self.w.deepComponent.setSelection([])
+                self.w.characterGlyph.setSelection([])
+                self.w.atomicElement.setSelection([])
+                self.w.atomicElement.set(l)
+            else:
+                self.filterAtomicElementCallback(None)
+            
     def deepComponentSearchBoxCallback(self, sender):
-        name = str(sender.get())
-        l = files._getFilteredListFromName(self.currentFont.deepComponentSet, name)
-        if not l:
-            l = self.currentFont.deepComponentSet
-
-        self.w.atomicElement.setSelection([])
-        self.w.characterGlyph.setSelection([])
-        self.w.deepComponent.set(l)
-        self.w.deepComponent.setSelection([])
+        if not sender.get():
+            self.filterDeepComponentCallback(None)
+        else:
+            name = str(sender.get())
+            l = files._getFilteredListFromName(self.currentFont.deepComponentSet, name)
+            if l:
+                self.w.atomicElement.setSelection([])
+                self.w.characterGlyph.setSelection([])
+                self.w.deepComponent.setSelection([])
+                self.w.deepComponent.set(l)
+            else:
+                self.filterDeepComponentCallback(None)
 
     def characterGlyphearchBoxCallback(self, sender):
+        l = []
         if not sender.get():
-            l = self.currentFont.characterGlyphSet
+            self.filterCharacterGlyphCallback(None)
         else:
             try:
                 name = files.unicodeName(sender.get())
             except:
                 name = str(sender.get())
             l = files._getFilteredListFromName(self.currentFont.characterGlyphSet, name)
+            self.w.atomicElement.setSelection([])
+            self.w.deepComponent.setSelection([])
+            self.w.characterGlyph.setSelection([])
+            self.w.characterGlyph.set(l)
         if not l:
-            l = self.currentFont.characterGlyphSet
+            self.filterCharacterGlyphCallback(None)
+
+    def filterAtomicElementCallback(self, sender):
+        filteredList = self.filterGlyphs(
+            "atomicElement",
+            self.w.firstFilterAtomicElement.getItem(),
+            self.w.secondFilterAtomicElement.getItem(),
+            self.currentFont.atomicElementSet,
+            list(set(self.currentFont.atomicElementSet) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+            )
+        self.w.atomicElement.setSelection([])
+        self.w.deepComponent.setSelection([])
+        self.w.characterGlyph.setSelection([])
+        self.w.atomicElement.set(filteredList)
+
+    def filterDeepComponentCallback(self, sender):
+        filteredList = self.filterGlyphs(
+            "deepComponent",
+            self.w.firstFilterDeepComponent.getItem(),
+            self.w.secondFilterDeepComponent.getItem(),
+            self.currentFont.deepComponentSet,
+            list(set(self.currentFont.deepComponentSet) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+            )
+        self.w.atomicElement.setSelection([])
+        self.w.deepComponent.setSelection([])
+        self.w.characterGlyph.setSelection([])
+        self.w.deepComponent.set(filteredList)
+
+    def filterCharacterGlyphCallback(self, sender):
+        filteredList = self.filterGlyphs(
+            "characterGlyph",
+            self.w.firstFilterCharacterGlyph.getItem(),
+            self.w.secondFilterCharacterGlyph.getItem(),
+            self.currentFont.characterGlyphSet,
+            list(set(self.currentFont.characterGlyphSet) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+            )
 
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
-        self.w.characterGlyph.set(l)
         self.w.characterGlyph.setSelection([])
+        self.w.characterGlyph.set(filteredList)
 
+    def filterGlyphs(self, glyphtype, option1, option2, allGlyphs, lockedGlyphs):
+
+        def getFilteredList(option1, l, lockedGlyphs):
+            if option1 == "All those":
+                return l
+            else:
+                return list(set(lockedGlyphs) & set(l))
+
+        if option2 == "that can be fully designed":
+            l = []
+            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponent.atomicElements"]])
+            for name in self.currentFont.characterGlyphSet:
+                try:
+                    c = chr(int(name[3:].split(".")[0], 16))
+                    self.RCJKI.dataBase[c]
+                except: continue
+                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.dataBase[c]]
+                inside = len(set(compo) - DCSet) == 0
+                if inside:
+                    l.append(name)
+            return getFilteredList(option1, l, lockedGlyphs)
+
+        elif option2 == "that are locked":
+            return lockedGlyphs
+
+        elif option2 == "that have outlines":
+            l = [x for x in allGlyphs if len(self.RCJKI.currentFont[x])]
+            return getFilteredList(option1, l, lockedGlyphs)
+
+        elif option2 == "that are empty":
+            if glyphtype == "characterGlyph":
+                l = [x for x in allGlyphs if not self.RCJKI.currentFont[x]._deepComponents and not len(self.RCJKI.currentFont[x])]
+            elif glyphtype == "deepComponent":
+                l = [x for x in allGlyphs if not self.RCJKI.currentFont[x]._atomicElements and not len(self.RCJKI.currentFont[x])]
+            else:
+                l = [x for x in allGlyphs if not len(self.RCJKI.currentFont[x])]
+            return getFilteredList(option1, l, lockedGlyphs)
+
+        elif option2 == "that are in font":
+            l = allGlyphs
+            return getFilteredList(option1, l, lockedGlyphs)
+
+        else:
+            return allGlyphs
+        
     def windowCloses(self, sender):
         for w in AllWindows():
             try:

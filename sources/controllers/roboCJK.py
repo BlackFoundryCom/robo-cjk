@@ -249,7 +249,6 @@ class RoboCJKController(object):
         self.addSubView()
         self.updateDeepComponent()
 
-
     def exportDataBase(self):
         with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
             file.write(json.dumps(self.dataBase))
