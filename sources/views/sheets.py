@@ -666,13 +666,21 @@ class UsersInfos:
             (200, 100, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"hostlockerpassword", "")
             )
+        self.w.cancelButton = Button(
+            (10, -30, 100, -10),
+            "Cancel",
+            callback = self.cancelCallback
+            )
         self.w.closeButton = Button(
-            (10, -30, -10, -10),
+            (110, -30, -10, -10),
             "Login",
             callback = self.closeCallback
             )
         self.w.setDefaultButton(self.w.closeButton)
         self.w.open()
+
+    def cancelCallback(self, sender):
+        self.w.close()
 
     def closeCallback(self, sender):
         if not self.w.userName.get() or not self.w.password.get() or not self.w.hostlocker.get(): return
