@@ -261,10 +261,13 @@ class CharacterGlyph(Glyph):
 
     def removeDeepComponentAtIndexToGlyph(self):
         if not self.selectedElement: return
-        for index in self.selectedElement:
-            self._deepComponents.pop(index)
-            for dcList in self._glyphVariations.values():
-                dcList.pop(index)
+        self._deepComponents = [x for i, x in enumerate(self._deepComponents) if i not in self.selectedElement]
+        for k, v in self._glyphVariations.items():
+            v = [x for i, x in enumerate(v) if i not in self.selectedElement]
+        # for index in self.selectedElement:
+        #     self._deepComponents.pop(index)
+        #     for dcList in self._glyphVariations.values():
+        #         dcList.pop(index)
 
     def save(self):
         self.lib.clear()
