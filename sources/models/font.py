@@ -91,6 +91,49 @@ class Font():
             if variation not in [x.name for x in self._RFont.layers]:
                 self._RFont.newLayer(variation)
 
+    def getGlyph(self, glyph):
+        fileName = files.userNameToFileName(glyph.name)
+        if glyph.type == "deepComponent":
+            self.addGlyph(
+                deepComponent.DeepComponent(glyph.name), 
+                fileName, 
+                "foreground"
+                )
+        elif glyph.type == "characterGlyph":
+            self.addGlyph(
+                characterGlyph.CharacterGlyph(glyph.name), 
+                fileName, 
+                "foreground"
+                )
+        elif glyph.type == "atomicElement":
+            self.addGlyph(
+                atomicElement.AtomicElement(glyph.name), 
+                fileName, 
+                "foreground"
+                )
+
+        if glyph.type in ["atomicElement", "characterGlyph"]:
+            path = os.path.join(self.fontPath, glyph.type)
+            for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
+                layerName = os.path.split(layerPath)[1]
+                if layerName not in self._fontLayers:
+                    self._RFont.newLayer(layerName)
+
+                for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
+                    layerfileName = glifFile.split('.')[0]
+                    if glyph.type == "atomicElement":
+                        self.addGlyph(
+                            atomicElement.AtomicElement(glyph.name), 
+                            layerfileName, 
+                            layerName
+                            )
+                    else:
+                        self.addGlyph(
+                            characterGlyph.CharacterGlyph(glyph.name), 
+                            layerfileName, 
+                            layerName
+                            )
+
     def getGlyphs(self):
         for glyphName in self.deepComponentSet:
             fileName = files.userNameToFileName(glyphName)

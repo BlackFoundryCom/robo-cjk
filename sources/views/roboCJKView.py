@@ -836,7 +836,6 @@ class RoboCJKView(BaseWindowController):
         if not folder: return
         self.RCJKI.projectRoot = folder[0]
         sheets.UsersInfos(self.RCJKI, self.w)
-        
 
     def saveProjectButtonCallback(self, sender):
         if self.RCJKI.get('currentFont'):

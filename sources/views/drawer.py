@@ -130,8 +130,8 @@ class Drawer():
             mjdt.restore()
 
     def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7)):
+        mjdt.save()
         for i, atomicInstanceGlyph in glyph.atomicInstancesGlyphs:
-            mjdt.save()
             mjdt.fill(*color)
             if i in glyph.selectedElement:
                 mjdt.fill(0, .8, .8, .5)
@@ -142,7 +142,8 @@ class Drawer():
             mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph)) 
             if customColor is None and view: 
                 self.drawIndexOfElements(i, atomicInstanceGlyph, view)
-            mjdt.restore()
+        mjdt.drawGlyph(glyph)
+        mjdt.restore()
 
         for c in glyph.flatComponents:
             if self.RCJKI.currentFont[c.baseGlyph].type == "atomicElement":

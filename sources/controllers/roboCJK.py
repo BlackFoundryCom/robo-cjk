@@ -190,17 +190,21 @@ class RoboCJKController(object):
         self.currentGlyph.computeDeepComponents()
 
     def glyphWindowWillClose(self, notification):
+
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
         self.roboCJKView.w.atomicElementPreview.update()
         self.roboCJKView.w.deepComponentPreview.update()
         self.roboCJKView.w.characterGlyphPreview.update()
+        self.closeimportDCFromCG()
         self.closeComponentWindow()
         self.closeCharacterWindow()
         # self.currentFont.locker.unlock(self.currentGlyph)
         self.currentFont.save()
-        self.closeimportDCFromCG()
+        if self.currentGlyph is not None:
+            self.currentFont.getGlyph(self.currentGlyph)
+        
 
     def closeimportDCFromCG(self):
         if self.importDCFromCG is not None:
