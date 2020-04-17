@@ -92,7 +92,9 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
                 deltaDC[i][e] += (masterDeepComponent[i][e] - sourceAtomicElement[e]) * ratio
         
             for sourceAtomicElementAxisName, sourceAtomicElementAxisRatio in sourceAtomicElement['coord'].items():
-                deltaDC[i]['coord'][sourceAtomicElementAxisName] += ratio * (masterDeepComponent[i]['coord'][sourceAtomicElementAxisName] - sourceAtomicElementAxisRatio)
+                if sourceAtomicElementAxisName in deltaDC[i]['coord']:
+                    deltaDC[i]['coord'][sourceAtomicElementAxisName] += ratio * (masterDeepComponent[i]['coord'][sourceAtomicElementAxisName] - sourceAtomicElementAxisRatio)
+               
     outputDC = []
     for i, masterAtomicElement in enumerate(masterDeepComponent):
         outputAE = {}

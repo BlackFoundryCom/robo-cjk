@@ -269,7 +269,10 @@ class DeepComponent(Glyph):
                     atomicVariations = self.currentFont[masterAtomicElement['name']]._glyphVariations
             
                     for atomicAxisName, atomicLayerName in atomicVariations.items():
-                        _atomicElement['coord'][atomicAxisName] = deepComponentVariation[i]['coord'][atomicAxisName]
+                        if atomicAxisName in deepComponentVariation[i]['coord']:
+                            _atomicElement['coord'][atomicAxisName] = deepComponentVariation[i]['coord'][atomicAxisName]
+                        else:
+                            _atomicElement['coord'][atomicAxisName] = 0
                         # if self.selectedElement == (i, masterAtomicElement['name']) and self.sliderName == atomicAxisName  and preview == False and self.sliderValue:
                         #     _atomicElement['coord'][atomicAxisName] = float(self.sliderValue)
                         layersInfos[atomicLayerName] = _atomicElement['coord'][atomicAxisName]
