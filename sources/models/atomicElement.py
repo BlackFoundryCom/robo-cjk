@@ -20,10 +20,12 @@ from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 from mojo.roboFont import *
 from imp import reload
 from models import glyph
-from utils import interpolation
-import copy
+from utils import interpolation, decorators
+reload(decorators)
 reload(interpolation)
 reload(glyph)
+glyphUndo = decorators.glyphUndo
+import copy
 Glyph = glyph.Glyph
 
 glyphVariationsKey = 'robocjk.atomicElement.glyphVariations'

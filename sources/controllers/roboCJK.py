@@ -63,7 +63,8 @@ import mojo.drawingTools as mjdt
 from mojo.roboFont import *
 
 import math
-import json 
+import json
+import copy 
 
 from utils import decorators
 reload(decorators)
@@ -413,7 +414,49 @@ class RoboCJKController(object):
             )
         if self.currentGlyph.selectedElement:
             self.setListWithSelectedElement()
+    
+    def doUndo(self):
+        if len(self.currentGlyph.stackUndo_lib) >= 1:
+            if self.currentGlyph.indexStackUndo_lib > 0:
+                self.currentGlyph.indexStackUndo_lib -= 1
+
+                if self.currentGlyph.indexStackUndo_lib == len(self.currentGlyph.stackUndo_lib)-1:    
+                    deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
+                    glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+                    lib = RLib()
+                    lib[deepComponentsKey] = copy.deepcopy(self.currentGlyph._deepComponents)
+                    lib[glyphVariationsKey] = copy.deepcopy(self.currentGlyph._glyphVariations)
+                    self.currentGlyph.stackUndo_lib.append(lib)
+            else:
+                self.currentGlyph.indexStackUndo_lib = 0
+
+            print(self.currentGlyph.indexStackUndo_lib, '/', len(self.currentGlyph.stackUndo_lib)-1)
+
+            lib = copy.deepcopy(self.currentGlyph.stackUndo_lib[self.currentGlyph.indexStackUndo_lib])
+            self.currentGlyph._initWithLib(lib)
+
+            self.updateDeepComponent()
+            self.characterGlyphView.sourcesList.set(self.currentGlyph.sourcesList)
+
+    def doRedo(self):
+        if self.currentGlyph.stackUndo_lib:
+
+            if self.currentGlyph.indexStackUndo_lib < len(self.currentGlyph.stackUndo_lib)-1:
+                self.currentGlyph.indexStackUndo_lib += 1 
+            else:
+                self.currentGlyph.indexStackUndo_lib = len(self.currentGlyph.stackUndo_lib)-1
+
+
+            print(self.currentGlyph.indexStackUndo_lib, '/', len(self.currentGlyph.stackUndo_lib)-1)
+
+            lib = copy.deepcopy(self.currentGlyph.stackUndo_lib[self.currentGlyph.indexStackUndo_lib])
+            self.currentGlyph._initWithLib(lib)
+
             
+
+            self.updateDeepComponent()
+            self.characterGlyphView.sourcesList.set(self.currentGlyph.sourcesList)
+
     @refresh
     def keyDown(self, info):
         if self.isAtomic:
@@ -444,6 +487,11 @@ class RoboCJKController(object):
         inputKey = [arrowX, arrowY]
 
         if self.isAtomic: return
+
+        if modifiers[4] and character == 'z':
+            self.doUndo()
+        elif modifiers[4] and modifiers[0] and character == 'Z':
+            self.doRedo()
 
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None

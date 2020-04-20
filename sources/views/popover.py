@@ -16,10 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
+from imp import reload
 from mojo.events import getActiveEventTool
 from vanilla import *
 from AppKit import NSColor, NSNoBorder, NumberFormatter
 import copy
+from utils import decorators
+reload(decorators)
+glyphTransformUndo = decorators.glyphTransformUndo
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 numberFormatter = NumberFormatter()
@@ -250,31 +254,37 @@ class EditPopoverAlignTool(EditPopover):
 
     @tryfunc
     @resetDict
+    @glyphTransformUndo
     def xCallback(self, sender):
         self.infos["x"] = int(sender.get())
         
     @tryfunc
     @resetDict
+    @glyphTransformUndo
     def yCallback(self, sender):
         self.infos["y"] = int(sender.get())
 
     @tryfunc
     @resetDict
+    @glyphTransformUndo
     def scalexCallback(self, sender):
         self.infos["scalex"] = int(sender.get()) / 1000
 
     @tryfunc
     @resetDict
+    @glyphTransformUndo
     def scaleyCallback(self, sender):
         self.infos["scaley"] = int(sender.get()) / 1000
 
     @tryfunc
     @resetDict
+    @glyphTransformUndo
     def rotationCallback(self, sender):
         self.infos["rotation"] = float(sender.get())
 
     @tryfunc
     @resetDict
+    @glyphTransformUndo
     def coordEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return

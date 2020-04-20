@@ -17,7 +17,8 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from mojo.UI import PostBannerNotification, UpdateCurrentGlyphView
-
+from mojo.roboFont import *
+import copy
 from imp import reload
 from controllers import roboCJK
 reload(roboCJK)
@@ -67,18 +68,59 @@ def lockedProtect(func):
             raise e
     return wrapper
 
+deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
+glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+
 def glyphUndo(func):
     def wrapper(self, *args, **kwargs):
         try:
-            
-            self.RCJKI.currentGlyph.lib.prepareUndo(undoTitle='TestingUndo')
-            self.RCJKI.currentGlyph.prepareUndo(undoTitle='TestingUndo')
-            self.RCJKI.currentGlyph.update()
+            modifiers, inputKey, character = args[0]
+            if self.type == "characterGlyph":
+                if not (modifiers[4] and character == 'z') and not (modifiers[0] and modifiers[4] and character == 'Z'):
+                    lib = RLib()
+                    lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
+                    lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
+                    self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
+                    self.stackUndo_lib.append(lib)
+                    self.indexStackUndo_lib += 1
+
             func(self, *args, **kwargs)
-            self.RCJKI.currentGlyph.lib.holdChanges()
-            self.RCJKI.currentGlyph.update()
-            self.RCJKI.currentGlyph.lib.performUndo()
-            self.RCJKI.currentGlyph.performUndo()
+
+        except Exception as e:
+            raise e
+    return wrapper
+
+def glyphAddRemoveUndo(func):
+    def wrapper(self, *args, **kwargs):
+        try:
+            print(self.type)
+            if self.type == "characterGlyph":
+                lib = RLib()
+                lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
+                lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
+                self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
+                self.stackUndo_lib.append(lib)
+                self.indexStackUndo_lib += 1
+
+            func(self, *args, **kwargs)
+
+        except Exception as e:
+            raise e
+    return wrapper
+
+def glyphTransformUndo(func):
+    def wrapper(self, *args, **kwargs):
+        try:
+            if self.RCJKI.currentGlyph.type == "characterGlyph":
+                lib = RLib()
+                lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents)
+                lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations)
+                self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
+                self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
+                self.RCJKI.currentGlyph.indexStackUndo_lib += 1
+
+            func(self, *args, **kwargs)
+
         except Exception as e:
             raise e
     return wrapper

@@ -18,12 +18,12 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from mojo.canvas import CanvasGroup
+from mojo.roboFont import *
 from AppKit import NSColor, NSNoBorder
 import mojo.drawingTools as mjdt
 from imp import reload
 from utils import decorators
 reload(decorators)
-
 from utils import files
 reload(files)
 
@@ -31,8 +31,9 @@ from views import sheets, drawer
 reload(sheets)
 reload(drawer)
 
+import copy
+
 lockedProtect = decorators.lockedProtect
-glyphUndo = decorators.glyphUndo
 refresh = decorators.refresh
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
@@ -229,10 +230,10 @@ class DCCG_View(CanvasGroup):
 
     @lockedProtect
     def sourcesListEditCallback(self, sender):
-
         sel = sender.getSelection()
         if not sel: return
         edited = sender.getEditedColumnAndRow()
+
         if edited[0] == 0:
             name =  sender.get()[edited[1]]['Axis']
             if len([x for x in sender.get() if x['Axis'] == name]) > 1:
@@ -257,7 +258,6 @@ class DCCG_View(CanvasGroup):
         self.RCJKI.updateDeepComponent()
 
     @lockedProtect
-    @glyphUndo
     def addVarAxisCallback(self, sender):
         if self.RCJKI.isDeepComponent:
             l = 0
@@ -289,7 +289,6 @@ class DCCG_View(CanvasGroup):
             # self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
 
     @lockedProtect
-    @glyphUndo
     def removeVarAxisCallback(self, sender):
         if self.sourcesList.getSelection():
             name = self.sourcesList.get()[self.sourcesList.getSelection()[0]]["Axis"]
@@ -307,9 +306,17 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.updateDeepComponent()
 
     @lockedProtect
-    @glyphUndo
     def slidersListEditCallback(self, sender):
         if not sender.getSelection(): return
+        lib = RLib()
+        deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
+        glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+        lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents)
+        lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations)
+        self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
+        self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
+        self.RCJKI.currentGlyph.indexStackUndo_lib += 1
+
         self.RCJKI.sliderValue = round(float(self.slidersList[sender.getSelection()[0]]['PreviewValue']), 3)
         sliderName = self.slidersList[sender.getSelection()[0]]['Axis']
         self.RCJKI.sliderName = sliderName

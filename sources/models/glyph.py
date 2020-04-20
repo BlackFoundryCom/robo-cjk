@@ -18,7 +18,9 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from mojo.roboFont import *
 from imp import reload
-from utils import interpolation
+from utils import interpolation, decorators
+reload(decorators)
+glyphUndo = decorators.glyphUndo
 reload(interpolation)
 from models import deepComponent
 import copy
@@ -57,7 +59,7 @@ class Glyph(RGlyph):
     def flatComponents(self):
         return self._RGlyph.components
 
-
+    @glyphUndo
     def keyDown(self, keys):
         modifiers, inputKey, character = keys
         element = self._getElements()

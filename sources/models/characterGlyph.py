@@ -20,13 +20,14 @@ from mojo.roboFont import *
 from imp import reload
 from models import glyph
 reload(glyph)
-from utils import interpolation
+from utils import interpolation, decorators
 reload(interpolation)
 Glyph = glyph.Glyph
-import copy
-
+glyphAddRemoveUndo = decorators.glyphAddRemoveUndo
 from models import deepComponent
 reload(deepComponent)
+
+import copy
 
 deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
 glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
@@ -43,6 +44,13 @@ class CharacterGlyph(Glyph):
         self.name = name
         self.type = "characterGlyph"
         self.outlinesPreview = None
+
+        lib = RLib()
+        lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
+        lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
+        self.stackUndo_lib = [lib]
+        self.indexStackUndo_lib = 0
+
         self.save()
 
     @property
@@ -57,10 +65,14 @@ class CharacterGlyph(Glyph):
     def glyphVariations(self):
         return self._glyphVariations
 
-    def _initWithLib(self):
+    def _initWithLib(self, lib=None):
         try:
-            self._deepComponents = list(self._RGlyph.lib[deepComponentsKey])      
-            self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])
+            if lib:
+                self._deepComponents = list(lib[deepComponentsKey])      
+                self._glyphVariations = dict(lib[glyphVariationsKey])
+            else:
+                self._deepComponents = list(self._RGlyph.lib[deepComponentsKey])      
+                self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])
         except:
             self._deepComponents = []
             self._glyphVariations = {}
@@ -106,6 +118,7 @@ class CharacterGlyph(Glyph):
     def removeVariationAxis(self, name):
         del self._glyphVariations[name]
 
+    @glyphAddRemoveUndo
     def addDeepComponentNamed(self, deepComponentName, items = False):
         d = items
         if not items:
@@ -128,6 +141,7 @@ class CharacterGlyph(Glyph):
         for k, v in self._glyphVariations.items():
             v.append(variation_d)
 
+    @glyphAddRemoveUndo
     def removeDeepComponentAtIndex(self):
         if not self.selectedElement: return
         for i in self.selectedElement:

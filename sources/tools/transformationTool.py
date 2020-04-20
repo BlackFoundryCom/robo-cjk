@@ -16,9 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
+from imp import reload
 from mojo.events import BaseEventTool, getActiveEventTool
 from mojo.UI import UpdateCurrentGlyphView
 from AppKit import NSImage
+from utils import decorators
+reload(decorators)
+glyphTransformUndo = decorators.glyphTransformUndo
 import math
 import os
 
@@ -40,6 +44,7 @@ class TransformationTool(BaseEventTool):
     def getToolbarIcon(self):
         return toolbarIcon
 
+    @glyphTransformUndo
     def mouseDown(self, point, clickcount):
         self.px, self.py = self.deltax, self.deltay = point
 

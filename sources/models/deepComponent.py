@@ -20,8 +20,10 @@ from mojo.roboFont import *
 from imp import reload
 from models import glyph
 reload(glyph)
-from utils import interpolation
+from utils import interpolation, decorators
 reload(interpolation)
+reload(decorators)
+glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph
 
