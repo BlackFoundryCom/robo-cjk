@@ -79,6 +79,30 @@ class Drawer():
         mjdt.strokeWidth(scale)
         mjdt.drawGlyph(self.roundGlyph(glyph.preview))  
         mjdt.restore()
+
+    def drawGlyph(self, glyph, scale, color, strokecolor, customColor, drawSelectedElements = True):
+        if not glyph.preview:
+            if glyph.type == 'atomicElement':
+                if not len(glyph): return
+            else:
+                glyph.computeDeepComponents()
+            self.drawGlyphAtomicInstance(
+                glyph,
+                color,
+                scale,
+                customColor,
+                drawSelectedElements = drawSelectedElements
+                )
+        else:
+            args = (glyph, scale, color, strokecolor)
+            if glyph.type == 'atomicElement':
+                self.drawAtomicElementPreview(*args)
+
+            elif glyph.type == "deepComponent":
+                self.drawDeepComponentPreview(*args)
+
+            elif glyph.type == "characterGlyph":
+                self.drawCharacterGlyphPreview(*args)
         
     def draw(self, info, customColor = None, refGlyph = None):
         view = info["view"]
@@ -129,11 +153,11 @@ class Drawer():
             mjdt.drawGlyph(self.roundGlyph(self.refGlyph))
             mjdt.restore()
 
-    def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7)):
+    def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
         mjdt.save()
         for i, atomicInstanceGlyph in glyph.atomicInstancesGlyphs:
             mjdt.fill(*color)
-            if i in glyph.selectedElement:
+            if drawSelectedElements and i in glyph.selectedElement:
                 mjdt.fill(0, .8, .8, .5)
             for c in atomicInstanceGlyph:
                 if c.clockwise:
@@ -146,6 +170,7 @@ class Drawer():
             mjdt.fill(customColor)
         else:    
             mjdt.fill(*customColor)
+            
         mjdt.drawGlyph(glyph)
         mjdt.restore()
 

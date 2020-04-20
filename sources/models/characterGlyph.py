@@ -140,6 +140,8 @@ class CharacterGlyph(Glyph):
         variation_d['coord'] = {k:v for k,v in variation_d['coord'].items()}
         for k, v in self._glyphVariations.items():
             v.append(variation_d)
+        self.computeDeepComponentsPreview()
+        self.computeDeepComponents()
 
     @glyphAddRemoveUndo
     def removeDeepComponentAtIndex(self):
@@ -149,6 +151,8 @@ class CharacterGlyph(Glyph):
             for k, v in self._glyphVariations.items():
                 v.pop(i)
             self.selectedElement = []
+        self.computeDeepComponentsPreview()
+        self.computeDeepComponents()
 
     def addVariationAxisToDeepComponentNamed(self, axisName, deepComponentName):
         for d in self._deepComponents:

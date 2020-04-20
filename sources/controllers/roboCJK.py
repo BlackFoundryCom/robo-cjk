@@ -311,51 +311,20 @@ class RoboCJKController(object):
 
     def draw(self):
         mjdt.save()
-        mjdt.translate(0, 200)
+        mjdt.translate(0, [300, 200][self.currentGlyph.type == "atomicElement"])
         mjdt.fill(.15)
 
-        def roundGlyph(g):
-            if self.roundToGrid:
-                g.round()
-            return g
-
-        def drawGlyph(g):
-            mjdt.save()
-            mjdt.fill(0)
-            mjdt.scale(.15, .15)
-            mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
-            mjdt.drawGlyph(roundGlyph(g))
-            mjdt.restore()
-
-        if self.isAtomic:
-            if self.currentGlyph.preview is None: return
-            mjdt.save()
-            mjdt.scale(.15, .15)
-            mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
-            mjdt.drawGlyph(roundGlyph(self.currentGlyph.preview))  
-            mjdt.restore()
-
-        elif self.isDeepComponent:
-            mjdt.save()
-            mjdt.translate(0, 100)
-            for i, d in enumerate(self.currentGlyph.preview):
-                for atomicInstanceGlyph in d.values():
-                    if atomicInstanceGlyph[0] is None: continue
-                    drawGlyph(roundGlyph(atomicInstanceGlyph[0]))
-            mjdt.restore()
-
-        elif self.isCharacterGlyph:
-            mjdt.save()
-            mjdt.translate(0, 100)
-            if self.currentGlyph.preview is not None:
-                for i, e in enumerate(self.currentGlyph.preview):
-                    for dcCoord, l in e.values():
-                        for dcAtomicElements in l:
-                            for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
-                                drawGlyph(roundGlyph(atomicInstanceGlyph))
-                if self.currentGlyph.outlinesPreview is not None:
-                    drawGlyph(roundGlyph(self.currentGlyph.outlinesPreview))
-            mjdt.restore()
+        scale = .15
+        mjdt.scale(scale, scale)
+        mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
+        self.drawer.drawGlyph(
+            self.currentGlyph,
+            scale,
+            (0, 0, 0, 1),
+            (0, 0, 0, 0),
+            (0, 0, 0, 1),
+            drawSelectedElements = False
+            )
         mjdt.restore()
 
     def observerDraw(self, notification):
@@ -430,8 +399,6 @@ class RoboCJKController(object):
             else:
                 self.currentGlyph.indexStackUndo_lib = 0
 
-            print(self.currentGlyph.indexStackUndo_lib, '/', len(self.currentGlyph.stackUndo_lib)-1)
-
             lib = copy.deepcopy(self.currentGlyph.stackUndo_lib[self.currentGlyph.indexStackUndo_lib])
             self.currentGlyph._initWithLib(lib)
 
@@ -445,9 +412,6 @@ class RoboCJKController(object):
                 self.currentGlyph.indexStackUndo_lib += 1 
             else:
                 self.currentGlyph.indexStackUndo_lib = len(self.currentGlyph.stackUndo_lib)-1
-
-
-            print(self.currentGlyph.indexStackUndo_lib, '/', len(self.currentGlyph.stackUndo_lib)-1)
 
             lib = copy.deepcopy(self.currentGlyph.stackUndo_lib[self.currentGlyph.indexStackUndo_lib])
             self.currentGlyph._initWithLib(lib)

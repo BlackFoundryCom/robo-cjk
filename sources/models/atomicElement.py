@@ -45,7 +45,7 @@ class AtomicElement(Glyph):
     @property
     def glyphVariations(self):
         return self._glyphVariations
-
+    
     def _initWithLib(self):
         self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])
 
