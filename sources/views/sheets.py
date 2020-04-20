@@ -486,8 +486,14 @@ class NewCharacterGlyph:
             if cell not in self.deepComponentList:
                 self.deepComponentList.append(cell)
 
+        self.w.related.searchBox = SearchBox(
+            (10, 30, 100, 20),
+            "",
+            callback = self.relatedDCSearchBox
+            )
+
         self.w.related.deepComponentsList = List(
-            (10, 30, 100, -40),
+            (10, 50, 100, -40),
             self.deepComponentList,
             columnDescriptions = [
                 {"title":"sel", "cell":checkBoxList, "width":20}, 
@@ -578,6 +584,13 @@ class NewCharacterGlyph:
         if self.lockNewGlyph:
             lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
             PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
+
+    def relatedDCSearchBox(self, sender):
+        char = sender.get()
+        for i, item in enumerate(self.deepComponentList):   
+            if item["char"] == char:
+                self.w.related.deepComponentsList.setSelection([i])
+                break
 
     def deepComponentsListEditCallback(self, sender):
         deepComponents = []
