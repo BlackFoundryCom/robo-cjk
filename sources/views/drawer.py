@@ -142,6 +142,10 @@ class Drawer():
             mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph)) 
             if customColor is None and view: 
                 self.drawIndexOfElements(i, atomicInstanceGlyph, view)
+        if customColor is None:
+            mjdt.fill(customColor)
+        else:    
+            mjdt.fill(*customColor)
         mjdt.drawGlyph(glyph)
         mjdt.restore()
 
