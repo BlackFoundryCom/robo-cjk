@@ -564,6 +564,12 @@ class RoboCJKView(BaseWindowController):
         self.w.characterGlyph = List(
             (410, 160, 200, 190),
             [],
+            columnDescriptions = [
+                {"title":"char", "width":20, "editable":False}, 
+                {"title":"name"}
+                ],
+            drawFocusRing = False,
+            showColumnTitles = False,
             allowsMultipleSelection = False,
             doubleClickCallback = self.GlyphsListDoubleClickCallback,
             editCallback = self.GlyphsListEditCallback,
@@ -636,7 +642,8 @@ class RoboCJKView(BaseWindowController):
             self.w.atomicElement.setSelection([])
             self.w.deepComponent.setSelection([])
             self.w.characterGlyph.setSelection([])
-            self.w.characterGlyph.set(l)
+            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in l]
+            self.w.characterGlyph.set(charSet)
         if not l:
             self.filterCharacterGlyphCallback(None)
 
@@ -678,7 +685,8 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
-        self.w.characterGlyph.set(filteredList)
+        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in filteredList]
+        self.w.characterGlyph.set(charSet)
 
     def filterGlyphs(self, glyphtype, option1, option2, allGlyphs, lockedGlyphs):
 
@@ -909,13 +917,16 @@ class RoboCJKView(BaseWindowController):
 
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
         self.w.deepComponent.set(self.currentFont.deepComponentSet)
-        self.w.characterGlyph.set(self.currentFont.characterGlyphSet)
+        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+        self.w.characterGlyph.set(charSet)
 
     def GlyphsListDoubleClickCallback(self, sender):
         items = sender.get()
         selection = sender.getSelection()
         if not selection: return
         glyphName = items[selection[0]]
+        if sender == self.w.characterGlyph:
+            glyphName = glyphName["name"]
         try:
             CurrentGlyphWindow().close()
         except:pass
@@ -927,11 +938,19 @@ class RoboCJKView(BaseWindowController):
         if not sel or self.prevGlyphName is None or self.currentFont is None: 
             return
         newGlyphName = sender.get()[sel[0]]
+        if sender == self.w.characterGlyph:
+            newGlyphName = newGlyphName["name"]
         if newGlyphName == self.prevGlyphName: return
         if not self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName):
-            sender.set([[x, self.prevGlyphName][x == newGlyphName] for x in sender.get()])
+            if sender == self.w.characterGlyph:
+                sender.set([dict(char = files.unicodeName2Char([x["name"], self.prevGlyphName][x["name"] == newGlyphName]), name = [x["name"], self.prevGlyphName][x["name"] == newGlyphName]) for x in sender.get()])
+            else:
+                sender.set([[x, self.prevGlyphName][x == newGlyphName] for x in sender.get()])
         else:
             self.prevGlyphName = newGlyphName
+            if sender == self.w.characterGlyph:
+                charSet = [dict(char = files.unicodeName2Char(x["name"]), name = x["name"]) for x in sender.get()]
+                sender.set(charSet)
             self.setGlyphNameToCansvas(sender, self.prevGlyphName)
 
     def GlyphsListSelectionCallback(self, sender):
@@ -939,7 +958,11 @@ class RoboCJKView(BaseWindowController):
         for lists in self.lists:
             if lists != sender:
                 lists.setSelection([])
-        self.prevGlyphName = sender.get()[sender.getSelection()[0]]
+        prevGlyphName = sender.get()[sender.getSelection()[0]]
+        if sender == self.w.characterGlyph:
+            self.prevGlyphName = prevGlyphName["name"]
+        else:
+            self.prevGlyphName = prevGlyphName
         self.setGlyphNameToCansvas(sender, self.prevGlyphName)
         user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
         if user: 

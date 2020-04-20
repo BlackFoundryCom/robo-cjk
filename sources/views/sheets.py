@@ -570,7 +570,8 @@ class NewCharacterGlyph:
                         glyphs.append(self.RCJKI.currentFont[dcname])
         self.lockGlyphs(glyphs)
         self.window.deepComponent.set(self.RCJKI.currentFont.deepComponentSet)
-        self.window.characterGlyph.set(self.RCJKI.currentFont.characterGlyphSet)
+        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.RCJKI.currentFont.characterGlyphSet]
+        self.window.characterGlyph.set(charSet)
         self.w.close()
 
     def lockGlyphs(self, glyphs):
