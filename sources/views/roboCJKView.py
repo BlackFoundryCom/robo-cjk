@@ -443,9 +443,16 @@ class RoboCJKView(BaseWindowController):
         self.w.pdfProoferButton.enable(False)
 
         self.w.rcjkFiles = PopUpButton(
-            (10, 40, 200, 20),
+            (10, 40, 180, 20),
             [],
             callback = self.rcjkFilesSelectionCallback
+            )
+
+        self.w.reloadProject = ImageButton(
+            (190, 40, 20, 20),
+            imagePath = os.path.join(os.getcwd(), "resources/reloadIcon.pdf"),
+            bordered = False,
+            callback = self.reloadProjectCallback
             )
 
         self.w.generateFontButton = Button(
@@ -868,6 +875,10 @@ class RoboCJKView(BaseWindowController):
         rcjkFiles = list(filter(lambda x: x.endswith(".rcjk"), 
             os.listdir(self.RCJKI.projectRoot)))
         self.w.rcjkFiles.setItems(rcjkFiles)
+        self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
+
+    @gitCoverage()
+    def reloadProjectCallback(self, sender):
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
     def rcjkFilesSelectionCallback(self, sender):
