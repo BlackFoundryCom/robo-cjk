@@ -82,7 +82,7 @@ class AtomicView(CanvasGroup):
             sizeStyle = 'mini',
             callback = self.addLayerToAtomicElementCallback
             )
-        self.addLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
+        # self.addLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
 
         self.removeLayerToAtomicElement = Button(
             (150, -20, -0, 20),
@@ -90,7 +90,7 @@ class AtomicView(CanvasGroup):
             sizeStyle = 'mini',
             callback = self.removeLayerToAtomicElementCallback
             )
-        self.removeLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
+        # self.removeLayerToAtomicElement.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
 
     @refresh
     def roundToGridCallback(self, sender):
@@ -165,7 +165,7 @@ class DCCG_View(CanvasGroup):
             sizeStyle = 'mini',
             callback = self.addVarAxisCallback
             )
-        self.addVarAxis.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
+        # self.addVarAxis.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
 
         self.removeVarAxis = Button(
             (150, -140, -0, 20),
@@ -173,7 +173,7 @@ class DCCG_View(CanvasGroup):
             sizeStyle = 'mini',
             callback = self.removeVarAxisCallback
             )
-        self.removeVarAxis.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
+        # self.removeVarAxis.getNSButton().setShowsBorderOnlyWhileMouseInside_(True)
 
         self.sliderTitle = TextBox(
             (0, -120, -0, 20), 
