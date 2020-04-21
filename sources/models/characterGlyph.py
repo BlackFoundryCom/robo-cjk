@@ -143,17 +143,6 @@ class CharacterGlyph(Glyph):
         self.computeDeepComponentsPreview()
         self.computeDeepComponents()
 
-    @glyphAddRemoveUndo
-    def removeDeepComponentAtIndex(self):
-        if not self.selectedElement: return
-        for i in self.selectedElement:
-            self._deepComponents.pop(i)
-            for k, v in self._glyphVariations.items():
-                v.pop(i)
-            self.selectedElement = []
-        self.computeDeepComponentsPreview()
-        self.computeDeepComponents()
-
     def addVariationAxisToDeepComponentNamed(self, axisName, deepComponentName):
         for d in self._deepComponents:
             if deepComponentName == d['name']:
