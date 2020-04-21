@@ -104,35 +104,51 @@ class Drawer():
             elif glyph.type == "characterGlyph":
                 self.drawCharacterGlyphPreview(*args)
         
-    def draw(self, info, customColor = None, refGlyph = None):
+    def draw(self, info, customColor = None, refGlyph = None, onlyPreview = False):
         view = info["view"]
         scale = info['scale']
         color = customColor
         if self.RCJKI.currentGlyph.preview:
+            if info["notificationName"] == "draw":
+                previewColor = [(0, 0, 0, 0), (0, 0, 0, .7)][onlyPreview]
+                previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
+            else:    
+                previewColor = [(0, 0, 0, 0), (0, 0, 0, 1)][onlyPreview]
+                previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
             if self.RCJKI.currentGlyph.type == "characterGlyph":
                 self.drawCharacterGlyphPreview(
                     self.RCJKI.currentGlyph,
                     scale, 
-                    color = (0, 0, 0, 0), 
-                    strokecolor = (0, 0, 0, .2)
+                    color = previewColor, 
+                    strokecolor = previewStrokeColor
                     )
                                 
             if self.RCJKI.currentGlyph.type == "deepComponent":
                 self.drawDeepComponentPreview(
                     self.RCJKI.currentGlyph,
                     scale, 
-                    color = (0, 0, 0, 0), 
-                    strokecolor = (0, 0, 0, .2)
+                    color = previewColor, 
+                    strokecolor = previewStrokeColor
                     )
 
             elif self.RCJKI.currentGlyph.type == "atomicElement":
                 self.drawAtomicElementPreview(
                     self.RCJKI.currentGlyph,
                     scale, 
-                    color = (0, 0, 0, 0), 
-                    strokecolor = (0, 0, 0, .2) 
+                    color = previewColor, 
+                    strokecolor = previewStrokeColor 
                     )
+
         if self.RCJKI.currentGlyph.type == "atomicElement": return
+
+        if self.refGlyph is not None:
+            mjdt.save()
+            mjdt.fill(0, 0, 0, .2)
+            mjdt.translate(*self.refGlyphPos)
+            mjdt.drawGlyph(self.roundGlyph(self.refGlyph))
+            mjdt.restore()
+
+        if onlyPreview: return
         if self.RCJKI.currentGlyph.type == "deepComponent":
             if not color:
                 if self.RCJKI.currentGlyph.computedAtomicInstances:
@@ -145,13 +161,7 @@ class Drawer():
                     color = (.25, 0, .5, .8)
                 else: color = (.5, 0, .25, .4)
 
-        self.drawGlyphAtomicInstance(self.RCJKI.currentGlyph, color, scale, customColor, view)
-        if self.refGlyph is not None:
-            mjdt.save()
-            mjdt.fill(0, 0, 0, .2)
-            mjdt.translate(*self.refGlyphPos)
-            mjdt.drawGlyph(self.roundGlyph(self.refGlyph))
-            mjdt.restore()
+        self.drawGlyphAtomicInstance(self.RCJKI.currentGlyph, color, scale, customColor, view)   
 
     def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
         mjdt.save()

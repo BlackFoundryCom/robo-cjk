@@ -18,6 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from mojo.canvas import CanvasGroup
+from mojo.UI import UpdateCurrentGlyphView
 from mojo.roboFont import *
 from AppKit import NSColor, NSNoBorder
 import mojo.drawingTools as mjdt
@@ -60,6 +61,13 @@ class AtomicView(CanvasGroup):
             callback = self.roundToGridCallback,
             sizeStyle = "small"
             )
+        self.drawOnlyDeepolation = CheckBox(
+            (150, -165, -0, 20),
+            'Draw only deepolation',
+            value = self.RCJKI.drawOnlyDeepolation,
+            callback = self.drawOnlyDeepolationCallback,
+            sizeStyle = "small"
+            )
 
         self.AETextBox = TextBox(
             (0, -140, -0, 20), 
@@ -98,6 +106,10 @@ class AtomicView(CanvasGroup):
     def roundToGridCallback(self, sender):
         self.RCJKI.roundToGrid = sender.get()
         self.computeCurrentGlyph(self.atomicElementsList)
+
+    @refresh
+    def drawOnlyDeepolationCallback(self, sender):
+        self.RCJKI.drawOnlyDeepolation = sender.get()
 
     @lockedProtect
     def addLayerToAtomicElementCallback(self, sender):
@@ -145,6 +157,14 @@ class DCCG_View(CanvasGroup):
             sizeStyle = "small"
             )
         
+        self.drawOnlyDeepolation = CheckBox(
+            (150, -265, -0, 20),
+            'Draw only deepolation',
+            value = self.RCJKI.drawOnlyDeepolation,
+            callback = self.drawOnlyDeepolationCallback,
+            sizeStyle = "small"
+            )
+
         self.sourcesTitle = TextBox(
             (0, -240, -0, 20), 
             ""
@@ -199,6 +219,10 @@ class DCCG_View(CanvasGroup):
     def roundToGridCallback(self, sender):
         self.RCJKI.roundToGrid = sender.get()
         self.RCJKI.updateDeepComponent()
+
+    @refresh
+    def drawOnlyDeepolationCallback(self, sender):
+        self.RCJKI.drawOnlyDeepolation = sender.get()
 
     def setUI(self):
         if self.RCJKI.isDeepComponent:

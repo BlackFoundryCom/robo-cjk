@@ -61,6 +61,7 @@ import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
 import mojo.drawingTools as mjdt
 from mojo.roboFont import *
+from mojo.extensions import getExtensionDefault, setExtensionDefault
 
 import math
 import json
@@ -70,6 +71,8 @@ from utils import decorators
 reload(decorators)
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
+
+blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
 class RoboCJKController(object):
 
@@ -84,7 +87,8 @@ class RoboCJKController(object):
         self.gitHostLocker = ''
         self.gitHostLockerPassword = ''
         self.privateLocker = True
-        self.glyphWindowPosSize = (0, 180, 1080, 800)
+        self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition, (0, 180, 1000, 600))
+        self.drawOnlyDeepolation = False
         # installTool(self.transformationTool)
 
         self.locked = False
@@ -192,16 +196,23 @@ class RoboCJKController(object):
         self.currentGlyph.computeDeepComponents()
 
     def glyphWindowWillClose(self, notification):
-        self.glyphWindowPosSize = CurrentGlyphWindow().window().getPosSize()
+        self.closeimportDCFromCG()
+        self.closeComponentWindow()
+        self.closeCharacterWindow()
+
+        if CurrentGlyphWindow() is not None:
+            posSize = CurrentGlyphWindow().window().getPosSize()
+            setExtensionDefault(blackrobocjk_glyphwindowPosition, posSize)
+            self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
+            print(self.glyphWindowPosSize)
+            # self.glyphWindowPosSize = CurrentGlyphWindow().window().getPosSize()
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
         self.roboCJKView.w.atomicElementPreview.update()
         self.roboCJKView.w.deepComponentPreview.update()
         self.roboCJKView.w.characterGlyphPreview.update()
-        self.closeimportDCFromCG()
-        self.closeComponentWindow()
-        self.closeCharacterWindow()
+        
         # self.currentFont.locker.unlock(self.currentGlyph)
         self.currentFont.save()
         if self.currentGlyph is not None:
@@ -316,7 +327,7 @@ class RoboCJKController(object):
         mjdt.roundedRect(0, 0, 300, [525, 425][self.currentGlyph.type == "atomicElement"], 10)
         scale = .15
         glyphwidth = self.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
-        mjdt.translate((glyphwidth*scale/2)+10, [300, 200][self.currentGlyph.type == "atomicElement"])
+        mjdt.translate((glyphwidth*scale/2), [300, 200][self.currentGlyph.type == "atomicElement"])
         mjdt.fill(.15)
 
         
@@ -335,11 +346,18 @@ class RoboCJKController(object):
     def observerDraw(self, notification):
         self.showCanvasGroups()
         if hasattr(self.currentGlyph, 'type'):
-            self.drawer.draw(notification)
+            self.drawer.draw(
+                notification,
+                onlyPreview = self.drawOnlyDeepolation
+                )
 
     def observerDrawPreview(self, notification):
         if self.currentGlyph is None: return
-        self.drawer.draw(notification, customColor=(0, 0, 0, 1))
+        self.drawer.draw(
+            notification, 
+            customColor=(0, 0, 0, 1), 
+            onlyPreview = self.drawOnlyDeepolation
+            )
 
     @refresh
     def mouseDown(self, point):
