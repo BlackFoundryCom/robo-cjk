@@ -84,6 +84,7 @@ class RoboCJKController(object):
         self.gitHostLocker = ''
         self.gitHostLockerPassword = ''
         self.privateLocker = True
+        self.glyphWindowPosSize = (0, 180, 1080, 800)
         # installTool(self.transformationTool)
 
         self.locked = False
@@ -191,7 +192,7 @@ class RoboCJKController(object):
         self.currentGlyph.computeDeepComponents()
 
     def glyphWindowWillClose(self, notification):
-
+        self.glyphWindowPosSize = CurrentGlyphWindow().window().getPosSize()
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
@@ -311,12 +312,16 @@ class RoboCJKController(object):
 
     def draw(self):
         mjdt.save()
-        mjdt.translate(0, [300, 200][self.currentGlyph.type == "atomicElement"])
+        mjdt.fill(1, 1, 1, .7)
+        mjdt.roundedRect(0, 0, 300, [525, 425][self.currentGlyph.type == "atomicElement"], 10)
+        scale = .15
+        glyphwidth = self.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+        mjdt.translate((glyphwidth*scale/2)+10, [300, 200][self.currentGlyph.type == "atomicElement"])
         mjdt.fill(.15)
 
-        scale = .15
+        
         mjdt.scale(scale, scale)
-        mjdt.translate(150, abs(self.currentFont._RFont.info.descender))
+        mjdt.translate(0, abs(self.currentFont._RFont.info.descender))
         self.drawer.drawGlyph(
             self.currentGlyph,
             scale,

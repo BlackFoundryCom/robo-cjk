@@ -108,6 +108,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         CurrentGlyphWindow().close()
     except: pass
     OpenGlyphWindow(g)
+    CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
 
 class CharacterWindow:
 
@@ -123,7 +124,7 @@ class CharacterWindow:
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.w = FloatingWindow(
-            (240, 100),
+            (0, 0, 240, 100),
             minSize = (240, 120),
             maxSize = (240, 800),
             closable = False,
@@ -303,7 +304,7 @@ class ComponentWindow():
         self.RCJKI = RCJKI
         self.previewGlyph = None
         self.w = FloatingWindow(
-            (240, 80),
+            (0, 0, 240, 80),
             "Composition Rules",
             closable = False,
             textured = True,

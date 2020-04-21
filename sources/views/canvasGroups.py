@@ -51,6 +51,8 @@ class AtomicView(CanvasGroup):
         self.RCJKI = RCJKI
         slider = SliderListCell(minValue = 0, maxValue = 1)
 
+        self.horizontalLine = HorizontalLine((0, -175, -0, 1))
+        # self.verticaleLine = VerticalLine((-1, -175, -0, -0))
         self.roundToGrid = CheckBox(
             (5, -165, -0, 20),
             'Round to grid',
@@ -132,6 +134,8 @@ class DCCG_View(CanvasGroup):
         super().__init__(*args, **kwargs)
         self.RCJKI = RCJKI
         slider = SliderListCell(minValue = 0, maxValue = 1)
+        self.horizontalLine = HorizontalLine((0, -275, -0, 1))
+        # self.verticalLine = VerticalLine((-1, -275, -0, -0))
 
         self.roundToGrid = CheckBox(
             (5, -265, -0, 20),
