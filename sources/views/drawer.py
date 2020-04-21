@@ -155,6 +155,7 @@ class Drawer():
 
     def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
         mjdt.save()
+        index = None
         for i, atomicInstanceGlyph in glyph.atomicInstancesGlyphs:
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
@@ -165,12 +166,14 @@ class Drawer():
                     mjdt.strokeWidth(2*scale)
             mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph)) 
             if customColor is None and view: 
-                self.drawIndexOfElements(i, atomicInstanceGlyph, view)
+                if i != index:
+                    self.drawIndexOfElements(i, atomicInstanceGlyph, view)
+            index = i
         if customColor is None:
             mjdt.fill(customColor)
         else:    
             mjdt.fill(*customColor)
-            
+
         mjdt.drawGlyph(glyph)
         mjdt.restore()
 
