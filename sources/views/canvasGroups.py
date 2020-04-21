@@ -453,6 +453,12 @@ class DCCG_View(CanvasGroup):
     def slidersListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
+
+        self.setSliderValue2Glyph(sender)
+        self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+        self.RCJKI.updateDeepComponent()
+
+    def setSliderValue2Glyph(self, sender):
         if self.RCJKI.currentGlyph.type == 'characterGlyph':
             lib = RLib()
             deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
@@ -462,12 +468,7 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
-
-        self.setSliderValue2Glyph(sender)
-        self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
-        self.RCJKI.updateDeepComponent()
-
-    def setSliderValue2Glyph(self, sender):
+            
         self.RCJKI.sliderValue = round(float(self.slidersList[sender.getSelection()[0]]['PreviewValue']), 3)
         sliderName = self.slidersList[sender.getSelection()[0]]['Axis']
         self.RCJKI.sliderName = sliderName
