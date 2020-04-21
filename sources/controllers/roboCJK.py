@@ -204,8 +204,7 @@ class RoboCJKController(object):
             posSize = CurrentGlyphWindow().window().getPosSize()
             setExtensionDefault(blackrobocjk_glyphwindowPosition, posSize)
             self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
-            print(self.glyphWindowPosSize)
-            # self.glyphWindowPosSize = CurrentGlyphWindow().window().getPosSize()
+
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)

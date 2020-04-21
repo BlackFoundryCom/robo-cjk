@@ -20,7 +20,7 @@ from vanilla import *
 from mojo.canvas import CanvasGroup
 from mojo.UI import UpdateCurrentGlyphView
 from mojo.roboFont import *
-from AppKit import NSColor, NSNoBorder
+from AppKit import NSColor, NSNoBorder, NumberFormatter
 import mojo.drawingTools as mjdt
 from imp import reload
 from utils import decorators
@@ -38,6 +38,7 @@ lockedProtect = decorators.lockedProtect
 refresh = decorators.refresh
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
+numberFormatter = NumberFormatter()
 
 def setListAesthetic(element):
     element.getNSTableView().setUsesAlternatingRowBackgroundColors_(False)
@@ -73,6 +74,11 @@ class AtomicView(CanvasGroup):
             (0, -140, -0, 20), 
             "Atomic Element's Axis"
             )
+        self.atomicElementsSliderValue = EditText(
+            (-60, -140, -0, 20),
+            "",
+            callback=self.atomicElementsSliderValueCallback
+            )
         self.atomicElementsList = List(
             (0, -120, -0, -20), 
             [],
@@ -82,6 +88,7 @@ class AtomicView(CanvasGroup):
                     {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
             editCallback = self.atomicElementsListEditCallback,
+            selectionCallback = self.atomicElementsListSelectionCallback,
             allowsMultipleSelection = False
             )
         setListAesthetic(self.atomicElementsList)
@@ -132,8 +139,47 @@ class AtomicView(CanvasGroup):
 
     @refresh
     @lockedProtect
+    def atomicElementsListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.atomicElementsSliderValue.set("")
+            return
+        else:
+            self.atomicElementsSliderValue.set(round(self.atomicElementsList.get()[sel[0]]['PreviewValue'], 3))
+
+    @refresh
+    @lockedProtect
+    def atomicElementsSliderValueCallback(self, sender):
+        sel = self.atomicElementsList.getSelection()
+        if not sel:
+            sender.set("")
+            return
+        value = sender.get()
+        try: 
+            value = float(value.replace(",", "."))
+        except:
+            return
+        newList = []
+        for i, e in enumerate(self.atomicElementsList.get()):
+            if i != sel[0]:
+                newList.append(e)
+            else:
+                newList.append({
+                    "Axis":e["Axis"],
+                    "Layer":e["Layer"],
+                    "PreviewValue":value
+                    })
+            self.atomicElementsList.set(newList)
+
+        self.atomicElementsList.setSelection(sel)
+        self.computeCurrentGlyph(self.atomicElementsList)
+
+    @refresh
+    @lockedProtect
     def atomicElementsListEditCallback(self, sender):
-        if not sender.getSelection(): return
+        sel = sender.getSelection()
+        if not sel: return
+        self.atomicElementsSliderValue.set(round(sender.get()[sel[0]]['PreviewValue'], 3))
         self.computeCurrentGlyph(sender)
 
     def computeCurrentGlyph(self, sender):
@@ -169,6 +215,11 @@ class DCCG_View(CanvasGroup):
             (0, -240, -0, 20), 
             ""
             )
+        self.sourcesSliderValue = EditText(
+            (-60, -240, -0, 20),
+            "",
+            callback=self.sourcesSliderValueCallback
+            )
         self.sourcesList = List(
             (0, -220, -0, -140), 
             [],
@@ -203,6 +254,11 @@ class DCCG_View(CanvasGroup):
             (0, -120, -0, 20), 
             ""
             )
+        self.sliderSliderValue = EditText(
+            (-60, -120, -0, 20),
+            "",
+            callback=self.sliderSliderValueCallback
+            )
         self.slidersList = List(
             (0, -100, -0, -20), 
             [],
@@ -211,6 +267,7 @@ class DCCG_View(CanvasGroup):
                     {"title": "PreviewValue", "cell": slider}],
             showColumnTitles = False,
             editCallback = self.slidersListEditCallback,
+            selectionCallback = self.slidersListSelectiontCallback,
             allowsMultipleSelection = False
             )
         setListAesthetic(self.slidersList)
@@ -252,16 +309,44 @@ class DCCG_View(CanvasGroup):
         sel = self.sourcesList.getSelection()
         if not sel:
             self.selectedSourceAxis = None
+            self.sourcesSliderValue.set('')
         else:
             self.selectedSourceAxis = self.sourcesList.get()[sel[0]]["Axis"]
+            self.sourcesSliderValue.set(round(self.sourcesList.get()[sel[0]]["PreviewValue"], 3))
         self.RCJKI.updateDeepComponent()
+
+    @lockedProtect
+    def sourcesSliderValueCallback(self, sender):
+        sel = self.sourcesList.getSelection()
+        if not sel:
+            sender.set("")
+            return
+        value = sender.get()
+        try: 
+            value = float(value.replace(",", "."))
+        except:
+            return
+        newList = []
+        for i, e in enumerate(self.sourcesList.get()):
+            if i != sel[0]:
+                newList.append(e)
+            else:
+                newList.append({
+                    "Axis":e["Axis"],
+                    "PreviewValue":value
+                    })
+            self.sourcesList.set(newList)
+
+        self.RCJKI.currentGlyph.sourcesList = self.sourcesList.get()
+        self.RCJKI.updateDeepComponent()
+        self.sourcesList.setSelection(sel)
 
     @lockedProtect
     def sourcesListEditCallback(self, sender):
         sel = sender.getSelection()
-        if not sel: return
+        if not sel: 
+            return
         edited = sender.getEditedColumnAndRow()
-
         if edited[0] == 0:
             name =  sender.get()[edited[1]]['Axis']
             if len([x for x in sender.get() if x['Axis'] == name]) > 1:
@@ -278,10 +363,12 @@ class DCCG_View(CanvasGroup):
                     
                     self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
                     self.RCJKI.currentGlyph.selectedSourceAxis = name
-            glyphVaritaions = self.RCJKI.currentGlyph._glyphVariations.keys()
-            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVaritaions]
+            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.keys()
+            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
             sender.set(l)
             sender.setSelection(sel)
+
+        self.sourcesSliderValue.set(round(sender.get()[sel[0]]['PreviewValue'], 3))
         self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.updateDeepComponent()
 
@@ -309,13 +396,6 @@ class DCCG_View(CanvasGroup):
         elif self.RCJKI.isCharacterGlyph:
             sheets.SelectFontVariationSheet(self.RCJKI, self)
 
-            # source = []
-            #  if self.RCJKI.currentGlyph._glyphVariations:
-            #     source = [{'Axis':axis, 'PreviewValue':1} for axis in self.RCJKI.currentGlyph._glyphVariations]
-            # isel = len(source)
-            # self.sourcesList.setSelection([isel])
-            # self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
-
     @lockedProtect
     def removeVarAxisCallback(self, sender):
         if self.sourcesList.getSelection():
@@ -324,8 +404,8 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.selectedElement = []
             self.RCJKI.currentGlyph.selectedSourceAxis = None
             self.sourcesList.setSelection([0])
-            glyphVaritaions = self.RCJKI.currentGlyph._glyphVariations.keys()
-            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVaritaions]
+            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.keys()
+            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
             self.RCJKI.currentGlyph.sourcesList = l
             self.sourcesList.set(l)
             self.slidersList.set([])
@@ -334,8 +414,45 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.updateDeepComponent()
 
     @lockedProtect
+    def slidersListSelectiontCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.sliderSliderValue.set('')
+            return
+        else:
+            self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+
+    @lockedProtect
+    def sliderSliderValueCallback(self, sender):
+        sel = self.slidersList.getSelection()
+        if not sel:
+            sender.set("")
+            return
+        value = sender.get()
+        try: 
+            value = float(value.replace(",", "."))
+        except:
+            return
+        newList = []
+        for i, e in enumerate(self.slidersList.get()):
+            if i != sel[0]:
+                newList.append(e)
+            else:
+                newList.append({
+                    "Axis":e["Axis"],
+                    "PreviewValue":value
+                    })
+            self.slidersList.set(newList)
+
+        self.slidersList.setSelection(sel)
+        self.setSliderValue2Glyph(self.slidersList)
+        self.RCJKI.updateDeepComponent()
+        
+
+    @lockedProtect
     def slidersListEditCallback(self, sender):
-        if not sender.getSelection(): return
+        sel = sender.getSelection()
+        if not sel: return
         if self.RCJKI.currentGlyph.type == 'characterGlyph':
             lib = RLib()
             deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
@@ -346,6 +463,11 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
 
+        self.setSliderValue2Glyph(sender)
+        self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+        self.RCJKI.updateDeepComponent()
+
+    def setSliderValue2Glyph(self, sender):
         self.RCJKI.sliderValue = round(float(self.slidersList[sender.getSelection()[0]]['PreviewValue']), 3)
         sliderName = self.slidersList[sender.getSelection()[0]]['Axis']
         self.RCJKI.sliderName = sliderName
@@ -353,7 +475,6 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.updateAtomicElementCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
         elif self.RCJKI.isCharacterGlyph:
             self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
-        self.RCJKI.updateDeepComponent()
 
 
 class GlyphPreviewCanvas(CanvasGroup):
