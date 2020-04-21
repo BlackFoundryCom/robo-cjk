@@ -308,14 +308,15 @@ class DCCG_View(CanvasGroup):
     @lockedProtect
     def slidersListEditCallback(self, sender):
         if not sender.getSelection(): return
-        lib = RLib()
-        deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
-        glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
-        lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents)
-        lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations)
-        self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
-        self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
-        self.RCJKI.currentGlyph.indexStackUndo_lib += 1
+        if self.RCJKI.currentGlyph.type == 'characterGlyph':
+            lib = RLib()
+            deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
+            glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+            lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents)
+            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations)
+            self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
+            self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
+            self.RCJKI.currentGlyph.indexStackUndo_lib += 1
 
         self.RCJKI.sliderValue = round(float(self.slidersList[sender.getSelection()[0]]['PreviewValue']), 3)
         sliderName = self.slidersList[sender.getSelection()[0]]['Axis']

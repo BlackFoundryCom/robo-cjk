@@ -300,6 +300,7 @@ class CharacterGlyph(Glyph):
             del e["name"]
         self._glyphVariations[name] = cggv
 
+    @glyphAddRemoveUndo
     def removeDeepComponentAtIndexToGlyph(self):
         if not self.selectedElement: return
         self._deepComponents = [x for i, x in enumerate(self._deepComponents) if i not in self.selectedElement]
