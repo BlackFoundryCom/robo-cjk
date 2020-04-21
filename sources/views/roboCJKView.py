@@ -490,7 +490,7 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterAtomicElement = PopUpButton(
             (90, 120, 120, 20),
-            ["that are in font", "that are empty", "that have outlines"],
+            ["that are in font", "that are not empty", "that are empty", "that have outlines"],
             callback = self.filterAtomicElementCallback,
             sizeStyle = "mini"
             )
@@ -525,7 +525,7 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterDeepComponent = PopUpButton(
             (290, 120, 120, 20),
-            ["that are in font", "that are empty", "that have outlines"],
+            ["that are in font", "that are not empty", "that are empty", "that have outlines"],
             callback = self.filterDeepComponentCallback,
             sizeStyle = "mini"
             )
@@ -560,7 +560,7 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterCharacterGlyph = PopUpButton(
             (490, 120, 120, 20),
-            ["that are in font", "that can be fully designed", "that are empty", "that have outlines"],
+            ["that are in font", "that can be fully designed", "that are not empty", "that are empty", "that have outlines"],
             callback = self.filterCharacterGlyphCallback,
             sizeStyle = "mini"
             )
@@ -717,8 +717,14 @@ class RoboCJKView(BaseWindowController):
                     l.append(name)
             return getFilteredList(option1, l, lockedGlyphs)
 
-        # elif option2 == "that are locked":
-        #     return lockedGlyphs
+        elif option2 == "that are not empty":
+            if glyphtype == "characterGlyph":
+                l = [x for x in allGlyphs if self.RCJKI.currentFont[x]._deepComponents or len(self.RCJKI.currentFont[x])]
+            elif glyphtype == "deepComponent":
+                l = [x for x in allGlyphs if self.RCJKI.currentFont[x]._atomicElements or len(self.RCJKI.currentFont[x])]
+            else:
+                l = [x for x in allGlyphs if len(self.RCJKI.currentFont[x])]
+            return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that have outlines":
             l = [x for x in allGlyphs if len(self.RCJKI.currentFont[x])]
