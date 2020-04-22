@@ -448,6 +448,7 @@ class RoboCJKView(BaseWindowController):
             [],
             callback = self.rcjkFilesSelectionCallback
             )
+        self.w.rcjkFiles.enable(False)
 
         self.w.reloadProject = ImageButton(
             (190, 40, 20, 20),
@@ -495,11 +496,14 @@ class RoboCJKView(BaseWindowController):
             callback = self.filterAtomicElementCallback,
             sizeStyle = "mini"
             )
+        self.w.firstFilterAtomicElement.enable(False)
+        self.w.secondFilterAtomicElement.enable(False)
 
         self.w.atomicElementSearchBox = SearchBox(
             (10, 140, 200, 20),
             callback = self.atomicElementSearchBoxCallback
             )
+        self.w.atomicElementSearchBox.enable(False)
         self.w.atomicElement = List(
             (10, 160, 200, 190),
             [],
@@ -513,6 +517,7 @@ class RoboCJKView(BaseWindowController):
             "New AE",
             callback = self.newAtomicElementCallback
             )
+        self.w.newAtomicElement.enable(False)
         self.w.atomicElementPreview = canvasGroups.GlyphPreviewCanvas(
             (10, 372, 200, -0),
             self.RCJKI,
@@ -530,11 +535,14 @@ class RoboCJKView(BaseWindowController):
             callback = self.filterDeepComponentCallback,
             sizeStyle = "mini"
             )
+        self.w.firstFilterDeepComponent.enable(False)
+        self.w.secondFilterDeepComponent.enable(False)
 
         self.w.deepComponentSearchBox = SearchBox(
             (210, 140, 200, 20),
             callback = self.deepComponentSearchBoxCallback
             )
+        self.w.deepComponentSearchBox.enable(False)
         self.w.deepComponent = List(
             (210, 160, 200, 190),
             [],
@@ -548,6 +556,7 @@ class RoboCJKView(BaseWindowController):
             "New DC",
             callback = self.newDeepComponentCallback
             )
+        self.w.newDeepComponent.enable(False)
         self.w.deepComponentPreview = canvasGroups.GlyphPreviewCanvas(
             (210, 372, 200, -0),
             self.RCJKI,
@@ -565,10 +574,13 @@ class RoboCJKView(BaseWindowController):
             callback = self.filterCharacterGlyphCallback,
             sizeStyle = "mini"
             )
+        self.w.firstFilterCharacterGlyph.enable(False)
+        self.w.secondFilterCharacterGlyph.enable(False)
         self.w.characterGlyphSearchBox = SearchBox(
             (410, 140, 200, 20),
             callback = self.characterGlyphearchBoxCallback
             )
+        self.w.characterGlyphSearchBox.enable(False)
         self.w.characterGlyph = List(
             (410, 160, 200, 190),
             [],
@@ -588,6 +600,7 @@ class RoboCJKView(BaseWindowController):
             "New CG",
             callback = self.newCharacterGlyphCallback
             )
+        self.w.newCharacterGlyph.enable(False)
         self.w.characterGlyphPreview = canvasGroups.GlyphPreviewCanvas(
             (410, 372, 200, -0),
             self.RCJKI,
@@ -894,9 +907,22 @@ class RoboCJKView(BaseWindowController):
         self.w.newProjectButton.enable(True)
         self.w.fontInfos.enable(True)
         self.w.generateFontButton.enable(True)
+        self.w.rcjkFiles.enable(True)
         self.w.textCenterButton.enable(True)
         self.w.lockControllerDCButton.enable(True)
         self.w.pdfProoferButton.enable(True)
+        self.w.firstFilterAtomicElement.enable(True)
+        self.w.secondFilterAtomicElement.enable(True)
+        self.w.firstFilterDeepComponent.enable(True)
+        self.w.secondFilterDeepComponent.enable(True)
+        self.w.firstFilterCharacterGlyph.enable(True)
+        self.w.secondFilterCharacterGlyph.enable(True)
+        self.w.atomicElementSearchBox.enable(True)
+        self.w.characterGlyphSearchBox.enable(True)
+        self.w.deepComponentSearchBox.enable(True)
+        self.w.newAtomicElement.enable(True)
+        self.w.newDeepComponent.enable(True)
+        self.w.newCharacterGlyph.enable(True)
 
         if self.currentrcjkFile is None: 
             return
