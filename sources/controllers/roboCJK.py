@@ -236,6 +236,7 @@ class RoboCJKController(object):
             {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
             ]
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
+        self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
             self.closeComponentWindow()
@@ -293,6 +294,15 @@ class RoboCJKController(object):
             return self.deepComponentView.slidersList
         elif self.isCharacterGlyph:
             return self.characterGlyphView.slidersList
+
+    @property 
+    def currentViewSourceValue(self):
+        if self.isAtomic:
+            return self.atomicView.atomicElementsSliderValue
+        elif self.isDeepComponent:
+            return self.deepComponentView.sourcesSliderValue
+        elif self.isCharacterGlyph:
+            return self.characterGlyphView.sourcesSliderValue
 
     @refresh
     def addSubView(self):
