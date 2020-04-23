@@ -200,10 +200,12 @@ class RoboCJKController(object):
         self.closeComponentWindow()
         self.closeCharacterWindow()
 
-        if CurrentGlyphWindow() is not None:
+        try:
+        # if CurrentGlyphWindow() is not None:
             posSize = CurrentGlyphWindow().window().getPosSize()
             setExtensionDefault(blackrobocjk_glyphwindowPosition, posSize)
             self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
+        except:pass
 
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
