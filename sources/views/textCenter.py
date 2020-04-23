@@ -318,33 +318,41 @@ class TextCenter:
         self.w.pointSize.set(self.w.multiLineView.getPointSize())
         glyph = self.RCJKI.currentFont[info["glyph"].name]
         scale = info["scale"]
-        if self.sourcesList and glyph.glyphVariations and glyph.type != "atomicElement":
-            glyph.computeDeepComponentsPreview(self.sourcesList)
-            self.RCJKI.drawer.drawGlyph(
-                glyph, 
-                scale, 
-                (0, 0, 0, 1),
-                (0, 0, 0, 0),
-                (0, 0, 0, 1),
-                drawSelectedElements = False
-                )
-        # if self.sourcesList and glyph.glyphVariations:
+        # if self.sourcesList and glyph.glyphVariations and glyph.type != "atomicElement":
         #     glyph.computeDeepComponentsPreview(self.sourcesList)
-        #     self.RCJKI.drawer.drawCharacterGlyphPreview(
-        #         glyph,
-        #         scale,
+        #     self.RCJKI.drawer.drawGlyph(
+        #         glyph, 
+        #         scale, 
         #         (0, 0, 0, 1),
-        #         (0, 0, 0, 0)
+        #         (0, 0, 0, 0),
+        #         (0, 0, 0, 1),
+        #         drawSelectedElements = False
         #         )
-        # else:
-        #     if glyph.type in ['deepComponent', 'characterGlyph']:
-        #         glyph.computeDeepComponents()
-        #         self.RCJKI.drawer.drawGlyphAtomicInstance(
-        #             glyph,
-        #             (0, 0, 0, 1),
-        #             scale,
-        #             (0, 0, 0, 1)
-        #             )
+        if self.sourcesList and glyph.glyphVariations:
+            glyph.computeDeepComponentsPreview(self.sourcesList)
+            if glyph.type == 'characterGlyph':
+                self.RCJKI.drawer.drawCharacterGlyphPreview(
+                    glyph,
+                    scale,
+                    (0, 0, 0, 1),
+                    (0, 0, 0, 0)
+                    )
+            elif glyph.type == 'deepComponent':
+                self.RCJKI.drawer.drawDeepComponentPreview(
+                    glyph,
+                    scale,
+                    (0, 0, 0, 1),
+                    (0, 0, 0, 0)
+                    )
+        else:
+            if glyph.type in ['deepComponent', 'characterGlyph']:
+                glyph.computeDeepComponents()
+                self.RCJKI.drawer.drawGlyphAtomicInstance(
+                    glyph,
+                    (0, 0, 0, 1),
+                    scale,
+                    (0, 0, 0, 1)
+                    )
 
     def windowWillClose(self, sender):
         self.observer(remove = True)
