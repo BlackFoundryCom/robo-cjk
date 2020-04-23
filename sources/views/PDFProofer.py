@@ -83,6 +83,7 @@ class UfoText(Textbox):
         super().__init__(*args, **kwargs)
         self.RCJKI = RCJKI
         self.type = self.__class__.__name__
+        self.sourceList = []
         
     def __repr__(self):
         return super().__str__()
@@ -125,12 +126,24 @@ class UfoText(Textbox):
             charName = files.unicodeName(char)
             try:
                 rglyph = self.RCJKI.currentFont[charName] 
+                # if not self.sourceList:
                 rglyph.computeDeepComponents()
+                    # yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
+                # else:
+                if rglyph._glyphVariations:
+                    rglyph.computeDeepComponentsPreview(self.sourceList)
                 yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
+                
                 for c in rglyph.flatComponents:
                     g = self.RCJKI.currentFont[c.baseGlyph]
+                    # if not self.sourceList:
                     g.computeDeepComponents()
+                        # yield (x, y), g, g.atomicInstancesGlyphs
+                    # else:
+                    if g._glyphVariations:
+                        g.computeDeepComponentsPreview(self.sourceList)
                     yield (x, y), g, g.atomicInstancesGlyphs
+                    
                 
                 x += rglyph.width + self.tracking * (1000 / self.fontSize)
                 if (x + rglyph.width) // (1000/self.fontSize) > self.position[2]:
@@ -431,6 +444,24 @@ class Interface:
             )
         self.w.text.segmentedButton.set(0)
 
+        self.w.text.ufo = Group((10, 60, 190, 110))
+
+        self.fontAxis = []
+        if self.pdf.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
+            self.fontAxis = [dict(Axis = x, PreviewValue = 0) for x in self.pdf.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']]
+        slider = SliderListCell(minValue = 0, maxValue = 1)
+        self.w.text.ufo.axis = List(
+            (0, 0, -0,  -0),
+            self.fontAxis,
+            columnDescriptions = [
+                    {"title": "Axis", "editable": False, "width": 60},
+                    {"title": "PreviewValue", "cell": slider}],
+            showColumnTitles = False,
+            editCallback = self.ufoAxisListEditCallback,
+            allowsMultipleSelection = False,
+            drawFocusRing = False
+            )
+
         self.w.text.fontManager = PopUpButton(
             (10, 60, 190, 20),
             FontsList.get(),
@@ -445,9 +476,21 @@ class Interface:
             sizeStyle = "small"
             )
         self.w.text.textEditor = TextEditor(
-            (10, 200, -10, -0),
+            (10, 200, -10, -20),
             "",
             callback = self.textEditorCallback
+            )
+        self.w.text.setAllGlyphsDone = PopUpButton(
+            (10, -20, -10, -0),
+            [
+                "", 
+                "Set all character glyphs with deep components or contours",
+                "Set all character glyphs with deep components and contours",
+                "Set all character glyphs with deep components",
+                "Set all character glyphs with contours",
+            ],
+            # "Set all character glyphs not empty",
+            callback = self.setAllGlyphsDoneCallback
             )
         self.w.exportPDF = Button(
             (0, -20, 400, -0),
@@ -516,6 +559,31 @@ class Interface:
 
     def textEditorCallback(self, sender):
         self.currentTextBox.text = sender.get()
+        self.draw([self.currentPage])
+
+    def setAllGlyphsDoneCallback(self, sender):
+        option = sender.getItem()
+        font = self.pdf.RCJKI.currentFont
+        text = ""
+        for name in font.characterGlyphSet:
+            if option == "Set all character glyphs with deep components or contours":
+                if font[name]._deepComponents or len(font[name]):
+                    if font[name].unicode:
+                        text += chr(font[name].unicode)
+            if option == "Set all character glyphs with deep components and contours":
+                if font[name]._deepComponents and len(font[name]):
+                    if font[name].unicode:
+                        text += chr(font[name].unicode)
+            elif option == "Set all character glyphs with deep components":
+                if font[name]._deepComponents and not len(font[name]):
+                    if font[name].unicode:
+                        text += chr(font[name].unicode)
+            elif option == "Set all character glyphs with contours":
+                if not font[name]._deepComponents and len(font[name]):
+                    if font[name].unicode:
+                        text += chr(font[name].unicode)
+        self.currentTextBox.text = text 
+        self.w.text.textEditor.set(text)
         self.draw([self.currentPage])
 
     def newPageCallback(self, sender):
@@ -615,12 +683,17 @@ class Interface:
         self.w.pagesList.set(self.pdf.pages)
         self.draw([self.currentPage])
 
+    def ufoAxisListEditCallback(self, sender):
+        self.currentTextBox.sourceList = sender.get()
+        self.draw([self.currentPage]) 
+
     def fontManagerCallback(self, sender):
         fontName = FontsList.get()[sender.get()]
         self.currentTextBox.font = fontName
         self.draw([self.currentPage])        
 
     def segmentedButtonCallback(self, sender):
+        self.w.text.ufo.show(not sender.get())
         self.w.text.fontManager.show(sender.get())
         boxIndex = self.w.page.textBoxList.getSelection()[0]
         boxType = sender.get()
@@ -673,13 +746,31 @@ class Interface:
                     s = textbox.fontSize/1000
                     db.scale(s, s)
                     for pos, glyph, atomicInstanceGlyph in textbox.glyphs:
+
                         db.save()
                         db.translate(*pos)
-                        for _, instanceGlyph in atomicInstanceGlyph:
-                            instanceGlyph.round()
-                            db.drawGlyph(instanceGlyph)
-                        glyph.round()
-                        db.drawGlyph(glyph)
+                        if glyph.preview:
+                            for i, e in enumerate(glyph.preview):
+                                for dcName, (dcCoord, l) in e.items():
+                                    for dcAtomicElements in l:
+                                        for atomicInstanceGlyph in dcAtomicElements.values():
+                                            db.drawGlyph(atomicInstanceGlyph[0])  
+                            if glyph.outlinesPreview is not None:
+                                db.drawGlyph(glyph.outlinesPreview)
+                        else:
+                            for _, instanceGlyph in atomicInstanceGlyph:
+                                instanceGlyph.round()
+                                db.drawGlyph(instanceGlyph)
+                            glyph.round()
+                            db.drawGlyph(glyph)
+                        # self.pdf.RCJKI.drawer.drawGlyph(
+                        #     glyph, 
+                        #     s, 
+                        #     (0, 0, 0, 1),
+                        #     (0, 0, 0, 0),
+                        #     (0, 0, 0, 1),
+                        #     drawSelectedElements = False
+                        #     )
                         db.restore()
                     db.restore()
                 db.restore()

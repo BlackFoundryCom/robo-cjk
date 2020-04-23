@@ -96,6 +96,7 @@ class EditingSheet():
 def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     font = RCJKI.currentFont
     g = font[glyphName]._RGlyph
+    # font[glyphName]._initWithLib()
     locked, alreadyLocked = font.locker.lock(g)
     if not locked: return
     if not alreadyLocked:
@@ -617,7 +618,7 @@ class RoboCJKView(BaseWindowController):
         self.w.open()
 
     def pdfProoferButtonCallback(self, sender):
-        self.RCJKI.pdf = PDFProofer.PDFEngine(self)
+        self.RCJKI.pdf = PDFProofer.PDFEngine(self.RCJKI)
         self.RCJKI.pdf.interface.open()
 
     def textCenterButtonCallback(self, sender):
