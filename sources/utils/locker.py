@@ -116,6 +116,12 @@ class Locker():
                         yield files.fileNameToUserName(filepath)
             except: continue
 
+    def removeFiles(self, names):
+        for name in names:
+            fileName = files.userNameToFileName(name)
+            filePath = os.path.join(self._path, fileName)
+            os.remove(filePath)
+
     def lock(self, g):
         """ First returned boolean indicate if lock was succesful.
             Second returned boolean indicate if user already had the lock."""

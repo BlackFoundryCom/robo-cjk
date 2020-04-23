@@ -818,7 +818,15 @@ class LockController:
 
     def unlockSelectedButtonCallback(self, sender):
         f = self.RCJKI.currentFont
-        glyphs = [f[x["name"]] for x in self.w.unlock.lockedGlyphsList.get() if x["sel"]]
+        glyphs = []
+        filesToRemove = []
+        for x in self.w.unlock.lockedGlyphsList.get():
+            if x["sel"]:
+                try:    
+                    glyphs.append(f[x["name"]])
+                except:
+                    filesToRemove.append(x["name"])
+        self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
         if glyphs:
             self.unlockGlyphs(glyphs)
         self.resetList()
@@ -837,9 +845,12 @@ class LockController:
     def unlockAllButtonCallback(self, sender):
         f = self.RCJKI.currentFont
         glyphs = []
+        filesToRemove = []
         for x in self.w.unlock.lockedGlyphsList.get():
             try: glyphs.append(f[x["name"]])
-            except: pass
+            except: 
+                filesToRemove.append(x["name"])
+        self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
         self.unlockGlyphs(glyphs)
         self.resetList()        
 
