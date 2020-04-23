@@ -282,6 +282,9 @@ class TextCenter:
         self.w.open()
         self.w.bind("close", self.windowWillClose)
 
+    def close(self):
+        self.w.close()
+
     def pointSizeCallback(self, sender):
         try:
             value = int(sender.get())
@@ -355,4 +358,6 @@ class TextCenter:
                     )
 
     def windowWillClose(self, sender):
+        self.RCJKI.textCenterWindows.pop(self.RCJKI.textCenterWindows.index(self))
+        print(self.RCJKI.textCenterWindows)
         self.observer(remove = True)

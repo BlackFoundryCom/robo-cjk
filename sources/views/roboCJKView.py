@@ -464,6 +464,7 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.generateFontButton.enable(False)
 
+        self.RCJKI.textCenterWindows = []
         self.w.textCenterButton = Button(
             (410, 70, 200, 20),
             "Text Center",
@@ -620,7 +621,9 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.pdf.interface.open()
 
     def textCenterButtonCallback(self, sender):
-        textCenter.TextCenter(self.RCJKI)
+        # if self.RCJKI.textCenterWindow is None:
+        self.RCJKI.textCenterWindows.append(textCenter.TextCenter(self.RCJKI))
+        print(self.RCJKI.textCenterWindows)
 
     def atomicElementSearchBoxCallback(self, sender):
         if not sender.get():
@@ -766,6 +769,10 @@ class RoboCJKView(BaseWindowController):
                 w.close()
             except:
                 pass
+        for textCenter in list(self.RCJKI.textCenterWindows):
+            textCenter.close()
+        # if self.RCJKI.textCenterWindows is not None:
+        #     self.RCJKI.textCenterWindow.close()
         if self.RCJKI.get('currentFont'):
             if self.currentFont is not None:
                 self.currentFont.save()
