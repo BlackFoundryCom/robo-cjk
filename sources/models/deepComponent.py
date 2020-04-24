@@ -88,17 +88,15 @@ class DeepComponent(Glyph):
 
     def addGlyphVariation(self, newAxisName):
         self._glyphVariations[newAxisName] = [{k:v for k,v in d.items() if k!='name'} for d in self._atomicElements]
-        ########## CG REFERENCE ##############
-        # for name in self.currentFont.characterGlyphSet:
-        #     g = self.currentFont[name]
-        #     g.addVariationAxisToDeepComponentNamed(newAxisName, self.name)
+        for name in self.currentFont.characterGlyphSet:
+            g = self.currentFont[name]
+            g.addVariationAxisToDeepComponentNamed(newAxisName, self.name)
 
     def removeGlyphVariation(self, axisName):
         del self._glyphVariations[axisName]
-        ########## CG REFERENCE ##############
-        # for name in self.currentFont.characterGlyphSet:
-        #     g = self.currentFont[name]
-        #     g.removeVariationAxisToDeepComponentNamed(axisName, self.name)
+        for name in self.currentFont.characterGlyphSet:
+            g = self.currentFont[name]
+            g.removeVariationAxisToDeepComponentNamed(axisName, self.name)
 
     def updateAtomicElementCoord(self, axisName, value):
         if self.selectedSourceAxis is not None:
@@ -143,12 +141,11 @@ class DeepComponent(Glyph):
 
         self._glyphVariations[name] = dcgv
         # check all existing characterGlyph's deep components and add glyph variation to coord
-        ########## CG REFERENCE ##############
-        # for glyphname in self.currentFont.characterGlyphSet:
-        #     g2 = self.currentFont[glyphname]
-        #     for d in g2._deepComponents:
-        #         if d["name"] != self.name: continue
-        #         d['coord'][name] = 0
+        for glyphname in self.currentFont.characterGlyphSet:
+            g2 = self.currentFont[glyphname]
+            for d in g2._deepComponents:
+                if d["name"] != self.name: continue
+                d['coord'][name] = 0
 
     def renameVariationAxis(self, oldName, newName):
         v = copy.deepcopy(self._glyphVariations[oldName])
@@ -161,34 +158,32 @@ class DeepComponent(Glyph):
             del d['coord'][oldName]
             d['coord'][newName] = v
 
-        ########## CG REFERENCE ##############
-        # for glyphname in self.currentFont.characterGlyphSet:
-        #     g2 = self.currentFont[glyphname]
+        for glyphname in self.currentFont.characterGlyphSet:
+            g2 = self.currentFont[glyphname]
 
-        #     for i, d in enumerate(g2._deepComponents):
-        #         if d["name"] != self.name: continue
-        #         print(glyphname)
-        #         _rename(d, oldName, newName)
-        #         for e in g2._glyphVariations.values():
-        #             _rename(e[i], oldName, newName)
-        # # self.selectedSourceAxis = newName
+            for i, d in enumerate(g2._deepComponents):
+                if d["name"] != self.name: continue
+                print(glyphname)
+                _rename(d, oldName, newName)
+                for e in g2._glyphVariations.values():
+                    _rename(e[i], oldName, newName)
+        # self.selectedSourceAxis = newName
 
     def removeVariationAxis(self, name):
         del self._glyphVariations[name]
 
-        ########## CG REFERENCE ##############
-        # for glyphname in self.currentFont.characterGlyphSet:
-        #     g2 = self.currentFont[glyphname]
+        for glyphname in self.currentFont.characterGlyphSet:
+            g2 = self.currentFont[glyphname]
 
-        #     def _remove(d, name):
-        #         if name in d['coord']:
-        #             del d['coord'][name]
+            def _remove(d, name):
+                if name in d['coord']:
+                    del d['coord'][name]
 
-        #     for i, d in enumerate(g2._deepComponents):
-        #         if d["name"] != self.name: continue
-        #         _remove(d, name)
-        #         for e in g2._glyphVariations.values():
-        #             _remove(e[i], name)
+            for i, d in enumerate(g2._deepComponents):
+                if d["name"] != self.name: continue
+                _remove(d, name)
+                for e in g2._glyphVariations.values():
+                    _remove(e[i], name)
 
 
     # def removeAtomicElement(self):

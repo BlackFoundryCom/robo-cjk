@@ -96,7 +96,7 @@ class EditingSheet():
 def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     font = RCJKI.currentFont
     g = font[glyphName]._RGlyph
-    font[glyphName]._initWithLib()
+    # font[glyphName]._initWithLib()
     locked, alreadyLocked = font.locker.lock(g)
     if not locked: return
     if not alreadyLocked:

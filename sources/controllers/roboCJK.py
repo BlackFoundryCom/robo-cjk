@@ -114,7 +114,6 @@ class RoboCJKController(object):
         self.importDCFromCG = None
         self.sliderValue = None
         self.sliderName = None
-        self.prevGlyphName = None
         self.dataBase = {}
         self.copy = []
         self.px, self.py = 0,0
@@ -197,7 +196,6 @@ class RoboCJKController(object):
         self.currentGlyph.computeDeepComponents()
 
     def glyphWindowWillClose(self, notification):
-        self.prevGlyphName = self.currentGlyph.name
         self.closeimportDCFromCG()
         self.closeComponentWindow()
         self.closeCharacterWindow()
@@ -231,18 +229,16 @@ class RoboCJKController(object):
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
         if glyph is None: return
-        if glyph.name != self.prevGlyphName:
+        if glyph.name != self.currentGlyph.name:
             self.currentFont.locker.unlock(self.currentGlyph)
             self.closeimportDCFromCG()
-            self.currentGlyph = self.currentFont[glyph.name]
-            d = self.currentGlyph._glyphVariations
-        # if self.prevGlyphName != glyph.name:
-            self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
-                ]
-            self.currentViewSourceList.set(self.currentGlyph.sourcesList)
-            self.currentViewSourceValue.set("")
-            self.prevGlyphName = glyph.name
+        self.currentGlyph = self.currentFont[glyph.name]
+        d = self.currentGlyph._glyphVariations
+        self.currentGlyph.sourcesList = [
+            {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+            ]
+        self.currentViewSourceList.set(self.currentGlyph.sourcesList)
+        self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
             self.closeComponentWindow()
