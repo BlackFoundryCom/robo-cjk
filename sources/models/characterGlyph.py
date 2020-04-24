@@ -65,14 +65,47 @@ class CharacterGlyph(Glyph):
     def glyphVariations(self):
         return self._glyphVariations
 
+    """
+    DCLib -> [{'coord': {'hght': 0.519, 'hwgt': 0, 'vwgt': 0.465, 'wght': 0}, 'name': 'DC_531A_00', 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 0, 'y': 0}, {'coord': {'0000': 0.804, '000A': 0, 'HGHT': 0, 'LEGS': 0, 'WDTH': 0, 'hght': 0, 'hwgt': 0, 'lleg': 0, 'rleg': 0.628, 'vwgt': 1.0, 'wdth': 0}, 'name': 'DC_53E3_00', 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 500, 'y': 0}, {'coord': {'0000': 0.804, '000A': 0.0, 'HGHT': 0, 'LEGS': 0, 'WDTH': 0, 'hght': 0, 'hwgt': 0, 'lleg': 0, 'rleg': 0.628, 'vwgt': 1.0, 'wdth': 0}, 'name': 'DC_53E3_00', 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 0, 'y': 0}] 
+
+    GVLib -> {'OPSZ': [{'coord': {'hght': 0.519, 'hwgt': 0, 'vwgt': 0.465, 'wght': 0}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 0, 'y': 0}, {'coord': {'0000': 1.0, '000A': 0.355, 'HGHT': 0, 'LEGS': 0, 'WDTH': 0, 'hght': 0, 'hwgt': 0, 'lleg': 0, 'rleg': 0.628, 'vwgt': 1.0, 'wdth': 0}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 500, 'y': 0}, {'coord': {'0000': 0.804, '000A': 0.0, 'HGHT': 0, 'LEGS': 0, 'WDTH': 0, 'hght': 0, 'hwgt': 0, 'lleg': 0, 'rleg': 0.628, 'vwgt': 1.0, 'wdth': 0}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 0, 'y': 0}], 'WGHT': [{'coord': {'hght': 0.519, 'hwgt': 0, 'vwgt': 0.465, 'wght': 0}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 0, 'y': 0}, {'coord': {'0000': 0.804, '000A': 0, 'HGHT': 0, 'LEGS': 0, 'WDTH': 0, 'hght': 0, 'hwgt': 0, 'lleg': 0, 'rleg': 0.628, 'vwgt': 1.0, 'wdth': 0}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 500, 'y': 0}, {'coord': {'0000': 0.804, '000A': 1.0, 'HGHT': 0, 'LEGS': 0, 'WDTH': 0, 'hght': 0, 'hwgt': 0, 'lleg': 0, 'rleg': 0.628, 'vwgt': 1.0, 'wdth': 0}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 0, 'y': 0}]}
+
+    """
+
     def _initWithLib(self, lib=None):
         try:
             if lib:
-                self._deepComponents = list(lib[deepComponentsKey])      
-                self._glyphVariations = dict(lib[glyphVariationsKey])
+                DCLib = list(lib[deepComponentsKey])
+                GVLib = dict(lib[glyphVariationsKey])
             else:
-                self._deepComponents = list(self._RGlyph.lib[deepComponentsKey])      
-                self._glyphVariations = dict(self._RGlyph.lib[glyphVariationsKey])
+                DCLib = list(self._RGlyph.lib[deepComponentsKey])      
+                GVLib = dict(self._RGlyph.lib[glyphVariationsKey])
+
+            for i, dc in enumerate(DCLib):
+                DCGlyph = self.currentFont[dc["name"]]
+                DCGlyphLib = DCGlyph.lib["robocjk.deepComponent.glyphVariations"]
+                coord = {}
+                for axisName, axisValue in dc['coord'].items():
+                    if axisName in DCGlyphLib:
+                        coord[axisName] = axisValue
+                for axisName in DCGlyphLib:
+                    if axisName not in coord:
+                        coord[axisName] = 0
+                dc['coord'] = coord
+
+                for variationName in GVLib:
+                    newVariationCoord = {}
+                    variationCoord = GVLib[variationName][i]['coord']
+                    for k, v in variationCoord.items():
+                        if k in coord:
+                            newVariationCoord[k] = v
+                    for k, v in coord.items():
+                        if k not in newVariationCoord:
+                            newVariationCoord[k] = v
+                    GVLib[variationName][i]['coord'] = newVariationCoord
+
+            self._deepComponents = DCLib      
+            self._glyphVariations = GVLib
         except:
             self._deepComponents = []
             self._glyphVariations = {}
@@ -164,6 +197,7 @@ class CharacterGlyph(Glyph):
                     del d['coord'][axisName]
 
     def computeDeepComponents(self):
+        # self._initWithLib()
         self.computedDeepComponents = []
         self.computedDeepComponentsVariation = []
         if self.selectedSourceAxis is None:
@@ -178,6 +212,7 @@ class CharacterGlyph(Glyph):
                 )
 
     def computeDeepComponentsPreview(self, sourcelist = []):
+        # self._initWithLib()
         self.preview = []
         deepComponentsSelectedVariation = []
 
