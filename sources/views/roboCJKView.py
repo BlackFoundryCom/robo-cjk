@@ -1130,11 +1130,11 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         self.index = sel[0]
         dc = copy.deepcopy(self.deepComponents[self.index])
         self.RCJKI.currentGlyph.addDeepComponentNamed(dc["name"], dc)
-        
-        # for variation in self.RCJKI.currentGlyph._glyphVariations:
-        #     if variation in self.glyphVariations:
-        #         dc = copy.deepcopy(self.glyphVariations[variation][self.index])
-        #         self.RCJKI.currentGlyph._glyphVariations[variation][self.index] = dc
+
+        for variation in self.RCJKI.currentGlyph._glyphVariations:
+            if variation in self.glyphVariations:
+                dc = copy.deepcopy(self.glyphVariations[variation][self.index])
+                self.RCJKI.currentGlyph._glyphVariations[variation][-1] = dc
 
         self.RCJKI.updateDeepComponent()
 

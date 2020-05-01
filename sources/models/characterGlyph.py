@@ -295,6 +295,7 @@ class CharacterGlyph(Glyph):
         self._deepComponents = [x for i, x in enumerate(self._deepComponents) if i not in self.selectedElement]
         for k, v in self._glyphVariations.items():
             v = [x for i, x in enumerate(v) if i not in self.selectedElement]
+            self._glyphVariations[k] = v
         # for index in self.selectedElement:
         #     self._deepComponents.pop(index)
         #     for dcList in self._glyphVariations.values():
