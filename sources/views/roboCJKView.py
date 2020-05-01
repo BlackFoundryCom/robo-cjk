@@ -39,7 +39,7 @@ reload(PDFProofer)
 from views import textCenter
 reload(textCenter)
 
-import os, json
+import os, json, copy
 
 gitCoverage = decorators.gitCoverage
 
@@ -1117,6 +1117,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
                             preview=True,
                             )
         self.deepComponents = self.refGlyph._deepComponents
+        self.glyphVariations = self.refGlyph._glyphVariations
         self.deepComponentsName = [chr(int(dc["name"].split("_")[1], 16)) for dc in self.deepComponents]
         self.w.deepComponentList.set(self.deepComponentsName)
 
@@ -1127,8 +1128,14 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             self.index = None
             return
         self.index = sel[0]
-        dc = self.deepComponents[self.index]
+        dc = copy.deepcopy(self.deepComponents[self.index])
         self.RCJKI.currentGlyph.addDeepComponentNamed(dc["name"], dc)
+        
+        # for variation in self.RCJKI.currentGlyph._glyphVariations:
+        #     if variation in self.glyphVariations:
+        #         dc = copy.deepcopy(self.glyphVariations[variation][self.index])
+        #         self.RCJKI.currentGlyph._glyphVariations[variation][self.index] = dc
+
         self.RCJKI.updateDeepComponent()
 
     def draw(self):

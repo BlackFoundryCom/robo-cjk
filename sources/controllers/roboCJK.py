@@ -196,7 +196,7 @@ class RoboCJKController(object):
         self.currentGlyph.computeDeepComponents()
 
     def glyphWindowWillClose(self, notification):
-        self.closeimportDCFromCG()
+        # self.closeimportDCFromCG()
         self.closeComponentWindow()
         self.closeCharacterWindow()
 
