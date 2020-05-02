@@ -25,6 +25,7 @@ from AppKit import NumberFormatter, NSColor
 from mojo.canvas import Canvas
 import Cocoa
 import drawBot as db
+import copy
 from imp import reload
 from utils import files
 reload(files)
@@ -286,7 +287,8 @@ class Interface:
             841,
             sizeStyle = 'small',
             formatter = numberFormatter, 
-            callback = self.pageSizeCallback
+            callback = self.pageSizeCallback,
+            continuous = False
             )
         self.w.page.heightTitle = TextBox(
             (98, 30, 45, 20),
@@ -298,7 +300,8 @@ class Interface:
             595,
             sizeStyle = 'small',
             formatter = numberFormatter, 
-            callback = self.pageSizeCallback
+            callback = self.pageSizeCallback,
+            continuous = False
             )
         self.w.page.columnsTitle = TextBox(
             (0, 60, 100, 20),
@@ -381,7 +384,8 @@ class Interface:
             10,
             sizeStyle = "small",
             formatter = numberFormatter,
-            callback = self.fontSizeCallback
+            callback = self.fontSizeCallback,
+            continuous = False
             )
 
         y += 30
@@ -554,6 +558,8 @@ class Interface:
             return
         self.currentTextBox = self.currentPage.textBoxes[sel[0]]
         # self.w.text.textEditor.set(self.currentTextBox.text)
+        if self.currentTextBox.sourceList:
+            self.w.text.ufo.axis.set(self.currentTextBox.sourceList)
         self.setTextGroupUI()
         self.draw([self.currentPage])
 
@@ -618,7 +624,10 @@ class Interface:
     def exportPDFCallback(self, sender):
         path = putFile("pdf")
         self.draw(self.pdf.pages, export = True)
-        db.saveImage("%s.pdf"%path)
+        outputPath = "%s.pdf"%path
+        if path.endswith(".pdf"):
+            outputPath = "%s.pdf"%path[:-4]
+        db.saveImage(outputPath)
 
     def newPage(self):
         size = (int(self.w.page.pageWidth.get()), int(self.w.page.pageHeight.get()))
@@ -684,7 +693,7 @@ class Interface:
         self.draw([self.currentPage])
 
     def ufoAxisListEditCallback(self, sender):
-        self.currentTextBox.sourceList = sender.get()
+        self.currentTextBox.sourceList = [dict(x) for x in sender.get()]
         self.draw([self.currentPage]) 
 
     def fontManagerCallback(self, sender):
@@ -754,14 +763,20 @@ class Interface:
                                 for dcName, (dcCoord, l) in e.items():
                                     for dcAtomicElements in l:
                                         for atomicInstanceGlyph in dcAtomicElements.values():
+                                            if export:
+                                                atomicInstanceGlyph[0].round()
                                             db.drawGlyph(atomicInstanceGlyph[0])  
                             if glyph.outlinesPreview is not None:
+                                if export:
+                                    glyph.outlinesPreview.round()
                                 db.drawGlyph(glyph.outlinesPreview)
                         else:
                             for _, instanceGlyph in atomicInstanceGlyph:
-                                instanceGlyph.round()
+                                if export:
+                                    instanceGlyph.round()
                                 db.drawGlyph(instanceGlyph)
-                            glyph.round()
+                            if export:
+                                glyph.round()
                             db.drawGlyph(glyph)
                         # self.pdf.RCJKI.drawer.drawGlyph(
                         #     glyph, 
