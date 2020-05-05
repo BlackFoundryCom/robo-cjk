@@ -90,6 +90,81 @@ class Font():
     def _fontLayers(self):
         return [l.name for l in self._RFont.layers if l.name != 'foreground']
 
+    @property
+    def currentState(self):
+        AE_empty = 0
+        AE_maxName = ""
+        AE_maxNumber = 0
+        AE_averageVariation = []
+        for n in self.atomicElementSet:
+            glyph = self[n]
+            if len(glyph._glyphVariations) > AE_maxNumber:
+                AE_maxNumber = len(glyph._glyphVariations)
+                AE_maxName = n
+            if glyph._glyphVariations:
+                AE_averageVariation.append(len(glyph._glyphVariations))
+            if not len(glyph):
+                AE_empty += 1
+        DC_empty = 0
+        DC_designed = 0
+        DC_maxName = ""
+        DC_maxNumber = 0
+        DC_averageVariation = []
+        for n in self.deepComponentSet:
+            glyph = self[n]
+            if not glyph._atomicElements:
+                DC_empty += 1
+            else:
+                DC_designed += 1
+            if len(glyph._glyphVariations) > DC_maxNumber:
+                DC_maxNumber = len(glyph.glyphVariations)
+                DC_maxName = n
+            if glyph._glyphVariations:
+                DC_averageVariation.append(len(glyph._glyphVariations))
+
+        CG_withDC = 0
+        CG_withOutlines = 0
+        CG_mixed = 0
+        CG_withVariation = 0
+        CG_withoutVariation = 0
+        CG_empty = 0
+        for n in self.characterGlyphSet:
+            glyph = self[n]
+            if glyph._deepComponents:
+                CG_withDC += 1
+            if len(glyph):
+                CG_withOutlines += 1
+            if glyph._deepComponents and len(glyph):
+                CG_mixed += 1
+            if glyph._glyphVariations:
+                CG_withVariation += 1
+            else:
+                CG_withoutVariation += 1
+            if not glyph._deepComponents and not len(glyph):
+                CG_empty += 1
+        string = f"""
+        Current state of {self.fontPath.split('/')[-1]}:\n
+          • AtomicElements :
+            \t - {AE_empty} are empty,
+            \t - maximum of glyph variation: '{AE_maxName}'' with {AE_maxNumber} axis,
+            \t - average of glyph variation: {round(sum(AE_averageVariation)/len(AE_averageVariation), 2)} axis,
+            \t - total: {len(self.atomicElementSet)} atomicElements,\n
+          • DeepComponents :
+            \t - {DC_designed} designed,
+            \t - {DC_empty} are empty,
+            \t - maximum of glyph variation: '{DC_maxName}'' with {DC_maxNumber} axis,
+            \t - average of glyph variation: {round(sum(DC_averageVariation)/len(DC_averageVariation), 2)} axis,
+            \t - total: {len(self.deepComponentSet)} deepComponents,\n
+          • CharacterGlyphs :
+            \t - {CG_withDC} with deep components,
+            \t - {CG_withOutlines} with outlines,
+            \t - {CG_mixed} are mixed,
+            \t - {CG_withVariation} with glyph variation,
+            \t - {CG_withoutVariation} without glyph variation,
+            \t - {CG_empty} are empty,
+            \t - total: {len(self.characterGlyphSet)} characterGlyphs,\n
+        """
+        return string
 
     def createLayersFromVariationAxis(self):
         if not self._RFont.lib.get('robocjk.fontVariations', ""): return
