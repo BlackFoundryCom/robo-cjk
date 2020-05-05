@@ -777,7 +777,13 @@ class Interface:
                                 db.drawGlyph(instanceGlyph)
                             if export:
                                 glyph.round()
-                            db.drawGlyph(glyph)
+                            
+                            if glyph.outlinesPreview is not None:
+                                if export:
+                                    glyph.outlinesPreview.round()
+                                db.drawGlyph(glyph.outlinesPreview)
+                            else:
+                                db.drawGlyph(glyph)
                         # self.pdf.RCJKI.drawer.drawGlyph(
                         #     glyph, 
                         #     s, 
