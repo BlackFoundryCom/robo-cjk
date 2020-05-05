@@ -261,7 +261,9 @@ class Font():
 
         libPath = os.path.join(self.fontPath, 'fontLib.json')
         with open(libPath, "w") as file:
-            file.write(json.dumps(self._RFont.lib.asDict(),
+            lib = self._RFont.lib.asDict()
+            del lib["public.glyphOrder"]
+            file.write(json.dumps(lib,
                 indent=4, separators=(',', ': ')))
 
         for rglyph in self._RFont.getLayer('foreground'):
