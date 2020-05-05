@@ -481,6 +481,7 @@ class RoboCJKView(BaseWindowController):
             "Scripting Window",
             callback = self.codeEditorButtonCallback,
             )
+        self.w.codeEditorButton.enable(False)
 
         self.w.lockControllerDCButton = Button(
             (210, 70, 200, 20),
@@ -929,6 +930,7 @@ class RoboCJKView(BaseWindowController):
         self.w.generateFontButton.enable(True)
         self.w.rcjkFiles.enable(True)
         self.w.textCenterButton.enable(True)
+        self.w.codeEditorButton.enable(True)
         self.w.lockControllerDCButton.enable(True)
         self.w.pdfProoferButton.enable(True)
         self.w.firstFilterAtomicElement.enable(True)
