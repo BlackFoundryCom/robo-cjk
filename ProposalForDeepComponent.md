@@ -293,11 +293,17 @@ We would also need a mechanism to tell the ```<fvar>``` table to look into the `
 
 The question of how to store the transformations remains open. We think the existing 2 x 2 matrix is not ideal because it makes interpolations of the values uneasy. 
 We propose to store each transformation separately:
+
 shift-x: integer (default 0)
+
 shift-y: integer (default 0)
+
 scale-x: float (default 1.0)
+
 scale-y: float (default 1.0)
+
 rotation-angle: float (default 0.0)
+
 
 One issue is that the transformation data structure is not supported in the current ```<glyf>``` table (with the exception of shifts) and scale+rotation is redundant with the existing 2x2 matrix. Whether the table should be updated or if we would need another specific table is not clear. Perhaps the ‘numberOfContours’ value set to -2 (for DC) or -3 (for CG) could be enough to tell the rasterizer to access these extra informations.
 
