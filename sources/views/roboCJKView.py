@@ -36,10 +36,13 @@ from views import sheets
 reload(sheets)
 from views import PDFProofer
 reload(PDFProofer)
+from views import scriptingWindow
+reload(scriptingWindow)
 from views import textCenter
 reload(textCenter)
 
 import os, json, copy
+
 
 gitCoverage = decorators.gitCoverage
 
@@ -473,6 +476,12 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.textCenterButton.enable(False)
 
+        self.w.codeEditorButton = Button(
+            (410, 100, 200, 20),
+            "Scripting Window",
+            callback = self.codeEditorButtonCallback,
+            )
+
         self.w.lockControllerDCButton = Button(
             (210, 70, 200, 20),
             "Lock controller",
@@ -616,6 +625,9 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.toggleObservers()
         self.w.bind('close', self.windowCloses)
         self.w.open()
+
+    def codeEditorButtonCallback(self, sender):
+        scriptingWindow.ScriptingWindow(self.RCJKI)
 
     def pdfProoferButtonCallback(self, sender):
         self.RCJKI.pdf = PDFProofer.PDFEngine(self.RCJKI)

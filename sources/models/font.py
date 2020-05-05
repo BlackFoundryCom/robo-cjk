@@ -74,6 +74,12 @@ class Font():
     def __contains__(self, name):
         return name in self._RFont
 
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return "<RCJKFontObject '%s',  path='%s', %s atomicElements, %s deepComponents, %s characterGlyphs>"%(self.fontPath.split("/")[-1], self.fontPath, len(self.atomicElementSet), len(self.deepComponentSet), len(self.characterGlyphSet))
+
     def keys(self):
         return self._RFont.keys()
 
