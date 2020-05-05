@@ -146,13 +146,13 @@ class Font():
         Current state of {self.fontPath.split('/')[-1]}:\n
           • AtomicElements :
             \t - {AE_empty} are empty,
-            \t - maximum of glyph variation: '{AE_maxName}'' with {AE_maxNumber} axis,
+            \t - maximum of glyph variation: '{AE_maxName}' with {AE_maxNumber} axis,
             \t - average of glyph variation: {round(sum(AE_averageVariation)/len(AE_averageVariation), 2)} axis,
             \t - total: {len(self.atomicElementSet)} atomicElements,\n
           • DeepComponents :
             \t - {DC_designed} designed,
             \t - {DC_empty} are empty,
-            \t - maximum of glyph variation: '{DC_maxName}'' with {DC_maxNumber} axis,
+            \t - maximum of glyph variation: '{DC_maxName}' with {DC_maxNumber} axis,
             \t - average of glyph variation: {round(sum(DC_averageVariation)/len(DC_averageVariation), 2)} axis,
             \t - total: {len(self.deepComponentSet)} deepComponents,\n
           • CharacterGlyphs :
