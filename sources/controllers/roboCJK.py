@@ -110,6 +110,7 @@ class RoboCJKController(object):
             posSize = (20, 0, 300, -20), 
             delegate = self
             )
+        self.transformationToolIsActiv = False
         # self.pdf = PDFProofer.PDFEngine(self)
         self.importDCFromCG = None
         self.sliderValue = None
@@ -406,6 +407,7 @@ class RoboCJKController(object):
 
     @refresh
     def mouseUp(self, info):
+        if self.transformationToolIsActiv and self.currentGlyph.selectedElement: return
         if self.isAtomic:
             return
         try: x, y = info['point'].x, info['point'].y

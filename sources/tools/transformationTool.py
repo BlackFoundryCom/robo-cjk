@@ -44,6 +44,12 @@ class TransformationTool(BaseEventTool):
     def getToolbarIcon(self):
         return toolbarIcon
 
+    def becomeActive(self):
+        self.RCJKI.transformationToolIsActiv = True
+
+    def becomeInactive(self):
+        self.RCJKI.transformationToolIsActiv = False
+
     @glyphTransformUndo
     def mouseDown(self, point, clickcount):
         self.px, self.py = self.deltax, self.deltay = point
