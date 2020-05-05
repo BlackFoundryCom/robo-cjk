@@ -696,7 +696,7 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
-        self.w.atomicElement.set(filteredList)
+        self.w.atomicElement.set(sorted(filteredList))
 
     def filterDeepComponentCallback(self, sender):
         filteredList = self.filterGlyphs(
@@ -709,7 +709,7 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
-        self.w.deepComponent.set(filteredList)
+        self.w.deepComponent.set(sorted(filteredList))
 
     def filterCharacterGlyphCallback(self, sender):
         filteredList = self.filterGlyphs(
@@ -723,7 +723,7 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
-        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in filteredList]
+        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in sorted(filteredList)]
         self.w.characterGlyph.set(charSet)
 
     def filterGlyphs(self, glyphtype, option1, option2, allGlyphs, lockedGlyphs):
