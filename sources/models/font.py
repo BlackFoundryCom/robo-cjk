@@ -332,6 +332,7 @@ class Font():
 
     @gitCoverage(msg = 'remove Glyph')
     def removeGlyph(self, glyphName:str): 
+        return
         fileName = "%s.glif"%files.userNameToFileName(glyphName)
         glyph = self[glyphName]
         glyphType = glyph.type
