@@ -18,6 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from vanilla.dialogs import getFolder, putFile, askYesNo
+from fontParts.ui import AskYesNoCancel
 from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView
 from defconAppKit.windows.baseWindow import BaseWindowController
 from views import canvasGroups
@@ -49,6 +50,8 @@ gitCoverage = decorators.gitCoverage
 from mojo.roboFont import *
 
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
+removeGlyphImagePath = os.path.join(os.getcwd(), "resources", "removeButton.pdf")
+duplicateGlyphImagePath = os.path.join(os.getcwd(), "resources", "duplicateButton.pdf")
 
 class SmartTextBox(TextBox):
     def __init__(self, posSize, text="", alignment="natural", 
@@ -524,8 +527,22 @@ class RoboCJKView(BaseWindowController):
             editCallback = self.GlyphsListEditCallback,
             selectionCallback = self.GlyphsListSelectionCallback, 
             )
+
+        self.w.removeAtomicElement = ImageButton(
+            (10, 350, 20, 20),
+            imagePath = removeGlyphImagePath,
+            bordered = False,
+            callback = self.removeAtomicElementCallback
+            )
+        self.w.removeAtomicElement.enable(False)
+        self.w.duplicateAtomicElement = ImageButton(
+            (190, 350, 20, 20),
+            imagePath = duplicateGlyphImagePath,
+            bordered = False
+            )
+        self.w.duplicateAtomicElement.enable(False)
         self.w.newAtomicElement = Button(
-            (10, 350, 200, 20),
+            (30, 350, 160, 20),
             "New AE",
             callback = self.newAtomicElementCallback
             )
@@ -563,8 +580,21 @@ class RoboCJKView(BaseWindowController):
             editCallback = self.GlyphsListEditCallback,
             selectionCallback = self.GlyphsListSelectionCallback, 
             )
+        self.w.removeDeepComponent = ImageButton(
+            (210, 350, 20, 20),
+            imagePath = removeGlyphImagePath,
+            bordered = False,
+            callback = self.removeDeepComponentCallback
+            )
+        self.w.removeDeepComponent.enable(False)
+        self.w.duplicateDeepComponent = ImageButton(
+            (390, 350, 20, 20),
+            imagePath = duplicateGlyphImagePath,
+            bordered = False
+            )
+        self.w.duplicateDeepComponent.enable(False)
         self.w.newDeepComponent = Button(
-            (210, 350, 200, 20),
+            (230, 350, 160, 20),
             "New DC",
             callback = self.newDeepComponentCallback
             )
@@ -607,8 +637,21 @@ class RoboCJKView(BaseWindowController):
             editCallback = self.GlyphsListEditCallback,
             selectionCallback = self.GlyphsListSelectionCallback, 
             )
+        self.w.removeCharacterGlyph = ImageButton(
+            (410, 350, 20, 20),
+            imagePath = removeGlyphImagePath,
+            bordered = False,
+            callback = self.removeCharacterGlyphCallback
+            )
+        self.w.removeCharacterGlyph.enable(False)
+        self.w.duplicateCharacterGlyph = ImageButton(
+            (590, 350, 20, 20),
+            imagePath = duplicateGlyphImagePath,
+            bordered = False
+            )
+        self.w.duplicateCharacterGlyph.enable(False)
         self.w.newCharacterGlyph = Button(
-            (410, 350, 200, 20),
+            (430, 350, 160, 20),
             "New CG",
             callback = self.newCharacterGlyphCallback
             )
@@ -945,6 +988,12 @@ class RoboCJKView(BaseWindowController):
         self.w.newAtomicElement.enable(True)
         self.w.newDeepComponent.enable(True)
         self.w.newCharacterGlyph.enable(True)
+        self.w.removeAtomicElement.enable(True)
+        self.w.duplicateAtomicElement.enable(True)
+        self.w.removeDeepComponent.enable(True)
+        self.w.duplicateDeepComponent.enable(True)
+        self.w.removeCharacterGlyph.enable(True)
+        self.w.duplicateCharacterGlyph.enable(True)
 
         if self.currentrcjkFile is None: 
             return
@@ -1073,6 +1122,127 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
+    def removeGlyph(self, UIList, glyphset, glyphTypeImpacted):
+        sel = UIList.getSelection()
+        if not sel: return False
+        glyphName = UIList[sel[0]]
+        user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
+        if user != self.RCJKI.currentFont.locker._username:
+            return False
+        glyphType = self.RCJKI.currentFont[glyphName].type
+        GlyphsthatUse = set()
+        if glyphType != 'characterGlyph':
+            for name in glyphset:
+                glyph = self.RCJKI.currentFont[name]
+                if glyphType == 'atomicElement':
+                    d =  glyph._atomicElements
+                elif glyphType == 'deepComponent':
+                    d =  glyph._deepComponents
+                for ae in d:
+                    if ae["name"] == glyphName:
+                        GlyphsthatUse.add(name)
+        if not len(GlyphsthatUse):
+            message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
+            answer = AskYesNoCancel(
+                message, 
+                title='Remove Glyph', 
+                default=-1, 
+                informativeText="",
+                )
+            if answer != 1: return False
+            else:
+                self.RCJKI.currentFont.removeGlyph(glyphName)
+        else:
+            GlyphsUsed = ""
+            for name in list(GlyphsthatUse)[:30]:
+                GlyphsUsed += "\n\t-" + name 
+            if len(GlyphsthatUse) > 30:
+                GlyphsUsed += "\n\t..."
+            informativeText = f"'{glyphName}' is use in {len(GlyphsthatUse)} {glyphTypeImpacted}{['', 's'][len(GlyphsthatUse) != 1]}:{GlyphsUsed}"
+            message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
+            answer = AskYesNoCancel(
+                message, 
+                title='Remove Glyph', 
+                default=-1, 
+                informativeText=informativeText,
+                )
+            if answer != 1: return False
+            else:
+                print("-----------")
+                print(f"{GlyphsthatUse} will be impacted by the deletion of '{glyphName}'")
+                print("-----------")
+                self.RCJKI.currentFont.removeGlyph(glyphName)
+        return True
+
+    def removeAtomicElementCallback(self, sender):
+        remove = self.removeGlyph(self.w.atomicElement, self.RCJKI.currentFont.deepComponentSet, "deepComponent")
+        if remove:
+            self.w.atomicElement.setSelection([])
+            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.prevGlyphName = ""
+            self.setGlyphNameToCansvas(self.w.atomicElement, self.prevGlyphName)
+            self.w.lockerInfoTextBox.set("")
+
+    def removeDeepComponentCallback(self, sender):
+        remove = self.removeGlyph(self.w.deepComponent, self.RCJKI.currentFont.characterGlyphSet, "characterGlyph")
+        if remove:
+            self.w.deepComponent.setSelection([])
+            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            self.prevGlyphName = ""
+            self.setGlyphNameToCansvas(self.w.deepComponent, self.prevGlyphName)
+            self.w.lockerInfoTextBox.set("")
+
+    def removeCharacterGlyphCallback(self, sender):
+        sel = self.w.characterGlyph.getSelection()
+        if not sel: return
+        glyphName = self.w.characterGlyph[sel[0]]["name"]
+        user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
+        if user != self.RCJKI.currentFont.locker._username:
+            return
+        glyphType = self.RCJKI.currentFont[glyphName].type
+        GlyphsthatUse = set()
+        for name in self.RCJKI.currentFont.characterGlyphSet:
+            glyph = self.RCJKI.currentFont[name]
+            for compo in glyph.components:
+                if glyphName == compo.baseGlyph :
+                    GlyphsthatUse.add(name)
+        if not len(GlyphsthatUse):
+            message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
+            answer = AskYesNoCancel(
+                message, 
+                title='Remove Glyph', 
+                default=-1, 
+                informativeText="",
+                )
+            if answer != 1: return
+            else:
+                self.RCJKI.currentFont.removeGlyph(glyphName)
+        else:
+            GlyphsUsed = ""
+            for name in list(GlyphsthatUse)[:30]:
+                GlyphsUsed += "\n\t-" + name 
+            if len(GlyphsthatUse) > 30:
+                GlyphsUsed += "\n\t..."
+            informativeText = f"'{glyphName}' is use in {len(GlyphsthatUse)} characterGlyph{['', 's'][len(GlyphsthatUse) != 1]}:{GlyphsUsed}"
+            message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
+            answer = AskYesNoCancel(
+                message, 
+                title='Remove Glyph', 
+                default=-1, 
+                informativeText=informativeText,
+                )
+            if answer != 1: return
+            else:
+                print("-----------")
+                print(f"{GlyphsthatUse} will be impacted by the deletion of '{glyphName}'")
+                print("-----------")
+                self.RCJKI.currentFont.removeGlyph(glyphName)
+        self.w.characterGlyph.setSelection([])
+        self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
+        self.prevGlyphName = ""
+        self.setGlyphNameToCansvas(self.w.characterGlyph, self.prevGlyphName)
+        self.w.lockerInfoTextBox.set("")
+
     def dumpName(self, glyphType, sets):
         index = 0
         while True:
@@ -1080,7 +1250,6 @@ class RoboCJKView(BaseWindowController):
             if not name in sets:
                 return name
             index+=1
-
 
 class ImportDeepComponentFromAnotherCharacterGlyph:
 

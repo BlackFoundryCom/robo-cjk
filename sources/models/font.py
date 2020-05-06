@@ -330,6 +330,23 @@ class Font():
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
         self.addGlyph(*self.newGLIF(glyphType, glyphName), "foreground")
 
+    @gitCoverage(msg = 'remove Glyph')
+    def removeGlyph(self, glyphName:str): 
+        fileName = "%s.glif"%files.userNameToFileName(glyphName)
+        glyph = self[glyphName]
+        glyphType = glyph.type
+        if fileName in os.listdir(os.path.join(self.fontPath, glyphType)):
+            path = os.path.join(self.fontPath, glyphType, fileName)
+            os.remove(path)
+
+            for _, layer, _ in os.walk(path):
+                if filename in os.listdir(os.path.join(path, layer)):
+                    layerPath = os.path.join(path, layer, filename)
+                    os.remove(path)
+
+        self._RFont.removeGlyph(glyphName)
+        self.locker.removeFiles([glyphName])        
+
     @gitCoverage(msg = 'font save')
     def save(self):
         self._RFont.save()
