@@ -1176,6 +1176,11 @@ class RoboCJKView(BaseWindowController):
             i += 1
         newGlyphName = AskString(message, value = newName, title = "Duplicate Glyph")
         if newGlyphName is None: return False
+        if newGlyphName in glyphset: 
+            PostBannerNotification(
+                'Impossible', "'%s' already exist"%newGlyphName
+                )
+            return False
         self.RCJKI.currentFont.duplicateGlyph(glyphName, newGlyphName)
         self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[newGlyphName]])
         return newGlyphName
