@@ -21,6 +21,7 @@ from xml.etree import ElementTree as ET
 from mojo.roboFont import *
 import json
 import os
+import copy
 
 from imp import reload
 from utils import decorators, files, locker
@@ -201,7 +202,7 @@ class Font():
                     self._RFont.newLayer(layerName)
 
                 for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
-                    layerfileName = glifFile.split('.')[0]
+                    layerfileName = glifFile.split('.glif')[0]
                     if glyph.type == "atomicElement":
                         self.addGlyph(
                             atomicElement.AtomicElement(glyph.name), 
@@ -250,7 +251,7 @@ class Font():
                     self._RFont.newLayer(layerName)
 
                 for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
-                    layerfileName = glifFile.split('.')[0]
+                    layerfileName = glifFile.split('.glif')[0]
                     if glyphtype == "atomicElement":
                         self.addGlyph(
                             atomicElement.AtomicElement(glyphName), 
@@ -282,6 +283,20 @@ class Font():
         with open(path, "w", encoding = "utf-8") as file:
             file.write(txt)
         return (emptyGlyph, fileName)
+
+    def duplicateGLIF(self, glyphName, glyphNamePath, newGlyphName, newGlyphNamePath):
+        fileName = files.userNameToFileName(glyphName)
+
+        tree = copy.deepcopy(ET.parse(glyphNamePath))
+        root = tree.getroot()
+        root.set("name", newGlyphName)
+        string = ET.tostring(root).decode("utf-8")
+
+        newFileName = files.userNameToFileName(newGlyphName)
+
+        tree.write(open(newGlyphNamePath, "w"), encoding = 'unicode')
+        # with open(newGlyphNamePath, "w") as file:
+        #     file.write(string)
 
     def addGlyph(self, glyph, fileName, layerName):
         if layerName == 'foreground':
@@ -329,6 +344,38 @@ class Font():
 
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
         self.addGlyph(*self.newGLIF(glyphType, glyphName), "foreground")
+
+    @gitCoverage(msg = 'duplicate Glyph')
+    def duplicateGlyph(self, glyphName:str, newGlyphName:str):
+        glyphType = self[glyphName].type
+
+        filename = files.userNameToFileName(glyphName)
+        newFileName = files.userNameToFileName(newGlyphName)
+
+        glyphPath = os.path.join(self.fontPath, glyphType, "%s.glif"%filename)
+        newGlyphPath = os.path.join(self.fontPath, glyphType, "%s.glif"%newFileName)
+
+        if glyphType == "deepComponent":
+            new_glyph = deepComponent.DeepComponent(newGlyphName)
+        elif glyphType == "atomicElement":
+            new_glyph = atomicElement.AtomicElement(newGlyphName)
+        elif glyphType == "characterGlyph":
+            new_glyph = characterGlyph.CharacterGlyph(newGlyphName)
+
+        self.duplicateGLIF(glyphName, glyphPath, newGlyphName, newGlyphPath)
+        self.addGlyph(new_glyph, newFileName, "foreground")
+
+        for _, layers, _ in os.walk(os.path.join(self.fontPath, glyphType)):
+            for layer in layers:
+                layerDirectory = os.path.join(self.fontPath, glyphType, layer)
+                if "%s.glif"%filename in os.listdir(layerDirectory) and "%s.glif"%newFileName not in os.listdir(layerDirectory):
+                    layerGlyphPath = os.path.join(layerDirectory, "%s.glif"%filename)
+                    newLayerGlyphPath = os.path.join(layerDirectory, "%s.glif"%newFileName)
+
+                    self.duplicateGLIF(glyphName, layerGlyphPath, newGlyphName, newLayerGlyphPath)
+                    self.addGlyph(new_glyph, newFileName, layer)
+
+        self.getGlyph(self[newGlyphName])
 
     @gitCoverage(msg = 'remove Glyph')
     def removeGlyph(self, glyphName:str): 
