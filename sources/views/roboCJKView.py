@@ -25,7 +25,7 @@ from views import canvasGroups
 from mojo.canvas import CanvasGroup
 import mojo.drawingTools as mjdt
 # from lib.doodleDocument import DoodleDocument
-from AppKit import NSFont
+from AppKit import NSFont, NumberFormatter 
 from imp import reload
 from utils import decorators, files
 reload(decorators)
@@ -180,10 +180,25 @@ class CharacterWindow:
             maxValue = 1000,
             value = 0,
             callback = self.sliderCallback)
+        self.w.sliders.scaleX = EditText((0, 45, 60, 20),
+            100,
+            formatter = NumberFormatter(),
+            sizeStyle = "small",
+            callback = self.scaleCallback)
+        self.w.sliders.scaleY = EditText((60, 45, -0, 20),
+            100,
+            formatter = NumberFormatter(),
+            sizeStyle = "small",
+            callback = self.scaleCallback)
+        self.char = ""
 
     def sliderCallback(self, sender):
         self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
         UpdateCurrentGlyphView()
+
+    def scaleCallback(self, sender):
+        self.RCJKI.drawer.refGlyphScale = [self.w.sliders.scaleX.get()/100, self.w.sliders.scaleY.get()/100]  
+        UpdateCurrentGlyphView()        
 
     def filterCallback(self, sender):
         self.filter = sender.get()
@@ -255,11 +270,20 @@ class CharacterWindow:
         if not sel:
             return
         char = sender.get()[sel[0]]
-        self.w.sliders.x.set(0)
-        self.w.sliders.y.set(0)
+        if char != self.char:
+            self.w.sliders.x.set(0)
+            self.w.sliders.y.set(0)
+            self.RCJKI.drawer.refGlyphPos = [0, 0]
+
+            self.w.sliders.scaleX.set(100)
+            self.w.sliders.scaleY.set(100)
+            self.RCJKI.drawer.refGlyphScale = [1, 1]  
+            self.char = char
+
         if self.filter in [0, 3]:
             if files.unicodeName(char) in self.RCJKI.currentFont.characterGlyphSet:
                 self.w.previewCheckBox.show(True)
+        UpdateCurrentGlyphView()
 
     def charactersListDoubleClickCallback(self, sender):
         sel = sender.getSelection()
