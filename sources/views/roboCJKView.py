@@ -887,6 +887,11 @@ class RoboCJKView(BaseWindowController):
         deepCompo2Compo = {}
         for n in self.RCJKI.currentFont.characterGlyphSet:
             g = self.RCJKI.currentFont[n]
+
+            if len(g):
+                f.insertGlyph(g, name=n)
+                continue
+
             g.computeDeepComponents()
             f.newGlyph(n)
             f[n].width = g.width
