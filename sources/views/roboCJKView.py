@@ -18,14 +18,14 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from vanilla.dialogs import getFolder, putFile, askYesNo
-from fontParts.ui import AskYesNoCancel
-from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView
+from fontParts.ui import AskYesNoCancel, AskString
+from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView, PostBannerNotification
 from defconAppKit.windows.baseWindow import BaseWindowController
 from views import canvasGroups
 from mojo.canvas import CanvasGroup
 import mojo.drawingTools as mjdt
 # from lib.doodleDocument import DoodleDocument
-from AppKit import NSFont
+from AppKit import NSFont, NumberFormatter 
 from imp import reload
 from utils import decorators, files
 reload(decorators)
@@ -180,10 +180,25 @@ class CharacterWindow:
             maxValue = 1000,
             value = 0,
             callback = self.sliderCallback)
+        self.w.sliders.scaleX = EditText((0, 45, 60, 20),
+            100,
+            formatter = NumberFormatter(),
+            sizeStyle = "small",
+            callback = self.scaleCallback)
+        self.w.sliders.scaleY = EditText((60, 45, -0, 20),
+            100,
+            formatter = NumberFormatter(),
+            sizeStyle = "small",
+            callback = self.scaleCallback)
+        self.char = ""
 
     def sliderCallback(self, sender):
         self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
         UpdateCurrentGlyphView()
+
+    def scaleCallback(self, sender):
+        self.RCJKI.drawer.refGlyphScale = [self.w.sliders.scaleX.get()/100, self.w.sliders.scaleY.get()/100]  
+        UpdateCurrentGlyphView()        
 
     def filterCallback(self, sender):
         self.filter = sender.get()
@@ -255,11 +270,20 @@ class CharacterWindow:
         if not sel:
             return
         char = sender.get()[sel[0]]
-        self.w.sliders.x.set(0)
-        self.w.sliders.y.set(0)
+        if char != self.char:
+            self.w.sliders.x.set(0)
+            self.w.sliders.y.set(0)
+            self.RCJKI.drawer.refGlyphPos = [0, 0]
+
+            self.w.sliders.scaleX.set(100)
+            self.w.sliders.scaleY.set(100)
+            self.RCJKI.drawer.refGlyphScale = [1, 1]  
+            self.char = char
+
         if self.filter in [0, 3]:
             if files.unicodeName(char) in self.RCJKI.currentFont.characterGlyphSet:
                 self.w.previewCheckBox.show(True)
+        UpdateCurrentGlyphView()
 
     def charactersListDoubleClickCallback(self, sender):
         sel = sender.getSelection()
@@ -351,7 +375,7 @@ class ComponentWindow():
         self.w.close()
 
     def setUI(self):
-        char = chr(int(self.RCJKI.currentGlyph.name[3:], 16))
+        char = chr(self.RCJKI.currentGlyph.unicode)
         if char in self.RCJKI.dataBase:
             self.w.componentList.set(self.RCJKI.dataBase[char])
         self.w.char.set(char)
@@ -538,7 +562,8 @@ class RoboCJKView(BaseWindowController):
         self.w.duplicateAtomicElement = ImageButton(
             (190, 350, 20, 20),
             imagePath = duplicateGlyphImagePath,
-            bordered = False
+            bordered = False,
+            callback = self.duplicateAtomicElementCallback
             )
         self.w.duplicateAtomicElement.enable(False)
         self.w.newAtomicElement = Button(
@@ -590,7 +615,8 @@ class RoboCJKView(BaseWindowController):
         self.w.duplicateDeepComponent = ImageButton(
             (390, 350, 20, 20),
             imagePath = duplicateGlyphImagePath,
-            bordered = False
+            bordered = False,
+            callback = self.duplicateDeepComponentCallback
             )
         self.w.duplicateDeepComponent.enable(False)
         self.w.newDeepComponent = Button(
@@ -647,7 +673,8 @@ class RoboCJKView(BaseWindowController):
         self.w.duplicateCharacterGlyph = ImageButton(
             (590, 350, 20, 20),
             imagePath = duplicateGlyphImagePath,
-            bordered = False
+            bordered = False,
+            callback = self.duplicateCharacterGlyphCallback
             )
         self.w.duplicateCharacterGlyph.enable(False)
         self.w.newCharacterGlyph = Button(
@@ -1127,12 +1154,75 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
+    def duplicateAtomicElementCallback(self, sender):
+        newGlyphName = self._duplicateGlyph(self.w.atomicElement, self.RCJKI.currentFont.atomicElementSet)
+        if newGlyphName:
+            # self.prevGlyphName = newGlyphName
+            index = self.currentFont.atomicElementSet.index(newGlyphName)
+            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.atomicElement.setSelection([index])
+
+    def duplicateDeepComponentCallback(self, sender):
+        newGlyphName = self._duplicateGlyph(self.w.deepComponent, self.RCJKI.currentFont.deepComponentSet)
+        if newGlyphName:
+            # self.prevGlyphName = newGlyphName
+            index = self.currentFont.deepComponentSet.index(newGlyphName)
+            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            self.w.deepComponent.setSelection([index])
+
+    def duplicateCharacterGlyphCallback(self, sender):
+        newGlyphName = self._duplicateGlyph(self.w.characterGlyph, self.RCJKI.currentFont.characterGlyphSet)
+        if newGlyphName:
+            # self.prevGlyphName = newGlyphName
+            index = self.currentFont.characterGlyphSet.index(newGlyphName)
+            self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
+            self.w.characterGlyph.setSelection([index])
+
+    def _duplicateGlyph(self, UIList, glyphset):
+        sel = UIList.getSelection()
+        if not sel: return False
+        glyphName = UIList[sel[0]]
+        if UIList == self.w.characterGlyph:
+            glyphName = glyphName["name"]
+        glyph = self.currentFont[glyphName]
+        user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(glyph)
+        glyphtype = glyph.type
+        if user != self.RCJKI.currentFont.locker._username:
+            PostBannerNotification(
+                'Impossible', "You must lock the glyph before"
+                )
+            return False
+        glyphSet = glyphset
+        message = f"Duplicate '{glyphName}' as:"
+        i = 0
+        while True:
+            if glyphtype == "deepComponent":
+                newName = "%s%s"%(glyphName[:-2], str(i).zfill(2))    
+            else:
+                newName = "%s.alt%s"%(glyphName, str(i).zfill(2))
+            if newName not in glyphSet:
+                break
+            i += 1
+        newGlyphName = AskString(message, value = newName, title = "Duplicate Glyph")
+        if newGlyphName is None: return False
+        if newGlyphName in glyphset: 
+            PostBannerNotification(
+                'Impossible', "'%s' already exist"%newGlyphName
+                )
+            return False
+        self.RCJKI.currentFont.duplicateGlyph(glyphName, newGlyphName)
+        self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[newGlyphName]])
+        return newGlyphName
+
     def removeGlyph(self, UIList, glyphset, glyphTypeImpacted):
         sel = UIList.getSelection()
         if not sel: return False
         glyphName = UIList[sel[0]]
         user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
         if user != self.RCJKI.currentFont.locker._username:
+            PostBannerNotification(
+                'Impossible', "You must lock the glyph before"
+                )
             return False
         glyphType = self.RCJKI.currentFont[glyphName].type
         GlyphsthatUse = set()
@@ -1203,6 +1293,9 @@ class RoboCJKView(BaseWindowController):
         glyphName = self.w.characterGlyph[sel[0]]["name"]
         user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
         if user != self.RCJKI.currentFont.locker._username:
+            PostBannerNotification(
+                'Impossible', "You must lock the glyph before"
+                )
             return
         glyphType = self.RCJKI.currentFont[glyphName].type
         GlyphsthatUse = set()

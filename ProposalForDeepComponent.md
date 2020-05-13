@@ -94,11 +94,11 @@ example:
 <aevr>
     <glyphVariations glyph="atomicElementGlyph">
     <tuple>
-        <coord axis="aeLONG" value="1000.0"/> # Named axis descriptor 
+        <coord axis="aeLONG" value="1.0"/> # Named axis descriptor 
         <delta/> # List of deltas for the Atomic Element's contour points
     </tuple>
     <tuple>
-        <coord axis="aeTHCK" value="167.0"/> # Named axis descriptor 
+        <coord axis="aeTHCK" value="0.0"/> # Named axis descriptor 
         <delta/> # List of deltas for the Atomic Element's contour points
     </tuple>
 </aevr>
@@ -109,16 +109,10 @@ The axes definition of AE (its design space) could be stored in an ‘atomic-ele
 example:
 ```
 <aeva>
-    <Axis>
-        <AxisTag>aeLONG</AxisTag>
-        <MinValue>10.0</MinValue>
-        <MaxValue>1000.0</MaxValue>
-    </Axis>
-    <Axis>
-        <AxisTag>aeTHCK</AxisTag>
-        <MinValue>53.0</MinValue>
-        <MaxValue>167.0</MaxValue>
-    </Axis>
+    <axes glyph="atomicElementGlyph"> 
+        <axis name="aeLONG" minValue="10.0" maxValue="1000.0"/>
+        <axis name="aeTHCK" minValue="53.0" maxValue="167.0"/>
+    </axes>
 </aeva>
 ```
 
