@@ -22,9 +22,12 @@ from utils import interpolation, decorators
 reload(decorators)
 glyphUndo = decorators.glyphUndo
 reload(interpolation)
-from models import deepComponent
+from models import deepComponent, component
+reload(component)
 import copy
 # reload(deepComponent)
+
+GlyphComponentsNamed = component.GlyphComponentsNamed
 
 def compute(func):
     def wrapper(self, *args, **kwargs):
@@ -32,6 +35,7 @@ def compute(func):
         self.computeDeepComponents()
         self.computeDeepComponentsPreview()
     return wrapper
+
 
 class Glyph(RGlyph):
 
@@ -197,6 +201,6 @@ class Glyph(RGlyph):
                     # ae[0].round()
             deepComponents.append({dc['name']: (dc['coord'], atomicInstancesPreview)})
             _lib.append(dc)
-        g._deepComponents = _lib
+        g._deepComponents = GlyphComponentsNamed(_lib)
         return deepComponents
 

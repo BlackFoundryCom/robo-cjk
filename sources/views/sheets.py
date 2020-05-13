@@ -84,7 +84,7 @@ class SelectLayerSheet():
     def addLayer(self, sender):
         newAxisName = self.parent.sheet.newAxisNameEditText.get()
         newLayerName = self.parent.sheet.layerList.get()[self.parent.sheet.layerList.getSelection()[0]]
-        if newAxisName in self.RCJKI.currentGlyph._glyphVariations.keys():
+        if newAxisName in self.RCJKI.currentGlyph._glyphVariations.axes:
             PostBannerNotification('Impossible', "Layer name already exist")
             return
         self.RCJKI.currentGlyph.addGlyphVariation(newAxisName, newLayerName)
@@ -191,7 +191,7 @@ class SelectFontVariationSheet():
         self.view = view
         self.parent = CurrentGlyphWindow()
         self.parent.sheet = Sheet((300, 40), self.parent.w)
-        l = [axis for axis in self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', []) if axis not in self.RCJKI.currentGlyph.lib['robocjk.characterGlyph.glyphVariations'].keys()]
+        l = [axis for axis in self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', []) if axis not in self.RCJKI.currentGlyph._glyphVariations.axes]
         if not l: l=[""]
         popupbuttonlist = PopUpButtonListCell(l)
         self.parent.sheet.fontVariationsList = List((0, 0, -0, 20), 

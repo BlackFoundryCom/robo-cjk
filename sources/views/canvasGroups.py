@@ -363,7 +363,7 @@ class DCCG_View(CanvasGroup):
                     
                     self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
                     self.RCJKI.currentGlyph.selectedSourceAxis = name
-            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.keys()
+            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
             l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
             sender.set(l)
             sender.setSelection(sel)
@@ -377,7 +377,7 @@ class DCCG_View(CanvasGroup):
         if self.RCJKI.isDeepComponent:
             l = 0
             name = files.normalizeCode(files.int_to_column_id(l), 4)
-            while name in self.RCJKI.currentGlyph._glyphVariations.keys():
+            while name in self.RCJKI.currentGlyph._glyphVariations.axes:
                 l += 1
                 name = files.normalizeCode(files.int_to_column_id(l), 4)
 
@@ -404,7 +404,7 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.selectedElement = []
             self.RCJKI.currentGlyph.selectedSourceAxis = None
             self.sourcesList.setSelection([0])
-            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.keys()
+            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
             l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
             self.RCJKI.currentGlyph.sourcesList = l
             self.sourcesList.set(l)

@@ -407,9 +407,9 @@ class RoboCJKController(object):
 
     @refresh
     def mouseUp(self, info):
-        if self.transformationToolIsActiv and self.currentGlyph.selectedElement: return
         if self.isAtomic:
             return
+        if self.transformationToolIsActiv and self.currentGlyph.selectedElement: return
         try: x, y = info['point'].x, info['point'].y
         except: return
         self.currentViewSliderList.set([])
@@ -571,11 +571,11 @@ class RoboCJKController(object):
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.keys()]
+                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.axes]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.keys()]
+                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.axes]
 
         self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l

@@ -137,7 +137,7 @@ class GlyphUsingDC(Group):
         for name in self.c.RCJKI.currentFont.characterGlyphSet:
             glyph = self.c.RCJKI.currentFont[name]
             for dc in glyph._deepComponents:
-                if code in dc["name"]:
+                if code in dc.name:
                     characters.append(name)
                     break
         return characters
@@ -182,7 +182,7 @@ class DCUsingAE(Group):
         for name in self.c.RCJKI.currentFont.deepComponentSet:
             glyph = self.c.RCJKI.currentFont[name]
             for dc in glyph._atomicElements:
-                if aename == dc["name"]:
+                if aename == dc.name:
                     deepComponents.append(name)
                     break
         return deepComponents

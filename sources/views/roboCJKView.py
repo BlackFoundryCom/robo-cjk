@@ -1229,7 +1229,7 @@ class RoboCJKView(BaseWindowController):
                 elif glyphType == 'deepComponent':
                     d =  glyph._deepComponents
                 for ae in d:
-                    if ae["name"] == glyphName:
+                    if ae.name == glyphName:
                         GlyphsthatUse.add(name)
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
@@ -1394,7 +1394,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
                             )
         self.deepComponents = self.refGlyph._deepComponents
         self.glyphVariations = self.refGlyph._glyphVariations
-        self.deepComponentsName = [chr(int(dc["name"].split("_")[1], 16)) for dc in self.deepComponents]
+        self.deepComponentsName = [chr(int(dc.name.split("_")[1], 16)) for dc in self.deepComponents]
         self.w.deepComponentList.set(self.deepComponentsName)
 
     @updateView
@@ -1405,12 +1405,13 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             return
         self.index = sel[0]
         dc = copy.deepcopy(self.deepComponents[self.index])
-        self.RCJKI.currentGlyph.addDeepComponentNamed(dc["name"], dc)
+        self.RCJKI.currentGlyph.addDeepComponentNamed(dc.name, dc)
 
         for variation in self.RCJKI.currentGlyph._glyphVariations:
             if variation in self.glyphVariations:
                 dc = copy.deepcopy(self.glyphVariations[variation][self.index])
-                self.RCJKI.currentGlyph._glyphVariations[variation][-1] = dc
+                print(self.RCJKI.currentGlyph._glyphVariations[variation])
+                self.RCJKI.currentGlyph._glyphVariations[variation][-1].set(dc._todict())
 
         self.RCJKI.updateDeepComponent()
 
