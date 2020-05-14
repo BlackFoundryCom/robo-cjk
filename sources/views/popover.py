@@ -84,7 +84,7 @@ def resetDict(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
         lib = self.getLib()
-        lib[self.glyph.selectedElement[0]] = self.infos
+        lib[self.glyph.selectedElement[0]].set(self.infos)
     return wrapper
 
 
