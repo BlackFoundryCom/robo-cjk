@@ -152,7 +152,7 @@ class Glyph(RGlyph):
             for axisName in atomicElement['coord'].keys():
                 # if self.selected == (i, atomicElement['name']) and self.sliderName == axisName and preview == False and self.sliderValue:
                 #     atomicElement['coord'][axisName] = float(self.sliderValue)
-                layersInfos[atomicVariations[axisName]] = atomicElement['coord'][axisName]
+                layersInfos[str(atomicVariations[axisName])] = atomicElement['coord'][axisName]
                 
             atomicInstanceGlyph = interpolation.deepolation(
                 RGlyph(), 

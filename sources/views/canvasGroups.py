@@ -83,9 +83,12 @@ class AtomicView(CanvasGroup):
             (0, -120, -0, -20), 
             [],
             columnDescriptions = [
-                    {"title": "Axis", "editable": False, "width": 100},
-                    {"title": "Layer", "editable": False, "width": 100},
-                    {"title": "PreviewValue", "cell": slider}],
+                    {"title": "Axis", "editable": False, "width": 80},
+                    {"title": "Layer", "editable": False, "width": 80},
+                    {"title": "MinValue", "editable": True, "width": 40},
+                    {"title": "PreviewValue", "cell": slider},
+                    {"title": "MaxValue", "editable": True, "width": 40},
+                    ],
             showColumnTitles = False,
             editCallback = self.atomicElementsListEditCallback,
             selectionCallback = self.atomicElementsListSelectionCallback,
@@ -164,10 +167,17 @@ class AtomicView(CanvasGroup):
             if i != sel[0]:
                 newList.append(e)
             else:
+                minValue = float(e["MinValue"])
+                maxValue = float(e["MaxValue"])
+                # print(value, minValue, maxValue)
+                # previewValue = (value - minValue) / (maxValue - minValue + 1e-10)
+                # print(previewValue)
                 newList.append({
                     "Axis":e["Axis"],
                     "Layer":e["Layer"],
-                    "PreviewValue":value
+                    "MinValue":e["MinValue"],
+                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
+                    "MaxValue":e["MaxValue"],
                     })
             self.atomicElementsList.set(newList)
 
@@ -179,7 +189,19 @@ class AtomicView(CanvasGroup):
     def atomicElementsListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        self.atomicElementsSliderValue.set(round(sender.get()[sel[0]]['PreviewValue'], 3))
+        
+        values = sender.get()[sel[0]]
+        axis = values["Axis"]
+        minValue = float(values["MinValue"])
+        maxValue = float(values["MaxValue"])
+
+        sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
+        # UIValue = minValue + (maxValue-minValue)*sliderValue
+        self.atomicElementsSliderValue.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
+
+
+        self.RCJKI.currentGlyph._glyphVariations[axis].minValue = minValue
+        self.RCJKI.currentGlyph._glyphVariations[axis].maxValue = maxValue
         self.computeCurrentGlyph(sender)
 
     def computeCurrentGlyph(self, sender):
@@ -434,28 +456,39 @@ class DCCG_View(CanvasGroup):
         except:
             return
         newList = []
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            minValue, maxValue = self.RCJKI.currentGlyph.getAtomicElementMinMaxValue(self.slidersList[sel[0]]['Axis'])
         for i, e in enumerate(self.slidersList.get()):
             if i != sel[0]:
                 newList.append(e)
             else:
-                newList.append({
-                    "Axis":e["Axis"],
-                    "PreviewValue":value
-                    })
+                if self.RCJKI.currentGlyph.type == "deepComponent":
+                    newList.append({
+                        "Axis":e["Axis"],
+                        "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue)
+                        })
+                else:
+                    newList.append({
+                        "Axis":e["Axis"],
+                        "PreviewValue":value
+                        })
             self.slidersList.set(newList)
 
         self.slidersList.setSelection(sel)
         self.setSliderValue2Glyph(self.slidersList)
         self.RCJKI.updateDeepComponent()
         
-
     @lockedProtect
     def slidersListEditCallback(self, sender):
         sel = sender.getSelection()
-        if not sel: return
-
+        if not sel: return         
         self.setSliderValue2Glyph(sender)
-        self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+        # self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            minValue, maxValue = self.RCJKI.currentGlyph.getAtomicElementMinMaxValue(self.slidersList[sender.getSelection()[0]]['Axis'])
+            self.sliderSliderValue.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
+        else:
+            self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
         self.RCJKI.updateDeepComponent()
 
     def setSliderValue2Glyph(self, sender):
@@ -492,9 +525,14 @@ class GlyphPreviewCanvas(CanvasGroup):
         if not self.glyphName: return
         self.glyph = self.RCJKI.currentFont[self.glyphName]
         d = self.glyph._glyphVariations
-        self.glyph.sourcesList = [
-            {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
-            ]
+        if self.glyph.type ==  "atomicElement":
+            self.glyph.sourcesList = [
+                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0.5} for axisName, layer in  d.items()
+                ]
+        else:
+            self.glyph.sourcesList = [
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+                ]
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)

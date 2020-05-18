@@ -177,10 +177,13 @@ class EditPopoverAlignTool(EditPopover):
         editTextAesthetic(self.popover.scaleyEditText)
 
         y+=20
-
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            d = [dict(layer = k, value = round(self.RCJKI.userValue(v, *self.RCJKI.currentGlyph.getAtomicElementMinMaxValue(k)), 3)) for k, v in self.infos["coord"].items()]
+        else:
+            d = [dict(layer = k, value = v) for k, v in self.infos["coord"].items()]
         self.popover.coord = List(
             (10,y, -10, -30),
-            [dict(layer = k, value = v) for k, v in self.infos["coord"].items()],
+            d,
             columnDescriptions = [
                 {"title": "layer", "editable" : False},
                 {"title": "value"},
@@ -288,5 +291,8 @@ class EditPopoverAlignTool(EditPopover):
     def coordEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        d = {e["layer"]:float(str(e["value"]).replace(',','.')) for e in sender.get()}
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            d = {e["layer"]:float(str(self.RCJKI.systemValue(float(e["value"]), *self.RCJKI.currentGlyph.getAtomicElementMinMaxValue(e["layer"]))).replace(',','.')) for e in sender.get()}
+        else:
+            d = {e["layer"]:float(str(e["value"]).replace(',','.')) for e in sender.get()}
         self.infos["coord"] = d

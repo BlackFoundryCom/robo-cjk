@@ -235,9 +235,14 @@ class RoboCJKController(object):
             self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
-        self.currentGlyph.sourcesList = [
-            {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
-            ]
+        if self.currentGlyph.type == "atomicElement":
+            self.currentGlyph.sourcesList = [
+                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0.5, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
+                ]
+        else:
+            self.currentGlyph.sourcesList = [
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+                ]
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
@@ -547,10 +552,12 @@ class RoboCJKController(object):
 
     def removeAtomicElement(self, sender):
         self.currentGlyph.removeAtomicElementAtIndex()
+        self.currentViewSliderList.set([])
         self.updateDeepComponent()
 
     def removeDeepComponent(self, sender):
         self.currentGlyph.removeDeepComponentAtIndexToGlyph()
+        self.currentViewSliderList.set([])
         self.updateDeepComponent()
 
     def importDeepComponentFromAnotherCharacterGlyph(self, sender):
@@ -559,15 +566,18 @@ class RoboCJKController(object):
     # def addLayerToAtomicElement(self, sender):
     #     availableLayers = [l for l in self.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
     #     if [l for l in self.currentGlyph._RGlyph.layers if l.name != 'foreground']:
-    #         sheets.SelectLayerSheet(self, availableLayers)
+    #         sheets.SelectLayerSheet(self, availableLayers)s
 
     @lockedProtect
     @refresh
     def updateListInterface(self):
         l = []
         if self.isAtomic:
-            for axisName, layerName in self.currentGlyph._glyphVariations.items():
-                l.append({"Axis":axisName, "Layer":layerName, "PreviewValue":.5})
+            for axisName, layer in self.currentGlyph._glyphVariations.items():
+                print('-----')
+                print('-----', layer.minValue, layer.maxValue)
+                print('-----')
+                l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":.5, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
@@ -580,3 +590,8 @@ class RoboCJKController(object):
         self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l
 
+    def userValue(self, value, minValue, maxValue):
+        return minValue + (maxValue - minValue) * value
+
+    def systemValue(self, value, minValue, maxValue):
+        return (value - minValue) / (maxValue - minValue + 1e-10)

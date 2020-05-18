@@ -60,6 +60,28 @@ class DictClass:
             return fallback
         return getattr(self, item)
 
+class Values(DictClass):
+
+    # __slots__ = "value", "minValue", "maxValue"
+
+    def __init__(self, value, minValue:int = 0, maxValue:int = 1):
+        super().__init__()
+        self.value = value
+        self.minValue = minValue
+        self.maxValue = maxValue
+
+    def __call__(self, typ = float):
+        return typ(self.value)
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    def _toDict(self):
+        return {x:getattr(self, x) for x in vars(self)}
+
 class Coord(DictClass):
 
     def __init__(self, **kwargs):

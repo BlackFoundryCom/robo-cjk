@@ -117,10 +117,16 @@ class DeepComponent(Glyph):
 
     def updateAtomicElementCoord(self, axisName, value):
         if self.selectedSourceAxis is not None:
-            self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]]['coord'][axisName]=value
+            self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]]['coord'][axisName] = value
             self._glyphVariations
         else:
-            self._atomicElements[self.selectedElement[0]]['coord'][axisName]=value
+            self._atomicElements[self.selectedElement[0]]['coord'][axisName] = value
+
+    def getAtomicElementMinMaxValue(self, axisName):
+        if not self.selectedElement: return
+        selectedAtomicElementName = self._atomicElements[self.selectedElement[0]].name
+        atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
+        return atomicElement.minValue, atomicElement.maxValue
 
     def addAtomicElementNamed(self, atomicElementName, items = False):
         if not items:
@@ -292,7 +298,7 @@ class DeepComponent(Glyph):
                             _atomicElement['coord'][atomicAxisName] = 0
                         # if self.selectedElement == (i, masterAtomicElement['name']) and self.sliderName == atomicAxisName  and preview == False and self.sliderValue:
                         #     _atomicElement['coord'][atomicAxisName] = float(self.sliderValue)
-                        layersInfos[atomicLayerName] = _atomicElement['coord'][atomicAxisName]
+                        layersInfos[str(atomicLayerName)] = _atomicElement['coord'][atomicAxisName]
         
                     atomicElementGlyph = self.currentFont[masterAtomicElement['name']].foreground#getLayer('foreground')
                     atomicSelectedSourceInstanceGlyph = interpolation.deepolation(

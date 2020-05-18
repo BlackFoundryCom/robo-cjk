@@ -32,18 +32,41 @@ DictClass = component.DictClass
 
 glyphVariationsKey = 'robocjk.atomicElement.glyphVariations'
 
+class LayerInfo(DictClass):
+
+    def __init__(self, layerName:str, minValue:int = 0, maxValue:int = 1):
+        super().__init__()
+        self.layerName = layerName
+        self.minValue = minValue
+        self.maxValue = maxValue
+
+    def __str__(self):
+        return str(self.layerName)
+
+    def __repr__(self):
+        return str(self)
+
+    def _toDict(self):
+        return {x:getattr(self, x) for x in vars(self)}
+
 class GlyphVariations(DictClass):
     
     def __init__(self, **kwargs):
         super().__init__()
         for k, v in kwargs.items():
-            setattr(self, k, v)
+            if isinstance(v, str):
+                setattr(self, k, LayerInfo(v))
+            else:
+                setattr(self, k, LayerInfo(**v))
 
     def addAxis(self, axisName: str, layerName: str):
         """
         Add new axis 
         """
-        setattr(self, axisName, layerName)
+        if isinstance(layerName, str):
+            setattr(self, axisName, LayerInfo(layerName))
+        else:
+            setattr(self, axisName, LayerInfo(**layerName))
 
     def removeAxis(self, axisName: str):
         """
@@ -60,6 +83,9 @@ class GlyphVariations(DictClass):
     @property
     def layers(self):
         return self.values()
+
+    def _toDict(self):
+        return {x:getattr(self, x)._toDict() for x in vars(self)}
 
 class AtomicElement(Glyph):
     def __init__(self, name):
@@ -97,7 +123,6 @@ class AtomicElement(Glyph):
             g.addVariationAxisToAtomicElementNamed(newAxisName, self.name)
 
     def removeGlyphVariation(self, axisName):
-        # del self._glyphVariations[axisName]
         self._glyphVariations.removeAxis(axisName)
 
         ################ DEPENDENCY WITH DEEPCOMPONENTS ################
@@ -112,18 +137,21 @@ class AtomicElement(Glyph):
     def computeDeepComponentsPreview(self):
         layersInfos = {}
         for d in self.sourcesList:
-            layer = self._glyphVariations[d['Axis']]
+            # layer = str(self._glyphVariations[d['Axis']])
+            layer = self._glyphVariations[d['Axis']].layerName
             value = d['PreviewValue']
             layersInfos[layer] = value
-
         self.preview = interpolation.deepolation(
             RGlyph(), 
             self.foreground, 
             layersInfos
             )
+        print("-----")
+        print(self.preview)
+        print("-----")
 
     def save(self):
         self.lib.clear()
         lib = RLib()
-        lib[glyphVariationsKey] = self._glyphVariations.__dict__
+        lib[glyphVariationsKey] = self._glyphVariations._toDict()
         self.lib.update(lib)
