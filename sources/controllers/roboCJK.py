@@ -231,7 +231,7 @@ class RoboCJKController(object):
         glyph = notification['glyph']
         if glyph is None: return
         if glyph.name != self.currentGlyph.name:
-            self.currentFont.locker.unlock(self.currentGlyph)
+            # self.currentFont.locker.unlock(self.currentGlyph)
             self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
