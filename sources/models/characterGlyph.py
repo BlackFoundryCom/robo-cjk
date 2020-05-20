@@ -147,8 +147,8 @@ class CharacterGlyph(Glyph):
             d = items
             d.name = deepComponentName
 
-        self._deepComponents.addComponent(d)
-        self._glyphVariations.addComponent(d)
+        self._deepComponents.addDeepComponent(d)
+        self._glyphVariations.addDeepComponent(d)
 
         self.computeDeepComponentsPreview()
         self.computeDeepComponents()
@@ -307,8 +307,8 @@ class CharacterGlyph(Glyph):
     @glyphAddRemoveUndo
     def removeDeepComponentAtIndexToGlyph(self):
         if not self.selectedElement: return
-        self._deepComponents.removeComponents(self.selectedElement)
-        self._glyphVariations.removeComponents(self.selectedElement)
+        self._deepComponents.removeDeepComponents(self.selectedElement)
+        self._glyphVariations.removeDeepComponents(self.selectedElement)
         self.selectedElement = []
 
     def save(self):

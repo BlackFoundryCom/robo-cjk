@@ -32,6 +32,7 @@ Glyph = glyph.Glyph
 DeepComponentNamed = component.DeepComponentNamed
 DeepComponents = component.DeepComponents
 VariationGlyphs = component.VariationGlyphs
+VariationGlyphsInfos = component.VariationGlyphsInfos
 
 # Deprecated keys
 atomicElementsKey = 'robocjk.deepComponent.atomicElements'
@@ -146,13 +147,13 @@ class DeepComponent(Glyph):
             d = items
             d.name = atomicElementName
 
-        self._atomicElements.addComponent(d)
-        self._glyphVariations.addComponent(d)
+        self._atomicElements.addDeepComponent(d)
+        self._glyphVariations.addDeepComponent(d)
 
     def removeAtomicElementAtIndex(self):
         if not self.selectedElement: return
-        self._glyphVariations.removeComponents(self.selectedElement)
-        self._atomicElements.removeComponents(self.selectedElement)
+        self._glyphVariations.removeDeepComponents(self.selectedElement)
+        self._atomicElements.removeDeepComponents(self.selectedElement)
         self.selectedElement = []
         
     def addVariationToGlyph(self, name):
@@ -290,7 +291,7 @@ class DeepComponent(Glyph):
             _lib[deepComponentAxisName] = deepComponentVariation
             
             if deepComponentAxisName == selectedSourceAxis:
-                _deepComponentVariation = []
+                _deepComponentVariation = VariationGlyphsInfos()
                 for i, sourceAtomicElements in enumerate(deepComponentVariation):
                     _atomicElement = copy.deepcopy(sourceAtomicElements)
                     _atomicElement['coord'] = {}
@@ -322,11 +323,10 @@ class DeepComponent(Glyph):
                     # atomicSelectedSourceInstanceGlyph.round()
                     atomicSelectedSourceInstances.append({masterAtomicElement['name']:(atomicSelectedSourceInstanceGlyph, deepComponentVariation, deepComponentVariation[i]['coord'])})
                 
-                    _deepComponentVariation.append(_atomicElement)   
+                    _deepComponentVariation.initContent(_atomicElement)   
                                  
                 _lib[deepComponentAxisName] = _deepComponentVariation 
-
-        self._glyphVariations = VariationGlyphs(_lib)
+        # self._glyphVariations = VariationGlyphs(_lib)
         return atomicSelectedSourceInstances
 
     def save(self):

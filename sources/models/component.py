@@ -186,20 +186,20 @@ class DeepComponents:
         """
         self._deepComponents.append(DeepComponentNamed(name, **items))
 
-    def removeComponent(self, index: int):
+    def removeDeepComponent(self, index: int):
         """
         Remove deep component at an index
         """
         if index < len(self._deepComponents):
             self._deepComponents.pop(index)
 
-    def removeComponents(self, indexes: list):
+    def removeDeepComponents(self, indexes: list):
         """
         Remove deep components at indexes
         """
         self._deepComponents = [x for i, x in enumerate(self._deepComponents) if i not in indexes]
 
-    def addComponent(self, deepComponent):
+    def addDeepComponent(self, deepComponent):
         """
         Add new deep component
         """
@@ -210,7 +210,7 @@ class DeepComponents:
         This function is made for backward compatibility
         Add new deep component 
         """
-        self.addComponent(item)
+        self.addDeepComponent(item)
 
     def __repr__(self):
         return str(self._deepComponents)
@@ -391,7 +391,7 @@ class VariationGlyphs(DictClass):
             else:
                 setattr(self, k, VariationGlyphsInfos(v)) # fallback for backward compatibility
 
-    def addAxis(self, axisName: str, deepComponents:list = [], layerName:str = "", minValue:float = 0.0, maxValue:float = 1.1):
+    def addAxis(self, axisName: str, deepComponents:list = [], layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0):
         """
         Add new axis with no named deep components
         """
@@ -413,7 +413,14 @@ class VariationGlyphs(DictClass):
         Add a new component to the whole axes
         """
         for x in vars(self):
-            getattr(self, x).addDeepComponent(component._unnamed())
+            getattr(self, x).addDeepComponent(deepComponent._unnamed())
+
+    def removeDeepComponents(self, indexes: list):
+        """
+        Remove components variation at indexes
+        """
+        for x in vars(self):
+            getattr(self, x).removeDeepComponents(indexes)
 
     def getDict(self):
         """
@@ -427,13 +434,6 @@ class VariationGlyphs(DictClass):
         Return a list of all the variations axes
         """
         return self.keys()
-
-    def removeDeepComponents(self, indexes: list):
-        """
-        Remove components variation at indexes
-        """
-        for x in vars(self):
-            getattr(self, x).removeDeepComponents(indexes)
 
 if __name__ == "__main__":
     deepComponentTest = DeepComponents(
