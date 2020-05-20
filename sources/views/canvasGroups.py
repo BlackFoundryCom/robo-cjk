@@ -324,9 +324,8 @@ class DCCG_View(CanvasGroup):
         self.slidersList.set([])
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
-
         self.RCJKI.updateDeepComponent()
-
+        
     @lockedProtect
     def sourcesListSelectionCallback(self, sender):
         sel = self.sourcesList.getSelection()

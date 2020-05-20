@@ -147,13 +147,17 @@ class Glyph(RGlyph):
             
             # aeGlyph = self.getParent()[atomicElement['name']]
             atomicElementGlyph = self.currentFont[atomicElement['name']].foreground
-            atomicVariations = self.currentFont[atomicElement['name']]._glyphVariations
+            variationGlyph = self.currentFont[atomicElement['name']]._glyphVariations
             
             for axisName in atomicElement['coord'].keys():
                 # if self.selected == (i, atomicElement['name']) and self.sliderName == axisName and preview == False and self.sliderValue:
                 #     atomicElement['coord'][axisName] = float(self.sliderValue)
-                layersInfos[atomicVariations[axisName].layerName] = atomicElement['coord'][axisName]
+                layersInfos[str(variationGlyph[axisName])] = atomicElement['coord'][axisName]
                 
+
+            # print(layersInfos)
+            # print(atomicElementGlyph)
+            print(layersInfos)
             atomicInstanceGlyph = interpolation.deepolation(
                 RGlyph(), 
                 atomicElementGlyph, 
@@ -164,7 +168,7 @@ class Glyph(RGlyph):
             atomicInstanceGlyph.rotateBy(atomicElement['rotation'])
             atomicInstanceGlyph.moveBy((atomicElement['x'], atomicElement['y']))  
             # atomicInstanceGlyph.round()
-            atomicInstances.append({atomicElement['name']:(atomicInstanceGlyph, atomicVariations, atomicElement['coord'])})
+            atomicInstances.append({atomicElement['name']:(atomicInstanceGlyph, variationGlyph, atomicElement['coord'])})
         return atomicInstances
 
 

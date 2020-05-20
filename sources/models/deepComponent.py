@@ -64,8 +64,12 @@ class DeepComponent(Glyph):
         return self._glyphVariations
     
     def _initWithLib(self):
-        self._atomicElements = DeepComponents(self._RGlyph.lib[atomicElementsKey])
-        self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
+        if variationGlyphsKey not in self._RGlyph.lib.keys():
+            self._atomicElements = DeepComponents(self._RGlyph.lib[atomicElementsKey])
+            self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
+        else:
+            self._atomicElements = DeepComponents(self._RGlyph.lib[deepComponentsKey])
+            self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey])
 
     @property
     def atomicInstancesGlyphs(self) -> "Index, AtomicInstanceGlyph":
@@ -296,14 +300,14 @@ class DeepComponent(Glyph):
                     layersInfos = {}
                     atomicVariations = self.currentFont[masterAtomicElement['name']]._glyphVariations
             
-                    for atomicAxisName, atomicLayerName in atomicVariations.items():
+                    for atomicAxisName, layerInfos in atomicVariations.items():
                         if atomicAxisName in deepComponentVariation[i]['coord']:
                             _atomicElement['coord'][atomicAxisName] = deepComponentVariation[i]['coord'][atomicAxisName]
                         else:
                             _atomicElement['coord'][atomicAxisName] = 0
                         # if self.selectedElement == (i, masterAtomicElement['name']) and self.sliderName == atomicAxisName  and preview == False and self.sliderValue:
                         #     _atomicElement['coord'][atomicAxisName] = float(self.sliderValue)
-                        layersInfos[str(atomicLayerName)] = _atomicElement['coord'][atomicAxisName]
+                        layersInfos[layerInfos.layerName] = _atomicElement['coord'][atomicAxisName]
         
                     atomicElementGlyph = self.currentFont[masterAtomicElement['name']].foreground#getLayer('foreground')
                     atomicSelectedSourceInstanceGlyph = interpolation.deepolation(
@@ -330,4 +334,7 @@ class DeepComponent(Glyph):
         lib = RLib()
         lib[atomicElementsKey] = self._atomicElements.getList()
         lib[glyphVariationsKey] = self._glyphVariations.getDict()
+
+        lib[deepComponentsKey] = self._atomicElements.getList()
+        lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)

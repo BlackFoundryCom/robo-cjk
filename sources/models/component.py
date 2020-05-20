@@ -276,6 +276,12 @@ class VariationGlyphsInfos:
         self.layerName = layerName
         self.content = Content(**content)
 
+    def initContent(self, outlines = [], deepComponents = []):
+        """
+        Initialize the content with a given outlines and/or deep components
+        """
+        self.content = Content(outlines = outlines, deepComponents = deepComponents)
+
     def addDeepComponent(self, deepComponentInfos:dict = {}):
         """
         Add new deep Component
@@ -377,11 +383,13 @@ class VariationGlyphs(DictClass):
     def __init__(self, axes = {}):
         super().__init__()
         for k, v in axes.items():
-            if type(v) != dict:
-                # test for backward compatibility
-                setattr(self, k, VariationGlyphsInfos(v))
-            else:
+            if type(v) == list:
+                setattr(self, k, VariationGlyphsInfos())
+                getattr(self, k).initContent(deepComponents = v)# test for backward compatibility
+            elif type(v) == dict:
                 setattr(self, k, VariationGlyphsInfos(**v))
+            else:
+                setattr(self, k, VariationGlyphsInfos(v)) # fallback for backward compatibility
 
     def addAxis(self, axisName: str, deepComponents:list = [], layerName:str = "", minValue:float = 0.0, maxValue:float = 1.1):
         """
@@ -405,7 +413,7 @@ class VariationGlyphs(DictClass):
         Add a new component to the whole axes
         """
         for x in vars(self):
-            getattr(self, x).add(component._unnamed())
+            getattr(self, x).addDeepComponent(component._unnamed())
 
     def getDict(self):
         """

@@ -35,7 +35,7 @@ VariationGlyphs = component.VariationGlyphs
 import copy
 
 # Deprecated keys
-deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
+deepComponentsKeyOld = 'robocjk.characterGlyph.deepComponents'
 glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
 
 # Actual keys
@@ -78,11 +78,20 @@ class CharacterGlyph(Glyph):
     def _initWithLib(self, lib=None):
         try:
             if lib:
-                self._deepComponents = DeepComponents(lib[deepComponentsKey])      
-                self._glyphVariations = VariationGlyphs(lib[glyphVariationsKey])
+                if variationGlyphsKey not in lib.keys():
+                    self._deepComponents = DeepComponents(lib[deepComponentsKeyOld])      
+                    self._glyphVariations = VariationGlyphs(lib[glyphVariationsKey])
+                else:
+                    self._deepComponents = DeepComponents(lib[deepComponentsKey])      
+                    self._glyphVariations = VariationGlyphs(lib[variationGlyphsKey])
+
             else:
-                self._deepComponents = DeepComponents(self._RGlyph.lib[deepComponentsKey])      
-                self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
+                if variationGlyphsKey not in self._RGlyph.lib.keys(): 
+                    self._deepComponents = DeepComponents(self._RGlyph.lib[deepComponentsKeyOld])      
+                    self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
+                else:
+                    self._deepComponents = DeepComponents(self._RGlyph.lib[deepComponentsKey])      
+                    self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey])
         except:
             self._deepComponents = DeepComponents()
             self._glyphVariations = VariationGlyphs()
@@ -305,6 +314,9 @@ class CharacterGlyph(Glyph):
     def save(self):
         self.lib.clear()
         lib = RLib()
-        lib[deepComponentsKey] = self._deepComponents.getList()
+        lib[deepComponentsKeyOld] = self._deepComponents.getList()
         lib[glyphVariationsKey] = self._glyphVariations.getDict()
+
+        lib[deepComponentsKey] = self._deepComponents.getList()
+        lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)
