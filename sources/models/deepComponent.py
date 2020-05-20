@@ -29,19 +29,24 @@ glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph
 
-ComponentNamed = component.ComponentNamed
-GlyphComponentsNamed = component.GlyphComponentsNamed
-GlyphVariations = component.GlyphVariations
+DeepComponentNamed = component.DeepComponentNamed
+DeepComponents = component.DeepComponents
+VariationGlyphs = component.VariationGlyphs
 
+# Deprecated keys
 atomicElementsKey = 'robocjk.deepComponent.atomicElements'
 glyphVariationsKey = 'robocjk.deepComponent.glyphVariations'
+
+# Actual keys
+deepComponentsKey = 'robocjk.deepComponents'
+variationGlyphsKey = 'robocjk.variationGlyphs'
 
 
 class DeepComponent(Glyph):
     def __init__(self, name):
         super().__init__()
-        self._atomicElements = GlyphComponentsNamed()
-        self._glyphVariations = GlyphVariations()
+        self._atomicElements = DeepComponents()
+        self._glyphVariations = VariationGlyphs()
         self.selectedSourceAxis = None
         self.computedAtomicSelectedSourceInstances = []
         self.computedAtomicInstances = []
@@ -59,8 +64,8 @@ class DeepComponent(Glyph):
         return self._glyphVariations
     
     def _initWithLib(self):
-        self._atomicElements = GlyphComponentsNamed(self._RGlyph.lib[atomicElementsKey])
-        self._glyphVariations = GlyphVariations(self._RGlyph.lib[glyphVariationsKey])
+        self._atomicElements = DeepComponents(self._RGlyph.lib[atomicElementsKey])
+        self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
 
     @property
     def atomicInstancesGlyphs(self) -> "Index, AtomicInstanceGlyph":
@@ -130,7 +135,7 @@ class DeepComponent(Glyph):
 
     def addAtomicElementNamed(self, atomicElementName, items = False):
         if not items:
-            d = ComponentNamed(atomicElementName)
+            d = DeepComponentNamed(atomicElementName)
             for axis in self.currentFont[atomicElementName]._glyphVariations.axes:
                 d.coord.add(axis, 0)
         else:
@@ -266,8 +271,8 @@ class DeepComponent(Glyph):
             )
 
         previewGlyph = DeepComponent("PreviewGlyph")
-        previewGlyph._atomicElements = GlyphComponentsNamed(deepdeepolatedDeepComponent)
-        
+        previewGlyph._atomicElements = DeepComponents(deepdeepolatedDeepComponent)
+
         self.preview = self.generateDeepComponent(
             previewGlyph, 
             preview=True
@@ -317,7 +322,7 @@ class DeepComponent(Glyph):
                                  
                 _lib[deepComponentAxisName] = _deepComponentVariation 
 
-        self._glyphVariations = GlyphVariations(_lib)
+        self._glyphVariations = VariationGlyphs(_lib)
         return atomicSelectedSourceInstances
 
     def save(self):

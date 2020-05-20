@@ -27,7 +27,7 @@ reload(component)
 import copy
 # reload(deepComponent)
 
-GlyphComponentsNamed = component.GlyphComponentsNamed
+DeepComponents = component.DeepComponents
 
 def compute(func):
     def wrapper(self, *args, **kwargs):
@@ -152,7 +152,7 @@ class Glyph(RGlyph):
             for axisName in atomicElement['coord'].keys():
                 # if self.selected == (i, atomicElement['name']) and self.sliderName == axisName and preview == False and self.sliderValue:
                 #     atomicElement['coord'][axisName] = float(self.sliderValue)
-                layersInfos[str(atomicVariations[axisName])] = atomicElement['coord'][axisName]
+                layersInfos[atomicVariations[axisName].layerName] = atomicElement['coord'][axisName]
                 
             atomicInstanceGlyph = interpolation.deepolation(
                 RGlyph(), 
@@ -201,6 +201,6 @@ class Glyph(RGlyph):
                     # ae[0].round()
             deepComponents.append({dc['name']: (dc['coord'], atomicInstancesPreview)})
             _lib.append(dc)
-        g._deepComponents = GlyphComponentsNamed(_lib)
+        g._deepComponents = DeepComponents(_lib)
         return deepComponents
 

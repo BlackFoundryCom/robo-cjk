@@ -193,6 +193,7 @@ class Font():
                 fileName, 
                 "foreground"
                 )
+            # print("getglyph")
 
         if glyph.type in ["atomicElement", "characterGlyph"]:
             path = os.path.join(self.fontPath, glyph.type)
@@ -224,6 +225,9 @@ class Font():
                 fileName, 
                 "foreground"
                 )
+            # self[glyphName].save()
+            # self[glyphName]._RGlyph.lib.clear()
+            # self[glyphName]._RGlyph.lib.update(self[glyphName].lib)
 
         for glyphName in self.characterGlyphSet:
             fileName = files.userNameToFileName(glyphName)
@@ -232,6 +236,9 @@ class Font():
                 fileName, 
                 "foreground"
                 )
+            # self[glyphName].save()
+            # self[glyphName]._RGlyph.lib.clear()
+            # self[glyphName]._RGlyph.lib.update(self[glyphName].lib)
 
         for glyphName in self.atomicElementSet:
             fileName = files.userNameToFileName(glyphName)
@@ -240,7 +247,9 @@ class Font():
                 fileName, 
                 "foreground"
                 )
-
+            # self[glyphName].save()
+            # self[glyphName]._RGlyph.lib.clear()
+            # self[glyphName]._RGlyph.lib.update(self[glyphName].lib)
         # paths = [os.path.join(self.fontPath, 'atomicElement'), os.path.join(self.fontPath, 'characterGlyph')]
         glyphtypes = ["atomicElement", "characterGlyph"]
         for glyphtype in glyphtypes:
@@ -264,6 +273,7 @@ class Font():
                             layerfileName, 
                             layerName
                             )
+        self.save()
 
     def newGLIF(self, glyphType, glyphName):
         if glyphType == 'atomicElement':
@@ -305,7 +315,13 @@ class Font():
             glifPath = os.path.join(self.fontPath, glyph.type, layerName, "%s.glif"%fileName)
         tree = ET.parse(glifPath)
         root = tree.getroot()
+        # print("addglyph")
         self.insertGlyph(glyph, ET.tostring(root), layerName)
+        # print("insertglyph")
+        self[glyph.name].save()
+        self[glyph.name]._RGlyph.lib.clear()
+        self[glyph.name]._RGlyph.lib.update(self[glyph.name].lib)
+        # print("addglyph done")
 
     def insertGlyph(self, glyph, string, layerName):  
         if glyph is None: return
@@ -398,7 +414,7 @@ class Font():
     @gitCoverage(msg = 'font save')
     def save(self):
         self._RFont.save()
-
+    
         libPath = os.path.join(self.fontPath, 'fontLib.json')
         with open(libPath, "w") as file:
             lib = self._RFont.lib.asDict()
@@ -432,6 +448,28 @@ class Font():
                     files.makepath(path)
                     with open(path, "w", encoding = "utf-8") as file:
                         file.write(txt)
+
+        self._hanziExportUFO()
+
+    def _hanziExportUFO(self):
+        font = NewFont(familyName = "hanzi", styleName = "Regular", showUI = False)
+        for rglyph in self._RFont.getLayer('foreground'):
+            glyph = self[rglyph.name]
+            glyph.save()
+            glyphType = glyph.type
+            rglyph = glyph._RGlyph
+            rglyph.lib.update(glyph.lib)
+            font.insertGlyph(rglyph)
+
+            for layerName in self._fontLayers:
+                f = self._RFont.getLayer(layerName)
+                font.newLayer(layerName)
+                if glyph.name in f:
+                    layerglyph = f[glyph.name]
+                    layer = font.getLayer(layerName)
+                    layer.insertGlyph(f[glyph.name])
+
+        font.save(os.path.join(self.fontPath, "hanziUFO.ufo"))
 
     def renameGlyph(self, oldName, newName):
         if not self.locker.userHasLock(self[oldName]): return False

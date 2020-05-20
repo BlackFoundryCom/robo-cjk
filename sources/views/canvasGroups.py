@@ -124,6 +124,7 @@ class AtomicView(CanvasGroup):
     @lockedProtect
     def addLayerToAtomicElementCallback(self, sender):
         availableLayers = [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
+        print(availableLayers)
         if [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.name != 'foreground']:
             sheets.SelectLayerSheet(self.RCJKI, availableLayers)
 

@@ -28,20 +28,25 @@ glyphAddRemoveUndo = decorators.glyphAddRemoveUndo
 from models import deepComponent
 reload(deepComponent)
 
-ComponentNamed = component.ComponentNamed
-GlyphComponentsNamed = component.GlyphComponentsNamed
-GlyphVariations = component.GlyphVariations
+DeepComponentNamed = component.DeepComponentNamed
+DeepComponents = component.DeepComponents
+VariationGlyphs = component.VariationGlyphs
 
 import copy
 
+# Deprecated keys
 deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
 glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+
+# Actual keys
+deepComponentsKey = 'robocjk.deepComponents'
+variationGlyphsKey = 'robocjk.variationGlyphs'
 
 class CharacterGlyph(Glyph):
     def __init__(self, name):
         super().__init__()
-        self._deepComponents = GlyphComponentsNamed()
-        self._glyphVariations = GlyphVariations()
+        self._deepComponents = DeepComponents()
+        self._glyphVariations = VariationGlyphs()
         self.selectedSourceAxis = None
         self.computedDeepComponents = []
         self.computedDeepComponentsVariation = []
@@ -73,14 +78,14 @@ class CharacterGlyph(Glyph):
     def _initWithLib(self, lib=None):
         try:
             if lib:
-                self._deepComponents = GlyphComponentsNamed(lib[deepComponentsKey])      
-                self._glyphVariations = GlyphVariations(lib[glyphVariationsKey])
+                self._deepComponents = DeepComponents(lib[deepComponentsKey])      
+                self._glyphVariations = VariationGlyphs(lib[glyphVariationsKey])
             else:
-                self._deepComponents = GlyphComponentsNamed(self._RGlyph.lib[deepComponentsKey])      
-                self._glyphVariations = GlyphVariations(self._RGlyph.lib[glyphVariationsKey])
+                self._deepComponents = DeepComponents(self._RGlyph.lib[deepComponentsKey])      
+                self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
         except:
-            self._deepComponents = GlyphComponentsNamed()
-            self._glyphVariations = GlyphVariations()
+            self._deepComponents = DeepComponents()
+            self._glyphVariations = VariationGlyphs()
 
     @property
     def selectedElementCoord(self) -> dict:
@@ -126,7 +131,7 @@ class CharacterGlyph(Glyph):
     @glyphAddRemoveUndo
     def addDeepComponentNamed(self, deepComponentName, items = False):
         if not items:
-            d = ComponentNamed(deepComponentName)
+            d = DeepComponentNamed(deepComponentName)
             for axis in self.currentFont[deepComponentName]._glyphVariations.axes:
                 d.coord.add(axis, 0)
         else:
@@ -213,7 +218,7 @@ class CharacterGlyph(Glyph):
                 )
 
             previewGlyph = deepComponent.DeepComponent("PreviewGlyph")
-            previewGlyph._atomicElements = GlyphComponentsNamed(deepdeepolatedDeepComponent)
+            previewGlyph._atomicElements = DeepComponents(deepdeepolatedDeepComponent)
 
             atomicInstancesPreview = self.generateDeepComponent(
                 previewGlyph, 
@@ -271,7 +276,7 @@ class CharacterGlyph(Glyph):
 
                     deepdeepolatedDeepComponent = interpolation.deepdeepolation(masterDeepComponent, deepComponentVariations, deepComponentAxisInfos)
                     previewGlyph = RGlyph()
-                    previewGlyph._atomicElements = GlyphComponentsNamed(deepdeepolatedDeepComponent)
+                    previewGlyph._atomicElements = DeepComponents(deepdeepolatedDeepComponent)
             
                     atomicInstancesPreview = self.generateDeepComponent(previewGlyph, preview=True)
                     for e in atomicInstancesPreview:
@@ -283,7 +288,7 @@ class CharacterGlyph(Glyph):
                     
                     _lib[characterGlyphAxisName].append(dc)
                     
-        self._glyphVariations = GlyphVariations(_lib)
+        self._glyphVariations = VariationGlyphs(_lib)
         return deepComponentsSelectedVariation
 
     def addCharacterGlyphNamedVariationToGlyph(self, name):
