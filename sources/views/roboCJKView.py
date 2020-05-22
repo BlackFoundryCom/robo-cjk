@@ -114,6 +114,8 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     try:
         CurrentGlyphWindow().close()
     except: pass
+    font[glyphName].update()
+    g = font[glyphName]._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
 
@@ -822,7 +824,7 @@ class RoboCJKView(BaseWindowController):
             if glyphtype == "characterGlyph":
                 l = [x for x in allGlyphs if self.RCJKI.currentFont[x]._deepComponents or len(self.RCJKI.currentFont[x])]
             elif glyphtype == "deepComponent":
-                l = [x for x in allGlyphs if self.RCJKI.currentFont[x]._atomicElements or len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if self.RCJKI.currentFont[x]._deepComponents or len(self.RCJKI.currentFont[x])]
             else:
                 l = [x for x in allGlyphs if len(self.RCJKI.currentFont[x])]
             return getFilteredList(option1, l, lockedGlyphs)
@@ -835,7 +837,7 @@ class RoboCJKView(BaseWindowController):
             if glyphtype == "characterGlyph":
                 l = [x for x in allGlyphs if not self.RCJKI.currentFont[x]._deepComponents and not len(self.RCJKI.currentFont[x])]
             elif glyphtype == "deepComponent":
-                l = [x for x in allGlyphs if not self.RCJKI.currentFont[x]._atomicElements and not len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if not self.RCJKI.currentFont[x]._deepComponents and not len(self.RCJKI.currentFont[x])]
             else:
                 l = [x for x in allGlyphs if not len(self.RCJKI.currentFont[x])]
             return getFilteredList(option1, l, lockedGlyphs)
@@ -1230,7 +1232,7 @@ class RoboCJKView(BaseWindowController):
             for name in glyphset:
                 glyph = self.RCJKI.currentFont[name]
                 if glyphType == 'atomicElement':
-                    d =  glyph._atomicElements
+                    d =  glyph._deepComponents
                 elif glyphType == 'deepComponent':
                     d =  glyph._deepComponents
                 for ae in d:

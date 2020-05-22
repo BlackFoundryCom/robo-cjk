@@ -221,7 +221,7 @@ class EditPopoverAlignTool(EditPopover):
 
     def getLib(self):
         if self.RCJKI.isDeepComponent and self.glyph.computedAtomicInstances:
-            return self.RCJKI.currentGlyph._atomicElements
+            return self.RCJKI.currentGlyph._deepComponents
             
         elif self.RCJKI.isDeepComponent and self.glyph.computedAtomicSelectedSourceInstances:
             return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]

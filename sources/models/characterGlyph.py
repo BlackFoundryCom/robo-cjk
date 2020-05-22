@@ -40,7 +40,7 @@ glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
-variationGlyphsKey = 'robocjk.variationGlyphs'
+variationGlyphsKey = 'robocjk.fontVariationGlyphs'
 
 class CharacterGlyph(Glyph):
     def __init__(self, name):
@@ -79,19 +79,21 @@ class CharacterGlyph(Glyph):
         try:
             if lib:
                 if variationGlyphsKey not in lib.keys():
-                    self._deepComponents = DeepComponents(lib[deepComponentsKeyOld])      
-                    self._glyphVariations = VariationGlyphs(lib[glyphVariationsKey])
+                    deepComponents = lib[deepComponentsKeyOld]
+                    glyphVariations = lib[glyphVariationsKey]
                 else:
-                    self._deepComponents = DeepComponents(lib[deepComponentsKey])      
-                    self._glyphVariations = VariationGlyphs(lib[variationGlyphsKey])
-
+                    deepComponents = lib[deepComponentsKey]
+                    glyphVariations = lib[variationGlyphsKey]
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
-                    self._deepComponents = DeepComponents(self._RGlyph.lib[deepComponentsKeyOld])      
-                    self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
+                    deepComponents = self._RGlyph.lib[deepComponentsKeyOld]
+                    glyphVariations = self._RGlyph.lib[glyphVariationsKey]
                 else:
-                    self._deepComponents = DeepComponents(self._RGlyph.lib[deepComponentsKey])      
-                    self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey])
+                    deepComponents = self._RGlyph.lib[deepComponentsKey]
+                    glyphVariations = self._RGlyph.lib[variationGlyphsKey]
+
+            self._deepComponents = DeepComponents(deepComponents)      
+            self._glyphVariations = VariationGlyphs(glyphVariations)
         except:
             self._deepComponents = DeepComponents()
             self._glyphVariations = VariationGlyphs()
@@ -153,41 +155,16 @@ class CharacterGlyph(Glyph):
         self.computeDeepComponentsPreview()
         self.computeDeepComponents()
 
-    ################ DEPENDENCY WITH DEEPCOMPONENTS ################
-    #                             |                                #
-    #                             V                                #
-    ################################################################
-    def addVariationAxisToDeepComponentNamed(self, axisName, deepComponentName):
-        for d in self._deepComponents:
-            if deepComponentName == d['name']:
-                d['coord'][axisName] = 0
-
-        for gvAxisName, l in self._glyphVariations.items():
-            for i, d in enumerate(l):
-                if deepComponentName == self._deepComponents[i]['name']:
-                    d['coord'][axisName] = 0
-
-    ################ DEPENDENCY WITH DEEPCOMPONENTS ################
-    #                             |                                #
-    #                             V                                #
-    ################################################################
-    def removeVariationAxisToDeepComponentNamed(self, axisName, deepComponentName):
-        for d in self._deepComponents:
-            if deepComponentName == d['name']:
-                del d['coord'][axisName]
-
-        for gvAxisName, l in self._glyphVariations.items():
-            for i, d in enumerate(l):
-                if deepComponentName == self._deepComponents[i]['name']:
-                    del d['coord'][axisName]
-
-    def computeDeepComponents(self):
+    def computeDeepComponents(self, update = True):
+        if update:
+            self.update()
         self.computedDeepComponents = []
         self.computedDeepComponentsVariation = []
         if self.selectedSourceAxis is None:
             self.computedDeepComponents = self.generateCharacterGlyph(
                 self, 
-                preview=False
+                preview=False, 
+                update = False
                 )
         else:
             self.computedDeepComponentsVariation = self.generateCharacterGlyphVariation(
@@ -195,7 +172,9 @@ class CharacterGlyph(Glyph):
                 preview=False
                 )
 
-    def computeDeepComponentsPreview(self, sourcelist = []):
+    def computeDeepComponentsPreview(self, sourcelist = [], update = True):
+        if update:
+            self.update()
         self.preview = []
         deepComponentsSelectedVariation = []
 
@@ -216,7 +195,7 @@ class CharacterGlyph(Glyph):
 
         for j, masterDeepComponentInstance in enumerate(outputCG):
             glyph = self.currentFont[masterDeepComponentInstance['name']]
-            masterDeepComponent = glyph._atomicElements
+            masterDeepComponent = glyph._deepComponents
             deepComponentVariations = glyph._glyphVariations
             deepComponentAxisInfos = masterDeepComponentInstance['coord']
         
@@ -227,11 +206,12 @@ class CharacterGlyph(Glyph):
                 )
 
             previewGlyph = deepComponent.DeepComponent("PreviewGlyph")
-            previewGlyph._atomicElements = DeepComponents(deepdeepolatedDeepComponent)
+            previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
 
             atomicInstancesPreview = self.generateDeepComponent(
                 previewGlyph, 
-                preview=True
+                preview=True,
+                update = False
                 )
 
             for e in atomicInstancesPreview:
@@ -277,7 +257,7 @@ class CharacterGlyph(Glyph):
                     #     if index == j and self.sliderValue:
                     #         dc['coord'][self.sliderName] = float(self.sliderValue)
                 
-                    masterDeepComponent = self.currentFont[cgdc[j].name]._atomicElements
+                    masterDeepComponent = self.currentFont[cgdc[j].name]._deepComponents
                     deepComponentVariations = self.currentFont[cgdc[j].name]._glyphVariations
                     deepComponentAxisInfos = {}
 
@@ -285,9 +265,9 @@ class CharacterGlyph(Glyph):
 
                     deepdeepolatedDeepComponent = interpolation.deepdeepolation(masterDeepComponent, deepComponentVariations, deepComponentAxisInfos)
                     previewGlyph = RGlyph()
-                    previewGlyph._atomicElements = DeepComponents(deepdeepolatedDeepComponent)
+                    previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
             
-                    atomicInstancesPreview = self.generateDeepComponent(previewGlyph, preview=True)
+                    atomicInstancesPreview = self.generateDeepComponent(previewGlyph, preview=True, update = False)
                     for e in atomicInstancesPreview:
                         for aeName, ae in e.items():
                             ae[0].scaleBy((dc['scalex'], dc['scaley']))
@@ -314,6 +294,13 @@ class CharacterGlyph(Glyph):
     def save(self):
         self.lib.clear()
         lib = RLib()
+
+        for variations in self._glyphVariations.values():
+            layersNames = [x.name for x in self.getParent()._RFont.layers]
+            if variations.layerName not in layersNames:
+                continue
+            variations.writeOutlines(self.currentFont._RFont.getLayer(variations.layerName)[self.name])
+
         lib[deepComponentsKeyOld] = self._deepComponents.getList()
         lib[glyphVariationsKey] = self._glyphVariations.getDict()
 

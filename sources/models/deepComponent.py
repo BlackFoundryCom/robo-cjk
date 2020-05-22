@@ -40,13 +40,13 @@ glyphVariationsKey = 'robocjk.deepComponent.glyphVariations'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
-variationGlyphsKey = 'robocjk.variationGlyphs'
+variationGlyphsKey = 'robocjk.glyphVariationGlyphs'
 
 
 class DeepComponent(Glyph):
     def __init__(self, name):
         super().__init__()
-        self._atomicElements = DeepComponents()
+        self._deepComponents = DeepComponents()
         self._glyphVariations = VariationGlyphs()
         self.selectedSourceAxis = None
         self.computedAtomicSelectedSourceInstances = []
@@ -58,19 +58,25 @@ class DeepComponent(Glyph):
 
     @property
     def atomicElements(self):
-        return self._atomicElements
+        return self._deepComponents
 
     @property
     def glyphVariations(self):
         return self._glyphVariations
     
     def _initWithLib(self):
-        if variationGlyphsKey not in self._RGlyph.lib.keys():
-            self._atomicElements = DeepComponents(self._RGlyph.lib[atomicElementsKey])
-            self._glyphVariations = VariationGlyphs(self._RGlyph.lib[glyphVariationsKey])
-        else:
-            self._atomicElements = DeepComponents(self._RGlyph.lib[deepComponentsKey])
-            self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey])
+        try:
+            if variationGlyphsKey not in self._RGlyph.lib.keys():
+                deepComponents = self._RGlyph.lib[atomicElementsKey]
+                variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
+            else:
+                deepComponents = self._RGlyph.lib[deepComponentsKey]
+                variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
+            self._deepComponents = DeepComponents(deepComponents)
+            self._glyphVariations = VariationGlyphs(variationGlyphs)
+        except:
+            self._deepComponents = DeepComponents()
+            self._glyphVariations = VariationGlyphs()
 
     @property
     def atomicInstancesGlyphs(self) -> "Index, AtomicInstanceGlyph":
@@ -98,43 +104,26 @@ class DeepComponent(Glyph):
 
     def _getElements(self):
         if self.computedAtomicInstances:
-            return self._atomicElements
+            return self._deepComponents
         elif self.computedAtomicSelectedSourceInstances:
             return self._glyphVariations[self.selectedSourceAxis]
 
-
     def addGlyphVariation(self, newAxisName):
-        self._glyphVariations.addAxis(newAxisName, self._atomicElements)
-
-        ################ DEPENDENCY WITH CHARACTERGLYPH ################
-        #                             |                                #
-        #                             V                                #
-        ################################################################
-        for name in self.currentFont.characterGlyphSet:
-            g = self.currentFont[name]
-            g.addVariationAxisToDeepComponentNamed(newAxisName, self.name)
+        self._glyphVariations.addAxis(newAxisName, self._deepComponents)
 
     def removeGlyphVariation(self, axisName):
         self._glyphVariations.removeAxis(axisName)
-
-        ################ DEPENDENCY WITH CHARACTERGLYPH ################
-        #                             |                                #
-        #                             V                                #
-        ################################################################
-        for name in self.currentFont.characterGlyphSet:
-            g = self.currentFont[name]
-            g.removeVariationAxisToDeepComponentNamed(axisName, self.name)
 
     def updateAtomicElementCoord(self, axisName, value):
         if self.selectedSourceAxis is not None:
             self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]]['coord'][axisName] = value
             self._glyphVariations
         else:
-            self._atomicElements[self.selectedElement[0]]['coord'][axisName] = value
+            self._deepComponents[self.selectedElement[0]]['coord'][axisName] = value
 
     def getAtomicElementMinMaxValue(self, axisName):
         if not self.selectedElement: return
-        selectedAtomicElementName = self._atomicElements[self.selectedElement[0]].name
+        selectedAtomicElementName = self._deepComponents[self.selectedElement[0]].name
         atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
         return atomicElement.minValue, atomicElement.maxValue
 
@@ -147,103 +136,29 @@ class DeepComponent(Glyph):
             d = items
             d.name = atomicElementName
 
-        self._atomicElements.addDeepComponent(d)
+        self._deepComponents.addDeepComponent(d)
         self._glyphVariations.addDeepComponent(d)
 
     def removeAtomicElementAtIndex(self):
         if not self.selectedElement: return
         self._glyphVariations.removeDeepComponents(self.selectedElement)
-        self._atomicElements.removeDeepComponents(self.selectedElement)
+        self._deepComponents.removeDeepComponents(self.selectedElement)
         self.selectedElement = []
         
     def addVariationToGlyph(self, name):
         if name in self._glyphVariations.axes: return
-        self._glyphVariations.addAxis(name, self._atomicElements)
-
-        ################ DEPENDENCY WITH CHARACTERGLYPH ################
-        #                             |                                #
-        #                             V                                #
-        ################################################################
-        for glyphname in self.currentFont.characterGlyphSet:
-            g2 = self.currentFont[glyphname]
-            for d in g2._deepComponents:
-                if d["name"] != self.name: continue
-                d['coord'][name] = 0
+        self._glyphVariations.addAxis(name, self._deepComponents)
 
     def renameVariationAxis(self, oldName, newName):
         self._glyphVariations.addAxis(newName, self._glyphVariations[oldName])
         self._glyphVariations.removeAxis(oldName)
 
-        ################ DEPENDENCY WITH CHARACTERGLYPH ################
-        #                             |                                #
-        #                             V                                #
-        ################################################################
-        def _rename(d, oldName, newName):
-            if oldName not in d['coord']: return
-            v = copy.deepcopy(d['coord'][oldName])
-            del d['coord'][oldName]
-            d['coord'][newName] = v
-
-        for glyphname in self.currentFont.characterGlyphSet:
-            g2 = self.currentFont[glyphname]
-
-            for i, d in enumerate(g2._deepComponents):
-                if d["name"] != self.name: continue
-                print(glyphname)
-                _rename(d, oldName, newName)
-                for e in g2._glyphVariations.values():
-                    _rename(e[i], oldName, newName)
-
     def removeVariationAxis(self, name):
         self._glyphVariations.removeAxis(name)
 
-        ################ DEPENDENCY WITH CHARACTERGLYPH ################
-        #                             |                                #
-        #                             V                                #
-        ################################################################
-        for glyphname in self.currentFont.characterGlyphSet:
-            g2 = self.currentFont[glyphname]
-
-            def _remove(d, name):
-                if name in d['coord']:
-                    del d['coord'][name]
-
-            for i, d in enumerate(g2._deepComponents):
-                if d["name"] != self.name: continue
-                _remove(d, name)
-                for e in g2._glyphVariations.values():
-                    _remove(e[i], name)
-
-
-    ################ DEPENDENCY WITH ATOMIC ELEMENT ################
-    #                             |                                #
-    #                             V                                #
-    ################################################################
-    def addVariationAxisToAtomicElementNamed(self, axisName, atomicElementName):
-        for d in self._atomicElements:
-            if atomicElementName == d['name']:
-                d['coord'][axisName] = 0
-
-        for gvAxisName, l in self._glyphVariations.items():
-            for i, d in enumerate(l):
-                if atomicElementName == self._atomicElements[i]['name']:
-                    d['coord'][axisName] = 0
-    
-    ################ DEPENDENCY WITH ATOMIC ELEMENT ################
-    #                             |                                #
-    #                             V                                #
-    ################################################################
-    def removeVariationAxisToAtomicElementNamed(self, axisName, atomicElementName):
-        for d in self._atomicElements:
-            if atomicElementName == d['name']:
-                del d['coord'][axisName]
-
-        for gvAxisName, l in self._glyphVariations.items():
-            for i, d in enumerate(l):
-                if atomicElementName == self._atomicElements[i]['name']:
-                    del d['coord'][axisName]
-
-    def computeDeepComponents(self):
+    def computeDeepComponents(self, update = True):
+        if update:
+            self.update()
         self.computedAtomicSelectedSourceInstances = []
         self.computedAtomicInstances = []
         
@@ -251,6 +166,7 @@ class DeepComponent(Glyph):
             self.computedAtomicInstances = self.generateDeepComponent(
                 self, 
                 preview=False,
+                update = False
                 )
         else:
             self.computedAtomicSelectedSourceInstances = self.generateDeepComponentVariation(
@@ -258,7 +174,9 @@ class DeepComponent(Glyph):
                 preview=False,
                 )
 
-    def computeDeepComponentsPreview(self, sourcelist = []):
+    def computeDeepComponentsPreview(self, sourcelist = [], update = True):
+        if update:
+            self.update()
         self.preview = []
 
         if not sourcelist:
@@ -270,17 +188,17 @@ class DeepComponent(Glyph):
         if not deepComponentAxisInfos: return
 
         deepdeepolatedDeepComponent = interpolation.deepdeepolation(
-            self._atomicElements, 
+            self._deepComponents, 
             self._glyphVariations, 
             deepComponentAxisInfos
             )
 
         previewGlyph = DeepComponent("PreviewGlyph")
-        previewGlyph._atomicElements = DeepComponents(deepdeepolatedDeepComponent)
+        previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
 
         self.preview = self.generateDeepComponent(
             previewGlyph, 
-            preview=True
+            preview=True, update = False
             )
 
     def generateDeepComponentVariation(self, selectedSourceAxis,  preview=True):
@@ -296,7 +214,7 @@ class DeepComponent(Glyph):
                     _atomicElement = copy.deepcopy(sourceAtomicElements)
                     _atomicElement['coord'] = {}
                     
-                    masterAtomicElement = self._atomicElements[i]
+                    masterAtomicElement = self._deepComponents[i]
                      
                     layersInfos = {}
                     atomicVariations = self.currentFont[masterAtomicElement['name']]._glyphVariations
@@ -332,9 +250,9 @@ class DeepComponent(Glyph):
     def save(self):
         self.lib.clear()
         lib = RLib()
-        lib[atomicElementsKey] = self._atomicElements.getList()
+        lib[atomicElementsKey] = self._deepComponents.getList()
         lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
-        lib[deepComponentsKey] = self._atomicElements.getList()
+        lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)

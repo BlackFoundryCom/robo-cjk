@@ -25,8 +25,8 @@ reload(interpolation)
 from models import deepComponent, component
 reload(component)
 import copy
-# reload(deepComponent)
 
+# reload(deepComponent)
 DeepComponents = component.DeepComponents
 
 def compute(func):
@@ -62,6 +62,35 @@ class Glyph(RGlyph):
     @property
     def flatComponents(self):
         return self._RGlyph.components
+
+    def update(self):
+        if self.type == 'atomicElement':
+            return
+        deepComponentToRemove = []
+        glyphset = set(self.currentFont.glyphSet())
+        for index, deepComponent in enumerate(self._deepComponents):
+            if set([deepComponent.name]) - glyphset:
+                deepComponentToRemove.append(index)
+            else:
+                deepComponentGlyph = self.currentFont[deepComponent.name]
+                deepComponentGlyphAxes = set(deepComponentGlyph._glyphVariations.axes)
+
+                # remove old axes in both deepComponent and variationGlyph
+                todel = set(deepComponent.coord.axes) - deepComponentGlyphAxes
+                for oldAxis in todel:
+                    deepComponent.coord.remove(oldAxis)
+                    for glyphVariation in self._glyphVariations.infos:
+                        glyphVariation.content.deepComponents[index].coord.remove(oldAxis)
+
+                # add new axes to both deepComponent and variationGlyph
+                toadd = deepComponentGlyphAxes - set(deepComponent.coord)
+                for axis in toadd:
+                    deepComponent.coord.add(axis, 0)
+                    for glyphVariation in self._glyphVariations.infos:
+                        glyphVariation.content.deepComponents[index].coord.add(axis, 0)
+        
+        self._deepComponents.removeDeepComponents(deepComponentToRemove)
+        self._glyphVariations.removeDeepComponents(deepComponentToRemove)
 
     @glyphUndo
     def keyDown(self, keys):
@@ -139,10 +168,12 @@ class Glyph(RGlyph):
                 if index in self.selectedElement: continue
                 self.selectedElement.append(index)
 
-    def generateDeepComponent(self, g, preview=True):
+    def generateDeepComponent(self, g, preview=True, update = True):
+        if update:
+            self.update()
         atomicInstances = []
-        if not hasattr(g,"_atomicElements"): return
-        for i, atomicElement in enumerate(g._atomicElements):
+        if not hasattr(g,"_deepComponents"): return
+        for i, atomicElement in enumerate(g._deepComponents):
             layersInfos = {}
             
             # aeGlyph = self.getParent()[atomicElement['name']]
@@ -166,7 +197,9 @@ class Glyph(RGlyph):
         return atomicInstances
 
 
-    def generateCharacterGlyph(self, g, preview=True):
+    def generateCharacterGlyph(self, g, preview=True, update = True):
+        if update:
+            self.update()
         ### CLEANING TODO ###
         _lib = []
 
@@ -176,7 +209,7 @@ class Glyph(RGlyph):
             #     dc['coord'][self.sliderName] = float(self.sliderValue)
                 
             dcGlyph = self.getParent()[dc['name']]
-            masterDeepComponent = dcGlyph._atomicElements
+            masterDeepComponent = dcGlyph._deepComponents
             deepComponentVariations = dcGlyph._glyphVariations
             deepComponentAxisInfos = {}
 
@@ -188,7 +221,7 @@ class Glyph(RGlyph):
                 deepComponentAxisInfos
                 )
             previewGlyph = deepComponent.DeepComponent("PreviewGlyph")
-            previewGlyph._atomicElements = deepdeepolatedDeepComponent
+            previewGlyph._deepComponents = deepdeepolatedDeepComponent
             
             atomicInstancesPreview = self.generateDeepComponent(previewGlyph, preview=True)
             for e in atomicInstancesPreview:

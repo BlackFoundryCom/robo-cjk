@@ -36,68 +36,7 @@ VariationGlyphs = component.VariationGlyphs
 glyphVariationsKey = 'robocjk.atomicElement.glyphVariations'
 
 # Actual key
-variationGlyphsKey = 'robocjk.variationGlyphs'
-
-# class LayerInfo(DictClass):
-
-#     def __init__(self, layerName:str, minValue:int = 0, maxValue:int = 1, content = []):
-#         super().__init__()
-#         self.layerName = layerName
-#         self.minValue = minValue
-#         self.maxValue = maxValue
-#         self.content = []
-
-#     def writeContent(self, glyph):
-#         pen = RecordingPen()
-#         glyph.draw(pen)
-#         self.content = pen.value
-
-#     def __str__(self):
-#         return str(self.layerName)
-
-#     def __repr__(self):
-#         return str(self)
-
-#     def _toDict(self):
-#         return {x:getattr(self, x) for x in vars(self)}
-
-# class GlyphVariations(DictClass):
-    
-#     def __init__(self, **kwargs):
-#         super().__init__()
-#         for k, v in kwargs.items():
-#             if isinstance(v, str):
-#                 setattr(self, k, LayerInfo(v))
-#             else:
-#                 setattr(self, k, LayerInfo(**v))
-
-#     def addAxis(self, axisName: str, layerName: str):
-#         """
-#         Add new axis 
-#         """
-#         if isinstance(layerName, str):
-#             setattr(self, axisName, LayerInfo(layerName))
-#         else:
-#             setattr(self, axisName, LayerInfo(**layerName))
-
-#     def removeAxis(self, axisName: str):
-#         """
-#         Remove a variation axis
-#         """
-#         if not hasattr(self, axisName):
-#             return
-#         delattr(self, axisName)
-        
-#     @property
-#     def axes(self):
-#         return self.keys()
-        
-#     @property
-#     def layers(self):
-#         return self.values()
-
-#     def _toDict(self):
-#         return {x:getattr(self, x)._toDict() for x in vars(self)}
+variationGlyphsKey = 'robocjk.glyphVariationGlyphs'
 
 class AtomicElement(Glyph):
     def __init__(self, name):
@@ -128,42 +67,15 @@ class AtomicElement(Glyph):
         txt = self.currentFont._RFont.getLayer(newLayerName)[self.name].dumpToGLIF()
         self.currentFont.insertGlyph(glyph, txt, newLayerName)
 
-        ################ DEPENDENCY WITH DEEPCOMPONENTS ################
-        #                             |                                #
-        #                             V                                #
-        ################################################################
-
-        # for name in self.currentFont.deepComponentSet:
-        #     g = self.currentFont[name]
-        #     g.addVariationAxisToAtomicElementNamed(newAxisName, self.name)
-
     def removeGlyphVariation(self, axisName):
         self._glyphVariations.removeAxis(axisName)
 
-        ################ DEPENDENCY WITH DEEPCOMPONENTS ################
-        #                             |                                #
-        #                             V                                #
-        ################################################################
-
-        # for name in self.currentFont.deepComponentSet:
-        #     g = self.currentFont[name]
-        #     g.removeVariationAxisToAtomicElementNamed(axisName, self.name)
-
-    def computeDeepComponentsPreview(self):
+    def computeDeepComponentsPreview(self, update = False):
         layersInfos = {}
         for d in self.sourcesList:
-            # layer = str(self._glyphVariations[d['Axis']])
             layer = self._glyphVariations[d['Axis']].layerName
             value = d['PreviewValue']
-            # print("----")
-            # print(layer, type(layer))
-            # print(self._glyphVariations[d['Axis']], type(self._glyphVariations[d['Axis']]))
-            # print("----")
-            # try:
             layersInfos[layer] = value
-            # except:
-            #     print("I'm here")
-            #     layersInfos[layer["layerName"]] = value
         self.preview = interpolation.deepolation(
             RGlyph(), 
             self.foreground, 

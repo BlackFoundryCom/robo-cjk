@@ -191,10 +191,10 @@ class RoboCJKController(object):
         self.updateDeepComponent()
 
     @refresh
-    def updateDeepComponent(self):
-        self.currentGlyph.computeDeepComponentsPreview()
+    def updateDeepComponent(self, update = True):
+        self.currentGlyph.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
-        self.currentGlyph.computeDeepComponents()
+        self.currentGlyph.computeDeepComponents(update = update)
 
     def glyphWindowWillClose(self, notification):
         # self.closeimportDCFromCG()
@@ -574,9 +574,6 @@ class RoboCJKController(object):
         l = []
         if self.isAtomic:
             for axisName, layer in self.currentGlyph._glyphVariations.items():
-                print('-----')
-                print('-----', layer.minValue, layer.maxValue)
-                print('-----')
                 l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":.5, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
             
         elif self.isDeepComponent:

@@ -298,7 +298,7 @@ class DCCG_View(CanvasGroup):
 
     def roundToGridCallback(self, sender):
         self.RCJKI.roundToGrid = sender.get()
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     @refresh
     def drawOnlyDeepolationCallback(self, sender):
@@ -324,7 +324,7 @@ class DCCG_View(CanvasGroup):
         self.slidersList.set([])
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
         
     @lockedProtect
     def sourcesListSelectionCallback(self, sender):
@@ -335,7 +335,7 @@ class DCCG_View(CanvasGroup):
         else:
             self.selectedSourceAxis = self.sourcesList.get()[sel[0]]["Axis"]
             self.sourcesSliderValue.set(round(self.sourcesList.get()[sel[0]]["PreviewValue"], 3))
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     @lockedProtect
     def sourcesSliderValueCallback(self, sender):
@@ -360,7 +360,7 @@ class DCCG_View(CanvasGroup):
             self.sourcesList.set(newList)
 
         self.RCJKI.currentGlyph.sourcesList = self.sourcesList.get()
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
         self.sourcesList.setSelection(sel)
 
     @lockedProtect
@@ -392,7 +392,7 @@ class DCCG_View(CanvasGroup):
 
         self.sourcesSliderValue.set(round(sender.get()[sel[0]]['PreviewValue'], 3))
         self.RCJKI.currentGlyph.sourcesList = sender.get()
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     @lockedProtect
     def addVarAxisCallback(self, sender):
@@ -413,7 +413,7 @@ class DCCG_View(CanvasGroup):
             self.sourcesList.setSelection([isel-1])
             self.selectedSourceAxis = source[isel-1]['Axis']
             self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
-            self.RCJKI.updateDeepComponent()       
+            self.RCJKI.updateDeepComponent(update = False)       
             
         elif self.RCJKI.isCharacterGlyph:
             sheets.SelectFontVariationSheet(self.RCJKI, self)
@@ -433,7 +433,7 @@ class DCCG_View(CanvasGroup):
             self.slidersList.set([])
             self.RCJKI.sliderValue = None
             self.RCJKI.sliderName = None
-            self.RCJKI.updateDeepComponent()
+            self.RCJKI.updateDeepComponent(update = False)
 
     @lockedProtect
     def slidersListSelectiontCallback(self, sender):
@@ -476,7 +476,7 @@ class DCCG_View(CanvasGroup):
 
         self.slidersList.setSelection(sel)
         self.setSliderValue2Glyph(self.slidersList)
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
         
     @lockedProtect
     def slidersListEditCallback(self, sender):
@@ -489,7 +489,7 @@ class DCCG_View(CanvasGroup):
             self.sliderSliderValue.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
         else:
             self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     def setSliderValue2Glyph(self, sender):
         if self.RCJKI.currentGlyph.type == 'characterGlyph':

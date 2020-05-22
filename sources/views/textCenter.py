@@ -181,7 +181,7 @@ class DCUsingAE(Group):
         deepComponents = []
         for name in self.c.RCJKI.currentFont.deepComponentSet:
             glyph = self.c.RCJKI.currentFont[name]
-            for dc in glyph._atomicElements:
+            for dc in glyph._deepComponents:
                 if aename == dc.name:
                     deepComponents.append(name)
                     break

@@ -84,6 +84,9 @@ class Font():
     def keys(self):
         return self._RFont.keys()
 
+    def glyphSet(self):
+        return self.atomicElementSet + self.deepComponentSet + self.characterGlyphSet
+
     def shallowDocument(self):
         return self._RFont.shallowDocument()
 
@@ -113,7 +116,7 @@ class Font():
         DC_averageVariation = []
         for n in self.deepComponentSet:
             glyph = self[n]
-            if not glyph._atomicElements:
+            if not glyph._deepComponents:
                 DC_empty += 1
             else:
                 DC_designed += 1
@@ -490,7 +493,7 @@ class Font():
         if glyphType == "atomicElement":
             for n in self.deepComponentSet:
                 dcg = self[n]
-                for ae in dcg._atomicElements:
+                for ae in dcg._deepComponents:
                     if ae.name == oldName:
                         ae.name = newName
             
