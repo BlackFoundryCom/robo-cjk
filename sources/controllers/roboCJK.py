@@ -194,7 +194,7 @@ class RoboCJKController(object):
     def updateDeepComponent(self, update = True):
         self.currentGlyph.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
-        self.currentGlyph.computeDeepComponents(update = update)
+        self.currentGlyph.computeDeepComponents(update = False)
 
     def glyphWindowWillClose(self, notification):
         # self.closeimportDCFromCG()
