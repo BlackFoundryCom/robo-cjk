@@ -90,7 +90,9 @@ class AtomicElement(Glyph):
             layersNames = [x.name for x in self.getParent()._RFont.layers]
             if variations.layerName not in layersNames:
                 continue
-            variations.writeOutlines(self.currentFont._RFont.getLayer(variations.layerName)[self.name])
+            axisGlyph = self.currentFont._RFont.getLayer(variations.layerName)[self.name]
+            variations.writeOutlines(axisGlyph)
+            variations.setAxisWidth(axisGlyph.width)
     
         lib[glyphVariationsKey] = self._glyphVariations.getDict()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()

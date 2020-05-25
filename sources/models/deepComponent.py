@@ -253,6 +253,9 @@ class DeepComponent(Glyph):
         lib[atomicElementsKey] = self._deepComponents.getList()
         lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
+        for variations in self._glyphVariations.values():
+            variations.setAxisWidth(self.currentFont.defaultGlyphWidth)
+
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)

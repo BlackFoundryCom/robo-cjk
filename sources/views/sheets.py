@@ -392,6 +392,7 @@ class FontInfosSheet():
     def defaultGlyphWidthCallback(self, sender):
         try:
             self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth'] = sender.get()
+            self.RCJKI.currentFont.defaultGlyphWidth = sender.get()
         except: pass
 
     def removeVariationCallback(self, sender):

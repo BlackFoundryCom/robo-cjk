@@ -52,7 +52,6 @@ class Font():
         self._RFont.save(fontFilePath)
         self._glyphs = {}
 
-        self.getGlyphs()
         if 'fontLib.json' in os.listdir(self.fontPath):
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, 'r') as file:
@@ -60,6 +59,9 @@ class Font():
             for k, v in f.items():
                 self._RFont.lib[k] = v
 
+        self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
+
+        self.getGlyphs()
         self.createLayersFromVariationAxis()
 
     def __iter__(self):

@@ -239,12 +239,13 @@ class DeepComponents:
 
 class Content(DictClass):
 
-    def __init__(self, outlines = [], deepComponents = []):
+    def __init__(self, outlines:list = [], deepComponents:list = [], width:int = 0):
         super().__init__()
-        self.outlines = []
+        self.outlines = outlines
         self.deepComponents = [DeepComponent(**dict(x)) for x in deepComponents]
+        self.width = width
 
-    def writeOutlines(self, glyph):
+    def _writeOutlines(self, glyph):
         """
         Write the outlines instruction of the layer
         """
@@ -252,21 +253,28 @@ class Content(DictClass):
         glyph.draw(pen)
         self.outlines = pen.value
 
-    def addDeepComponent(self, deepComponentInfos:dict = {}):
+    def _addDeepComponent(self, deepComponentInfos:dict = {}):
         """
         Add new deep Component
         """
         self.deepComponents.append(DeepComponent(**dict(deepComponentInfos)))
 
-    def removeDeepComponent(self, index):
+    def _removeDeepComponent(self, index):
         """
         Remove a deep component at index
         """
         self.deepComponents.pop(index)
 
+    def _setAxisWidth(self, width:int = 0):
+        """
+        Set the axis width
+        """
+        self.width = width
+
     def _toDict(self):
         return {"outlines": self.outlines,
-                "deepComponents": [x._toDict() for x in self.deepComponents]}
+                "deepComponents": [x._toDict() for x in self.deepComponents],
+                "width": self.width}
 
 class VariationGlyphsInfos:
 
@@ -286,26 +294,26 @@ class VariationGlyphsInfos:
         """
         Add new deep Component
         """
-        self.content.addDeepComponent(deepComponentInfos)
+        self.content._addDeepComponent(deepComponentInfos)
 
     def append(self, item):
         """
         made for backward compatibility
         """
-        self.content.addDeepComponent(deepComponentInfos)
+        self.content._addDeepComponent(deepComponentInfos)
 
     def removeDeepComponent(self, index):
         """
         Remove a deep component at index
         """
-        self.content.removeDeepComponent(index)  
+        self.content._removeDeepComponent(index)  
 
     def removeDeepComponents(self, indexes):
         """
         Remove multiple deep components at indexes
         """
         for index in reversed(sorted(indexes)):
-            self.content.removeDeepComponent(index) 
+            self.content._removeDeepComponent(index) 
 
     def __repr__(self):
         return str(self)
@@ -334,7 +342,13 @@ class VariationGlyphsInfos:
         """
         Write the outlines instruction of the layer
         """
-        self.content.writeOutlines(glyph)
+        self.content._writeOutlines(glyph)
+
+    def setAxisWidth(self, width:int = 0):
+        """
+        Set the axis width
+        """
+        self.content._setAxisWidth(width)
 
 
 class VariationGlyphs(DictClass):

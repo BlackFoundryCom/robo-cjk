@@ -295,11 +295,14 @@ class CharacterGlyph(Glyph):
         self.lib.clear()
         lib = RLib()
 
-        for variations in self._glyphVariations.values():
-            layersNames = [x.name for x in self.getParent()._RFont.layers]
-            if variations.layerName not in layersNames:
-                continue
-            variations.writeOutlines(self.currentFont._RFont.getLayer(variations.layerName)[self.name])
+        for axis, variations in self._glyphVariations.items():
+            variations.layerName = axis
+            try:
+                axisGlyph = self.currentFont._RFont.getLayer(variations.layerName)[self.name]
+                variations.writeOutlines(axisGlyph)
+                variations.setAxisWidth(axisGlyph.width)
+            except:
+                pass
 
         lib[deepComponentsKeyOld] = self._deepComponents.getList()
         lib[glyphVariationsKey] = self._glyphVariations.getDict()
