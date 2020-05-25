@@ -87,6 +87,13 @@ class Coord(DictClass):
         """
         return self.keys()
 
+    def clear(self):
+        """
+        Remove all axes
+        """
+        for k in vars(self):
+            delattr(self, k)
+
 class DeepComponent(DictClass):
 
     def __init__(self, 
@@ -395,9 +402,9 @@ class VariationGlyphs(DictClass):
     def __init__(self, axes = {}):
         super().__init__()
         for k, v in axes.items():
-            if type(v) == list:
+            if type(v) == list: # test for backward compatibility
                 setattr(self, k, VariationGlyphsInfos())
-                getattr(self, k).initContent(deepComponents = v)# test for backward compatibility
+                getattr(self, k).initContent(deepComponents = v)
             elif type(v) == dict:
                 setattr(self, k, VariationGlyphsInfos(**v))
             else:
@@ -433,7 +440,6 @@ class VariationGlyphs(DictClass):
         """
         if not indexes:
             return
-        print(indexes)
         for x in vars(self):
             getattr(self, x).removeDeepComponents(indexes)
 

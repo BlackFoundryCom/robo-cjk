@@ -157,6 +157,7 @@ class DeepComponent(Glyph):
         self._glyphVariations.removeAxis(name)
 
     def computeDeepComponents(self, update = True):
+        #### IN PREVIEW CLASS
         if update:
             self.update()
         self.computedAtomicSelectedSourceInstances = []
@@ -202,6 +203,7 @@ class DeepComponent(Glyph):
             )
 
     def generateDeepComponentVariation(self, selectedSourceAxis,  preview=True):
+        #### IN PREVIEW CLASS
         ### CLEANING TODO ###
         _lib = {}
         atomicSelectedSourceInstances = []

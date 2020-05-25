@@ -24,7 +24,11 @@ from drawBot.ui.drawView import DrawView
 from AppKit import NumberFormatter, NSColor
 from mojo.canvas import Canvas
 import Cocoa
-import drawBot as db
+try:
+    import drawBot as db
+except:
+    print("DrawBot for robofont is not installed. PDF proofer need it, please install:\nhttps://github.com/typemytype/drawBotRoboFontExtension")
+    pass
 import copy
 from imp import reload
 from utils import files

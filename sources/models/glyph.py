@@ -169,6 +169,7 @@ class Glyph(RGlyph):
                 self.selectedElement.append(index)
 
     def generateDeepComponent(self, g, preview=True, update = True):
+        #### IN PREVIEW CLASS
         if update:
             self.update()
         atomicInstances = []

@@ -156,10 +156,12 @@ class CharacterGlyph(Glyph):
         self.computeDeepComponents()
 
     def computeDeepComponents(self, update = True):
+        #### IN PREVIEW CLASS
         if update:
             self.update()
         self.computedDeepComponents = []
         self.computedDeepComponentsVariation = []
+
         if self.selectedSourceAxis is None:
             self.computedDeepComponents = self.generateCharacterGlyph(
                 self, 
@@ -242,6 +244,7 @@ class CharacterGlyph(Glyph):
         self.preview = deepComponentsSelectedVariation
 
     def generateCharacterGlyphVariation(self, selectedSourceAxis, preview=True):
+        #### IN PREVIEW CLASS
         ### CLEANING TODO ###
         _lib = {}
         cgdc = self._deepComponents
