@@ -91,8 +91,11 @@ class Coord(DictClass):
         """
         Remove all axes
         """
-        for k in vars(self):
-            delattr(self, k)
+        axes = list(vars(self))
+        for axis in axes:
+            self.remove(axis)
+        # for k in vars(self):
+        #     delattr(self, k)
 
 class DeepComponent(DictClass):
 

@@ -20,8 +20,9 @@ from mojo.roboFont import *
 from imp import reload
 from models import glyph
 reload(glyph)
-from models import component
+from models import component, deepComponent
 reload(component)
+reload(deepComponent)
 from utils import interpolation, decorators
 reload(interpolation)
 reload(decorators)
@@ -41,33 +42,63 @@ glyphVariationsKey = 'robocjk.deepComponent.glyphVariations'
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
 variationGlyphsKey = 'robocjk.glyphVariationGlyphs'
+
+
+class FlatComponentInstance:
+
+    def __init__(self, glyph:RGlyph = None, x: int = 0, y:int = 0):
+        self.glyph = glyph
+        self.x = x
+        self.y = y
+
+class AtomicInstance:
+
+    def __init__(self, glyph:RGlyph = None, scalex:float = 1.0, scaley:float = 1.0, x:int = 0, y:int = 0, rotation:float = 0.0, coord:dict = {}):
+        self.glyph = glyph
+        self.scalex = scalex
+        self.scaley = scaley
+        self.x = x
+        self.y = y
+        self.rotation = rotation
+        self.coord = coord
+        # self.selected = False
+
+    def __getitem__(self, item):
+        if hasattr(self, item):
+            return getattr(self, item)
+
+    def getTransformedGlyph(self, round:bool = False) -> RGlyph:
+        glyph = self.glyph.copy()
+        glyph.scaleBy((self.scalex, self.scaley))
+        glyph.rotateBy(self.rotation)
+        glyph.moveBy((self.x, self.y))
+        if round:
+            glyph.round()
+        return glyph
+
+    def getFlatComponentGlyph(self, round:bool = False) -> FlatComponentInstance:
+        glyph = self.glyph.copy()
+        glyph.scaleBy((self.scalex, self.scaley))
+        glyph.rotateBy(self.rotation)
+        if round:
+            glyph.round()
+        return FlatComponentInstance(glyph, self.x, self.y)
+
+class DeepComponentInstance(AtomicInstance):
+
+    def __init__(self, axisPreview:list = [], **kwargs):
+        super().__init__(**kwargs)
+        self.axisPreview = axisPreview
+
 class Preview:
 
     def __init__(self, glyph):
         self.glyph = glyph
-        self.atomicInstances = []
-        self.preview = []
-        self.outlinesPreview = None
+        self.axisPreview = []
+        self.outlinesPreview = RGlyph()
+        self.variationPreview = RGlyph() 
 
-    def computeGlyph(self, axis:str = "", update:bool = True):
-        if not axis:
-            if self.glyph.type == 'deepComponent':
-                self.atomicInstances = self._generateDeepComponent(glyph = self.glyph, preview = False, update = False)
-            elif self.glyph.type == 'characterGlyph':
-                self.atomicInstances = self._generateCharacterGlyph(glyph = self.glyph, preview = False, update = False)
-        else:
-            if self.glyph.type == 'deepComponent':
-                self.atomicInstances = self._generateDeepComponentVariation(axis = axis, preview=False)
-            elif self.glyph.type == 'characterGlyph':
-                self.atomicInstances = self._generateCharacterGlyphVariation(axis = axis, preview=False)
-
-    def computeGlyphPreview(self, axes: list = []):
-        if self.glyph.type == 'deepComponent':
-            self.preview = self._generateDeepComponentsPreview(axes)
-        elif self.glyph.type == 'characterGlyph':
-            self.preview = self._generateCharacterGlyphPreview(axes)
-
-    def _generateOutlinesPreview(self, sourceList: list = [], filtered:list = [], update:bool = True):
+    def _generateOutlinesPreview(self, sourceList:list = [], filtered:list = [], update:bool = True):
         layersInfos = {}
         for axis in sourceList:
             layer = self.glyph._glyphVariations[axis['Axis']].layerName
@@ -79,45 +110,17 @@ class Preview:
                     if len(self.glyph._RGlyph.getLayer(layer)):
                         layersInfos[layer] = value
 
-        self.outlinesPreview = interpolation.deepolation(
+        return interpolation.deepolation(
             RGlyph(), 
             self.glyph.foreground, 
             layersInfos
-            )
-
-    ################ DEEP COMPONENTS ################
-
-    def _generateDeepComponentsPreview(self, sourcelist:list = [], update:bool = True):
-        if update:
-            self.update()
-
-        if not sourcelist:
-            sourcelist = self.glyph.sourcesList
-
-        deepComponentAxisInfos = {}
-        for UIDeepComponentVariation in sourcelist:
-            deepComponentAxisInfos[UIDeepComponentVariation['Axis']] = UIDeepComponentVariation['PreviewValue']
-        if not deepComponentAxisInfos: return
-
-        deepdeepolatedDeepComponent = interpolation.deepdeepolation(
-            self.glyph._deepComponents, 
-            self.glyph._glyphVariations, 
-            deepComponentAxisInfos
-            )
-
-        previewGlyph = DeepComponent("PreviewGlyph")
-        previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
-
-        self.preview = self._generateDeepComponent(
-            previewGlyph, 
-            preview=True, update = False
             )
 
     def _generateDeepComponent(self, glyph:RGlyph = None, preview:bool = True, update:bool = True):
         if update:
             glyph.update()
 
-        atomicInstances = []
+        axisPreview = []
 
         for i, deepComponent in enumerate(glyph._deepComponents):
             layersInfos = {}
@@ -127,82 +130,170 @@ class Preview:
             for axisName, layerName in deepComponent.coord.items():
                 layersInfos[variationGlyph[axisName].layerName] = deepComponent.coord[axisName]
 
-            atomicInstances.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, deepComponent, variationGlyph))
+            axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, deepComponent, variationGlyph))
 
-        return atomicInstances
+        return axisPreview
 
-    def _generateDeepComponentVariation(self, selectedAxis:str = "",  preview:bool = True):
-        atomicInstances = []
+    def _getPreviewGlyph(self, deepComponents = [], variationGlyph = {}, axisInfos = [], glyphName = "PreviewGlyph"):
+        ddpolated = interpolation.deepdeepolation(deepComponents, variationGlyph, axisInfos)
+        previewGlyph = deepComponent.DeepComponent(glyphName)
+        previewGlyph._deepComponents = DeepComponents(ddpolated)
+        return previewGlyph
 
-        for variations in self.glyph._glyphVariations[selectedAxis]
-            for i, variation in enumerate(variations):
-                _atomicElement = copy.deepcopy(variation)
-                _atomicElement.coord.clear()
-                
-                masterAtomicElement = self.glyph._deepComponents[i]
-                layersInfos = {}
-                deepComponentGlyph = self.glyph.getParent()[masterAtomicElement.name].foreground
-                variationGlyph = self.glyph._glyphVariations 
-        
-                for atomicAxisName, layerVariation in self.glyph.getParent()[masterAtomicElement.name]._glyphVariations.items():
-                    _atomicElement.coord[atomicAxisName] = 0
-                    if atomicAxisName in variations.content.deepComponents[i].coord:
-                        _atomicElement.coord[atomicAxisName] = variations.content.deepComponents[i].coord[atomicAxisName]
-                        
-                    layersInfos[layerVariation.layerName] = _atomicElement.coord[atomicAxisName]
+    def _getAtomicInstance(self, deepComponentGlyph, layersInfos, deepComponent, coord):
+        atomicInstance = AtomicInstance(
+            glyph = interpolation.deepolation(RGlyph(), deepComponentGlyph, layersInfos),
+            # name = deepComponent.name,
+            scalex = deepComponent.scalex,
+            scaley = deepComponent.scaley,
+            rotation = deepComponent.rotation,
+            x = deepComponent.x, 
+            y = deepComponent.y,
+            coord = coord
+            )
+        return atomicInstance
+
+class AtomicElementPreview(Preview):
+
+    def __init__(self, glyph):
+        super().__init__(glyph = glyph)
+
+    def computeDeepComponentsPreview(self, sourceList:list = [], filtered:list = [], update:bool = True):
+        self.outlinesPreview = self._generateOutlinesPreview(sourceList = sourceList, filtered = filtered, update = update)
+
+class DeepComponentPreview(Preview):
+
+    def __init__(self, glyph):
+        super().__init__(glyph = glyph)
+
+    def computeDeepComponents(self, axis:str = "", update:bool = True):
+        if axis or self.glyph.selectedSourceAxis:
+            if not axis:
+                axis = self.glyph.selectedSourceAxis
+            self.axisPreview = self._generateDeepComponentVariation(axis = axis, preview=False)
+        else:
+            self.axisPreview = self._generateDeepComponent(glyph = self.glyph, preview = False, update = False)
+    def computeDeepComponentsPreview(self, axes:list = [], update:bool = True):
+        if not axes:
+            axes = self.glyph.sourcesList
+        self.variationPreview = self._generateDeepComponentsPreview(axes, update = update)
+
+    def _generateDeepComponentsPreview(self, sourcelist:list = [], update:bool = True):
+        if update:
+            self.glyph.update()
+
+        if not sourcelist:
+            sourcelist = self.glyph.sourcesList
+
+        deepComponentAxisInfos = {}
+        for UIDeepComponentVariation in sourcelist:
+            deepComponentAxisInfos[UIDeepComponentVariation['Axis']] = UIDeepComponentVariation['PreviewValue']
+        if not deepComponentAxisInfos: return
+
+        variationPreview = self._generateDeepComponent(
+            self._getPreviewGlyph(self.glyph._deepComponents, self.glyph._glyphVariations, deepComponentAxisInfos), 
+            preview=True, update = False)
+
+        previewGlyph = RGlyph()
+        for atomicInstance in variationPreview:
+            for c in atomicInstance.getTransformedGlyph():
+                previewGlyph.appendContour(c)
+        return previewGlyph
+
+    def _generateDeepComponentVariation(self, axis:str = "",  preview:bool = True):
+        axisPreview = []
+
+        for i, variation in enumerate(self.glyph._glyphVariations[axis]):
+            _atomicElement = copy.deepcopy(variation)
+            _atomicElement.coord.clear()
+            
+            masterAtomicElement = self.glyph._deepComponents[i]
+            layersInfos = {}
+            deepComponentGlyph = self.glyph.getParent()[masterAtomicElement.name].foreground
+            variationGlyph = self.glyph._glyphVariations 
     
-                atomicInstances.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, variation.content.deepComponents, variationGlyph))
+            for atomicAxisName, layerVariation in self.glyph.getParent()[masterAtomicElement.name]._glyphVariations.items():
+                _atomicElement.coord[atomicAxisName] = 0
+                if atomicAxisName in self.glyph._glyphVariations[axis][i].coord:
+                    _atomicElement.coord[atomicAxisName] = self.glyph._glyphVariations[axis][i].coord[atomicAxisName]
+                layersInfos[layerVariation.layerName] = _atomicElement.coord[atomicAxisName]
 
-        return atomicInstances
+            axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, variation, _atomicElement.coord.__dict__))
 
-    ################ CHARACTER GLYPHS ################
+        return axisPreview
 
-    def _generateCharacterGlyphVariation(self, selectedAxis:str = "", preview:bool = True):
-        atomicInstances = []
+class CharacterGlyphPreview(Preview):
+
+    def __init__(self, glyph):
+        super().__init__(glyph = glyph)
+
+    def computeDeepComponents(self, axis:str = "", update:bool = True):
+        """
+        Generate a static instance
+        """
+        if not axis:
+            self.axisPreview = self._generateCharacterGlyph(glyph = self.glyph, preview = False, update = False)
+        else:
+            self.axisPreview = self._generateCharacterGlyphVariation(axis = axis, preview=False)
+
+    def computeDeepComponentsPreview(self, axes: list = [], update:bool = True):
+        """
+        Generate a variable instance with parameters
+        """
+        if not axes:
+            axes = self.glyph.sourcesList
+        self.variationPreview = self._generateCharacterGlyphPreview(axes, update = update)
+
+    def _getDeepComponentInstance(self, previewGlyph, deepComponent):
+        glyph = RGlyph()
+        axisPreview = self._generateDeepComponent(previewGlyph, preview=True, update = False)
+        for atomicInstance in axisPreview:
+            for c in atomicInstance.getTransformedGlyph():
+                glyph.appendContour(c)
+        deepComponentInstance = DeepComponentInstance(
+            axisPreview = axisPreview,
+            # name = deepComponent.name,
+            glyph = glyph,
+            coord = deepComponent["coord"],
+            scalex = deepComponent["scalex"],
+            scaley = deepComponent["scaley"],
+            x = deepComponent["x"],
+            y = deepComponent["y"],
+            rotation = deepComponent["rotation"],
+            )
+        return deepComponentInstance
+
+    def _generateCharacterGlyphVariation(self, axis:str = "", preview:bool = True):
+        axisPreview = []
                 
-        for variations in self.glyph._glyphVariations[selectedAxis]
+        for variations in self.glyph._glyphVariations[axis]:
             for i, variation in enumerate(variations):
                 deepComponentName = self.glyph._deepComponents[i].name
                 masterDeepComponent = self.glyph.getParent()[deepComponentName]._deepComponents
                 deepComponentVariations = self.glyph.getParent()[deepComponentName]._glyphVariations
 
-                deepdeepolatedDeepComponent = interpolation.deepdeepolation(masterDeepComponent, deepComponentVariations, variation.coord)
-                previewGlyph = RGlyph()
-                previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
-
-                atomicInstances.append(self._getDeepComponentInstance(previewGlyph, variation))
+                axisPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(masterDeepComponent, deepComponentVariations, variation.coord), variation))
     
-        return atomicInstances
+        return axisPreview
 
     def _generateCharacterGlyph(self, glyph:RGlyph = None, preview:bool = True, update:bool = True):
         if update:
             glyph.update()
 
-        atomicInstances = []
+        axisPreview = []
 
         for i, deepComponent in enumerate(glyph._deepComponents):
             deepComponentGlyph = self.glyph.getParent()[deepComponent.name]
 
-            deepdeepolatedDeepComponent = interpolation.deepdeepolation(
-                deepComponentGlyph._deepComponentsq, 
-                deepComponentGlyph._glyphVariations, 
-                deepComponent.coord
-                )
-            previewGlyph = deepComponent.DeepComponent("PreviewGlyph")
-            previewGlyph._deepComponents = deepdeepolatedDeepComponent
+            axisPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(deepComponentGlyph._deepComponents, deepComponentGlyph._glyphVariations, deepComponent.coord), deepComponent))
 
-            atomicInstances.append(self._getDeepComponentInstance(previewGlyph, deepComponent))
-
-        return atomicInstances
+        return axisPreview
 
     def _generateCharacterGlyphPreview(self, sourcelist:list = [], update:bool = True):
         if update:
             self.glyph.update()
 
-        self.preview = []
-
-        if not sourcelist:
-            sourcelist = self.sourcesList
+        self.variationPreview = []
 
         characterGlyphAxisInfos = {}
         for UICharacterGlyphVariation in sourcelist:
@@ -210,84 +301,20 @@ class Preview:
         if not characterGlyphAxisInfos: return
 
         outputCG = interpolation.deepdeepdeepolation(
-            self._deepComponents, 
-            self._glyphVariations, 
+            self.glyph._deepComponents, 
+            self.glyph._glyphVariations, 
             characterGlyphAxisInfos
             )
 
         for j, deepComponentInstance in enumerate(outputCG):
-            glyph = self.currentFont[deepComponentInstance['name']]
-        
-            deepdeepolatedDeepComponent = interpolation.deepdeepolation(
-                glyph._deepComponents, 
-                glyph._glyphVariations, 
-                deepComponentInstance['coord']
-                )
+            glyph = self.glyph.getParent()[deepComponentInstance['name']]
 
-            previewGlyph = deepComponent.DeepComponent("PreviewGlyph")
-            previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
-
-            self.preview.append(self._getDeepComponentInstance(previewGlyph, deepComponentInstance))                
+            self.variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), deepComponentInstance))                
 
         if self.glyph.getParent()._RFont.lib.get('robocjk.fontVariations', ''):
 
-            self._generateOutlinesPreview(
+            self.outlinesPreview = self._generateOutlinesPreview(
                 sourcelist = sourcelist, 
                 filtered = self.glyph.getParent()._RFont.lib['robocjk.fontVariations']
                 )
 
-    def _getAtomicInstance(self, deepComponentGlyph, layersInfos, deepComponent, variationGlyph):
-        atomicInstance = AtomicInstance(
-            glyph = interpolation.deepolation(RGlyph(), deepComponentGlyph, layersInfos),
-            name = deepComponent.name,
-            scalex = deepComponent.scalex,
-            scaley = deepComponent.scaley,
-            rotation = deepComponent.rotation,
-            x = deepComponent.x, 
-            y = deepComponent.y,
-            variationGlyph = variationGlyph
-            )
-        return atomicInstance
-
-    def _getDeepComponentInstance(self, previewGlyph, deepComponent):
-        deepComponentInstance = DeepComponentInstance(
-            atomicInstances = self._generateDeepComponent(previewGlyph, preview=True, update = False),
-            name = deepComponent.name,
-            variationGlyph = deepComponent.coord,
-            scalex = deepComponent.scalex,
-            scaley = deepComponent.scaley,
-            x = deepComponent.x,
-            y = deepComponent.y,
-            rotation = deepComponent.rotation,
-            )
-        return deepComponentInstance
-
-class AtomicInstance:
-
-    def __init__(self, 
-            glyph:RGlyph = None, 
-            name:str = "", 
-            scalex:float = 0.0,
-            scaley:float = 0.0, 
-            rotation:int = 0, 
-            x:float = 0.0,
-            y:float = 0.0,
-            variationGlyph:dict = {}):
-        self.glyph = glyph
-        self.name = name
-        self.scalex = scalex
-        self.scaley = scaley
-        self.rotation = rotation
-        self.x = x
-        self.y = y
-        self.variationGlyph = variationGlyph
-
-    def __getitem__(self, item):
-        if hasattr(self, item):
-            return getattr(self, item)
-
-class DeepComponentInstance(AtomicInstance):
-
-    def __init__(self, atomicInstance:list = [], **kwargs):
-        super().__init__(**kwargs)
-        self.atomicInstances = atomicInstance

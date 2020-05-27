@@ -192,9 +192,9 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = True):
-        self.currentGlyph.computeDeepComponentsPreview(update = update)
+        self.currentGlyph.preview.computeDeepComponentsPreview(update = True)
         if self.isAtomic: return
-        self.currentGlyph.computeDeepComponents(update = False)
+        self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
 
     def glyphWindowWillClose(self, notification):
         # self.closeimportDCFromCG()
@@ -403,9 +403,14 @@ class RoboCJKController(object):
         elif self.isCharacterGlyph:
             element = self.characterGlyphView
 
+        if not self.currentGlyph.selectedSourceAxis:
+            data = self.currentGlyph._deepComponents
+        else:
+            data = self.currentGlyph._glyphVariations[self.currentGlyph.selectedSourceAxis]
+
         l = []
         if len(self.currentGlyph.selectedElement) == 1:
-            for axisName, value in self.currentGlyph.selectedElementCoord.items():
+            for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
                 l.append({'Axis':axisName, 'PreviewValue':value})
         element.slidersList.set(l)
         self.sliderValue = None

@@ -322,7 +322,7 @@ class TextCenter:
         glyph = self.RCJKI.currentFont[info["glyph"].name]
         scale = info["scale"]
         # if self.sourcesList and glyph.glyphVariations and glyph.type != "atomicElement":
-        #     glyph.computeDeepComponentsPreview(self.sourcesList)
+        #     glyph.preview.computeDeepComponentsPreview(self.sourcesList)
         #     self.RCJKI.drawer.drawGlyph(
         #         glyph, 
         #         scale, 
@@ -332,7 +332,7 @@ class TextCenter:
         #         drawSelectedElements = False
         #         )
         if self.sourcesList and glyph.glyphVariations:
-            glyph.computeDeepComponentsPreview(self.sourcesList)
+            glyph.preview.computeDeepComponentsPreview(self.sourcesList)
             if glyph.type == 'characterGlyph':
                 self.RCJKI.drawer.drawCharacterGlyphPreview(
                     glyph,
@@ -349,7 +349,7 @@ class TextCenter:
                     )
         else:
             if glyph.type in ['deepComponent', 'characterGlyph']:
-                glyph.computeDeepComponents()
+                glyph.preview.computeDeepComponents()
                 self.RCJKI.drawer.drawGlyphAtomicInstance(
                     glyph,
                     (0, 0, 0, 1),

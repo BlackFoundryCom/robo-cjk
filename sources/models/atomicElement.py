@@ -20,12 +20,13 @@ from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 from fontTools.pens.recordingPen import RecordingPen
 from mojo.roboFont import *
 from imp import reload
-from models import glyph, component
+from models import glyph, component, glyphPreview
 from utils import interpolation, decorators
 reload(decorators)
 reload(interpolation)
 reload(glyph)
 reload(component)
+reload(glyphPreview)
 glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph
@@ -44,6 +45,7 @@ class AtomicElement(Glyph):
         self._glyphVariations = VariationGlyphs()
         self.name = name
         self.type = "atomicElement"
+        self.preview = glyphPreview.AtomicElementPreview(self)
         self.save()
 
     @property
@@ -70,17 +72,17 @@ class AtomicElement(Glyph):
     def removeGlyphVariation(self, axisName):
         self._glyphVariations.removeAxis(axisName)
 
-    def computeDeepComponentsPreview(self, update = False):
-        layersInfos = {}
-        for d in self.sourcesList:
-            layer = self._glyphVariations[d['Axis']].layerName
-            value = d['PreviewValue']
-            layersInfos[layer] = value
-        self.preview = interpolation.deepolation(
-            RGlyph(), 
-            self.foreground, 
-            layersInfos
-            )
+    # def computeDeepComponentsPreview(self, update = False):
+    #     layersInfos = {}
+    #     for d in self.sourcesList:
+    #         layer = self._glyphVariations[d['Axis']].layerName
+    #         value = d['PreviewValue']
+    #         layersInfos[layer] = value
+    #     self.preview = interpolation.deepolation(
+    #         RGlyph(), 
+    #         self.foreground, 
+    #         layersInfos
+    #         )
 
     def save(self):
         self.lib.clear()

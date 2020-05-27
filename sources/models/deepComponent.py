@@ -20,8 +20,9 @@ from mojo.roboFont import *
 from imp import reload
 from models import glyph
 reload(glyph)
-from models import component
+from models import component, glyphPreview
 reload(component)
+reload(glyphPreview)
 from utils import interpolation, decorators
 reload(interpolation)
 reload(decorators)
@@ -54,6 +55,7 @@ class DeepComponent(Glyph):
         self.selectedElement = []
         self.name = name
         self.type = "deepComponent"
+        self.preview = glyphPreview.DeepComponentPreview(self)
         self.save()
 
     @property
@@ -103,10 +105,15 @@ class DeepComponent(Glyph):
                 self.addAtomicElementNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
     def _getElements(self):
-        if self.computedAtomicInstances:
-            return self._deepComponents
-        elif self.computedAtomicSelectedSourceInstances:
+        # if self.computedAtomicInstances:
+        #     return self._deepComponents
+        # elif self.computedAtomicSelectedSourceInstances:
+        #     return self._glyphVariations[self.selectedSourceAxis]
+
+        if self.selectedSourceAxis:
             return self._glyphVariations[self.selectedSourceAxis]
+        else:
+            return self._deepComponents
 
     def addGlyphVariation(self, newAxisName):
         self._glyphVariations.addAxis(newAxisName, self._deepComponents)
@@ -156,98 +163,98 @@ class DeepComponent(Glyph):
     def removeVariationAxis(self, name):
         self._glyphVariations.removeAxis(name)
 
-    def computeDeepComponents(self, update = True):
-        #### IN PREVIEW CLASS
-        if update:
-            self.update()
-        self.computedAtomicSelectedSourceInstances = []
-        self.computedAtomicInstances = []
+    # def computeDeepComponents(self, update = True):
+    #     #### IN PREVIEW CLASS
+    #     if update:
+    #         self.update()
+    #     self.computedAtomicSelectedSourceInstances = []
+    #     self.computedAtomicInstances = []
         
-        if self.selectedSourceAxis is None:
-            self.computedAtomicInstances = self.generateDeepComponent(
-                self, 
-                preview=False,
-                update = False
-                )
-        else:
-            self.computedAtomicSelectedSourceInstances = self.generateDeepComponentVariation(
-                self.selectedSourceAxis,
-                preview=False,
-                )
+    #     if self.selectedSourceAxis is None:
+    #         self.computedAtomicInstances = self.generateDeepComponent(
+    #             self, 
+    #             preview=False,
+    #             update = False
+    #             )
+    #     else:
+    #         self.computedAtomicSelectedSourceInstances = self.generateDeepComponentVariation(
+    #             self.selectedSourceAxis,
+    #             preview=False,
+    #             )
 
-    def computeDeepComponentsPreview(self, sourcelist = [], update = True):
-        if update:
-            self.update()
-        self.preview = []
+    # def computeDeepComponentsPreview(self, sourcelist = [], update = True):
+    #     if update:
+    #         self.update()
+    #     self.preview = []
 
-        if not sourcelist:
-            sourcelist = self.sourcesList
+    #     if not sourcelist:
+    #         sourcelist = self.sourcesList
 
-        deepComponentAxisInfos = {}
-        for UIDeepComponentVariation in sourcelist:
-            deepComponentAxisInfos[UIDeepComponentVariation['Axis']] = UIDeepComponentVariation['PreviewValue']
-        if not deepComponentAxisInfos: return
+    #     deepComponentAxisInfos = {}
+    #     for UIDeepComponentVariation in sourcelist:
+    #         deepComponentAxisInfos[UIDeepComponentVariation['Axis']] = UIDeepComponentVariation['PreviewValue']
+    #     if not deepComponentAxisInfos: return
 
-        deepdeepolatedDeepComponent = interpolation.deepdeepolation(
-            self._deepComponents, 
-            self._glyphVariations, 
-            deepComponentAxisInfos
-            )
+    #     deepdeepolatedDeepComponent = interpolation.deepdeepolation(
+    #         self._deepComponents, 
+    #         self._glyphVariations, 
+    #         deepComponentAxisInfos
+    #         )
 
-        previewGlyph = DeepComponent("PreviewGlyph")
-        previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
+    #     previewGlyph = DeepComponent("PreviewGlyph")
+    #     previewGlyph._deepComponents = DeepComponents(deepdeepolatedDeepComponent)
 
-        self.preview = self.generateDeepComponent(
-            previewGlyph, 
-            preview=True, update = False
-            )
+    #     self.preview = self.generateDeepComponent(
+    #         previewGlyph, 
+    #         preview=True, update = False
+    #         )
 
-    def generateDeepComponentVariation(self, selectedSourceAxis,  preview=True):
-        #### IN PREVIEW CLASS
-        ### CLEANING TODO ###
-        _lib = {}
-        atomicSelectedSourceInstances = []
-        for deepComponentAxisName, deepComponentVariation in self._glyphVariations.items():
-            _lib[deepComponentAxisName] = deepComponentVariation
+    # def generateDeepComponentVariation(self, selectedSourceAxis,  preview=True):
+    #     #### IN PREVIEW CLASS
+    #     ### CLEANING TODO ###
+    #     _lib = {}
+    #     atomicSelectedSourceInstances = []
+    #     for deepComponentAxisName, deepComponentVariation in self._glyphVariations.items():
+    #         _lib[deepComponentAxisName] = deepComponentVariation
             
-            if deepComponentAxisName == selectedSourceAxis:
-                _deepComponentVariation = VariationGlyphsInfos()
-                for i, sourceAtomicElements in enumerate(deepComponentVariation):
-                    _atomicElement = copy.deepcopy(sourceAtomicElements)
-                    _atomicElement['coord'] = {}
+    #         if deepComponentAxisName == selectedSourceAxis:
+    #             _deepComponentVariation = VariationGlyphsInfos()
+    #             for i, sourceAtomicElements in enumerate(deepComponentVariation):
+    #                 _atomicElement = copy.deepcopy(sourceAtomicElements)
+    #                 _atomicElement['coord'] = {}
                     
-                    masterAtomicElement = self._deepComponents[i]
+    #                 masterAtomicElement = self._deepComponents[i]
                      
-                    layersInfos = {}
-                    atomicVariations = self.currentFont[masterAtomicElement['name']]._glyphVariations
+    #                 layersInfos = {}
+    #                 atomicVariations = self.currentFont[masterAtomicElement['name']]._glyphVariations
             
-                    for atomicAxisName, layerInfos in atomicVariations.items():
-                        if atomicAxisName in deepComponentVariation[i]['coord']:
-                            _atomicElement['coord'][atomicAxisName] = deepComponentVariation[i]['coord'][atomicAxisName]
-                        else:
-                            _atomicElement['coord'][atomicAxisName] = 0
-                        # if self.selectedElement == (i, masterAtomicElement['name']) and self.sliderName == atomicAxisName  and preview == False and self.sliderValue:
-                        #     _atomicElement['coord'][atomicAxisName] = float(self.sliderValue)
-                        layersInfos[layerInfos.layerName] = _atomicElement['coord'][atomicAxisName]
+    #                 for atomicAxisName, layerInfos in atomicVariations.items():
+    #                     if atomicAxisName in deepComponentVariation[i]['coord']:
+    #                         _atomicElement['coord'][atomicAxisName] = deepComponentVariation[i]['coord'][atomicAxisName]
+    #                     else:
+    #                         _atomicElement['coord'][atomicAxisName] = 0
+    #                     # if self.selectedElement == (i, masterAtomicElement['name']) and self.sliderName == atomicAxisName  and preview == False and self.sliderValue:
+    #                     #     _atomicElement['coord'][atomicAxisName] = float(self.sliderValue)
+    #                     layersInfos[layerInfos.layerName] = _atomicElement['coord'][atomicAxisName]
         
-                    atomicElementGlyph = self.currentFont[masterAtomicElement['name']].foreground#getLayer('foreground')
-                    atomicSelectedSourceInstanceGlyph = interpolation.deepolation(
-                        RGlyph(), 
-                        atomicElementGlyph, 
-                        layersInfos
-                        )
+    #                 atomicElementGlyph = self.currentFont[masterAtomicElement['name']].foreground#getLayer('foreground')
+    #                 atomicSelectedSourceInstanceGlyph = interpolation.deepolation(
+    #                     RGlyph(), 
+    #                     atomicElementGlyph, 
+    #                     layersInfos
+    #                     )
 
-                    atomicSelectedSourceInstanceGlyph.scaleBy((sourceAtomicElements['scalex'], sourceAtomicElements['scaley']))
-                    atomicSelectedSourceInstanceGlyph.rotateBy(sourceAtomicElements['rotation'])
-                    atomicSelectedSourceInstanceGlyph.moveBy((sourceAtomicElements['x'], sourceAtomicElements['y']))
-                    # atomicSelectedSourceInstanceGlyph.round()
-                    atomicSelectedSourceInstances.append({masterAtomicElement['name']:(atomicSelectedSourceInstanceGlyph, deepComponentVariation, deepComponentVariation[i]['coord'])})
+    #                 atomicSelectedSourceInstanceGlyph.scaleBy((sourceAtomicElements['scalex'], sourceAtomicElements['scaley']))
+    #                 atomicSelectedSourceInstanceGlyph.rotateBy(sourceAtomicElements['rotation'])
+    #                 atomicSelectedSourceInstanceGlyph.moveBy((sourceAtomicElements['x'], sourceAtomicElements['y']))
+    #                 # atomicSelectedSourceInstanceGlyph.round()
+    #                 atomicSelectedSourceInstances.append({masterAtomicElement['name']:(atomicSelectedSourceInstanceGlyph, deepComponentVariation, deepComponentVariation[i]['coord'])})
                 
-                    _deepComponentVariation.initContent(_atomicElement)   
+    #                 _deepComponentVariation.initContent(_atomicElement)   
                                  
-                _lib[deepComponentAxisName] = _deepComponentVariation 
-        # self._glyphVariations = VariationGlyphs(_lib)
-        return atomicSelectedSourceInstances
+    #             _lib[deepComponentAxisName] = _deepComponentVariation 
+    #     # self._glyphVariations = VariationGlyphs(_lib)
+    #     return atomicSelectedSourceInstances
 
     def save(self):
         self.lib.clear()

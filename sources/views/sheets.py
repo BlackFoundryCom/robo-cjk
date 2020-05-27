@@ -879,7 +879,7 @@ class LockController:
         mjdt.scale(s, s)
         mjdt.translate(350, 350)
         if glyph.type != "atomicElement":
-            glyph.computeDeepComponents()
+            glyph.preview.computeDeepComponents()
             self.RCJKI.drawer.drawGlyphAtomicInstance(
                 glyph,
                 (0, 0, 0, 1),

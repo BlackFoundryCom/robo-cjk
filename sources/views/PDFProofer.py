@@ -106,13 +106,13 @@ class UfoText(Textbox):
     #         charName = files.unicodeName(char)
     #         try:
     #             def yieldAtomicInstanceGlyph(glyph):
-    #                 glyph.computeDeepComponents()
+    #                 glyph.preview.computeDeepComponents()
     #                 yield (x, y), glyph, glyph.atomicInstancesGlyphs
     #                 for c in glyph.flatComponents:
     #                     yield from yieldAtomicInstanceGlyph(self.RCJKI.currentFont[c.baseGlyph])
 
     #             rglyph = self.RCJKI.currentFont[charName] 
-    #             # rglyph.computeDeepComponents()
+    #             # rglyph.preview.computeDeepComponents()
     #             yield from yieldAtomicInstanceGlyph(rglyph)
                 
     #             x += rglyph.width + self.tracking * (1000 / self.fontSize)
@@ -132,21 +132,21 @@ class UfoText(Textbox):
             try:
                 rglyph = self.RCJKI.currentFont[charName] 
                 # if not self.sourceList:
-                rglyph.computeDeepComponents()
+                rglyph.preview.computeDeepComponents()
                     # yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
                 # else:
                 if rglyph._glyphVariations:
-                    rglyph.computeDeepComponentsPreview(self.sourceList)
+                    rglyph.preview.computeDeepComponentsPreview(self.sourceList)
                 yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
                 
                 for c in rglyph.flatComponents:
                     g = self.RCJKI.currentFont[c.baseGlyph]
                     # if not self.sourceList:
-                    g.computeDeepComponents()
+                    g.preview.computeDeepComponents()
                         # yield (x, y), g, g.atomicInstancesGlyphs
                     # else:
                     if g._glyphVariations:
-                        g.computeDeepComponentsPreview(self.sourceList)
+                        g.preview.computeDeepComponentsPreview(self.sourceList)
                     yield (x, y), g, g.atomicInstancesGlyphs
                     
                 

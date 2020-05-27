@@ -207,7 +207,7 @@ class AtomicView(CanvasGroup):
 
     def computeCurrentGlyph(self, sender):
         self.RCJKI.currentGlyph.sourcesList = sender.get()
-        self.RCJKI.currentGlyph.computeDeepComponentsPreview()
+        self.RCJKI.currentGlyph.preview.computeDeepComponentsPreview(sender.get())
 
 class DCCG_View(CanvasGroup):
 
@@ -324,6 +324,7 @@ class DCCG_View(CanvasGroup):
         self.slidersList.set([])
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
+
         self.RCJKI.updateDeepComponent(update = False)
         
     @lockedProtect
@@ -536,7 +537,7 @@ class GlyphPreviewCanvas(CanvasGroup):
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
-        self.glyph.computeDeepComponentsPreview()
+        self.glyph.preview.computeDeepComponentsPreview()
         if self.glyphType == 'atomicElement':
             self.drawer.drawAtomicElementPreview(
                 self.glyph, 
@@ -546,7 +547,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                 )
 
         elif self.glyphType == 'deepComponent':
-            if self.glyph.preview:
+            if self.glyph.preview.variationPreview:
                 self.drawer.drawDeepComponentPreview(
                     self.glyph, 
                     scale, 
@@ -554,7 +555,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                     strokecolor = (0, 0, 0, 0)
                     )
             else:
-                self.glyph.computeDeepComponents()
+                self.glyph.preview.computeDeepComponents()
                 self.drawer.drawGlyphAtomicInstance(
                     self.glyph, 
                     (0, 0, 0, 1), 
@@ -563,7 +564,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                     )
 
         elif self.glyphType == 'characterGlyph':
-            if self.glyph.preview:
+            if self.glyph.preview.variationPreview:
                 self.drawer.drawCharacterGlyphPreview(
                     self.glyph, 
                     scale, 
@@ -571,7 +572,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                     strokecolor = (0, 0, 0, 0)
                     )
             else:
-                self.glyph.computeDeepComponents()
+                self.glyph.preview.computeDeepComponents()
                 self.drawer.drawGlyphAtomicInstance(
                     self.glyph, 
                     (0, 0, 0, 1), 

@@ -894,7 +894,7 @@ class RoboCJKView(BaseWindowController):
                 f.insertGlyph(g, name=n)
                 continue
 
-            g.computeDeepComponents()
+            g.preview.computeDeepComponents()
             f.newGlyph(n)
             f[n].width = g.width
 
