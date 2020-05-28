@@ -88,9 +88,12 @@ class Glyph(RGlyph):
                     deepComponent.coord.add(axis, 0)
                     for glyphVariation in self._glyphVariations.infos:
                         glyphVariation.content.deepComponents[index].coord.add(axis, 0)
-        
-        self._deepComponents.removeDeepComponents(deepComponentToRemove)
-        self._glyphVariations.removeDeepComponents(deepComponentToRemove)
+
+        self.removeDeepComponents(deepComponentToRemove)
+
+    def removeDeepComponents(self, deepComponents:list = []):
+        self._deepComponents.removeDeepComponents(deepComponents)
+        self._glyphVariations.removeDeepComponents(deepComponents)
 
     @glyphUndo
     def keyDown(self, keys):
@@ -110,6 +113,12 @@ class Glyph(RGlyph):
             x = 90*modifiers[0]*modifiers[4]*inputKey[0] + 9*modifiers[0]*inputKey[0] + inputKey[0] 
             y = 90*modifiers[0]*modifiers[4]*inputKey[1] + 9*modifiers[0]*inputKey[1] + inputKey[1]
             self.setPositionToSelectedElements((x, y))
+
+    def _getElements(self):
+        if self.selectedSourceAxis:
+            return self._glyphVariations[self.selectedSourceAxis]
+        else:
+            return self._deepComponents
 
     def _getSelectedElement(self):
         element = self._getElements()
@@ -171,72 +180,3 @@ class Glyph(RGlyph):
             if inside:
                 if index in self.selectedElement: continue
                 self.selectedElement.append(index)
-
-    # def generateDeepComponent(self, g, preview=True, update = True):
-    #     #### IN PREVIEW CLASS
-    #     if update:
-    #         self.update()
-    #     atomicInstances = []
-    #     if not hasattr(g,"_deepComponents"): return
-    #     for i, atomicElement in enumerate(g._deepComponents):
-    #         layersInfos = {}
-            
-    #         # aeGlyph = self.getParent()[atomicElement['name']]
-    #         atomicElementGlyph = self.currentFont[atomicElement['name']].foreground
-    #         variationGlyph = self.currentFont[atomicElement['name']]._glyphVariations
-            
-    #         for axisName, layerName in atomicElement['coord'].items():
-    #             layersInfos[variationGlyph[axisName].layerName] = atomicElement['coord'][axisName]
-                
-    #         atomicInstanceGlyph = interpolation.deepolation(
-    #             RGlyph(), 
-    #             atomicElementGlyph, 
-    #             layersInfos
-    #             )
-    
-    #         atomicInstanceGlyph.scaleBy((atomicElement['scalex'], atomicElement['scaley']))
-    #         atomicInstanceGlyph.rotateBy(atomicElement['rotation'])
-    #         atomicInstanceGlyph.moveBy((atomicElement['x'], atomicElement['y']))  
-    #         # atomicInstanceGlyph.round()
-    #         atomicInstances.append({atomicElement['name']:(atomicInstanceGlyph, variationGlyph, atomicElement['coord'])})
-    #     return atomicInstances
-
-
-    # def generateCharacterGlyph(self, g, preview=True, update = True):
-    #     if update:
-    #         self.update()
-    #     ### CLEANING TODO ###
-    #     _lib = []
-
-    #     deepComponents = []
-    #     for j, dc in enumerate(g._deepComponents):
-    #         # if self.selected == (j, dc['name']) and self.sliderValue and preview==False:
-    #         #     dc['coord'][self.sliderName] = float(self.sliderValue)
-                
-    #         dcGlyph = self.getParent()[dc['name']]
-    #         masterDeepComponent = dcGlyph._deepComponents
-    #         deepComponentVariations = dcGlyph._glyphVariations
-    #         deepComponentAxisInfos = {}
-
-    #         deepComponentAxisInfos = dc['coord'] 
-
-    #         deepdeepolatedDeepComponent = interpolation.deepdeepolation(
-    #             masterDeepComponent, 
-    #             deepComponentVariations, 
-    #             deepComponentAxisInfos
-    #             )
-    #         previewGlyph = deepComponent.DeepComponent("PreviewGlyph")
-    #         previewGlyph._deepComponents = deepdeepolatedDeepComponent
-            
-    #         atomicInstancesPreview = self.generateDeepComponent(previewGlyph, preview=True)
-    #         for e in atomicInstancesPreview:
-    #             for aeName, ae in e.items():
-    #                 ae[0].scaleBy((dc['scalex'], dc['scaley']))
-    #                 ae[0].moveBy((dc['x'], dc['y']))
-    #                 ae[0].rotateBy(dc['rotation'])
-    #                 # ae[0].round()
-    #         deepComponents.append({dc['name']: (dc['coord'], atomicInstancesPreview)})
-    #         _lib.append(dc)
-    #     g._deepComponents = DeepComponents(_lib)
-    #     return deepComponents
-

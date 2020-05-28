@@ -335,7 +335,7 @@ class ComponentWindow():
 
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
-        self.previewGlyph = None
+        self.glyph = None
         self.w = FloatingWindow(
             (0, 0, 240, 80),
             "Composition Rules",
@@ -386,14 +386,13 @@ class ComponentWindow():
         EditingSheet(self, self.RCJKI)
 
     def draw(self):
-        if self.previewGlyph is None: return
+        if self.glyph is None: return
         mjdt.save()
         mjdt.translate(20, 25)
         mjdt.scale(.04)
         mjdt.fill(0, 0, 0, 1)
-        for i, d in enumerate(self.previewGlyph):
-            for atomicInstanceGlyph in d.values():
-                mjdt.drawGlyph(atomicInstanceGlyph[0]) 
+        for atomicInstance in self.glyph.preview.axisPreview:
+            mjdt.drawGlyph(atomicInstance.getTransformedGlyph()) 
         mjdt.restore()
 
     def componentListCallback(self, sender):
@@ -421,11 +420,8 @@ class ComponentWindow():
         if not sel: return
         index = sender.get()[sel[0]]
         self.deepComponentName = "DC_%s_%s"%(self.code, index)
-        glyph = self.RCJKI.currentFont[self.deepComponentName]
-        self.previewGlyph = glyph.generateDeepComponent(
-                glyph, 
-                preview=False,
-                )
+        self.glyph = self.RCJKI.currentFont[self.deepComponentName]
+        self.glyph.preview.computeDeepComponents()
         self.w.canvas2.update()
 
     def variantComponentListdoubleClickCallback(self, sender):
@@ -944,7 +940,7 @@ class RoboCJKView(BaseWindowController):
             #     for c in atomicInstance:
             #         f[n].appendContour(c) 
 
-            # preview = g.generateDeepComponent(g, False)
+            # preview = g.computeDeepComponents(g, False)
             # for d in preview:
             #     for a in d.values():
             #         for c in a[0]:
@@ -954,7 +950,7 @@ class RoboCJKView(BaseWindowController):
 
         # for n in self.RCJKI.currentFont.characterGlyphSet:
         #     g = self.RCJKI.currentFont[n]
-        #     preview = g.generateCharacterGlyph(g, False)
+        #     preview = g.computeDeepComponents(g, False)
         #     f.newGlyph(n)
         #     f[n].width = g.width
         #     for _, AEInstance in g._getAtomicInstanceGlyph(preview):
@@ -1362,7 +1358,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.w = FloatingWindow((200, 150), "Import DC From CG")
-        self.previewGlyph = None
+        self.refGlyph = None
         self.index = None
         self.w.searchGlyph = SearchBox(
             (10, 10, -10, 20),
@@ -1395,10 +1391,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             return
         self.charName = name
         self.refGlyph = self.RCJKI.currentFont[name]
-        self.previewGlyph = self.refGlyph.generateCharacterGlyph(
-                            self.refGlyph, 
-                            preview=True,
-                            )
+        self.refGlyph.preview.computeDeepComponents()
         self.deepComponents = self.refGlyph._deepComponents
         self.glyphVariations = self.refGlyph._glyphVariations
         self.deepComponentsName = [chr(int(dc.name.split("_")[1], 16)) for dc in self.deepComponents]
@@ -1423,19 +1416,16 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         self.RCJKI.updateDeepComponent()
 
     def draw(self):
-        if self.previewGlyph is None: return
+        if self.refGlyph is None: return
         mjdt.save()
         mjdt.translate(20, 21)
         mjdt.scale(.09)
-        for i, e in enumerate(self.previewGlyph):
+        for i, atomicElement in enumerate(self.refGlyph.preview.axisPreview):
             if i == self.index:
                 mjdt.fill(.7, 0, .15, 1)
             else:
                 mjdt.fill(0, 0, 0, 1)
-            for dcCoord, l in e.values():
-                for dcAtomicElements in l:
-                    for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
-                        mjdt.drawGlyph(atomicInstanceGlyph)
+            mjdt.drawGlyph(atomicElement.getTransformedGlyph())
         mjdt.restore()
 
     @updateView

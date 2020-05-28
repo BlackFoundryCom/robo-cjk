@@ -226,10 +226,10 @@ class EditPopoverAlignTool(EditPopover):
         elif self.RCJKI.isDeepComponent and self.glyph.selectedSourceAxis:
             return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
             
-        if self.RCJKI.isCharacterGlyph and self.glyph.computedDeepComponents:
+        if self.RCJKI.isCharacterGlyph and not self.glyph.selectedSourceAxis:
             return self.RCJKI.currentGlyph._deepComponents
             
-        elif self.RCJKI.isCharacterGlyph and self.glyph.computedDeepComponentsVariation:
+        elif self.RCJKI.isCharacterGlyph and self.glyph.selectedSourceAxis:
             return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
 
     def copyCallback(self, sender):

@@ -72,18 +72,6 @@ class AtomicElement(Glyph):
     def removeGlyphVariation(self, axisName):
         self._glyphVariations.removeAxis(axisName)
 
-    # def computeDeepComponentsPreview(self, update = False):
-    #     layersInfos = {}
-    #     for d in self.sourcesList:
-    #         layer = self._glyphVariations[d['Axis']].layerName
-    #         value = d['PreviewValue']
-    #         layersInfos[layer] = value
-    #     self.preview = interpolation.deepolation(
-    #         RGlyph(), 
-    #         self.foreground, 
-    #         layersInfos
-    #         )
-
     def save(self):
         self.lib.clear()
         lib = RLib()

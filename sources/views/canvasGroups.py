@@ -170,9 +170,6 @@ class AtomicView(CanvasGroup):
             else:
                 minValue = float(e["MinValue"])
                 maxValue = float(e["MaxValue"])
-                # print(value, minValue, maxValue)
-                # previewValue = (value - minValue) / (maxValue - minValue + 1e-10)
-                # print(previewValue)
                 newList.append({
                     "Axis":e["Axis"],
                     "Layer":e["Layer"],
@@ -538,46 +535,18 @@ class GlyphPreviewCanvas(CanvasGroup):
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
         self.glyph.preview.computeDeepComponentsPreview()
-        if self.glyphType == 'atomicElement':
-            self.drawer.drawAtomicElementPreview(
+        if self.glyph.preview.variationPreview is not None:
+            self.drawer.drawVariationPreview(
+                    self.glyph, 
+                    scale, 
+                    color = (0, 0, 0, 1), 
+                    strokecolor = (0, 0, 0, 0)
+                    )
+        else:
+            self.glyph.preview.computeDeepComponents()
+            self.drawer.drawAxisPreview(
                 self.glyph, 
+                (0, 0, 0, 1), 
                 scale, 
-                color = (0, 0, 0, 1), 
-                strokecolor = (0, 0, 0, 0)
+                (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
                 )
-
-        elif self.glyphType == 'deepComponent':
-            if self.glyph.preview.variationPreview:
-                self.drawer.drawDeepComponentPreview(
-                    self.glyph, 
-                    scale, 
-                    color = (0, 0, 0, 1), 
-                    strokecolor = (0, 0, 0, 0)
-                    )
-            else:
-                self.glyph.preview.computeDeepComponents()
-                self.drawer.drawGlyphAtomicInstance(
-                    self.glyph, 
-                    (0, 0, 0, 1), 
-                    scale, 
-                    (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
-                    )
-
-        elif self.glyphType == 'characterGlyph':
-            if self.glyph.preview.variationPreview:
-                self.drawer.drawCharacterGlyphPreview(
-                    self.glyph, 
-                    scale, 
-                    color = (0, 0, 0, 1), 
-                    strokecolor = (0, 0, 0, 0)
-                    )
-            else:
-                self.glyph.preview.computeDeepComponents()
-                self.drawer.drawGlyphAtomicInstance(
-                    self.glyph, 
-                    (0, 0, 0, 1), 
-                    scale, 
-                    (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
-                    )
-
-

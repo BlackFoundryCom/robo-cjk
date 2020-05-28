@@ -236,7 +236,7 @@ class SelectDeepComponentSheet():
         self.deepComponentsNames = deepComponentsNames
         self.parent = CurrentGlyphWindow()
         self.parent.sheet = Sheet((300, 400), self.parent.w)
-        self.previewGlyph = None
+        self.glyph = None
 
         self.parent.sheet.canvasPreview = Canvas(
             (0, -220, -0, -20), 
@@ -285,11 +285,8 @@ class SelectDeepComponentSheet():
         self.getDeepComponentPreview(self.deepComponentName)
 
     def getDeepComponentPreview(self, deepComponentName):
-        glyph = self.RCJKI.currentFont[deepComponentName]
-        self.previewGlyph = glyph.generateDeepComponent(
-                glyph, 
-                preview=False,
-                )
+        self.glyph = self.RCJKI.currentFont[deepComponentName]
+        self.glyph.preview.computeDeepComponents()
         self.parent.sheet.canvasPreview.update()
     
     def closeSheet(self, sender):
@@ -300,14 +297,13 @@ class SelectDeepComponentSheet():
         self.RCJKI.updateDeepComponent()
 
     def draw(self):
-        if self.previewGlyph is None: return
+        if self.glyph is None: return
         mjdt.save()
         mjdt.translate(75, 35)
         mjdt.scale(.15)
         mjdt.fill(0, 0, 0, 1)
-        for i, d in enumerate(self.previewGlyph):
-            for atomicInstanceGlyph in d.values():
-                mjdt.drawGlyph(atomicInstanceGlyph[0]) 
+        for atomicinstance in self.glyph.preview.axisPreview:
+            mjdt.drawGlyph(atomicinstance.getTransformedGlyph()) 
         mjdt.restore()
 
 numberFormatter = NumberFormatter()
@@ -880,7 +876,7 @@ class LockController:
         mjdt.translate(350, 350)
         if glyph.type != "atomicElement":
             glyph.preview.computeDeepComponents()
-            self.RCJKI.drawer.drawGlyphAtomicInstance(
+            self.RCJKI.drawer.drawAxisPreview(
                 glyph,
                 (0, 0, 0, 1),
                 s,
