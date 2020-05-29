@@ -32,8 +32,8 @@ DeepComponents = component.DeepComponents
 def compute(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
-        self.preview.computeDeepComponents()
-        self.preview.computeDeepComponentsPreview()
+        self.preview.computeDeepComponents(update = False)
+        self.preview.computeDeepComponentsPreview(update = False)
     return wrapper
 
 
