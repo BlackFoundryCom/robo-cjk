@@ -229,11 +229,13 @@ class CharacterGlyphPreview(Preview):
         """
         Generate a static instance
         """
-        if not axis:
-            self.axisPreview = self._generateCharacterGlyph(glyph = self.glyph, preview = False, update = False)
-        else:
+        if axis or self.glyph.selectedSourceAxis:
+            if not axis:
+                axis = self.glyph.selectedSourceAxis
             self.axisPreview = self._generateCharacterGlyphVariation(axis = axis, preview=False)
-
+        else:
+            self.axisPreview = self._generateCharacterGlyph(glyph = self.glyph, preview = False, update = False)
+            
     def computeDeepComponentsPreview(self, axes: list = [], update:bool = True):
         """
         Generate a variable instance with parameters

@@ -138,13 +138,11 @@ class UfoText(Textbox):
                     for atomicInstance in rglyph.preview.axisPreview:
                         for c in atomicInstance.getTransformedGlyph():
                             glyph.appendContour(c)
-                    # yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
                 else:
-                # if rglyph._glyphVariations:
                     rglyph.preview.computeDeepComponentsPreview(self.sourceList)
                     glyph = rglyph.preview.variationPreview
 
-                yield (x, y), glyph#, rglyph.atomicInstancesGlyphs
+                yield (x, y), glyph
                 
                 for c in rglyph.flatComponents:
                     g = self.RCJKI.currentFont[c.baseGlyph]
@@ -154,20 +152,19 @@ class UfoText(Textbox):
                         for atomicInstance in g.preview.axisPreview:
                             for c in atomicInstance.getTransformedGlyph():
                                 glyph.appendContour(c)
-                        # yield (x, y), g, g.atomicInstancesGlyphs
                     else:
-                    # if g._glyphVariations:
                         g.preview.computeDeepComponentsPreview(self.sourceList)
                         glyph = g.preview.variationPreview
-                    yield (x, y), glyph#, g.atomicInstancesGlyphs
+
+                    yield (x, y), glyph
                     
                 
                 x += rglyph.width + self.tracking * (1000 / self.fontSize)
                 if (x + rglyph.width) // (1000/self.fontSize) > self.position[2]:
                     y -= self.lineHeight
                     x = 0
-            except Exception as e:
-                raise e
+            except:# Exception as e:
+                # raise e
                 continue    
 
 @dataclass            
