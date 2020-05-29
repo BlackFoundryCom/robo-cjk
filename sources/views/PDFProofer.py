@@ -23,6 +23,7 @@ from vanilla.dialogs import putFile
 from drawBot.ui.drawView import DrawView
 from AppKit import NumberFormatter, NSColor
 from mojo.canvas import Canvas
+from mojo.roboFont import RGlyph
 import Cocoa
 try:
     import drawBot as db
@@ -131,30 +132,42 @@ class UfoText(Textbox):
             charName = files.unicodeName(char)
             try:
                 rglyph = self.RCJKI.currentFont[charName] 
-                # if not self.sourceList:
-                rglyph.preview.computeDeepComponents()
+                glyph = RGlyph()
+                if not self.sourceList:
+                    rglyph.preview.computeDeepComponents()
+                    for atomicInstance in rglyph.preview.axisPreview:
+                        for c in atomicInstance.getTransformedGlyph():
+                            glyph.appendContour(c)
                     # yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
-                # else:
-                if rglyph._glyphVariations:
+                else:
+                # if rglyph._glyphVariations:
                     rglyph.preview.computeDeepComponentsPreview(self.sourceList)
-                yield (x, y), rglyph, rglyph.atomicInstancesGlyphs
+                    glyph = rglyph.preview.variationPreview
+
+                yield (x, y), glyph#, rglyph.atomicInstancesGlyphs
                 
                 for c in rglyph.flatComponents:
                     g = self.RCJKI.currentFont[c.baseGlyph]
-                    # if not self.sourceList:
-                    g.preview.computeDeepComponents()
+                    glyph = RGlyph()
+                    if not self.sourceList:
+                        g.preview.computeDeepComponents()
+                        for atomicInstance in g.preview.axisPreview:
+                            for c in atomicInstance.getTransformedGlyph():
+                                glyph.appendContour(c)
                         # yield (x, y), g, g.atomicInstancesGlyphs
-                    # else:
-                    if g._glyphVariations:
+                    else:
+                    # if g._glyphVariations:
                         g.preview.computeDeepComponentsPreview(self.sourceList)
-                    yield (x, y), g, g.atomicInstancesGlyphs
+                        glyph = g.preview.variationPreview
+                    yield (x, y), glyph#, g.atomicInstancesGlyphs
                     
                 
                 x += rglyph.width + self.tracking * (1000 / self.fontSize)
                 if (x + rglyph.width) // (1000/self.fontSize) > self.position[2]:
                     y -= self.lineHeight
                     x = 0
-            except:
+            except Exception as e:
+                raise e
                 continue    
 
 @dataclass            
@@ -758,44 +771,12 @@ class Interface:
                     
                     s = textbox.fontSize/1000
                     db.scale(s, s)
-                    for pos, glyph, atomicInstanceGlyph in textbox.glyphs:
-
+                    for pos, glyph in textbox.glyphs:
                         db.save()
                         db.translate(*pos)
-                        if glyph.preview:
-                            for i, e in enumerate(glyph.preview):
-                                for dcName, (dcCoord, l) in e.items():
-                                    for dcAtomicElements in l:
-                                        for atomicInstanceGlyph in dcAtomicElements.values():
-                                            if export:
-                                                atomicInstanceGlyph[0].round()
-                                            db.drawGlyph(atomicInstanceGlyph[0])  
-                            if glyph.outlinesPreview is not None:
-                                if export:
-                                    glyph.outlinesPreview.round()
-                                db.drawGlyph(glyph.outlinesPreview)
-                        else:
-                            for _, instanceGlyph in atomicInstanceGlyph:
-                                if export:
-                                    instanceGlyph.round()
-                                db.drawGlyph(instanceGlyph)
-                            if export:
-                                glyph.round()
-                            
-                            if glyph.outlinesPreview is not None:
-                                if export:
-                                    glyph.outlinesPreview.round()
-                                db.drawGlyph(glyph.outlinesPreview)
-                            else:
-                                db.drawGlyph(glyph)
-                        # self.pdf.RCJKI.drawer.drawGlyph(
-                        #     glyph, 
-                        #     s, 
-                        #     (0, 0, 0, 1),
-                        #     (0, 0, 0, 0),
-                        #     (0, 0, 0, 1),
-                        #     drawSelectedElements = False
-                        #     )
+                        if export:
+                            glyph.round()
+                        db.drawGlyph(glyph)
                         db.restore()
                     db.restore()
                 db.restore()
