@@ -1410,7 +1410,6 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         for variation in self.RCJKI.currentGlyph._glyphVariations:
             if variation in self.glyphVariations:
                 dc = copy.deepcopy(self.glyphVariations[variation][self.index])
-                print(self.RCJKI.currentGlyph._glyphVariations[variation])
                 self.RCJKI.currentGlyph._glyphVariations[variation][-1].set(dc._toDict())
 
         self.RCJKI.updateDeepComponent()

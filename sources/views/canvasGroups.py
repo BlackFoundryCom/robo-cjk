@@ -534,7 +534,7 @@ class GlyphPreviewCanvas(CanvasGroup):
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
-        self.glyph.preview.computeDeepComponentsPreview()
+        self.glyph.preview.computeDeepComponentsPreview(update = False)
         if self.glyph.preview.variationPreview is not None:
             self.drawer.drawVariationPreview(
                     self.glyph, 
@@ -543,7 +543,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                     strokecolor = (0, 0, 0, 0)
                     )
         else:
-            self.glyph.preview.computeDeepComponents()
+            self.glyph.preview.computeDeepComponents(update = False)
             self.drawer.drawAxisPreview(
                 self.glyph, 
                 (0, 0, 0, 1), 

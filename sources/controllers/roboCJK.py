@@ -192,7 +192,7 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = True):
-        self.currentGlyph.preview.computeDeepComponentsPreview(update = True)
+        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
         self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
 
