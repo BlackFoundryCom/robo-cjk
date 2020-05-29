@@ -126,6 +126,7 @@ class Preview:
             variationGlyph = self.glyph.getParent()[deepComponent.name]._glyphVariations
             
             for axisName, layerName in deepComponent.coord.items():
+                if variationGlyph[axisName] is None: continue
                 layersInfos[variationGlyph[axisName].layerName] = deepComponent.coord[axisName]
 
             axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, deepComponent, variationGlyph))
