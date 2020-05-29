@@ -426,7 +426,7 @@ class ComponentWindow():
 
     def variantComponentListdoubleClickCallback(self, sender):
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
 
 class RoboCJKView(BaseWindowController):

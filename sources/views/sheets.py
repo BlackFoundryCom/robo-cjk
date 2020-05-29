@@ -89,7 +89,7 @@ class SelectLayerSheet():
             return
         self.RCJKI.currentGlyph.addGlyphVariation(newAxisName, newLayerName)
         self.RCJKI.updateListInterface()
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
         
     def closeSheet(self, sender):
         self.parent.sheet.close()
@@ -172,7 +172,7 @@ class SelectAtomicElementSheet():
     def addAtomicElement(self, sender):
         if self.atomicElementName is None: return
         self.RCJKI.currentGlyph.addAtomicElementNamed(self.atomicElementName)
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     def draw(self):
         if self.previewGlyph is None: return
@@ -224,7 +224,7 @@ class SelectFontVariationSheet():
         isel = len(source)
         self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
         self.view.sourcesList.setSelection([isel-1])
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
         
     def closeSheet(self, sender):
         self.parent.sheet.close()
@@ -294,7 +294,7 @@ class SelectDeepComponentSheet():
     
     def addDeepComponentList(self, sender):
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     def draw(self):
         if self.glyph is None: return

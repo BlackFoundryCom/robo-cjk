@@ -115,8 +115,8 @@ class DeepComponent(Glyph):
         self._deepComponents.addDeepComponent(d)
         self._glyphVariations.addDeepComponent(d)
 
-        self.preview.computeDeepComponentsPreview()
-        self.preview.computeDeepComponents()
+        self.preview.computeDeepComponentsPreview(update = False)
+        self.preview.computeDeepComponents(update = False)
 
     def removeAtomicElementAtIndex(self):
         if not self.selectedElement: return
