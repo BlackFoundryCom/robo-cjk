@@ -126,8 +126,8 @@ class CharacterGlyph(Glyph):
         self._deepComponents.addDeepComponent(d)
         self._glyphVariations.addDeepComponent(d)
 
-        self.computeDeepComponentsPreview()
-        self.computeDeepComponents()
+        self.preview.computeDeepComponentsPreview()
+        self.preview.computeDeepComponents()
 
     def addCharacterGlyphNamedVariationToGlyph(self, name):
         if name in self._glyphVariations.axes: return
