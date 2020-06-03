@@ -525,7 +525,7 @@ class GlyphPreviewCanvas(CanvasGroup):
         d = self.glyph._glyphVariations
         if self.glyph.type ==  "atomicElement":
             self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0.5} for axisName, layer in  d.items()
+                {"Axis":axisName, "Layer":layer, "PreviewValue":0.5} for axisName, layer in  d.items()
                 ]
         else:
             self.glyph.sourcesList = [

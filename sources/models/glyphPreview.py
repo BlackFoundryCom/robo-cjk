@@ -69,6 +69,8 @@ class AtomicInstance:
 
     @property
     def transformedGlyph(self):
+        if self._transformedGlyph is None:
+            self.getTransformedGlyph()
         return self._transformedGlyph
 
     def getTransformedGlyph(self, round:bool = False) -> RGlyph:
@@ -104,6 +106,10 @@ class Preview:
 
     def _generateOutlinesPreview(self, sourceList:list = [], filtered:list = [], update:bool = True):
         layersInfos = {}
+
+        if not sourceList:
+            sourceList = self.glyph.sourcesList
+
         for axis in sourceList:
             layer = self.glyph._glyphVariations[axis['Axis']].layerName
             value = axis['PreviewValue']
@@ -330,9 +336,12 @@ class CharacterGlyphPreview(Preview):
                 )
 
         previewGlyph = RGlyph()
-        for preview in [variationPreview, outlinesPreview]:
-            for atomicInstance in preview:
-                for c in atomicInstance.getTransformedGlyph():
-                    previewGlyph.appendContour(c)
+        # for preview in [variationPreview]:
+        for atomicInstance in variationPreview:
+            for c in atomicInstance.getTransformedGlyph():
+                previewGlyph.appendContour(c)
+
+        for c in outlinesPreview:
+            previewGlyph.appendContour(c)
         return previewGlyph
 
