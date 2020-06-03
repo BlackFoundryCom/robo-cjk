@@ -400,20 +400,24 @@ class Font():
 
     @gitCoverage(msg = 'remove Glyph')
     def removeGlyph(self, glyphName:str): 
-        return
+        # return
         fileName = "%s.glif"%files.userNameToFileName(glyphName)
         glyph = self[glyphName]
         glyphType = glyph.type
         if fileName in os.listdir(os.path.join(self.fontPath, glyphType)):
             path = os.path.join(self.fontPath, glyphType, fileName)
             os.remove(path)
-
-            for _, layer, _ in os.walk(path):
-                if filename in os.listdir(os.path.join(path, layer)):
-                    layerPath = os.path.join(path, layer, filename)
-                    os.remove(path)
+            folderPath = os.path.join(self.fontPath, glyphType)
+            for _, layers, _ in os.walk(folderPath):
+                for layer in layers:
+                    if fileName in os.listdir(os.path.join(folderPath, layer)):
+                        layerPath = os.path.join(folderPath, layer, fileName)
+                        os.remove(layerPath)
 
         self._RFont.removeGlyph(glyphName)
+        for layer in self._RFont.layers:
+            if glyphName in layer.keys():
+                layer.removeGlyph(glyphName) 
         self.locker.removeFiles([glyphName])        
 
     @gitCoverage(msg = 'font save')

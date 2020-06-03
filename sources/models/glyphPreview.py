@@ -61,10 +61,15 @@ class AtomicInstance:
         self.y = y
         self.rotation = rotation
         self.coord = coord
+        self._transformedGlyph = None
 
     def __getitem__(self, item):
         if hasattr(self, item):
             return getattr(self, item)
+
+    @property
+    def transformedGlyph(self):
+        return self._transformedGlyph
 
     def getTransformedGlyph(self, round:bool = False) -> RGlyph:
         glyph = self.glyph.copy()
@@ -73,6 +78,7 @@ class AtomicInstance:
         glyph.moveBy((self.x, self.y))
         if round:
             glyph.round()
+        self._transformedGlyph = glyph
         return glyph
 
     def getFlatComponentGlyph(self, round:bool = False) -> FlatComponentInstance:
@@ -121,15 +127,18 @@ class Preview:
         axisPreview = []
 
         for i, deepComponent in enumerate(glyph._deepComponents):
-            layersInfos = {}
-            deepComponentGlyph = self.glyph.getParent()[deepComponent.name].foreground
-            variationGlyph = self.glyph.getParent()[deepComponent.name]._glyphVariations
-            
-            for axisName, layerName in deepComponent.coord.items():
-                if variationGlyph[axisName] is None: continue
-                layersInfos[variationGlyph[axisName].layerName] = deepComponent.coord[axisName]
+            try:
+                layersInfos = {}
+                deepComponentGlyph = self.glyph.getParent()[deepComponent.name].foreground
+                variationGlyph = self.glyph.getParent()[deepComponent.name]._glyphVariations
+                
+                for axisName, layerName in deepComponent.coord.items():
+                    if variationGlyph[axisName] is None: continue
+                    layersInfos[variationGlyph[axisName].layerName] = deepComponent.coord[axisName]
 
-            axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, deepComponent, variationGlyph))
+                axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, deepComponent, variationGlyph))
+            except:
+                continue
 
         return axisPreview
 
@@ -306,9 +315,11 @@ class CharacterGlyphPreview(Preview):
             )
 
         for j, deepComponentInstance in enumerate(outputCG):
-            glyph = self.glyph.getParent()[deepComponentInstance['name']]
-
-            variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), self.glyph._deepComponents[j]))                
+            try:
+                glyph = self.glyph.getParent()[deepComponentInstance['name']]
+                variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), self.glyph._deepComponents[j]))                
+            except:
+                continue
 
         outlinesPreview = []
         if self.glyph.getParent()._RFont.lib.get('robocjk.fontVariations', ''):
