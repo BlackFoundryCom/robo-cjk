@@ -230,9 +230,6 @@ class Font():
                 fileName, 
                 "foreground"
                 )
-            # self[glyphName].save()
-            # self[glyphName]._RGlyph.lib.clear()
-            # self[glyphName]._RGlyph.lib.update(self[glyphName].lib)
 
         for glyphName in self.characterGlyphSet:
             fileName = files.userNameToFileName(glyphName)
@@ -241,9 +238,6 @@ class Font():
                 fileName, 
                 "foreground"
                 )
-            # self[glyphName].save()
-            # self[glyphName]._RGlyph.lib.clear()
-            # self[glyphName]._RGlyph.lib.update(self[glyphName].lib)
 
         for glyphName in self.atomicElementSet:
             fileName = files.userNameToFileName(glyphName)
@@ -252,10 +246,6 @@ class Font():
                 fileName, 
                 "foreground"
                 )
-            # self[glyphName].save()
-            # self[glyphName]._RGlyph.lib.clear()
-            # self[glyphName]._RGlyph.lib.update(self[glyphName].lib)
-        # paths = [os.path.join(self.fontPath, 'atomicElement'), os.path.join(self.fontPath, 'characterGlyph')]
         glyphtypes = ["atomicElement", "characterGlyph"]
         for glyphtype in glyphtypes:
             path = os.path.join(self.fontPath, glyphtype)

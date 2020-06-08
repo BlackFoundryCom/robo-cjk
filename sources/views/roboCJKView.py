@@ -961,10 +961,10 @@ class RoboCJKView(BaseWindowController):
         f.save(os.path.join(self.RCJKI.currentFont.fontPath, "teeest.ufo"))
         
     def loadProjectButtonCallback(self, sender):
-        folder = getFolder()
-        if not folder: return
-        self.RCJKI.projectRoot = folder[0]
-        sheets.UsersInfos(self.RCJKI, self.w)
+        # folder = getFolder()
+        # if not folder: return
+        # self.RCJKI.projectRoot = folder[0]
+        sheets.Login(self.RCJKI, self.w)
 
     def saveProjectButtonCallback(self, sender):
         if self.RCJKI.get('currentFont'):
@@ -991,11 +991,21 @@ class RoboCJKView(BaseWindowController):
         self.w.rcjkFiles.setItems(rcjkFiles)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
+    def setmySQLRCJKFiles(self):
+        if self.RCJKI.mysql is None:
+            rcjkFiles = []
+        else:
+            rcjkFiles = [x[1] for x in self.RCJKI.mysql.select_fonts()]
+        self.w.rcjkFiles.setItems(rcjkFiles)
+        self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
+
     @gitCoverage()
     def reloadProjectCallback(self, sender):
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
     def rcjkFilesSelectionCallback(self, sender):
+        
+        
         self.currentrcjkFile = sender.getItem()
         self.w.saveProjectButton.enable(True)
         self.w.newProjectButton.enable(True)
@@ -1028,6 +1038,7 @@ class RoboCJKView(BaseWindowController):
         if self.currentrcjkFile is None: 
             return
 
+        
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
@@ -1036,34 +1047,35 @@ class RoboCJKView(BaseWindowController):
                 w.close()
             except:
                 pass
-        if self.RCJKI.get('currentFont'):
-            if self.currentFont is not None:
-                self.currentFont.save()
-                # self.currentFont.close()
-        self.currentrcjkFile = sender.getItem() 
-        # if self.currentrcjkFile is None:
-        #     self.currentrcjkFile = ""
-        fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
-        self.RCJKI.currentFont = font.Font(
-            fontPath, 
-            self.RCJKI.gitUserName, 
-            self.RCJKI.gitPassword, 
-            self.RCJKI.gitHostLocker, 
-            self.RCJKI.gitHostLockerPassword, 
-            self.RCJKI.privateLocker
-            )
-        self.RCJKI.dataBase = {}
+        if not self.RCJKI.mysql:
+            if self.RCJKI.get('currentFont'):
+                if self.currentFont is not None:
+                    self.currentFont.save()
+                    # self.currentFont.close()
+            self.currentrcjkFile = sender.getItem() 
+            # if self.currentrcjkFile is None:
+            #     self.currentrcjkFile = ""
+            fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
+            self.RCJKI.currentFont = font.Font(
+                fontPath, 
+                self.RCJKI.gitUserName, 
+                self.RCJKI.gitPassword, 
+                self.RCJKI.gitHostLocker, 
+                self.RCJKI.gitHostLockerPassword, 
+                self.RCJKI.privateLocker
+                )
+            self.RCJKI.dataBase = {}
 
-        if 'database.json' in os.listdir(fontPath):
-            with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
-                self.RCJKI.dataBase = json.load(file)
+            if 'database.json' in os.listdir(fontPath):
+                with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
+                    self.RCJKI.dataBase = json.load(file)
 
-        self.RCJKI.toggleWindowController()
+            self.RCJKI.toggleWindowController()
 
-        self.w.atomicElement.set(self.currentFont.atomicElementSet)
-        self.w.deepComponent.set(self.currentFont.deepComponentSet)
-        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
-        self.w.characterGlyph.set(charSet)
+            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+            self.w.characterGlyph.set(charSet)
 
     def GlyphsListDoubleClickCallback(self, sender):
         items = sender.get()

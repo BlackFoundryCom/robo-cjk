@@ -57,6 +57,11 @@ reload(transformationTool)
 from views import PDFProofer
 reload(PDFProofer)
 
+import mySQLCollabEngine
+
+import mySQLCollabEngine.BF_engine_mysql as BF_engine_mysql
+import mySQLCollabEngine.BF_init as BF_init
+
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
 import mojo.drawingTools as mjdt
@@ -65,12 +70,19 @@ from mojo.extensions import getExtensionDefault, setExtensionDefault
 
 import math
 import json
-import copy 
+import copy
+import logging
+import sys  
 
 from utils import decorators
 reload(decorators)
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
+
+# curpath = os.path.dirname(__file__)
+curpath = mySQLCollabEngine.__path__._path[0]
+bf_log = BF_init.__init_log(curpath)
+dict_persist_params, _  = BF_init.__init_params(bf_log, curpath, BF_init._REMOTE)
 
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
@@ -119,6 +131,16 @@ class RoboCJKController(object):
         self.copy = []
         self.px, self.py = 0,0
 
+        self.mysql = False
+        self.mysql_userName = None
+        self.mysql_password = None
+
+    def getmySQLParams(self):
+        pass
+        # curpath = mySQLCollabEngine.__path__._path[0]
+        # self.bf_log = BF_init.__init_log(curpath)
+        # self.dict_persist_params, _  = BF_init.__init_params(self.bf_log, curpath, BF_init._REMOTE)
+
     def get(self, item):
         if hasattr(self, item):
             return getattr(self, item)
@@ -147,6 +169,10 @@ class RoboCJKController(object):
         
     def _launchInterface(self):
         self.roboCJKView = roboCJKView.RoboCJKView(self)
+
+    def connect2mysql(self):
+        self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
+        self.mysql.login(self.mysql_userName, self.mysql_password)
 
     def setGitEngine(self):
         global gitEngine

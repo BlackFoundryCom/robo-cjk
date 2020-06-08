@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
-from vanilla.dialogs import getFile
+from vanilla.dialogs import getFile, getFolder
 from mojo.canvas import Canvas
 import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
@@ -641,40 +641,52 @@ class NewCharacterGlyph:
         for i, g in enumerate(self.groups):
             g.show(i == sender.get())
 
-class UsersInfos:
+class Login:
 
     def __init__(self, RCJKI, parentWindow):
         self.RCJKI = RCJKI
-        self.w = Sheet((400, 160), parentWindow)
-        self.w.userNameTitle = TextBox(
+        self.w = Sheet((400, 200), parentWindow)
+
+        self.w.segmentedButton = SegmentedButton(
+            (10, 10, -10, 20),
+            [dict(title = "Git"), dict(title = "mySQL")],
+            callback = self.segmentedButtonCallback
+            )
+        self.w.segmentedButton.set(0)
+        self.w.git = Group((0, 30, -0, -0))
+        self.w.git.show(not self.RCJKI.mysql)
+        self.w.mysql = Group((0, 30, -0, -0))
+        self.w.mysql.show(self.RCJKI.mysql)
+
+        self.w.git.userNameTitle = TextBox(
             (10, 10, 100, 20),
             "UserName"
             )
-        self.w.userName = EditText(
+        self.w.git.userName = EditText(
             (90, 10, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"username", "")
             )
-        self.w.passwordTitle = TextBox(
+        self.w.git.passwordTitle = TextBox(
             (10, 40, 100, 20),
             "Password"
             )
-        self.w.password = SecureEditText(
+        self.w.git.password = SecureEditText(
             (90, 40, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"password", "")
             )
-        self.w.hostlockerTitle = TextBox(
+        self.w.git.hostlockerTitle = TextBox(
             (10, 70, 100, 20),
             "HostLocker"
             )
-        self.w.hostlocker = EditText(
+        self.w.git.hostlocker = EditText(
             (90, 70, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"hostlocker", "")
             )
-        self.w.hostLockerPasswordTitle = TextBox(
+        self.w.git.hostLockerPasswordTitle = TextBox(
             (10, 100, 200, 20),
             "HostLocker password optional"
             )
-        self.w.hostLockerPassword = SecureEditText(
+        self.w.git.hostLockerPassword = SecureEditText(
             (200, 100, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"hostlockerpassword", "")
             )
@@ -688,6 +700,24 @@ class UsersInfos:
             "Login",
             callback = self.closeCallback
             )
+
+        self.w.mysql.userNameTitle = TextBox(
+            (10, 10, 100, 20),
+            "UserName"
+            )
+        self.w.mysql.userName = EditText(
+            (90, 10, -10, 20),
+            getExtensionDefault(blackrobocjk_locker+"mysql_username", "")
+            )
+        self.w.mysql.passwordTitle = TextBox(
+            (10, 40, 100, 20),
+            "Password"
+            )
+        self.w.mysql.password = SecureEditText(
+            (90, 40, -10, 20),
+            getExtensionDefault(blackrobocjk_locker+"mysql_password", "")
+            )
+
         self.w.setDefaultButton(self.w.closeButton)
         self.w.open()
 
@@ -695,20 +725,39 @@ class UsersInfos:
         self.w.close()
 
     def closeCallback(self, sender):
-        if not self.w.userName.get() or not self.w.password.get() or not self.w.hostlocker.get(): return
+        if not self.w.git.userName.get() or not self.w.git.password.get() or not self.w.git.hostlocker.get(): return
 
-        self.RCJKI.gitUserName = self.w.userName.get()
-        self.RCJKI.gitPassword = self.w.password.get()
-        self.RCJKI.gitHostLocker = self.w.hostlocker.get()
-        self.RCJKI.gitHostLockerPassword = self.w.hostLockerPassword.get()
+        self.RCJKI.gitUserName = self.w.git.userName.get()
+        self.RCJKI.gitPassword = self.w.git.password.get()
+        self.RCJKI.gitHostLocker = self.w.git.hostlocker.get()
+        self.RCJKI.gitHostLockerPassword = self.w.git.hostLockerPassword.get()
 
         setExtensionDefault(blackrobocjk_locker+"username", self.RCJKI.gitUserName)
         setExtensionDefault(blackrobocjk_locker+"password", self.RCJKI.gitPassword)
         setExtensionDefault(blackrobocjk_locker+"hostlocker", self.RCJKI.gitHostLocker)
         setExtensionDefault(blackrobocjk_locker+"hostlockerpassword", self.RCJKI.gitHostLockerPassword)
+
+        
         self.w.close()
-        self.RCJKI.setGitEngine()
-        self.RCJKI.roboCJKView.setrcjkFiles()
+        if not self.RCJKI.mysql:
+            folder = getFolder()
+            if not folder: return
+            self.RCJKI.projectRoot = folder[0]
+            self.RCJKI.setGitEngine()
+            self.RCJKI.roboCJKView.setrcjkFiles()
+        else:
+            self.RCJKI.mysql_userName = self.w.mysql.userName.get()
+            self.RCJKI.mysql_password = self.w.mysql.password.get()
+            setExtensionDefault(blackrobocjk_locker+"mysql_username", self.RCJKI.mysql_userName)
+            setExtensionDefault(blackrobocjk_locker+"mysql_password", self.RCJKI.mysql_password)
+            self.RCJKI.getmySQLParams()
+            self.RCJKI.connect2mysql()
+            self.RCJKI.roboCJKView.setmySQLRCJKFiles()
+
+    def segmentedButtonCallback(self, sender):
+        for i, x in enumerate([self.w.git, self.w.mysql]):
+            x.show(i == sender.get())
+        self.RCJKI.mysql = sender.get()
 
 
 class LockController:
