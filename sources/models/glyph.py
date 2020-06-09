@@ -158,6 +158,16 @@ class Glyph(RGlyph):
             selectedElement.scalex += x
             selectedElement.scaley += y
 
+    @compute
+    def setTransformationCenterToSelectedElements(self, center):
+        tx, ty = center
+        for index in self.selectedElement:
+            self._deepComponents[index].transformx = int(tx)
+            self._deepComponents[index].transformy = int(ty)
+            for variations in self._glyphVariations.values():
+                variations[index].transformx = int(tx)
+                variations[index].transformy = int(ty)
+
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
         for index, atomicInstanceGlyph in enumerate(self.preview.axisPreview):

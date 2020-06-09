@@ -53,7 +53,16 @@ class FlatComponentInstance:
 
 class AtomicInstance:
 
-    def __init__(self, glyph:RGlyph = None, scalex:float = 1.0, scaley:float = 1.0, x:int = 0, y:int = 0, rotation:float = 0.0, coord:dict = {}):
+    def __init__(self, 
+            glyph:RGlyph = None, 
+            scalex:float = 1.0, 
+            scaley:float = 1.0, 
+            x:int = 0, 
+            y:int = 0, 
+            rotation:float = 0.0, 
+            coord:dict = {},
+            transformx:int = 0,
+            transformy:int = 0):
         self.glyph = glyph
         self.scalex = scalex
         self.scaley = scaley
@@ -62,6 +71,8 @@ class AtomicInstance:
         self.rotation = rotation
         self.coord = coord
         self._transformedGlyph = None
+        self.transformx = transformx
+        self.transformy = transformy
 
     def __getitem__(self, item):
         if hasattr(self, item):
@@ -75,8 +86,8 @@ class AtomicInstance:
 
     def getTransformedGlyph(self, round:bool = False) -> RGlyph:
         glyph = self.glyph.copy()
-        glyph.scaleBy((self.scalex, self.scaley))
-        glyph.rotateBy(self.rotation)
+        glyph.scaleBy((self.scalex, self.scaley), (self.transformx, self.transformy))
+        glyph.rotateBy(self.rotation, (self.transformx, self.transformy))
         glyph.moveBy((self.x, self.y))
         if round:
             glyph.round()
@@ -85,8 +96,8 @@ class AtomicInstance:
 
     def getFlatComponentGlyph(self, round:bool = False) -> FlatComponentInstance:
         glyph = self.glyph.copy()
-        glyph.scaleBy((self.scalex, self.scaley))
-        glyph.rotateBy(self.rotation)
+        glyph.scaleBy((self.scalex, self.scaley), (self.transformx, self.transformy))
+        glyph.rotateBy(self.rotation, (self.transformx, self.transformy))
         if round:
             glyph.round()
         return FlatComponentInstance(glyph, self.x, self.y)
@@ -152,6 +163,14 @@ class Preview:
         ddpolated = interpolation.deepdeepolation(deepComponents, variationGlyph, axisInfos)
         previewGlyph = deepComponent.DeepComponent(glyphName)
         previewGlyph._deepComponents = DeepComponents(ddpolated)
+
+        for i, dc in enumerate(previewGlyph._deepComponents):
+            dc.transformx = deepComponents[i].transformx
+            dc.transformy = deepComponents[i].transformy
+            for variation in previewGlyph._glyphVariations.values():
+                variation[i].transformx = deepComponents[i].transformx
+                variation[i].transformy = deepComponents[i].transformy
+
         return previewGlyph
 
     def _getAtomicInstance(self, deepComponentGlyph, layersInfos, deepComponent, coord):
@@ -163,7 +182,9 @@ class Preview:
             rotation = deepComponent.rotation,
             x = deepComponent.x, 
             y = deepComponent.y,
-            coord = coord
+            coord = coord,
+            transformx = deepComponent.transformx,
+            transformy = deepComponent.transformy,
             )
         return atomicInstance
 
@@ -276,6 +297,8 @@ class CharacterGlyphPreview(Preview):
             x = deepComponent.x,
             y = deepComponent.y,
             rotation = deepComponent.rotation,
+            transformx = deepComponent.transformx,
+            transformy = deepComponent.transformy,
             )
         return deepComponentInstance
 

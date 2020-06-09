@@ -123,7 +123,18 @@ class Drawer():
         for i, atomicInstance in enumerate(glyph.preview.axisPreview):
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
+                mjdt.save()
+                mjdt.stroke(1, 0, 0, 1)
+                mjdt.strokeWidth(1*scale)
+                tx = atomicInstance.transformx
+                ty = atomicInstance.transformy
+                mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
+                mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
+                
+                # mjdt.oval(tx-5*scale, ty-5*scale, 10*scale, 10*scale)
+                mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
+
             for c in atomicInstance.glyph:
                 if c.clockwise:
                     mjdt.stroke(1, 0, 0, 1)
