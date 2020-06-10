@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, uninstallTool
+from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, uninstallTool, getActiveEventTool
 from imp import reload
 
 from utils import interpolation
@@ -381,21 +381,26 @@ class RoboCJKController(object):
         if self.isAtomic:
             return
         event = extractNSEvent(point)
-        if not event["shiftDown"]:
-            self.currentGlyph.selectedElement = []
-        try: self.px, self.py = point['point'].x, point['point'].y
-        except: return
-        self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
-        self.currentViewSliderList.set([])
-        if self.currentGlyph.selectedElement: 
-            self.setListWithSelectedElement()
+        modifiers = getActiveEventTool().getModifiers()
+        option = modifiers['optionDown']
+        command = modifiers['commandDown']
+        if not all([option, command]):
+            if not event["shiftDown"]:
+                self.currentGlyph.selectedElement = []
+            try: self.px, self.py = point['point'].x, point['point'].y
+            except: return
+            
+            self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
+            self.currentViewSliderList.set([])
+            if self.currentGlyph.selectedElement: 
+                self.setListWithSelectedElement()
 
-            if point['clickCount'] == 2:
-                popover.EditPopoverAlignTool(
-                    self, 
-                    point['point'], 
-                    self.currentGlyph
-                    )
+                if point['clickCount'] == 2:
+                    popover.EditPopoverAlignTool(
+                        self, 
+                        point['point'], 
+                        self.currentGlyph
+                        )
 
     def setListWithSelectedElement(self):
         if self.isDeepComponent:

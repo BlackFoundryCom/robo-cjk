@@ -177,33 +177,33 @@ class EditPopoverAlignTool(EditPopover):
         editTextAesthetic(self.popover.scaleyEditText)
 
         y += 20
-        self.popover.transformxTextBox = TextBox(
+        self.popover.rcenterxTextBox = TextBox(
             (10, y, 25, 20), 
             "⨀ x:", 
             sizeStyle = "mini"
             )
-        self.popover.transformxEditText = EditText(
+        self.popover.rcenterxEditText = EditText(
             (30, y, 30, 20), 
-            self.infos["transformx"], 
+            self.infos["rcenterx"], 
             sizeStyle = "mini",
-            callback = self.transformxCallback
+            callback = self.rcenterxCallback
             )
-        editTextAesthetic(self.popover.transformxEditText)
+        editTextAesthetic(self.popover.rcenterxEditText)
 
-        self.popover.transformyTextBox = TextBox(
+        self.popover.rcenteryTextBox = TextBox(
             (70, y, 25, 20), 
             "⨀ y:", 
             sizeStyle = "mini"
             )
-        self.popover.transformyEditText = EditText(
+        self.popover.rcenteryEditText = EditText(
             (90, y, 30, 20), 
-            self.infos["transformy"], 
+            self.infos["rcentery"], 
             sizeStyle = "mini",
             formatter = numberFormatter, 
-            callback = self.transformyCallback
+            callback = self.rcenteryCallback
             )
 
-        editTextAesthetic(self.popover.transformyEditText)
+        editTextAesthetic(self.popover.rcenteryEditText)
 
         y+=20
         if self.RCJKI.currentGlyph.type == "deepComponent":
@@ -277,8 +277,8 @@ class EditPopoverAlignTool(EditPopover):
         self.infos["scalex"] = c["scalex"]
         self.infos["scaley"] = c["scaley"]
         self.infos["rotation"] = c["rotation"]
-        self.infos["transformx"] = c["transformx"]
-        self.infos["transformy"] = c["transformy"]
+        self.infos["rcenterx"] = c["rcenterx"]
+        self.infos["rcentery"] = c["rcentery"]
         if source != self.sourceAxis:
             self.infos["x"] = c["x"]
             self.infos["y"] = c["y"]
@@ -319,14 +319,14 @@ class EditPopoverAlignTool(EditPopover):
     @tryfunc
     @resetDict
     @glyphTransformUndo
-    def transformxCallback(self, sender):
-        self.infos["transformx"] = float(sender.get())
+    def rcenterxCallback(self, sender):
+        self.infos["rcenterx"] = float(sender.get())
 
     @tryfunc
     @resetDict
     @glyphTransformUndo
-    def transformyCallback(self, sender):
-        self.infos["transformy"] = float(sender.get())
+    def rcenteryCallback(self, sender):
+        self.infos["rcentery"] = float(sender.get())
 
     @tryfunc
     @resetDict

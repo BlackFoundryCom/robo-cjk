@@ -106,8 +106,8 @@ class DeepComponent(DictClass):
             scaley: int = 1, 
             x: int = 0, 
             y: int = 0,
-            transformx: int = 0,
-            transformy: int = 0):
+            rcenterx: int = 0,
+            rcentery: int = 0):
         super().__init__()
         self.coord = Coord(**dict(coord))
         self.rotation = rotation
@@ -115,8 +115,8 @@ class DeepComponent(DictClass):
         self.scaley = scaley
         self.x = x
         self.y = y
-        self.transformx = transformx
-        self.transformy = transformy
+        self.rcenterx = rcenterx
+        self.rcentery = rcentery
 
     def set(self, items: dict):
         """

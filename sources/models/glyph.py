@@ -162,11 +162,11 @@ class Glyph(RGlyph):
     def setTransformationCenterToSelectedElements(self, center):
         tx, ty = center
         for index in self.selectedElement:
-            self._deepComponents[index].transformx = int(tx)
-            self._deepComponents[index].transformy = int(ty)
+            self._deepComponents[index].rcenterx = int(tx-self._deepComponents[index].x)
+            self._deepComponents[index].rcentery = int(ty-self._deepComponents[index].y)
             for variations in self._glyphVariations.values():
-                variations[index].transformx = int(tx)
-                variations[index].transformy = int(ty)
+                variations[index].rcenterx = int(tx-self._deepComponents[index].x)
+                variations[index].rcentery = int(ty-self._deepComponents[index].y)
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
