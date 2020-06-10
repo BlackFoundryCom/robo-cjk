@@ -133,7 +133,7 @@ class Drawer():
                 mjdt.stroke(None)
                 mjdt.fill(1, 0, 0, 1)
                 mjdt.fontSize(8*scale)
-                mjdt.textBox(f"{tx} {ty}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
+                mjdt.textBox(f"{int(atomicInstance.rcenterx)} {int(atomicInstance.rcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
                 mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
 

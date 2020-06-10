@@ -19,52 +19,37 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 import math
 
 def deepdeepdeepolation(masterCharacterGlyph, characterGlyphVariations, characterGlyphAxisInfos):
-    ### CLEANING TODO ###
     deltaCG = []
     for masterDeepComponentInstance in masterCharacterGlyph:
-        deltaDC = {}
-        deltaDC['name'] = masterDeepComponentInstance['name']
-        deltaDC['x'] = masterDeepComponentInstance['x']
-        deltaDC['y'] = masterDeepComponentInstance['y']
-        deltaDC['scalex'] = masterDeepComponentInstance['scalex']
-        deltaDC['scaley'] = masterDeepComponentInstance['scaley']
-        deltaDC['rotation'] = masterDeepComponentInstance['rotation']
+        deltaDC = dict(masterDeepComponentInstance)
         deltaDC['coord'] = {}
-        for axisName, value in masterDeepComponentInstance['coord'].items():
+        for axisName in masterDeepComponentInstance['coord'].keys():
             deltaDC['coord'][axisName] = 0
         deltaCG.append(deltaDC)
     
     for characterGlyphAxisName, sourceCharacterGlyph in characterGlyphVariations.items():
         ratio = characterGlyphAxisInfos[characterGlyphAxisName]
         for i, sourceDeepComponent in enumerate(sourceCharacterGlyph):
-            sourceDeepComponent_x = sourceDeepComponent['x']
-            sourceDeepComponent_y = sourceDeepComponent['y']
-            sourceDeepComponent_scalex = sourceDeepComponent['scalex']
-            sourceDeepComponent_scaley = sourceDeepComponent['scaley']
-            sourceDeepComponent_rotation = sourceDeepComponent['rotation']
-            sourceDeepComponent_coord = sourceDeepComponent['coord']
-            deltaCG[i]['x'] += (masterCharacterGlyph[i]['x'] - sourceDeepComponent_x)* ratio
-            deltaCG[i]['y'] += (masterCharacterGlyph[i]['y'] - sourceDeepComponent_y)* ratio
-            deltaCG[i]['scalex'] *= (masterCharacterGlyph[i]['scalex'] - sourceDeepComponent_scalex)* ratio
-            deltaCG[i]['scaley'] *= (masterCharacterGlyph[i]['scaley'] - sourceDeepComponent_scaley)* ratio
-            deltaCG[i]['rotation'] += (masterCharacterGlyph[i]['rotation'] - sourceDeepComponent_rotation)* ratio
+            for e in ['x', 'y', 'rotation']:
+                deltaCG[i][e] += (masterCharacterGlyph[i][e] - sourceDeepComponent[e]) * ratio 
+            for e in ['scalex', 'scaley']:
+                deltaCG[i][e] *= (masterCharacterGlyph[i][e] - sourceDeepComponent[e]) * ratio
             
-            for sourceDeepComponentAxisName, sourceDeepComponentAxisRatio in sourceDeepComponent_coord.items():
+            for sourceDeepComponentAxisName, sourceDeepComponentAxisRatio in sourceDeepComponent['coord'].items():
                 deltaCG[i]['coord'][sourceDeepComponentAxisName] += ratio * (masterCharacterGlyph[i]['coord'][sourceDeepComponentAxisName] - sourceDeepComponentAxisRatio)
         
     outputCG = []
     for i, masterDeepComponent in enumerate(masterCharacterGlyph):
         outputDC = {}
         outputDC['name'] = masterDeepComponent['name']
-        outputDC['x'] = masterDeepComponent['x'] - deltaCG[i]['x']
-        outputDC['y'] = masterDeepComponent['y'] - deltaCG[i]['y']
-        outputDC['scalex'] = masterDeepComponent['scalex'] - deltaCG[i]['scalex']
-        outputDC['scaley'] = masterDeepComponent['scaley'] - deltaCG[i]['scaley']
-        outputDC['rotation'] = masterDeepComponent['rotation'] - deltaCG[i]['rotation']
+        for e in ['x', 'y', 'scalex', 'scaley', 'rotation']:
+            outputDC[e] = masterDeepComponent[e] - deltaCG[i][e]    
+
         outputDC['coord'] = {}
         for axisName, value in masterDeepComponent['coord'].items():
             outputDC['coord'][axisName] = value - deltaCG[i]['coord'][axisName]
         outputCG.append(outputDC)
+
     return(outputCG)
     
 def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxisInfos={}):
@@ -85,7 +70,6 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
 
     for deepComponentAxisName, sourceDeepComponent in sourceDeepComponents.items():
         ratio = deepComponentAxisInfos.get(deepComponentAxisName, 0)
-        # print(sourceDeepComponent, '\n')
         for i, sourceAtomicElement in enumerate(sourceDeepComponent):
 
             for e in ['x', 'y', 'rotation', 'scalex', 'scaley']:
@@ -157,7 +141,6 @@ def deepolation(newGlyph, masterGlyph, layersInfo = {}):
                 p = [nextp[0]+ d*dnext[0], nextp[1]+d*dnext[1]]
             pen.addPoint((int(p[0]), int(p[1])), t)
         pen.endPath()
-    # newGlyph.round()
     return newGlyph
 
 def deepCompatible(masterGlyph, layersNames):
