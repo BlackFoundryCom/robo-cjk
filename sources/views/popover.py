@@ -321,12 +321,18 @@ class EditPopoverAlignTool(EditPopover):
     @glyphTransformUndo
     def rcenterxCallback(self, sender):
         self.infos["rcenterx"] = float(sender.get())
+        self.RCJKI.currentGlyph._deepComponents[self.glyph.selectedElement[0]].rcenterx = float(sender.get())
+        for variation in self.RCJKI.currentGlyph._glyphVariations.values():
+            variation[self.glyph.selectedElement[0]].rcenterx = float(sender.get())
 
     @tryfunc
     @resetDict
     @glyphTransformUndo
     def rcenteryCallback(self, sender):
         self.infos["rcentery"] = float(sender.get())
+        self.RCJKI.currentGlyph._deepComponents[self.glyph.selectedElement[0]].rcentery = float(sender.get())
+        for variation in self.RCJKI.currentGlyph._glyphVariations.values():
+            variation[self.glyph.selectedElement[0]].rcentery = float(sender.get())
 
     @tryfunc
     @resetDict

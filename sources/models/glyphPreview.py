@@ -71,8 +71,8 @@ class AtomicInstance:
         self.rotation = rotation
         self.coord = coord
         self._transformedGlyph = None
-        self.rcenterx = rcenterx
-        self.rcentery = rcentery
+        self.rcenterx = rcenterx * scalex
+        self.rcentery = rcentery * scaley
 
     def __getitem__(self, item):
         if hasattr(self, item):

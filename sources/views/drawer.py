@@ -142,7 +142,7 @@ class Drawer():
                     mjdt.stroke(1, 0, 0, 1)
                     mjdt.strokeWidth(2*scale)
             mjdt.save()
-            mjdt.drawGlyph(self.roundGlyph(atomicInstance.getTransformedGlyph())) 
+            mjdt.drawGlyph(atomicInstance.getTransformedGlyph(round = self.RCJKI.roundToGrid)) 
             mjdt.restore()
             if customColor is None and view: 
                 if i != index:
