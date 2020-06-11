@@ -237,11 +237,11 @@ class RoboCJKController(object):
         d = self.currentGlyph._glyphVariations
         if self.currentGlyph.type == "atomicElement":
             self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0.5, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
+                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
                 ]
         else:
             self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         self.currentViewSourceValue.set("")
@@ -591,15 +591,15 @@ class RoboCJKController(object):
         l = []
         if self.isAtomic:
             for axisName, layer in self.currentGlyph._glyphVariations.items():
-                l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":.5, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
+                l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
 
         self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l

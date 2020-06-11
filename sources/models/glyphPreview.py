@@ -335,7 +335,7 @@ class CharacterGlyphPreview(Preview):
         characterGlyphAxisInfos = {}
         for UICharacterGlyphVariation in sourcelist:
             characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']
-        if not characterGlyphAxisInfos: return
+        if not characterGlyphAxisInfos:return
 
         outputCG = interpolation.deepdeepdeepolation(
             self.glyph._deepComponents, 

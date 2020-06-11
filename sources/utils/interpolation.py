@@ -22,9 +22,7 @@ def deepdeepdeepolation(masterCharacterGlyph, characterGlyphVariations, characte
     deltaCG = []
     for masterDeepComponentInstance in masterCharacterGlyph:
         deltaDC = dict(masterDeepComponentInstance)
-        deltaDC['coord'] = {}
-        for axisName in masterDeepComponentInstance['coord'].keys():
-            deltaDC['coord'][axisName] = 0
+        deltaDC['coord'] = dict((axisName, 0) for axisName, value in masterDeepComponentInstance['coord'].items())
         deltaCG.append(deltaDC)
     
     for characterGlyphAxisName, sourceCharacterGlyph in characterGlyphVariations.items():
@@ -45,9 +43,7 @@ def deepdeepdeepolation(masterCharacterGlyph, characterGlyphVariations, characte
         for e in ['x', 'y', 'scalex', 'scaley', 'rotation']:
             outputDC[e] = masterDeepComponent[e] - deltaCG[i][e]    
 
-        outputDC['coord'] = {}
-        for axisName, value in masterDeepComponent['coord'].items():
-            outputDC['coord'][axisName] = value - deltaCG[i]['coord'][axisName]
+        outputDC['coord'] = dict((axisName, value - deltaCG[i]['coord'][axisName]) for axisName, value in masterDeepComponent['coord'].items())
         outputCG.append(outputDC)
 
     return(outputCG)
