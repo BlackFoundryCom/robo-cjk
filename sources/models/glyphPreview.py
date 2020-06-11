@@ -127,9 +127,9 @@ class Preview:
             if not filtered:
                 layersInfos[layer] = value
             else:
-                if layer in filtered:
-                    if len(self.glyph._RGlyph.getLayer(layer)):
-                        layersInfos[layer] = value
+                if axis['Axis'] in filtered:
+                    if len(self.glyph._RGlyph.getLayer(axis['Axis'])):
+                        layersInfos[axis['Axis']] = value
 
         return interpolation.deepolation(
             RGlyph(), 
@@ -352,14 +352,13 @@ class CharacterGlyphPreview(Preview):
 
         outlinesPreview = []
         if self.glyph.getParent()._RFont.lib.get('robocjk.fontVariations', ''):
-
+            print(sourcelist)
             outlinesPreview = self._generateOutlinesPreview(
                 sourceList = sourcelist, 
                 filtered = self.glyph.getParent()._RFont.lib['robocjk.fontVariations']
                 )
 
         previewGlyph = RGlyph()
-        # for preview in [variationPreview]:
         for atomicInstance in variationPreview:
             for c in atomicInstance.getTransformedGlyph():
                 previewGlyph.appendContour(c)
