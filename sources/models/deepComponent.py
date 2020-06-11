@@ -137,8 +137,8 @@ class DeepComponent(Glyph):
     def save(self):
         self.lib.clear()
         lib = RLib()
-        lib[atomicElementsKey] = self._deepComponents.getList()
-        lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        # lib[atomicElementsKey] = self._deepComponents.getList()
+        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
         for variations in self._glyphVariations.values():
             variations.setAxisWidth(self.currentFont.defaultGlyphWidth)

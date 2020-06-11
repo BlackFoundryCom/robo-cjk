@@ -154,8 +154,8 @@ class CharacterGlyph(Glyph):
             except:
                 pass
 
-        lib[deepComponentsKeyOld] = self._deepComponents.getList()
-        lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        # lib[deepComponentsKeyOld] = self._deepComponents.getList()
+        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()

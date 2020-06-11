@@ -84,7 +84,7 @@ class AtomicElement(Glyph):
             variations.writeOutlines(axisGlyph)
             variations.setAxisWidth(axisGlyph.width)
     
-        lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
 
         self.lib.update(lib)
