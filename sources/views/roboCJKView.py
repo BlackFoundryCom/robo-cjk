@@ -107,7 +107,8 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     if not locked: return
     if not alreadyLocked:
         RCJKI.gitEngine.pull()
-        font.getGlyphs()
+        # font.getGlyphs()
+        font.getGlyph(font[glyphName])
         g = font[glyphName]._RGlyph
     if not g.width:
         g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
