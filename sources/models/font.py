@@ -461,6 +461,7 @@ class Font():
         self._hanziExportUFO()
 
     def _hanziExportUFO(self):
+        return
         font = NewFont(familyName = "hanzi", styleName = "Regular", showUI = False)
         for rglyph in self._RFont.getLayer('foreground'):
             glyph = self[rglyph.name]
