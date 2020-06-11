@@ -110,7 +110,7 @@ class CharacterGlyph(Glyph):
                 self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
             else:
                 self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
-            except: pass
+        except: pass
 
     def removeVariationAxis(self, name):
         self._glyphVariations.removeAxis(name)

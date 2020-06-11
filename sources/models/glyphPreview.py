@@ -291,14 +291,14 @@ class CharacterGlyphPreview(Preview):
             axisPreview = axisPreview,
             # name = deepComponent.name,
             glyph = glyph,
-            coord = deepComponent.coord,
-            scalex = deepComponent.scalex,
-            scaley = deepComponent.scaley,
-            x = deepComponent.x,
-            y = deepComponent.y,
-            rotation = deepComponent.rotation,
-            rcenterx = deepComponent.rcenterx,
-            rcentery = deepComponent.rcentery,
+            coord = deepComponent['coord'],
+            scalex = deepComponent['scalex'],
+            scaley = deepComponent['scaley'],
+            x = deepComponent['x'],
+            y = deepComponent['y'],
+            rotation = deepComponent['rotation'],
+            rcenterx = deepComponent['rcenterx'],
+            rcentery = deepComponent['rcentery'],
             )
         return deepComponentInstance
 
@@ -346,9 +346,13 @@ class CharacterGlyphPreview(Preview):
         for j, deepComponentInstance in enumerate(outputCG):
             try:
                 glyph = self.glyph.getParent()[deepComponentInstance['name']]
-                variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), self.glyph._deepComponents[j]))                
-            except:
-                continue
+                deepComponentInstance["x"] = self.glyph._deepComponents[j].x
+                deepComponentInstance["y"] = self.glyph._deepComponents[j].y
+                deepComponentInstance["rcenterx"] = self.glyph._deepComponents[j].rcenterx
+                deepComponentInstance["rcentery"] = self.glyph._deepComponents[j].rcentery
+                variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), deepComponentInstance))                
+            except Exception as e:
+                raise e
 
         outlinesPreview = []
         if self.glyph.getParent()._RFont.lib.get('robocjk.fontVariations', ''):
