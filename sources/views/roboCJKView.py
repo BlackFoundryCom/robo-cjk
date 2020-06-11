@@ -377,6 +377,12 @@ class ComponentWindow():
         self.w.close()
 
     def setUI(self):
+        if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni'):
+            try:
+                self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
+            except:
+                print('this glyph has no Unicode')
+                return
         char = chr(self.RCJKI.currentGlyph.unicode)
         if char in self.RCJKI.dataBase:
             self.w.componentList.set(self.RCJKI.dataBase[char])

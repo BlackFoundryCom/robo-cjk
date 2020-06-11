@@ -200,7 +200,7 @@ class TextCenter:
         self.pointsSize = [9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96, 144, 256, 512, 1024],
         self.w.pointSize = ComboBox(
             (-60, 0, -0, 20),
-            self.pointsSize,
+            *self.pointsSize,
             callback = self.pointSizeCallback
             )
         self.w.pointSize.set(72)

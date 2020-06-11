@@ -352,7 +352,6 @@ class CharacterGlyphPreview(Preview):
 
         outlinesPreview = []
         if self.glyph.getParent()._RFont.lib.get('robocjk.fontVariations', ''):
-            print(sourcelist)
             outlinesPreview = self._generateOutlinesPreview(
                 sourceList = sourcelist, 
                 filtered = self.glyph.getParent()._RFont.lib['robocjk.fontVariations']
