@@ -98,6 +98,15 @@ class EditingSheet():
         self.RCJKI.exportDataBase()
         self.w.close()
 
+def getRelatedGlyphs(font, glyphName, regenerated = []):
+    if glyphName not in regenerated:
+        font.getGlyph(font[glyphName])
+        regenerated.append(glyphName)
+    g = font[glyphName]
+    if not hasattr(g, "_deepComponents"): return
+    for dc in g._deepComponents:
+        getRelatedGlyphs(font, dc.name, regenerated)
+
 # This function is outside of any class
 def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     font = RCJKI.currentFont
@@ -108,7 +117,8 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     if not alreadyLocked:
         RCJKI.gitEngine.pull()
         # font.getGlyphs()
-        font.getGlyph(font[glyphName])
+        getRelatedGlyphs(font, glyphName)
+        # font.getGlyph(font[glyphName])
         g = font[glyphName]._RGlyph
     if not g.width:
         g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
