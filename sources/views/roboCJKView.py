@@ -428,7 +428,7 @@ class ComponentWindow():
         index = sender.get()[sel[0]]
         self.deepComponentName = "DC_%s_%s"%(self.code, index)
         self.glyph = self.RCJKI.currentFont[self.deepComponentName]
-        self.glyph.preview.computeDeepComponents()
+        self.glyph.preview.computeDeepComponents(update = False)
         self.w.canvas2.update()
 
     def variantComponentListdoubleClickCallback(self, sender):
@@ -1402,7 +1402,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             return
         self.charName = name
         self.refGlyph = self.RCJKI.currentFont[name]
-        self.refGlyph.preview.computeDeepComponents()
+        self.refGlyph.preview.computeDeepComponents(update = False)
         self.deepComponents = self.refGlyph._deepComponents
         self.glyphVariations = self.refGlyph._glyphVariations
         self.deepComponentsName = [chr(int(dc.name.split("_")[1], 16)) for dc in self.deepComponents]

@@ -278,7 +278,7 @@ class Font():
                             layerfileName, 
                             layerName
                             )
-        self.save()
+        # self.save()
 
     def newGLIF(self, glyphType, glyphName):
         if glyphType == 'atomicElement':

@@ -323,7 +323,7 @@ class TextCenter:
         scale = info["scale"]
         if glyph.type in ['deepComponent', 'characterGlyph']:
             if self.sourcesList:# and glyph.glyphVariations:
-                glyph.preview.computeDeepComponentsPreview(self.sourcesList)
+                glyph.preview.computeDeepComponentsPreview(self.sourcesList, update = False)
                 self.RCJKI.drawer.drawVariationPreview(
                         glyph,
                         scale,
@@ -331,7 +331,7 @@ class TextCenter:
                         (0, 0, 0, 0)
                         )
             else:
-                glyph.preview.computeDeepComponents()
+                glyph.preview.computeDeepComponents(update = False)
                 self.RCJKI.drawer.drawAxisPreview(
                     glyph,
                     (0, 0, 0, 1),

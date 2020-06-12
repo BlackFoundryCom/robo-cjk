@@ -54,7 +54,7 @@ class Drawer():
             if glyph.type == 'atomicElement':
                 if not len(glyph): return
             else:
-                glyph.preview.computeDeepComponents()
+                glyph.preview.computeDeepComponents(update = False)
             self.drawAxisPreview(
                 glyph,
                 color,
@@ -160,7 +160,7 @@ class Drawer():
             if self.RCJKI.currentFont[c.baseGlyph].type == "atomicElement":
                 mjdt.drawGlyph(self.roundGlyph(self.RCJKI.currentFont[c.baseGlyph]))
             else:
-                self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents()
+                self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents(update = False)
                 self.drawAxisPreview(self.RCJKI.currentFont[c.baseGlyph],
                                             flatComponentColor,
                                             scale,
