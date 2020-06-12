@@ -337,7 +337,7 @@ class CharacterGlyphPreview(Preview):
             characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']
         if not characterGlyphAxisInfos:return
 
-        outputCG = interpolation.deepdeepdeepolation(
+        outputCG = interpolation.deepdeepolation(
             self.glyph._deepComponents, 
             self.glyph._glyphVariations, 
             characterGlyphAxisInfos
@@ -346,8 +346,8 @@ class CharacterGlyphPreview(Preview):
         for j, deepComponentInstance in enumerate(outputCG):
             try:
                 glyph = self.glyph.getParent()[deepComponentInstance['name']]
-                deepComponentInstance["x"] = self.glyph._deepComponents[j].x
-                deepComponentInstance["y"] = self.glyph._deepComponents[j].y
+                # deepComponentInstance["x"] = self.glyph._deepComponents[j].x
+                # deepComponentInstance["y"] = self.glyph._deepComponents[j].y
                 deepComponentInstance["rcenterx"] = self.glyph._deepComponents[j].rcenterx
                 deepComponentInstance["rcentery"] = self.glyph._deepComponents[j].rcentery
                 variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), deepComponentInstance))                

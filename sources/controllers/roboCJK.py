@@ -188,10 +188,10 @@ class RoboCJKController(object):
             print('no font object')
 
     def didUndo(self, info):
-        self.updateDeepComponent()
+        self.updateDeepComponent(update = False)
 
     @refresh
-    def updateDeepComponent(self, update = True):
+    def updateDeepComponent(self, update = False):
         self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
         self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
