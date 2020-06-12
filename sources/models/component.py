@@ -242,6 +242,9 @@ class DeepComponents:
     def __setitem__(self, item, value):
         setattr(self, item, value)
 
+    def __bool__(self):
+        return bool(self._deepComponents)
+
     def getList(self):
         """
         Return a list reprensentation on the class
