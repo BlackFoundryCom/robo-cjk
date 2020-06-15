@@ -138,6 +138,7 @@ class CharacterWindow:
         "Can be designed with current deep components",
         "Can't be designed with current deep components",
         "All",
+        "Have outlines", 
         # "Custom list"
         ]
 
@@ -246,6 +247,17 @@ class CharacterWindow:
             #     result = set([files.unicodeName(c) for c in l]) - set(self.RCJKI.currentFont.characterGlyphSet)
             #     l = [chr(int(n[3:], 16)) for n in result]
             title = " ".join(self.filterRules[self.filter].split(' ')[:3])
+
+        elif self.filter == 5:
+            names = [files.unicodeName(c) for c in self.relatedChars]
+            l = []
+            for name in names:
+                try:
+                    if len(self.RCJKI.currentFont[name]):
+                        l.append(chr(int(name[3:], 16)))
+                except:pass
+            title = self.filterRules[self.filter]
+            # l = [chr(int(name[3:], 16)) for name in names if len(self.RCJKI.currentFont[name])]
 
         self.RCJKI.drawer.refGlyph = None
         self.RCJKI.drawer.refGlyphPos = [0, 0]   
