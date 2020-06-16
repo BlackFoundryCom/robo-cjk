@@ -286,8 +286,8 @@ class CharacterWindow:
         self.w.close()
 
     def charactersListSelectionCallback(self, sender):
-        self.w.previewCheckBox.show(self.filter == 0)
-        self.w.sliders.show(self.filter == 0)
+        self.w.previewCheckBox.show(self.filter in [0, 5])
+        self.w.sliders.show(self.filter in [0, 5])
         if self.preview:
             self.setRefGlyph(sender)
 
