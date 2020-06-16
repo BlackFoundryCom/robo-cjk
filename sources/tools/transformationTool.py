@@ -64,8 +64,11 @@ class TransformationTool(BaseEventTool):
             if abs(dx) > abs(dy):
                 return x, 0
             return 0, y
+
+        if command and option:
+            return
         
-        if option:
+        elif option:
             rotation = angle(self.px, self.py, *point)
             self.RCJKI.currentGlyph.setRotationAngleToSelectedElements(rotation, append = False)
             

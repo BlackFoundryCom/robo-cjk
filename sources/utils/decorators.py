@@ -21,7 +21,9 @@ from mojo.roboFont import *
 import copy
 from imp import reload
 from controllers import roboCJK
+
 reload(roboCJK)
+
 
 def gitCoverage(msg='save'):
 
@@ -34,15 +36,11 @@ def gitCoverage(msg='save'):
                         'Impossible', "Project is not is GIT repository"
                         )
                     return
-                
                 gitEngine.createGitignore()
                 gitEngine.pull()
-
                 func(self, *args, **kwargs)
-
                 gitEngine.commit(msg)   
                 gitEngine.push()
-
                 PostBannerNotification(
                         'font did save', ""
                         ) 

@@ -35,10 +35,20 @@ reload(atomicElement)
 reload(deepComponent)
 reload(characterGlyph)
 
+import mySQLCollabEngine.BF_mysql2rcjk as BF_mysql2rcjk
+import mySQLCollabEngine.BF_fontbook_struct as bfs
+
 
 class Font():
 
-    def __init__(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
+
+    # def __init__(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
+    #     pass
+    def __init__(self):
+        self.mysqlFont = False
+        self._glyphs = {}
+
+    def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
         self.fontPath = fontPath
         
         self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
@@ -64,15 +74,30 @@ class Font():
         self.getGlyphs()
         self.createLayersFromVariationAxis()
 
+    def _init_for_mysql(self, bf_log, fontName, mysql):
+        self.mysqlFont = True
+        self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
+        self._RFont = NewFont(
+            familyName=fontName, 
+            styleName='Regular', 
+            showUI = False
+            )
+
     def __iter__(self):
         for name in self._RFont.keys():
             yield self[name]
 
     def __getitem__(self, name):
+        if self.mysqlFont:
+            try:
+                return self._glyphs[self._RFont[name]]
+            except:
+                self.getmySQLGlyph(name)
+                return self._glyphs[self._RFont[name]]
         return self._glyphs[self._RFont[name]]
 
     def __len__(self):
-        return len(self._RFont)
+        return len(self._RFont.keys())
 
     def __contains__(self, name):
         return name in self._RFont
@@ -91,6 +116,41 @@ class Font():
 
     def shallowDocument(self):
         return self._RFont.shallowDocument()
+
+    def getmySQLGlyph(self, name):
+
+        def insertGlyph(layer, name, xml):
+            layer.newGlyph(name)
+            glyph = layer[name]
+            pen = glyph.naked().getPointPen()
+            readGlyphFromString(xml, glyph.naked(), pen)
+
+        # if not set(list(name)) - set(self.characterGlyphSet):
+        if name in self.characterGlyphSet:
+            glyph = characterGlyph.CharacterGlyph(name)
+            BGlyph = self._BFont.get_cglyph(name)
+        # elif not set(list(name)) - set(self.atomicElementSet):
+        if name in self.atomicElementSet:
+            glyph = atomicElement.AtomicElement(name)
+            BGlyph = self._BFont.get_aelement(name)
+        # elif not set(list(name)) - set(self.deepComponentSet):
+        if name in self.deepComponentSet:
+            glyph = deepComponent.DeepComponent(name)
+            BGlyph = self._BFont.get_dcomponent(name)
+
+        xml = BGlyph.xml
+        self.insertGlyph(glyph, xml, 'foreground')
+        # insertGlyph(self._RFont, name, xml)
+
+        if BGlyph.item_type == bfs.AELEMENT:
+            for layer in BGlyph:
+                layerName = layer.layername
+                glyph = characterGlyph.AtomicElement(name)
+                xml = layer.xml
+                self._RFont.newLayer(layerName)
+                self.insertGlyph(glyph, xml, layerName)
+                # drawGlyph(self._RFont.getLayer(layerName), layerName, xml)
+
 
     @property
     def _fontLayers(self):
@@ -268,7 +328,7 @@ class Font():
                             layerfileName, 
                             layerName
                             )
-        self.save()
+        # self.save()
 
     def newGLIF(self, glyphType, glyphName):
         if glyphType == 'atomicElement':
@@ -330,15 +390,24 @@ class Font():
 
     @property
     def atomicElementSet(self):
-        return self._returnGlyphsList('atomicElement')
+        if not self.mysqlFont:
+            return self._returnGlyphsList('atomicElement')
+        else:
+            return self._BFont.all_aelementnames()
 
     @property
     def deepComponentSet(self):
-        return self._returnGlyphsList('deepComponent')
+        if not self.mysqlFont:
+            return self._returnGlyphsList('deepComponent')
+        else:
+            return self._BFont.all_dcomponentnames()
 
     @property
     def characterGlyphSet(self):
-        return self._returnGlyphsList('characterGlyph')
+        if not self.mysqlFont:
+            return self._returnGlyphsList('characterGlyph')
+        else:
+            return self._BFont.all_cglyphnames()
 
     def _returnGlyphsList(self, glyphType):
         if self.fontPath is None: return []
@@ -451,6 +520,7 @@ class Font():
         self._hanziExportUFO()
 
     def _hanziExportUFO(self):
+        return
         font = NewFont(familyName = "hanzi", styleName = "Regular", showUI = False)
         for rglyph in self._RFont.getLayer('foreground'):
             glyph = self[rglyph.name]

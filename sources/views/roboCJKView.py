@@ -98,6 +98,15 @@ class EditingSheet():
         self.RCJKI.exportDataBase()
         self.w.close()
 
+def getRelatedGlyphs(font, glyphName, regenerated = []):
+    if glyphName not in regenerated:
+        font.getGlyph(font[glyphName])
+        regenerated.append(glyphName)
+    g = font[glyphName]
+    if not hasattr(g, "_deepComponents"): return
+    for dc in g._deepComponents:
+        getRelatedGlyphs(font, dc.name, regenerated)
+
 # This function is outside of any class
 def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     font = RCJKI.currentFont
@@ -107,7 +116,9 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     if not locked: return
     if not alreadyLocked:
         RCJKI.gitEngine.pull()
-        font.getGlyphs()
+        # font.getGlyphs()
+        getRelatedGlyphs(font, glyphName)
+        # font.getGlyph(font[glyphName])
         g = font[glyphName]._RGlyph
     if not g.width:
         g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
@@ -127,6 +138,7 @@ class CharacterWindow:
         "Can be designed with current deep components",
         "Can't be designed with current deep components",
         "All",
+        "Have outlines", 
         # "Custom list"
         ]
 
@@ -236,6 +248,17 @@ class CharacterWindow:
             #     l = [chr(int(n[3:], 16)) for n in result]
             title = " ".join(self.filterRules[self.filter].split(' ')[:3])
 
+        elif self.filter == 5:
+            names = [files.unicodeName(c) for c in self.relatedChars]
+            l = []
+            for name in names:
+                try:
+                    if len(self.RCJKI.currentFont[name]):
+                        l.append(chr(int(name[3:], 16)))
+                except:pass
+            title = self.filterRules[self.filter]
+            # l = [chr(int(name[3:], 16)) for name in names if len(self.RCJKI.currentFont[name])]
+
         self.RCJKI.drawer.refGlyph = None
         self.RCJKI.drawer.refGlyphPos = [0, 0]   
         UpdateCurrentGlyphView()
@@ -263,8 +286,8 @@ class CharacterWindow:
         self.w.close()
 
     def charactersListSelectionCallback(self, sender):
-        self.w.previewCheckBox.show(self.filter == 0)
-        self.w.sliders.show(self.filter == 0)
+        self.w.previewCheckBox.show(self.filter in [0, 5])
+        self.w.sliders.show(self.filter in [0, 5])
         if self.preview:
             self.setRefGlyph(sender)
 
@@ -377,6 +400,12 @@ class ComponentWindow():
         self.w.close()
 
     def setUI(self):
+        if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni'):
+            try:
+                self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
+            except:
+                print('this glyph has no Unicode')
+                return
         char = chr(self.RCJKI.currentGlyph.unicode)
         if char in self.RCJKI.dataBase:
             self.w.componentList.set(self.RCJKI.dataBase[char])
@@ -421,7 +450,7 @@ class ComponentWindow():
         index = sender.get()[sel[0]]
         self.deepComponentName = "DC_%s_%s"%(self.code, index)
         self.glyph = self.RCJKI.currentFont[self.deepComponentName]
-        self.glyph.preview.computeDeepComponents()
+        self.glyph.preview.computeDeepComponents(update = False)
         self.w.canvas2.update()
 
     def variantComponentListdoubleClickCallback(self, sender):
@@ -991,21 +1020,19 @@ class RoboCJKView(BaseWindowController):
         self.w.rcjkFiles.setItems(rcjkFiles)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
+    @gitCoverage()
+    def reloadProjectCallback(self, sender):
+        self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
+
     def setmySQLRCJKFiles(self):
-        if self.RCJKI.mysql is None:
+        if not self.RCJKI.mysql:
             rcjkFiles = []
         else:
             rcjkFiles = [x[1] for x in self.RCJKI.mysql.select_fonts()]
         self.w.rcjkFiles.setItems(rcjkFiles)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
-    @gitCoverage()
-    def reloadProjectCallback(self, sender):
-        self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
-
     def rcjkFilesSelectionCallback(self, sender):
-        
-        
         self.currentrcjkFile = sender.getItem()
         self.w.saveProjectButton.enable(True)
         self.w.newProjectButton.enable(True)
@@ -1038,7 +1065,6 @@ class RoboCJKView(BaseWindowController):
         if self.currentrcjkFile is None: 
             return
 
-        
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
@@ -1047,35 +1073,51 @@ class RoboCJKView(BaseWindowController):
                 w.close()
             except:
                 pass
+        # return
+        if self.RCJKI.get('currentFont'):
+            if self.currentFont is not None:
+                self.currentFont.save()
+                # self.currentFont.close()
+        self.currentrcjkFile = sender.getItem() 
+        # if self.currentrcjkFile is None:
+        #     self.currentrcjkFile = ""
+        self.RCJKI.dataBase = {}
+        
+        self.RCJKI.currentFont = font.Font()
         if not self.RCJKI.mysql:
-            if self.RCJKI.get('currentFont'):
-                if self.currentFont is not None:
-                    self.currentFont.save()
-                    # self.currentFont.close()
-            self.currentrcjkFile = sender.getItem() 
-            # if self.currentrcjkFile is None:
-            #     self.currentrcjkFile = ""
             fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
-            self.RCJKI.currentFont = font.Font(
-                fontPath, 
+            self.RCJKI.currentFont._init_for_git(fontPath, 
                 self.RCJKI.gitUserName, 
                 self.RCJKI.gitPassword, 
                 self.RCJKI.gitHostLocker, 
                 self.RCJKI.gitHostLockerPassword, 
                 self.RCJKI.privateLocker
                 )
-            self.RCJKI.dataBase = {}
-
             if 'database.json' in os.listdir(fontPath):
                 with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
                     self.RCJKI.dataBase = json.load(file)
+        else:
+            self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql)
+            self.RCJKI.dataBase = self.RCJKI.currentFont._BFont.database_data
+        
 
-            self.RCJKI.toggleWindowController()
+        self.RCJKI.toggleWindowController()
 
-            self.w.atomicElement.set(self.currentFont.atomicElementSet)
-            self.w.deepComponent.set(self.currentFont.deepComponentSet)
-            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
-            self.w.characterGlyph.set(charSet)
+        self.w.atomicElement.set(self.currentFont.atomicElementSet)
+        self.w.deepComponent.set(self.currentFont.deepComponentSet)
+        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+        self.w.characterGlyph.set(charSet)
+
+        # return
+
+        
+
+        
+
+        # self.w.atomicElement.set(self.currentFont.atomicElementSet)
+        # self.w.deepComponent.set(self.currentFont.deepComponentSet)
+        # charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+        # self.w.characterGlyph.set(charSet)
 
     def GlyphsListDoubleClickCallback(self, sender):
         items = sender.get()
@@ -1121,7 +1163,10 @@ class RoboCJKView(BaseWindowController):
         else:
             self.prevGlyphName = prevGlyphName
         self.setGlyphNameToCansvas(sender, self.prevGlyphName)
-        user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
+        if not self.RCJKI.mysql:
+            user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
+        else:
+            user = self.RCJKI.mysql.who_locked_cglyph(self.currentrcjkFile, prevGlyphName)
         if user: 
             self.w.lockerInfoTextBox.set('Locked by: ' + user)
         else:
@@ -1407,7 +1452,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             return
         self.charName = name
         self.refGlyph = self.RCJKI.currentFont[name]
-        self.refGlyph.preview.computeDeepComponents()
+        self.refGlyph.preview.computeDeepComponents(update = False)
         self.deepComponents = self.refGlyph._deepComponents
         self.glyphVariations = self.refGlyph._glyphVariations
         self.deepComponentsName = [chr(int(dc.name.split("_")[1], 16)) for dc in self.deepComponents]

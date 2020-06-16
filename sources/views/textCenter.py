@@ -200,7 +200,7 @@ class TextCenter:
         self.pointsSize = [9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96, 144, 256, 512, 1024],
         self.w.pointSize = ComboBox(
             (-60, 0, -0, 20),
-            self.pointsSize,
+            *self.pointsSize,
             callback = self.pointSizeCallback
             )
         self.w.pointSize.set(72)
@@ -321,23 +321,47 @@ class TextCenter:
         self.w.pointSize.set(self.w.multiLineView.getPointSize())
         glyph = self.RCJKI.currentFont[info["glyph"].name]
         scale = info["scale"]
-        if glyph.type in ['deepComponent', 'characterGlyph']:
-            if self.sourcesList:# and glyph.glyphVariations:
-                glyph.preview.computeDeepComponentsPreview(self.sourcesList)
-                self.RCJKI.drawer.drawVariationPreview(
-                        glyph,
-                        scale,
-                        (0, 0, 0, 1),
-                        (0, 0, 0, 0)
+
+        def drawVariation(glyph, sourcelist, drawer):
+            glyph.preview.computeDeepComponentsPreview(sourcelist, update = False)
+            drawer.drawVariationPreview(
+                    glyph,
+                    scale,
+                    (0, 0, 0, 1),
+                    (0, 0, 0, 0)
                         )
-            else:
-                glyph.preview.computeDeepComponents()
-                self.RCJKI.drawer.drawAxisPreview(
+
+        def drawPreview(glyph, drawer):
+            glyph.preview.computeDeepComponents(update = False)
+            drawer.drawAxisPreview(
                     glyph,
                     (0, 0, 0, 1),
                     scale,
                     (0, 0, 0, 1)
                     )
+
+        if glyph.type in ['deepComponent', 'characterGlyph']:
+            if self.sourcesList:# and glyph.glyphVariations:
+                try:
+                    drawVariation(glyph, self.sourcesList, self.RCJKI.drawer)
+                except:
+                    drawPreview(glyph, self.RCJKI.drawer)
+                # glyph.preview.computeDeepComponentsPreview(self.sourcesList, update = False)
+                # self.RCJKI.drawer.drawVariationPreview(
+                #         glyph,
+                #         scale,
+                #         (0, 0, 0, 1),
+                #         (0, 0, 0, 0)
+                #         )
+            else:
+                drawPreview(glyph, self.RCJKI.drawer)
+                # glyph.preview.computeDeepComponents(update = False)
+                # self.RCJKI.drawer.drawAxisPreview(
+                #     glyph,
+                #     (0, 0, 0, 1),
+                #     scale,
+                #     (0, 0, 0, 1)
+                #     )
 
     def windowWillClose(self, sender):
         self.RCJKI.textCenterWindows.pop(self.RCJKI.textCenterWindows.index(self))

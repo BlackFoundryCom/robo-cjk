@@ -105,7 +105,9 @@ class DeepComponent(DictClass):
             scalex: int = 1, 
             scaley: int = 1, 
             x: int = 0, 
-            y: int = 0):
+            y: int = 0,
+            rcenterx: int = 0,
+            rcentery: int = 0):
         super().__init__()
         self.coord = Coord(**dict(coord))
         self.rotation = rotation
@@ -113,6 +115,8 @@ class DeepComponent(DictClass):
         self.scaley = scaley
         self.x = x
         self.y = y
+        self.rcenterx = rcenterx
+        self.rcentery = rcentery
 
     def set(self, items: dict):
         """
@@ -237,6 +241,9 @@ class DeepComponents:
 
     def __setitem__(self, item, value):
         setattr(self, item, value)
+
+    def __bool__(self):
+        return bool(self._deepComponents)
 
     def getList(self):
         """

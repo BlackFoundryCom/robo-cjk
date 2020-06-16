@@ -54,7 +54,7 @@ class Drawer():
             if glyph.type == 'atomicElement':
                 if not len(glyph): return
             else:
-                glyph.preview.computeDeepComponents()
+                glyph.preview.computeDeepComponents(update = False)
             self.drawAxisPreview(
                 glyph,
                 color,
@@ -123,17 +123,31 @@ class Drawer():
         for i, atomicInstance in enumerate(glyph.preview.axisPreview):
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
+                mjdt.save()
+                mjdt.stroke(1, 0, 0, 1)
+                mjdt.strokeWidth(1*scale)
+                tx = atomicInstance.x+atomicInstance.rcenterx
+                ty = atomicInstance.y+atomicInstance.rcentery
+                mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
+                mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
+                mjdt.stroke(None)
+                mjdt.fill(1, 0, 0, 1)
+                mjdt.fontSize(8*scale)
+                mjdt.textBox(f"{int(atomicInstance.rcenterx)} {int(atomicInstance.rcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
+                mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
+
             for c in atomicInstance.glyph:
                 if c.clockwise:
                     mjdt.stroke(1, 0, 0, 1)
                     mjdt.strokeWidth(2*scale)
             mjdt.save()
-            mjdt.drawGlyph(self.roundGlyph(atomicInstance.getTransformedGlyph())) 
+            # mjdt.drawGlyph(atomicInstance.getTransformedGlyph(round = self.RCJKI.roundToGrid)) 
+            mjdt.drawGlyph(atomicInstance.transformedGlyph) 
             mjdt.restore()
             if customColor is None and view: 
                 if i != index:
-                    self.drawIndexOfElements(i, atomicInstance.getTransformedGlyph(), view)
+                    self.drawIndexOfElements(i, atomicInstance.transformedGlyph, view)
             index = i
         if customColor is None:
             mjdt.fill(customColor)
@@ -147,7 +161,7 @@ class Drawer():
             if self.RCJKI.currentFont[c.baseGlyph].type == "atomicElement":
                 mjdt.drawGlyph(self.roundGlyph(self.RCJKI.currentFont[c.baseGlyph]))
             else:
-                self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents()
+                self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents(update = False)
                 self.drawAxisPreview(self.RCJKI.currentFont[c.baseGlyph],
                                             flatComponentColor,
                                             scale,

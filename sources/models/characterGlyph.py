@@ -105,10 +105,12 @@ class CharacterGlyph(Glyph):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
     def updateDeepComponentCoord(self, nameAxis, value):
-        if self.selectedSourceAxis is not None:
-            self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
-        else:
-            self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
+        try:
+            if self.selectedSourceAxis is not None:
+                self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
+            else:
+                self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
+        except: pass
 
     def removeVariationAxis(self, name):
         self._glyphVariations.removeAxis(name)
@@ -152,8 +154,8 @@ class CharacterGlyph(Glyph):
             except:
                 pass
 
-        lib[deepComponentsKeyOld] = self._deepComponents.getList()
-        lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        # lib[deepComponentsKeyOld] = self._deepComponents.getList()
+        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()

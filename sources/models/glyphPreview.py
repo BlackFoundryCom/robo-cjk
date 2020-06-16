@@ -53,7 +53,16 @@ class FlatComponentInstance:
 
 class AtomicInstance:
 
-    def __init__(self, glyph:RGlyph = None, scalex:float = 1.0, scaley:float = 1.0, x:int = 0, y:int = 0, rotation:float = 0.0, coord:dict = {}):
+    def __init__(self, 
+            glyph:RGlyph = None, 
+            scalex:float = 1.0, 
+            scaley:float = 1.0, 
+            x:int = 0, 
+            y:int = 0, 
+            rotation:float = 0.0, 
+            coord:dict = {},
+            rcenterx:int = 0,
+            rcentery:int = 0):
         self.glyph = glyph
         self.scalex = scalex
         self.scaley = scaley
@@ -62,6 +71,8 @@ class AtomicInstance:
         self.rotation = rotation
         self.coord = coord
         self._transformedGlyph = None
+        self.rcenterx = rcenterx * scalex
+        self.rcentery = rcentery * scaley
 
     def __getitem__(self, item):
         if hasattr(self, item):
@@ -76,7 +87,7 @@ class AtomicInstance:
     def getTransformedGlyph(self, round:bool = False) -> RGlyph:
         glyph = self.glyph.copy()
         glyph.scaleBy((self.scalex, self.scaley))
-        glyph.rotateBy(self.rotation)
+        glyph.rotateBy(self.rotation, (self.rcenterx, self.rcentery))
         glyph.moveBy((self.x, self.y))
         if round:
             glyph.round()
@@ -85,8 +96,8 @@ class AtomicInstance:
 
     def getFlatComponentGlyph(self, round:bool = False) -> FlatComponentInstance:
         glyph = self.glyph.copy()
-        glyph.scaleBy((self.scalex, self.scaley))
-        glyph.rotateBy(self.rotation)
+        glyph.scaleBy((self.scalex, self.scaley), (self.rcenterx, self.rcentery))
+        glyph.rotateBy(self.rotation, (self.rcenterx, self.rcentery))
         if round:
             glyph.round()
         return FlatComponentInstance(glyph, self.x, self.y)
@@ -116,9 +127,9 @@ class Preview:
             if not filtered:
                 layersInfos[layer] = value
             else:
-                if layer in filtered:
-                    if len(self.glyph._RGlyph.getLayer(layer)):
-                        layersInfos[layer] = value
+                if axis['Axis'] in filtered:
+                    if len(self.glyph._RGlyph.getLayer(axis['Axis'])):
+                        layersInfos[axis['Axis']] = value
 
         return interpolation.deepolation(
             RGlyph(), 
@@ -152,6 +163,14 @@ class Preview:
         ddpolated = interpolation.deepdeepolation(deepComponents, variationGlyph, axisInfos)
         previewGlyph = deepComponent.DeepComponent(glyphName)
         previewGlyph._deepComponents = DeepComponents(ddpolated)
+
+        for i, dc in enumerate(previewGlyph._deepComponents):
+            dc.rcenterx = deepComponents[i].rcenterx
+            dc.rcentery = deepComponents[i].rcentery
+            for variation in previewGlyph._glyphVariations.values():
+                variation[i].rcenterx = deepComponents[i].rcenterx
+                variation[i].rcentery = deepComponents[i].rcentery
+
         return previewGlyph
 
     def _getAtomicInstance(self, deepComponentGlyph, layersInfos, deepComponent, coord):
@@ -163,7 +182,9 @@ class Preview:
             rotation = deepComponent.rotation,
             x = deepComponent.x, 
             y = deepComponent.y,
-            coord = coord
+            coord = coord,
+            rcenterx = deepComponent.rcenterx,
+            rcentery = deepComponent.rcentery,
             )
         return atomicInstance
 
@@ -270,12 +291,14 @@ class CharacterGlyphPreview(Preview):
             axisPreview = axisPreview,
             # name = deepComponent.name,
             glyph = glyph,
-            coord = deepComponent.coord,
-            scalex = deepComponent.scalex,
-            scaley = deepComponent.scaley,
-            x = deepComponent.x,
-            y = deepComponent.y,
-            rotation = deepComponent.rotation,
+            coord = deepComponent['coord'],
+            scalex = deepComponent['scalex'],
+            scaley = deepComponent['scaley'],
+            x = deepComponent['x'],
+            y = deepComponent['y'],
+            rotation = deepComponent['rotation'],
+            rcenterx = deepComponent['rcenterx'],
+            rcentery = deepComponent['rcentery'],
             )
         return deepComponentInstance
 
@@ -312,9 +335,9 @@ class CharacterGlyphPreview(Preview):
         characterGlyphAxisInfos = {}
         for UICharacterGlyphVariation in sourcelist:
             characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']
-        if not characterGlyphAxisInfos: return
+        if not characterGlyphAxisInfos:return
 
-        outputCG = interpolation.deepdeepdeepolation(
+        outputCG = interpolation.deepdeepolation(
             self.glyph._deepComponents, 
             self.glyph._glyphVariations, 
             characterGlyphAxisInfos
@@ -323,20 +346,22 @@ class CharacterGlyphPreview(Preview):
         for j, deepComponentInstance in enumerate(outputCG):
             try:
                 glyph = self.glyph.getParent()[deepComponentInstance['name']]
-                variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), self.glyph._deepComponents[j]))                
-            except:
-                continue
+                # deepComponentInstance["x"] = self.glyph._deepComponents[j].x
+                # deepComponentInstance["y"] = self.glyph._deepComponents[j].y
+                deepComponentInstance["rcenterx"] = self.glyph._deepComponents[j].rcenterx
+                deepComponentInstance["rcentery"] = self.glyph._deepComponents[j].rcentery
+                variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), deepComponentInstance))                
+            except Exception as e:
+                raise e
 
         outlinesPreview = []
         if self.glyph.getParent()._RFont.lib.get('robocjk.fontVariations', ''):
-
             outlinesPreview = self._generateOutlinesPreview(
                 sourceList = sourcelist, 
                 filtered = self.glyph.getParent()._RFont.lib['robocjk.fontVariations']
                 )
 
         previewGlyph = RGlyph()
-        # for preview in [variationPreview]:
         for atomicInstance in variationPreview:
             for c in atomicInstance.getTransformedGlyph():
                 previewGlyph.appendContour(c)

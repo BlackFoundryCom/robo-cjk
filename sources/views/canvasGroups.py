@@ -384,7 +384,7 @@ class DCCG_View(CanvasGroup):
                     self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
                     self.RCJKI.currentGlyph.selectedSourceAxis = name
             glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
+            l = [{'Axis':axis, 'PreviewValue':0} for axis in glyphVariations]
             sender.set(l)
             sender.setSelection(sel)
 
@@ -404,7 +404,7 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.addVariationToGlyph(name)
 
             if self.RCJKI.currentGlyph._glyphVariations:
-                source = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.RCJKI.currentGlyph._glyphVariations]
+                source = [{'Axis':axis, 'PreviewValue':0} for axis in self.RCJKI.currentGlyph._glyphVariations]
             self.sourcesList.set(source)
             self.RCJKI.currentGlyph.sourcesList = source
             isel = len(source)
@@ -425,7 +425,7 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.selectedSourceAxis = None
             self.sourcesList.setSelection([0])
             glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
+            l = [{'Axis':axis, 'PreviewValue':0} for axis in glyphVariations]
             self.RCJKI.currentGlyph.sourcesList = l
             self.sourcesList.set(l)
             self.slidersList.set([])
@@ -525,11 +525,11 @@ class GlyphPreviewCanvas(CanvasGroup):
         d = self.glyph._glyphVariations
         if self.glyph.type ==  "atomicElement":
             self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer, "PreviewValue":0.5} for axisName, layer in  d.items()
+                {"Axis":axisName, "Layer":layer, "PreviewValue":0} for axisName, layer in  d.items()
                 ]
         else:
             self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
         scale = .15
         mjdt.scale(scale, scale)

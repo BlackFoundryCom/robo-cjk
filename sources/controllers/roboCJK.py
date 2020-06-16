@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, uninstallTool
+from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, uninstallTool, getActiveEventTool
 from imp import reload
 
 from utils import interpolation
@@ -57,11 +57,6 @@ reload(transformationTool)
 from views import PDFProofer
 reload(PDFProofer)
 
-import mySQLCollabEngine
-
-import mySQLCollabEngine.BF_engine_mysql as BF_engine_mysql
-import mySQLCollabEngine.BF_init as BF_init
-
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
 import mojo.drawingTools as mjdt
@@ -70,19 +65,22 @@ from mojo.extensions import getExtensionDefault, setExtensionDefault
 
 import math
 import json
-import copy
-import logging
-import sys  
+import copy 
+
+import mySQLCollabEngine
+
+import mySQLCollabEngine.BF_engine_mysql as BF_engine_mysql
+import mySQLCollabEngine.BF_init as BF_init
+
+# curpath = os.path.dirname(__file__)
+curpath = mySQLCollabEngine.__path__._path[0]
+bf_log = BF_init.init_log(curpath)
+dict_persist_params, _  = BF_init.init_params(bf_log, curpath, BF_init._REMOTE, None)
 
 from utils import decorators
 reload(decorators)
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
-
-# curpath = os.path.dirname(__file__)
-curpath = mySQLCollabEngine.__path__._path[0]
-bf_log = BF_init.__init_log(curpath)
-dict_persist_params, _  = BF_init.__init_params(bf_log, curpath, BF_init._REMOTE)
 
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
@@ -132,8 +130,16 @@ class RoboCJKController(object):
         self.px, self.py = 0,0
 
         self.mysql = False
-        self.mysql_userName = None
-        self.mysql_password = None
+        self.mysql_userName = ""
+        self.mysql_password = ""
+        self.bf_log = bf_log
+
+    def connect2mysql(self):
+        bf_log.info("will connect to mysql")
+        self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
+        self.mysql.login(self.mysql_userName, self.mysql_password)
+        bf_log.info("did connect to mysql")
+        bf_log.info(self.mysql.login(self.mysql_userName, self.mysql_password))
 
     def getmySQLParams(self):
         pass
@@ -170,15 +176,14 @@ class RoboCJKController(object):
     def _launchInterface(self):
         self.roboCJKView = roboCJKView.RoboCJKView(self)
 
-    def connect2mysql(self):
-        self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
-        self.mysql.login(self.mysql_userName, self.mysql_password)
-
     def setGitEngine(self):
+        bf_log.info("will set git engine")
         global gitEngine
         gitEngine = git.GitEngine(self.projectRoot)
         self.user = gitEngine.user()
+        bf_log.info(self.user)
         self.gitEngine = gitEngine
+        bf_log.info("did set git engine")
 
     def toggleObservers(self, forceKill=False):
         if self.observers or forceKill:
@@ -214,10 +219,10 @@ class RoboCJKController(object):
             print('no font object')
 
     def didUndo(self, info):
-        self.updateDeepComponent()
+        self.updateDeepComponent(update = False)
 
     @refresh
-    def updateDeepComponent(self, update = True):
+    def updateDeepComponent(self, update = False):
         self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
         self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
@@ -263,11 +268,11 @@ class RoboCJKController(object):
         d = self.currentGlyph._glyphVariations
         if self.currentGlyph.type == "atomicElement":
             self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0.5, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
+                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
                 ]
         else:
             self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         self.currentViewSourceValue.set("")
@@ -407,21 +412,32 @@ class RoboCJKController(object):
         if self.isAtomic:
             return
         event = extractNSEvent(point)
-        if not event["shiftDown"]:
-            self.currentGlyph.selectedElement = []
-        try: self.px, self.py = point['point'].x, point['point'].y
-        except: return
-        self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
-        self.currentViewSliderList.set([])
-        if self.currentGlyph.selectedElement: 
-            self.setListWithSelectedElement()
+        modifiers = getActiveEventTool().getModifiers()
+        option = modifiers['optionDown']
+        command = modifiers['commandDown']
+        if not all([option, command]):
+            if not event["shiftDown"]:
+                self.currentGlyph.selectedElement = []
+            try: self.px, self.py = point['point'].x, point['point'].y
+            except: return
+            
+            self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
+            self.currentViewSliderList.set([])
+            if self.currentGlyph.selectedElement: 
+                self.setListWithSelectedElement()
 
-            if point['clickCount'] == 2:
-                popover.EditPopoverAlignTool(
-                    self, 
-                    point['point'], 
-                    self.currentGlyph
-                    )
+                if point['clickCount'] == 2:
+                    popover.EditPopoverAlignTool(
+                        self, 
+                        point['point'], 
+                        self.currentGlyph
+                        )
+        else:
+            self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
+            addObserver(self, 'mouseDragged', 'mouseDragged')
+
+    def mouseDragged(self, point):
+        self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
 
     def setListWithSelectedElement(self):
         if self.isDeepComponent:
@@ -443,6 +459,7 @@ class RoboCJKController(object):
 
     @refresh
     def mouseUp(self, info):
+        removeObserver(self, 'mouseDragged')
         if self.isAtomic:
             return
         if self.transformationToolIsActiv and self.currentGlyph.selectedElement: return
@@ -605,15 +622,15 @@ class RoboCJKController(object):
         l = []
         if self.isAtomic:
             for axisName, layer in self.currentGlyph._glyphVariations.items():
-                l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":.5, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
+                l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
 
         self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l

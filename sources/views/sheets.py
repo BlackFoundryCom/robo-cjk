@@ -220,7 +220,7 @@ class SelectFontVariationSheet():
 
         source = []
         if self.RCJKI.currentGlyph._glyphVariations:
-            source = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.RCJKI.currentGlyph._glyphVariations]
+            source = [{'Axis':axis, 'PreviewValue':0} for axis in self.RCJKI.currentGlyph._glyphVariations]
         isel = len(source)
         self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
         self.view.sourcesList.setSelection([isel-1])
@@ -286,7 +286,7 @@ class SelectDeepComponentSheet():
 
     def getDeepComponentPreview(self, deepComponentName):
         self.glyph = self.RCJKI.currentFont[deepComponentName]
-        self.glyph.preview.computeDeepComponents()
+        self.glyph.preview.computeDeepComponents(update = False)
         self.parent.sheet.canvasPreview.update()
     
     def closeSheet(self, sender):
@@ -924,7 +924,7 @@ class LockController:
         mjdt.scale(s, s)
         mjdt.translate(350, 350)
         if glyph.type != "atomicElement":
-            glyph.preview.computeDeepComponents()
+            glyph.preview.computeDeepComponents(update = False)
             self.RCJKI.drawer.drawAxisPreview(
                 glyph,
                 (0, 0, 0, 1),
