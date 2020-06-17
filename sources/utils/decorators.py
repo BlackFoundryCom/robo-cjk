@@ -29,24 +29,27 @@ def gitCoverage(msg='save'):
 
     def foo(func):
         def wrapper(self, *args, **kwargs):
-            try:
-                gitEngine = roboCJK.gitEngine
-                if not gitEngine.isInGitRepository():
+            if not self.mysql:
+                try:
+                    gitEngine = roboCJK.gitEngine
+                    if not gitEngine.isInGitRepository():
+                        PostBannerNotification(
+                            'Impossible', "Project is not is GIT repository"
+                            )
+                        return
+                    gitEngine.createGitignore()
+                    gitEngine.pull()
+                    func(self, *args, **kwargs)
+                    gitEngine.commit(msg)   
+                    gitEngine.push()
                     PostBannerNotification(
-                        'Impossible', "Project is not is GIT repository"
-                        )
-                    return
-                gitEngine.createGitignore()
-                gitEngine.pull()
-                func(self, *args, **kwargs)
-                gitEngine.commit(msg)   
-                gitEngine.push()
-                PostBannerNotification(
-                        'font did save', ""
-                        ) 
+                            'font did save', ""
+                            ) 
 
-            except Exception as e:
-                raise e
+                except Exception as e:
+                    raise e
+            else:
+                func(self, *args, **kwargs)
         return wrapper 
     return foo
 

@@ -46,6 +46,7 @@ class Font():
     #     pass
     def __init__(self):
         self.mysqlFont = False
+        self.mysql = False
         self._glyphs = {}
 
     def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
@@ -86,6 +87,9 @@ class Font():
         self.mysql = mysql
         self.mysqlUserName = mysqlUserName
 
+        self.defaultGlyphWidth = self._BFont.fontlib_data.get("robocjk.defaultGlyphWidth", 1000)
+        # print(self._BFont.fontlib_data)
+
     def lockGlyph(self, glyph):
         if not self.mysqlFont:
             # locked, alreadyLocked = self.locker.batchLock([glyph])
@@ -96,13 +100,13 @@ class Font():
             glyphType = self._findGlyphType(glyphName)
             if glyphType == "cglyphs":
                 lock = self.mysql.lock_cglyph(self.fontName, glyphName)
-                return lock in [self.mysqlUserName, None], 
+                return lock in [self.mysqlUserName, None], False
             elif glyphType == "dcomponents":
                 lock = self.mysql.lock_dcomponent(self.fontName, glyphName)
-                return lock in [self.mysqlUserName, None], 
+                return lock in [self.mysqlUserName, None], False
             elif glyphType == "aelements":
                 lock = self.mysql.lock_aelement(self.fontName, glyphName)
-                return lock in [self.mysqlUserName, None], 
+                return lock in [self.mysqlUserName, None], False
             
 
     def unlockGlyph(self, glyph):
@@ -242,10 +246,19 @@ class Font():
         # insertGlyph(self._RFont, name, xml)
 
         if BGlyph.item_type == bfs.AELEMENT:
-            for layer in BGlyph:
+            print(">>>>>>")
+            print(BGlyph.layers)
+            print(">>>>>>")
+            for layer in BGlyph.layers:
+                print("------")
+                print(layer, layer.layername, layer.axisname)
+                print("------")
                 layerName = layer.layername
-                glyph = characterGlyph.AtomicElement(name)
+                glyph = atomicElement.AtomicElement(name)
                 xml = layer.xml
+                print("°°°°°°°°°°°")
+                print(xml)
+                print("°°°°°°°°°°°")
                 self._RFont.newLayer(layerName)
                 self.insertGlyph(glyph, xml, layerName)
                 # drawGlyph(self._RFont.getLayer(layerName), layerName, xml)
@@ -580,43 +593,64 @@ class Font():
 
     @gitCoverage(msg = 'font save')
     def save(self):
-        self._RFont.save()
-    
-        libPath = os.path.join(self.fontPath, 'fontLib.json')
-        with open(libPath, "w") as file:
-            lib = self._RFont.lib.asDict()
-            del lib["public.glyphOrder"]
-            file.write(json.dumps(lib,
-                indent=4, separators=(',', ': ')))
+        if not self.mysql:
+            self._RFont.save()
+        
+            libPath = os.path.join(self.fontPath, 'fontLib.json')
+            with open(libPath, "w") as file:
+                lib = self._RFont.lib.asDict()
+                del lib["public.glyphOrder"]
+                file.write(json.dumps(lib,
+                    indent=4, separators=(',', ': ')))
 
-        for rglyph in self._RFont.getLayer('foreground'):
-            if not self.locker.userHasLock(rglyph): continue
-            glyph = self[rglyph.name]
-            glyph.save()
-            glyphType = glyph.type
-            rglyph = glyph._RGlyph
-            rglyph.lib.update(glyph.lib)
-            txt = rglyph.dumpToGLIF()
-            fileName = "%s.glif"%files.userNameToFileName(glyph.name)
-            path = os.path.join(self.fontPath, glyphType, fileName)
+            for rglyph in self._RFont.getLayer('foreground'):
+                if not self.locker.userHasLock(rglyph): continue
+                glyph = self[rglyph.name]
+                glyph.save()
+                glyphType = glyph.type
+                rglyph = glyph._RGlyph
+                rglyph.lib.update(glyph.lib)
+                txt = rglyph.dumpToGLIF()
+                fileName = "%s.glif"%files.userNameToFileName(glyph.name)
+                path = os.path.join(self.fontPath, glyphType, fileName)
 
-            with open(path, "w", encoding = "utf-8") as file:
-                file.write(txt)
+                with open(path, "w", encoding = "utf-8") as file:
+                    file.write(txt)
 
-            for layerName in self._fontLayers:
-                f = self._RFont.getLayer(layerName)
-                if glyph.name in f:
-                    # layerglyph = self._glyphs[f[glyph.name]]
-                    layerglyph = f[glyph.name]
-                    # layerglyph.save()
-                    txt = layerglyph.dumpToGLIF()
-                    fileName = "%s.glif"%files.userNameToFileName(layerglyph.name)
-                    path = os.path.join(self.fontPath, glyphType, layerName, fileName)
-                    files.makepath(path)
-                    with open(path, "w", encoding = "utf-8") as file:
-                        file.write(txt)
+                for layerName in self._fontLayers:
+                    f = self._RFont.getLayer(layerName)
+                    if glyph.name in f:
+                        # layerglyph = self._glyphs[f[glyph.name]]
+                        layerglyph = f[glyph.name]
+                        # layerglyph.save()
+                        txt = layerglyph.dumpToGLIF()
+                        fileName = "%s.glif"%files.userNameToFileName(layerglyph.name)
+                        path = os.path.join(self.fontPath, glyphType, layerName, fileName)
+                        files.makepath(path)
+                        with open(path, "w", encoding = "utf-8") as file:
+                            file.write(txt)
 
-        self._hanziExportUFO()
+            self._hanziExportUFO()
+        else:
+            for name in self.atomicElementSet:
+                glyph = self[name]
+                glyph.save()
+                xml = glyph._RGlyph.dumpToGLIF()
+                aelement = self._BFont.get_aelement(name)
+
+                aelement.set_xml(xml)
+
+            for name in self.deepComponentSet:
+                glyph = self[name]
+                glyph.save()
+                xml = glyph._RGlyph.dumpToGLIF()
+                self._BFont.get_dcomponent(name).set_xml(xml)
+
+            # for name in self.characterGlyphSet:
+            #     glyph = self[name]
+            #     glyph.save()
+            #     string = glyph._RGlyph.dumpToGLIF()
+            #     self._BFont.get_cglyph(name).set_xml(xml)
 
     def _hanziExportUFO(self):
         return

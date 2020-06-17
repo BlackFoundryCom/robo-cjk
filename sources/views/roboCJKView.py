@@ -114,7 +114,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     # font[glyphName]._initWithLib()
     # locked, alreadyLocked = font.locker.lock(g)
     locked, alreadyLocked = font.lockGlyph(g)
-    if not self.RCJKI.mysql:
+    if not RCJKI.mysql:
         print(locked, alreadyLocked)
         if not locked: return
         if not alreadyLocked:
@@ -1022,6 +1022,10 @@ class RoboCJKView(BaseWindowController):
     def askYesNocallback(self, sender):
         self.RCJKI.privateLocker = sender
 
+    @property
+    def mysql(self):
+        return self.RCJKI.mysql
+    
     @gitCoverage()
     def setrcjkFiles(self):
         rcjkFiles = list(filter(lambda x: x.endswith(".rcjk"), 
