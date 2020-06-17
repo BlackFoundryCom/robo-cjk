@@ -579,7 +579,8 @@ class NewCharacterGlyph:
 
     def lockGlyphs(self, glyphs):
         if self.lockNewGlyph:
-            lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+            # lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+            lock = self.RCJKI.currentFont.batchLockGlyphs(glyphs)
             PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
 
     def relatedDCSearchBox(self, sender):
@@ -794,7 +795,8 @@ class LockController:
             callback = self.filterListCallback
             )
         self.currentGlyphName = None
-        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        # self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.currentUserLockedGlyphs()]
         self.w.unlock.lockedGlyphsList = List(
             (10, 30, 150, -40),
             self.lockedList,
@@ -847,7 +849,8 @@ class LockController:
         self.w.unlock.canvas.update()
 
     def lockGlyphs(self, glyphs):
-        lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+        # lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+        lock = self.RCJKI.currentFont.batchLockGlyphs(glyphs)
         PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
 
     def lockButtonCallback(self, sender):
@@ -872,20 +875,23 @@ class LockController:
                     glyphs.append(f[x["name"]])
                 except:
                     filesToRemove.append(x["name"])
-        self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        # self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        self.RCJKI.currentFont.removeLockerFiles(filesToRemove)
         if glyphs:
             self.unlockGlyphs(glyphs)
         self.resetList()
 
     def resetList(self):
-        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        # self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.currentUserLockedGlyphs()]
         self.w.unlock.lockedGlyphsList.set(self.lockedList)
         self.w.unlock.lockedGlyphsList.setSelection([])
         self.currentGlyphName = None
         self.w.unlock.canvas.update()
 
     def unlockGlyphs(self, glyphs):
-        unlock = self.RCJKI.currentFont.locker.batchUnlock(glyphs)
+        # unlock = self.RCJKI.currentFont.locker.batchUnlock(glyphs)
+        unlock = self.RCJKI.currentFont.batchUnlockGlyphs(glyphs)
         PostBannerNotification("Unlock %s"%["failed", "succeeded"][unlock], "")
 
     def unlockAllButtonCallback(self, sender):
@@ -896,7 +902,8 @@ class LockController:
             try: glyphs.append(f[x["name"]])
             except: 
                 filesToRemove.append(x["name"])
-        self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        # self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        self.RCJKI.currentFont.removeLockerFiles(filesToRemove)
         self.unlockGlyphs(glyphs)
         self.resetList()        
 

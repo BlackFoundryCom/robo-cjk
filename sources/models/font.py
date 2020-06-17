@@ -74,7 +74,7 @@ class Font():
         self.getGlyphs()
         self.createLayersFromVariationAxis()
 
-    def _init_for_mysql(self, bf_log, fontName, mysql):
+    def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName):
         self.mysqlFont = True
         self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
         self._RFont = NewFont(
@@ -82,6 +82,105 @@ class Font():
             styleName='Regular', 
             showUI = False
             )
+        self.fontName = fontName
+        self.mysql = mysql
+        self.mysqlUserName = mysqlUserName
+
+    def lockGlyph(self, glyph):
+        if not self.mysqlFont:
+            # locked, alreadyLocked = self.locker.batchLock([glyph])
+            locked, alreadyLocked = self.locker.lock(glyph)
+            return locked, alreadyLocked
+        else:
+            glyphName = glyph.name
+            glyphType = self._findGlyphType(glyphName)
+            if glyphType == "cglyphs":
+                lock = self.mysql.lock_cglyph(self.fontName, glyphName)
+                return lock in [self.mysqlUserName, None], 
+            elif glyphType == "dcomponents":
+                lock = self.mysql.lock_dcomponent(self.fontName, glyphName)
+                return lock in [self.mysqlUserName, None], 
+            elif glyphType == "aelements":
+                lock = self.mysql.lock_aelement(self.fontName, glyphName)
+                return lock in [self.mysqlUserName, None], 
+            
+
+    def unlockGlyph(self, glyph):
+        if not self.mysqlFont:
+            return self.locker.batchUnlock([glyph])
+        else:
+            glyphName = glyph.name
+            glyphType = self._findGlyphType(glyphName)
+            if glyphType == "cglyphs":
+                return self.mysql.unlock_cglyph(self.fontName, glyphName)
+            elif glyphType == "dcomponents":
+                return self.mysql.unlock_dcomponent(self.fontName, glyphName)
+            elif glyphType == "aelements":
+                return self.mysql.unlock_aelement(self.fontName, glyphName)
+
+    def batchLockGlyphs(self, glyphs:list = []):
+        if not self.mysqlFont:
+            return self.locker.batchLock(glyphs)
+        else:
+            for glyph in glyphs:
+                self.lockGlyph(glyph)
+
+    def batchUnlockGlyphs(self, glyphs:list = []):
+        if not self.mysqlFont:
+            return self.locker.batchUnlock(glyphs)
+        else:
+            for glyph in glyphs:
+                self.unlockGlyph(glyph)
+
+    def glyphLockedBy(self, glyph):
+        if not self.mysqlFont:
+            return self.locker.potentiallyOutdatedLockingUser(glyph)
+        else:
+            glyphName = glyph.name
+            glyphType = self._findGlyphType(glyphName)
+            if glyphType == "cglyphs":
+                return self.mysql.who_locked_cglyph(self.fontName, glyphName)
+            elif glyphType == "dcomponents":
+                return self.mysql.who_locked_dcomponent(self.fontName, glyphName)
+            elif glyphType == "aelements":
+                return self.mysql.who_locked_aelement(self.fontName, glyphName)
+
+    def currentUserLockedGlyphs(self):
+        if not self.mysqlFont:
+            return self.locker.myLockedGlyphs
+        else:
+            glyphName = glyph.name
+            glyphType = self._findGlyphType(glyphName)
+            if glyphType == "cglyphs":
+                return self.mysql.select_locked_cglyphs(self.fontName, glyphName)
+            elif glyphType == "dcomponents":
+                return self.mysql.select_locked_dcomponents(self.fontName, glyphName)
+            elif glyphType == "aelements":
+                return self.mysql.select_locked_aelements(self.fontName, glyphName)
+
+    def removeLockerFiles(self, glyphsnames:list = []):
+        if not self.mysqlFont:
+            if not isinstance(glyphsnames, list):
+                glyphsnames = list(glyphsnames)
+            self.locker.removeFiles(glyphsnames)
+
+    @property
+    def lockerUserName(self):
+        if not self.mysqlFont:
+            return self.locker._username
+        else:
+            return self.mysqlUserName
+
+    def _findGlyphType(self, glyphname):
+        if glyphname in self.characterGlyphSet:
+            return "cglyphs"
+
+        elif glyphname in self.atomicElementSet:
+            return "aelements"
+
+        elif glyphname in self.deepComponentSet:
+            return "dcomponents"
+
 
     def __iter__(self):
         for name in self._RFont.keys():
@@ -130,11 +229,11 @@ class Font():
             glyph = characterGlyph.CharacterGlyph(name)
             BGlyph = self._BFont.get_cglyph(name)
         # elif not set(list(name)) - set(self.atomicElementSet):
-        if name in self.atomicElementSet:
+        elif name in self.atomicElementSet:
             glyph = atomicElement.AtomicElement(name)
             BGlyph = self._BFont.get_aelement(name)
         # elif not set(list(name)) - set(self.deepComponentSet):
-        if name in self.deepComponentSet:
+        elif name in self.deepComponentSet:
             glyph = deepComponent.DeepComponent(name)
             BGlyph = self._BFont.get_dcomponent(name)
 
