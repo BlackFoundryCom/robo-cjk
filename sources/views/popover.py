@@ -22,7 +22,7 @@ from vanilla import *
 from AppKit import NSColor, NSNoBorder, NumberFormatter
 import copy
 from utils import decorators
-reload(decorators)
+# reload(decorators)
 glyphTransformUndo = decorators.glyphTransformUndo
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
@@ -75,7 +75,7 @@ def tryfunc(func):
     def wrapper(self, *args, **kwargs):
         try:
             func(self, *args, **kwargs)
-            self.RCJKI.updateDeepComponent()
+            self.RCJKI.updateDeepComponent(update = False)
         except:
             pass
     return wrapper

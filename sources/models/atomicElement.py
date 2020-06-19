@@ -22,11 +22,11 @@ from mojo.roboFont import *
 from imp import reload
 from models import glyph, component, glyphPreview
 from utils import interpolation, decorators
-reload(decorators)
-reload(interpolation)
-reload(glyph)
-reload(component)
-reload(glyphPreview)
+# reload(decorators)
+# reload(interpolation)
+# reload(glyph)
+# reload(component)
+# reload(glyphPreview)
 glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph

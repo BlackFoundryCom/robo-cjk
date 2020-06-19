@@ -25,19 +25,44 @@ import copy
 
 from imp import reload
 from utils import decorators, files, locker
-reload(decorators)
-reload(locker)
+# reload(decorators)
+# reload(locker)
 gitCoverage = decorators.gitCoverage
 from utils import interpolation
-reload(interpolation)
+# reload(interpolation)
 from models import atomicElement, deepComponent, characterGlyph
-reload(atomicElement)
-reload(deepComponent)
-reload(characterGlyph)
+# reload(atomicElement)
+# reload(deepComponent)
+# reload(characterGlyph)
 
-import mySQLCollabEngine.BF_mysql2rcjk as BF_mysql2rcjk
-import mySQLCollabEngine.BF_fontbook_struct as bfs
+import BF_mysql2rcjk as BF_mysql2rcjk
+import BF_fontbook_struct as bfs
+import BF_rcjk2mysql
 
+class glyphsTypes:
+
+    atomicElement = 'aelements'
+    deepComponent = 'dcomponents'
+    characterGlyph = 'cglyphs'
+
+    @classmethod
+    def mysql(cls, type):
+        return getattr(cls, type)
+
+    @classmethod
+    def bfs(cls, type):
+        if type == 'atomicElement':
+            return 3
+        if type == 'deepComponent':
+            return 2
+        if type == 'characterGlyph':
+            return 1
+
+    @classmethod
+    def robocjk(cls, type):
+        for x in vars(cls):
+            if getattr(cls, x) == type:
+                return x 
 
 class Font():
 
@@ -86,8 +111,11 @@ class Font():
         self.fontName = fontName
         self.mysql = mysql
         self.mysqlUserName = mysqlUserName
+        self.bf_log = bf_log
 
-        self.defaultGlyphWidth = self._BFont.fontlib_data.get("robocjk.defaultGlyphWidth", 1000)
+        self.fontLib = eval(self._BFont.fontlib_data)
+        self.dataBase = eval(self._BFont._database_data)
+        self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
         # print(self._BFont.fontlib_data)
 
     def lockGlyph(self, glyph):
@@ -100,13 +128,25 @@ class Font():
             glyphType = self._findGlyphType(glyphName)
             if glyphType == "cglyphs":
                 lock = self.mysql.lock_cglyph(self.fontName, glyphName)
-                return lock in [self.mysqlUserName, None], False
+                print(">>>>>>")
+                print(lock)
+                print(self.mysql.who_locked_cglyph(self.fontName, glyphName))
+                print(">>>>>>")
+                return lock in [self.mysqlUserName, None], None
             elif glyphType == "dcomponents":
                 lock = self.mysql.lock_dcomponent(self.fontName, glyphName)
-                return lock in [self.mysqlUserName, None], False
+                print(">>>>>>")
+                print(lock)
+                print(self.mysql.who_locked_dcomponent(self.fontName, glyphName))
+                print(">>>>>>")
+                return lock in [self.mysqlUserName, None], None
             elif glyphType == "aelements":
                 lock = self.mysql.lock_aelement(self.fontName, glyphName)
-                return lock in [self.mysqlUserName, None], False
+                print(">>>>>>")
+                print(lock)
+                print(self.mysql.who_locked_aelement(self.fontName, glyphName))                
+                print(">>>>>>")
+                return lock in [self.mysqlUserName, None], None
             
 
     def unlockGlyph(self, glyph):
@@ -246,23 +286,13 @@ class Font():
         # insertGlyph(self._RFont, name, xml)
 
         if BGlyph.item_type == bfs.AELEMENT:
-            print(">>>>>>")
-            print(BGlyph.layers)
-            print(">>>>>>")
             for layer in BGlyph.layers:
-                print("------")
-                print(layer, layer.layername, layer.axisname)
-                print("------")
                 layerName = layer.layername
                 glyph = atomicElement.AtomicElement(name)
                 xml = layer.xml
-                print("°°°°°°°°°°°")
-                print(xml)
-                print("°°°°°°°°°°°")
                 self._RFont.newLayer(layerName)
                 self.insertGlyph(glyph, xml, layerName)
                 # drawGlyph(self._RFont.getLayer(layerName), layerName, xml)
-
 
     @property
     def _fontLayers(self):
@@ -535,7 +565,16 @@ class Font():
         return sorted(l)
 
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
-        self.addGlyph(*self.newGLIF(glyphType, glyphName), "foreground")
+        if not self.mysqlFont:
+            self.addGlyph(*self.newGLIF(glyphType, glyphName), "foreground")
+            self.batchLockGlyphs([self[glyphName]])
+        else:
+            self._RFont.newGlyph(glyphName)
+            glyphType = glyphsTypes.bfs(glyphType)
+            print('glyphType', glyphType)
+            BF_rcjk2mysql.new_item_to_mysql(self.bf_log, item_type = glyphType, bfont = self._BFont, new_name = glyphName, my_sql = self.mysql)
+            self.getmySQLGlyph(glyphName)
+            self.saveGlyph(self[glyphName])
 
     @gitCoverage(msg = 'duplicate Glyph')
     def duplicateGlyph(self, glyphName:str, newGlyphName:str):
@@ -589,7 +628,89 @@ class Font():
         for layer in self._RFont.layers:
             if glyphName in layer.keys():
                 layer.removeGlyph(glyphName) 
-        self.locker.removeFiles([glyphName])        
+        self.locker.removeFiles([glyphName])   
+
+
+    def saveGlyph(self, glyph):
+        if glyph is None: return     
+        name = glyph.name
+
+        glyph.save()
+        rglyph = glyph._RGlyph
+        rglyph.lib.update(glyph.lib)
+        xml = rglyph.dumpToGLIF()
+
+        glyphtype = self._findGlyphType(name)
+        if glyphtype == "cglyphs":
+            bglyph = self._BFont.get_cglyph(name)
+        elif glyphtype == "dcomponents":
+            bglyph = self._BFont.get_dcomponent(name)
+        elif glyphtype == "aelements":
+            bglyph = self._BFont.get_aelement(name)
+            print(bglyph)
+
+        for layer in self._RFont.layers:
+            if layer.name == "foreground": continue
+            f = self._RFont.getLayer(layer.name)
+            if not set([name])-set(f.keys()):
+                variations = glyph._glyphVariations
+                # layername2Axes = {v:k for k, v in axes2layername.items()}
+                # if layer.name not in variations.values() or layer.name not in [x.layerName for x in variations.values()]:
+                #     continue
+
+                layerGlyph = f[name]
+                layerxml = layerGlyph.dumpToGLIF()
+                # print(bglyph.subitems_names())
+                blayerGlyph = bglyph.get_layer_name(layer.name)
+
+                if blayerGlyph:
+                    
+                    print("************")
+                    print("************")
+                    print(layerxml)
+                    print("************")
+                    print(blayerGlyph.xml)
+                    print("************")
+                    print("************")
+                    blayerGlyph.set_xml(layerxml)
+                    print("bflyaer_change", blayerGlyph._changed)
+                else:
+                    axisname = ""
+                    for k, v in variations.items():
+                        if isinstance(v, str) and layer.name == v:
+                            axisname = k
+                            break
+                        elif layer.name in v.layerName:
+                            axisname = k
+                            break
+                    if not axisname: continue
+
+                    bfs.BfLayer(
+                        bglyph, 
+                        axisname, 
+                        layer.name, 
+                        layerxml
+                        )
+
+        bglyph.rename(name)
+
+        print("############")
+        print("############")
+        print(xml)
+        print("############")
+        print(bglyph.xml)
+        print("############")
+        print("############")
+        print("^^^^^^^^")
+        print(bglyph)
+        print(bglyph._changed)
+        print(bglyph._changed_layers)
+        print("^^^^^^^^")
+        bglyph.set_xml(xml)
+
+
+        BF_rcjk2mysql.update_item_to_mysql(self.bf_log, bglyph, self.mysql)
+
 
     @gitCoverage(msg = 'font save')
     def save(self):
@@ -635,7 +756,9 @@ class Font():
             for name in self.atomicElementSet:
                 glyph = self[name]
                 glyph.save()
-                xml = glyph._RGlyph.dumpToGLIF()
+                rglyph = glyph._RGlyph
+                rglyph.lib.update(glyph.lib)
+                xml = rglyph.dumpToGLIF()
                 aelement = self._BFont.get_aelement(name)
 
                 aelement.set_xml(xml)
@@ -643,14 +766,32 @@ class Font():
             for name in self.deepComponentSet:
                 glyph = self[name]
                 glyph.save()
-                xml = glyph._RGlyph.dumpToGLIF()
+                rglyph = glyph._RGlyph
+                rglyph.lib.update(glyph.lib)
+                xml = rglyph.dumpToGLIF()
+                if name == "DC_65E5_00":
+                    print(xml)
+                    print(rglyph.lib['robocjk.deepComponents'])
+
+                print("----BEFORE-----")
+                print(self._BFont.get_dcomponent(name).xml)
+
                 self._BFont.get_dcomponent(name).set_xml(xml)
+                print("----AFTER-----")
+                print(self._BFont.get_dcomponent(name).xml)
 
             # for name in self.characterGlyphSet:
             #     glyph = self[name]
             #     glyph.save()
+            #     rglyph = glyph._RGlyph
+            #     rglyph.lib.update(glyph.lib)
             #     string = glyph._RGlyph.dumpToGLIF()
             #     self._BFont.get_cglyph(name).set_xml(xml)
+
+            BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
+            print('-----')
+            print(self._BFont.get_dcomponent(name)._changed)
+            print('-----')
 
     def _hanziExportUFO(self):
         return

@@ -18,7 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from imp import reload
 from controllers import roboCJK
-reload(roboCJK)
+# reload(roboCJK)
 
 RCJKI = roboCJK.RoboCJKController()
 RCJKI._launchInterface()

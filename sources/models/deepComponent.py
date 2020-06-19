@@ -19,13 +19,13 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from mojo.roboFont import *
 from imp import reload
 from models import glyph
-reload(glyph)
+# reload(glyph)
 from models import component, glyphPreview
-reload(component)
-reload(glyphPreview)
+# reload(component)
+# reload(glyphPreview)
 from utils import interpolation, decorators
-reload(interpolation)
-reload(decorators)
+# reload(interpolation)
+# reload(decorators)
 glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph
@@ -137,8 +137,6 @@ class DeepComponent(Glyph):
     def save(self):
         self.lib.clear()
         lib = RLib()
-        # lib[atomicElementsKey] = self._deepComponents.getList()
-        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
         for variations in self._glyphVariations.values():
             variations.setAxisWidth(self.currentFont.defaultGlyphWidth)

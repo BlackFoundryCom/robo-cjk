@@ -20,42 +20,42 @@ from mojo.events import addObserver, removeObserver, extractNSEvent, installTool
 from imp import reload
 
 from utils import interpolation
-reload(interpolation)
+# reload(interpolation)
 
 from views import roboCJKView, sheets
-reload(roboCJKView)
-reload(sheets)
+# reload(roboCJKView)
+# reload(sheets)
 
 from resources import characterSets, chars2deepCompo
-reload(characterSets)
-reload(chars2deepCompo)
+# reload(characterSets)
+# reload(chars2deepCompo)
 
 charsets = characterSets.characterSets
 CG2DC = chars2deepCompo.Chars2DC
 
 from utils import files
-reload(files)
+# reload(files)
 
 from utils import gitEngine as git
-reload(git)
+# reload(git)
 
 from views import drawer
-reload(drawer)
+# reload(drawer)
 
 from views import canvasGroups
-reload(canvasGroups)
+# reload(canvasGroups)
 
 from views import popover
-reload(popover)
+# reload(popover)
 
 from models import deepComponent
-reload(deepComponent)
+# reload(deepComponent)
 
 from tools import transformationTool
-reload(transformationTool)
+# reload(transformationTool)
 
 from views import PDFProofer
-reload(PDFProofer)
+# reload(PDFProofer)
 
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
@@ -67,18 +67,19 @@ import math
 import json
 import copy 
 
-import mySQLCollabEngine
+# import mySQLCollabEngine
 
-import mySQLCollabEngine.BF_engine_mysql as BF_engine_mysql
-import mySQLCollabEngine.BF_init as BF_init
+import BF_engine_mysql as BF_engine_mysql
+import BF_init as BF_init
 
 # curpath = os.path.dirname(__file__)
-curpath = mySQLCollabEngine.__path__._path[0]
-bf_log = BF_init.init_log(curpath)
-dict_persist_params, _  = BF_init.init_params(bf_log, curpath, BF_init._REMOTE, None)
+# print(curpath)
+# curpath = mySQLCollabEngine.__path__._path[0]
+bf_log = BF_init.init_log(None)
+dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
 
 from utils import decorators
-reload(decorators)
+# reload(decorators)
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
 
@@ -247,9 +248,14 @@ class RoboCJKController(object):
         self.roboCJKView.w.characterGlyphPreview.update()
         
         # self.currentFont.locker.unlock(self.currentGlyph)
-        self.currentFont.save()
-        if self.currentGlyph is not None:
-            self.currentFont.getGlyph(self.currentGlyph)
+        
+        if not self.mysql:
+            self.currentFont.save()
+            if self.currentGlyph is not None:
+                self.currentFont.getGlyph(self.currentGlyph)
+
+        else:
+            self.currentFont.saveGlyph(self.currentGlyph)
         
 
     def closeimportDCFromCG(self):

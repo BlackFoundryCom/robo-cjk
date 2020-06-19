@@ -24,13 +24,13 @@ from AppKit import NSColor, NSNoBorder, NumberFormatter
 import mojo.drawingTools as mjdt
 from imp import reload
 from utils import decorators
-reload(decorators)
+# reload(decorators)
 from utils import files
-reload(files)
+# reload(files)
 
 from views import sheets, drawer
-reload(sheets)
-reload(drawer)
+# reload(sheets)
+# reload(drawer)
 
 import copy
 

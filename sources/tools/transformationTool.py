@@ -21,7 +21,7 @@ from mojo.events import BaseEventTool, getActiveEventTool
 from mojo.UI import UpdateCurrentGlyphView
 from AppKit import NSImage
 from utils import decorators
-reload(decorators)
+# reload(decorators)
 glyphTransformUndo = decorators.glyphTransformUndo
 import math
 import os

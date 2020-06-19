@@ -28,19 +28,19 @@ import mojo.drawingTools as mjdt
 from AppKit import NSFont, NumberFormatter 
 from imp import reload
 from utils import decorators, files
-reload(decorators)
-reload(files)
-reload(canvasGroups)
+# reload(decorators)
+# reload(files)
+# reload(canvasGroups)
 from models import font
-reload(font)
+# reload(font)
 from views import sheets
-reload(sheets)
+# reload(sheets)
 from views import PDFProofer
-reload(PDFProofer)
+# reload(PDFProofer)
 from views import scriptingWindow
-reload(scriptingWindow)
+# reload(scriptingWindow)
 from views import textCenter
-reload(textCenter)
+# reload(textCenter)
 
 import os, json, copy
 
@@ -1111,7 +1111,7 @@ class RoboCJKView(BaseWindowController):
                     self.RCJKI.dataBase = json.load(file)
         else:
             self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName)
-            self.RCJKI.dataBase = self.RCJKI.currentFont._BFont.database_data
+            self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
         
 
         self.RCJKI.toggleWindowController()
@@ -1181,6 +1181,9 @@ class RoboCJKView(BaseWindowController):
         # else:
         #     user = self.RCJKI.mysql.who_locked_cglyph(self.currentrcjkFile, prevGlyphName)
         user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[self.prevGlyphName])
+        print("-----")
+        print(user)
+        print("-----")
         if user: 
             self.w.lockerInfoTextBox.set('Locked by: ' + user)
         else:
@@ -1215,14 +1218,14 @@ class RoboCJKView(BaseWindowController):
         name = self.dumpName('deepComponent', self.currentFont.deepComponentSet)
         self.currentFont.newGlyph('deepComponent', name)
         # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
-        self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
+        # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
         self.w.deepComponent.set(self.currentFont.deepComponentSet)
 
     def newAtomicElementCallback(self, sender):
         name = self.dumpName('atomicElement', self.currentFont.atomicElementSet)
         self.currentFont.newGlyph('atomicElement', name)
         # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
-        self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
+        # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
     def duplicateAtomicElementCallback(self, sender):
