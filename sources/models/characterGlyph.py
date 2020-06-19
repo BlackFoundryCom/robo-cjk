@@ -19,15 +19,15 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from mojo.roboFont import *
 from imp import reload
 from models import glyph, component, glyphPreview
-reload(glyph)
-reload(component)
-reload(glyphPreview)
+# reload(glyph)
+# reload(component)
+# reload(glyphPreview)
 from utils import interpolation, decorators
-reload(interpolation)
+# reload(interpolation)
 Glyph = glyph.Glyph
 glyphAddRemoveUndo = decorators.glyphAddRemoveUndo
 from models import deepComponent
-reload(deepComponent)
+# reload(deepComponent)
 
 DeepComponentNamed = component.DeepComponentNamed
 DeepComponents = component.DeepComponents

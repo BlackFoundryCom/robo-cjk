@@ -21,11 +21,11 @@ from imp import reload
 from models import glyph
 reload(glyph)
 from models import component, deepComponent
-reload(component)
-reload(deepComponent)
+# reload(component)
+# reload(deepComponent)
 from utils import interpolation, decorators
-reload(interpolation)
-reload(decorators)
+# reload(interpolation)
+# reload(decorators)
 glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph

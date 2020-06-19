@@ -28,19 +28,19 @@ import mojo.drawingTools as mjdt
 from AppKit import NSFont, NumberFormatter 
 from imp import reload
 from utils import decorators, files
-reload(decorators)
-reload(files)
-reload(canvasGroups)
+# reload(decorators)
+# reload(files)
+# reload(canvasGroups)
 from models import font
-reload(font)
+# reload(font)
 from views import sheets
-reload(sheets)
+# reload(sheets)
 from views import PDFProofer
-reload(PDFProofer)
+# reload(PDFProofer)
 from views import scriptingWindow
-reload(scriptingWindow)
+# reload(scriptingWindow)
 from views import textCenter
-reload(textCenter)
+# reload(textCenter)
 
 import os, json, copy
 

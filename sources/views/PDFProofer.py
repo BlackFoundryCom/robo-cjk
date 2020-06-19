@@ -33,7 +33,7 @@ except:
 import copy
 from imp import reload
 from utils import files
-reload(files)
+# reload(files)
 numberFormatter = NumberFormatter()
 
 class FontsList:

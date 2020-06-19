@@ -19,13 +19,13 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from mojo.roboFont import *
 from imp import reload
 from models import glyph
-reload(glyph)
+# reload(glyph)
 from models import component, glyphPreview
-reload(component)
-reload(glyphPreview)
+# reload(component)
+# reload(glyphPreview)
 from utils import interpolation, decorators
-reload(interpolation)
-reload(decorators)
+# reload(interpolation)
+# reload(decorators)
 glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph
@@ -96,12 +96,7 @@ class DeepComponent(Glyph):
             self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[axisName] = value
         else:
             self._deepComponents[self.selectedElement[0]].coord[axisName] = value
-
-    def getAtomicElementMinMaxValue(self, axisName):
-        if not self.selectedElement: return
-        selectedAtomicElementName = self._deepComponents[self.selectedElement[0]].name
-        atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
-        return atomicElement.minValue, atomicElement.maxValue
+    
 
     def addAtomicElementNamed(self, atomicElementName, items = False):
         if not items:

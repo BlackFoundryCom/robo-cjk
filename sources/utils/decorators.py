@@ -21,7 +21,7 @@ from mojo.roboFont import *
 import copy
 from imp import reload
 from controllers import roboCJK
-reload(roboCJK)
+# reload(roboCJK)
 
 def gitCoverage(msg='save'):
 

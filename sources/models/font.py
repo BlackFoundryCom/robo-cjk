@@ -25,15 +25,15 @@ import copy
 
 from imp import reload
 from utils import decorators, files, locker
-reload(decorators)
-reload(locker)
+# reload(decorators)
+# reload(locker)
 gitCoverage = decorators.gitCoverage
 from utils import interpolation
-reload(interpolation)
+# reload(interpolation)
 from models import atomicElement, deepComponent, characterGlyph
-reload(atomicElement)
-reload(deepComponent)
-reload(characterGlyph)
+# reload(atomicElement)
+# reload(deepComponent)
+# reload(characterGlyph)
 
 
 class Font():

@@ -20,42 +20,42 @@ from mojo.events import addObserver, removeObserver, extractNSEvent, installTool
 from imp import reload
 
 from utils import interpolation
-reload(interpolation)
+# reload(interpolation)
 
 from views import roboCJKView, sheets
-reload(roboCJKView)
-reload(sheets)
+# reload(roboCJKView)
+# reload(sheets)
 
 from resources import characterSets, chars2deepCompo
-reload(characterSets)
-reload(chars2deepCompo)
+# reload(characterSets)
+# reload(chars2deepCompo)
 
 charsets = characterSets.characterSets
 CG2DC = chars2deepCompo.Chars2DC
 
 from utils import files
-reload(files)
+# reload(files)
 
 from utils import gitEngine as git
-reload(git)
+# reload(git)
 
 from views import drawer
-reload(drawer)
+# reload(drawer)
 
 from views import canvasGroups
-reload(canvasGroups)
+# reload(canvasGroups)
 
 from views import popover
-reload(popover)
+# reload(popover)
 
 from models import deepComponent
-reload(deepComponent)
+# reload(deepComponent)
 
 from tools import transformationTool
-reload(transformationTool)
+# reload(transformationTool)
 
 from views import PDFProofer
-reload(PDFProofer)
+# reload(PDFProofer)
 
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
@@ -68,7 +68,7 @@ import json
 import copy 
 
 from utils import decorators
-reload(decorators)
+# reload(decorators)
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
 
@@ -241,7 +241,7 @@ class RoboCJKController(object):
                 ]
         else:
             self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
                 ]
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         self.currentViewSourceValue.set("")
@@ -595,11 +595,11 @@ class RoboCJKController(object):
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in self.currentGlyph._glyphVariations.axes]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in self.currentGlyph._glyphVariations.axes]
 
         self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l
