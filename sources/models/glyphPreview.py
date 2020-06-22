@@ -366,7 +366,8 @@ class CharacterGlyphPreview(Preview):
             for c in atomicInstance.getTransformedGlyph():
                 previewGlyph.appendContour(c)
 
-        for c in outlinesPreview:
-            previewGlyph.appendContour(c)
+        if outlinesPreview is not None:
+            for c in outlinesPreview:
+                previewGlyph.appendContour(c)
         return previewGlyph
 
