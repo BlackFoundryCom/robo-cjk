@@ -290,7 +290,9 @@ class DCCG_View(CanvasGroup):
             [],
             columnDescriptions = [
                     {"title": "Axis", "editable": False, "width": 100},
-                    {"title": "PreviewValue", "cell": slider}],
+                    {"title": "MinValue", "editable": False, "width": 40},
+                    {"title": "PreviewValue", "cell": slider},
+                    {"title": "MaxValue", "editable": False, "width": 40}],
             showColumnTitles = False,
             editCallback = self.slidersListEditCallback,
             selectionCallback = self.slidersListSelectiontCallback,
@@ -488,7 +490,9 @@ class DCCG_View(CanvasGroup):
                 # if self.RCJKI.currentGlyph.type == "deepComponent":
                 newList.append({
                     "Axis":e["Axis"],
-                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue)
+                    "MinValue": minValue,
+                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
+                    "MaxValue": maxValue,
                     })
                 # else:
                 #     newList.append({

@@ -422,7 +422,8 @@ class RoboCJKController(object):
         l = []
         if len(self.currentGlyph.selectedElement) == 1:
             for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
-                l.append({'Axis':axisName, 'PreviewValue':value})
+                minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
+                l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
         element.slidersList.set(l)
         self.sliderValue = None
 
