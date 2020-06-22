@@ -595,11 +595,11 @@ class RoboCJKController(object):
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
 
         self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l

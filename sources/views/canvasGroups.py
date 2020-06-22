@@ -401,7 +401,8 @@ class DCCG_View(CanvasGroup):
                     self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
                     self.RCJKI.currentGlyph.selectedSourceAxis = name
             glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in glyphVariations]
+            # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in glyphVariations]
+            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
         elif edited[0] in [1, 3]:
@@ -425,7 +426,7 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.addVariationToGlyph(name)
 
             if self.RCJKI.currentGlyph._glyphVariations:
-                source = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in self.RCJKI.currentGlyph._glyphVariations]
+                source = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             self.sourcesList.set(source)
             self.RCJKI.currentGlyph.sourcesList = source
             isel = len(source)
@@ -446,7 +447,7 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.selectedSourceAxis = None
             self.sourcesList.setSelection([0])
             glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in glyphVariations]
+            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             self.RCJKI.currentGlyph.sourcesList = l
             self.sourcesList.set(l)
             self.slidersList.set([])
