@@ -18,6 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from vanilla.dialogs import getFolder, putFile, askYesNo
+from mojo.canvas import Canvas
 from fontParts.ui import AskYesNoCancel, AskString
 from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView, PostBannerNotification
 from defconAppKit.windows.baseWindow import BaseWindowController
@@ -204,7 +205,23 @@ class CharacterWindow:
             formatter = NumberFormatter(),
             sizeStyle = "small",
             callback = self.scaleCallback)
+        self.w.sliders.canvas = Canvas((0, 65, -0, -0), delegate = self)
         self.char = ""
+
+    def draw(self):
+        pass
+
+    def mouseDragged(self, point):
+        x, y = self.RCJKI.drawer.refGlyphPos
+        dx = point.deltaX()
+        dy = point.deltaY()
+        x += dx
+        y -= dy
+        sensibility = 1
+        self.RCJKI.drawer.refGlyphPos = [x*sensibility, y*sensibility]  
+        self.w.sliders.x.set(x)
+        self.w.sliders.y.set(y)
+        UpdateCurrentGlyphView()
 
     def sliderCallback(self, sender):
         self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
