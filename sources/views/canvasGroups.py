@@ -519,12 +519,18 @@ class DCCG_View(CanvasGroup):
         self.RCJKI.updateDeepComponent(update = False)
 
     def setSliderValue2Glyph(self, sender):
-        if self.RCJKI.currentGlyph.type == 'characterGlyph':
+        def _getKeys(glyph):
+            if glyph.type == "characterGlyph":
+                return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
+            else:
+                return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
+
+        if self.RCJKI.currentGlyph.type in ['characterGlyph', 'deepComponent']:
             lib = RLib()
-            deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
-            glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
-            lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents)
-            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations)
+            deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
+            # glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+            lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
+            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getDict())
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
