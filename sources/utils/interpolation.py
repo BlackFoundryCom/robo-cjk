@@ -162,3 +162,57 @@ def normalize(a):
    if l == 0:
        l = 1e-10 #FIXME: just return a or throw an exception
    return([a[0]/l, a[1]/l])
+
+def interpol_glyph_glyph_ratioX_ratioY_scaleX_scaleY(g1, g2, ratio_x, ratio_y, scale_x, scale_y, f):
+    glyphName = g1.name
+    if glyphName not in f.keys():
+        g = f.newGlyph(glyphName)
+    else:
+        
+        return f[glyphName]
+    pen = PointToSegmentPen(g.getPen())
+    if not len(g1) == len(g2):
+        return 0
+    for c1, c2 in zip(g1.contours, g2.contours):
+        if not len(c1) == len(c2):
+            return 0
+        pen.beginPath()
+        for p1, p2 in zip(c1.points, c2.points):
+            if not p1.type == p2.type:
+                g.markColor = (1, 0, 0, 1)
+                return 0
+            px = (p1.x + ((p2.x - p1.x) * ratio_x)) * scale_x
+            py = (p1.y + ((p2.y - p1.y) * ratio_y)) * scale_y
+            ptype = p1.type if p1.type != 'offcurve' else None
+            pen.addPoint((px, py), ptype)
+        pen.endPath()
+
+    g.unicode = g1.unicode
+    g.width = (g1.width + ((g2.width - g1.width) * ratio_x)) * scale_x
+    
+    for c1, c, c2 in zip(g1, g, g2):
+        box1x = ((c1.box[0] + ((c1.box[2] - c1.box[0])) ))
+        box1y = ((c1.box[1] + ((c1.box[3] - c1.box[1])) ))
+        boxx = (c.box[0] + ((c.box[2] - c.box[0])))
+        boxy = (c.box[1] + ((c.box[3] - c.box[1])))
+        box2x = ((c2.box[0] + ((c2.box[2] - c2.box[0])) ))
+        box2y = ((c2.box[1] + ((c2.box[3] - c2.box[1])) ))
+        middlex = (box1x+(box2x-box1x)* ratio_x)*scale_x
+        middley = (box1y+(box2y-box1y)* ratio_y)*scale_y
+        if not middlex-1 < boxx < middlex+1 or not middley-1 < boxy < middley+1:
+            return 0
+
+    if not len(g1.components) == len(g2.components):
+        return g
+        
+    for c1, c2 in zip(g1.components, g2.components):
+        if not c1.baseGlyph == c2.baseGlyph:
+            
+            return g
+        name = c1.baseGlyph
+        interpol_glyph_glyph_ratioX_ratioY_scaleX_scaleY_toFont_glyphName(g1.getParent()[name], g2.getParent()[name], ratio_x, ratio_y, scale_x, scale_y, f, name)
+        cOffsetX=(c1.offset[0] + ((c2.offset[0] - c1.offset[0]) * ratio_x)) * scale_x
+        cOffsetY=(c1.offset[1] + ((c2.offset[1] - c1.offset[1]) * ratio_y)) * scale_y
+        g.appendComponent(name, offset=(cOffsetX, cOffsetY))
+    
+    return g

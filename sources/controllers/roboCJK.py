@@ -572,6 +572,10 @@ class RoboCJKController(object):
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
+            variationsAxes = self.currentGlyph.glyphVariations.axes
+            if all([len(self.currentGlyph), *(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
+                item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
+                menuItems.append(item)
         notification["additionContextualMenuItems"].extend(menuItems)
 
     def addAtomicElement(self, sender):
@@ -579,6 +583,9 @@ class RoboCJKController(object):
 
     def addDeepComponent(self, sender):
         sheets.SelectDeepComponentSheet(self, self.currentFont.deepComponentSet)
+
+    def fixGlyphCompatibility(self, sender):
+        sheets.FixGlyphCompatibility(self, self.currentGlyph)        
 
     def removeAtomicElement(self, sender):
         self.currentGlyph.removeAtomicElementAtIndex()
