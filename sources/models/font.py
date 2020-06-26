@@ -210,7 +210,7 @@ class Font():
             self.locker.removeFiles(glyphsnames)
 
     def loadCharacterGlyph(self, glyphName):
-        bfitem = self.mysql.select_locked_cglyphs(self.fontName, glyphName)
+        bfitem = self._BFont.get_cglyph(glyphName)
         BF_mysql2rcjk.read_item_from_mysql(self.bf_log, bfitem ,self.mysql)
 
     @property
@@ -653,9 +653,11 @@ class Font():
             bglyph = self._BFont.get_aelement(name)
             print(bglyph)
 
+        print(self._RFont.layers)
         for layer in self._RFont.layers:
             if layer.name == "foreground": continue
             f = self._RFont.getLayer(layer.name)
+            print(name, layer.name, f.keys())
             if not set([name])-set(f.keys()):
                 variations = glyph._glyphVariations
                 # layername2Axes = {v:k for k, v in axes2layername.items()}
@@ -689,12 +691,13 @@ class Font():
                             break
                     if not axisname: continue
 
-                    bfs.BfLayer(
+                    l = bfs.BfLayer(
                         bglyph, 
                         axisname, 
                         layer.name, 
                         layerxml
                         )
+                    l._changed = True
 
         bglyph.rename(name)
 
@@ -819,48 +822,63 @@ class Font():
         font.save(os.path.join(self.fontPath, "hanziUFO.ufo"))
 
     def renameGlyph(self, oldName, newName):
-        if not self.locker.userHasLock(self[oldName]): return False
-        self.save()
-        print(oldName,newName)
-        f = self._RFont.getLayer('foreground')
-        if newName in f.keys(): return False
-        self[oldName].name = newName
-        f[oldName].name = newName
-        glyph = f[newName]
-        txt = glyph.dumpToGLIF()
-        fileName = "%s.glif"%files.userNameToFileName(glyph.name)
-        oldFileName = "%s.glif"%files.userNameToFileName(oldName)
-        glyphType = self[glyph.name].type
-        newPath = os.path.join(self.fontPath, glyphType, fileName)
-        oldPath = os.path.join(self.fontPath, glyphType, oldFileName)
-
-        if glyphType == "atomicElement":
-            for n in self.deepComponentSet:
-                dcg = self[n]
-                for ae in dcg._deepComponents:
-                    if ae.name == oldName:
-                        ae.name = newName
-            
-        elif glyphType == "deepComponent":
-            for n in self.characterGlyphSet:
-                dcg = self[n]
-                for ae in dcg._deepComponents:
-                    if ae.name == oldName:
-                        ae.name = newName
- 
-        with open(newPath, "w", encoding = "utf-8") as file:
-            file.write(txt)
-        os.remove(oldPath)
-        for layerName in self._fontLayers:
-            f = self._RFont.getLayer(layerName)
-            if oldName not in f: continue
+        if not self.mysql:
+            if not self.locker.userHasLock(self[oldName]): return False
+            self.save()
+            print(oldName,newName)
+            f = self._RFont.getLayer('foreground')
+            if newName in f.keys(): return False
+            self[oldName].name = newName
             f[oldName].name = newName
             glyph = f[newName]
-            newPath = os.path.join(self.fontPath, glyphType, layerName, fileName)
-            oldPath = os.path.join(self.fontPath, glyphType, layerName, oldFileName)
+            txt = glyph.dumpToGLIF()
+            fileName = "%s.glif"%files.userNameToFileName(glyph.name)
+            oldFileName = "%s.glif"%files.userNameToFileName(oldName)
+            glyphType = self[glyph.name].type
+            newPath = os.path.join(self.fontPath, glyphType, fileName)
+            oldPath = os.path.join(self.fontPath, glyphType, oldFileName)
+
+            if glyphType == "atomicElement":
+                for n in self.deepComponentSet:
+                    dcg = self[n]
+                    for ae in dcg._deepComponents:
+                        if ae.name == oldName:
+                            ae.name = newName
+                
+            elif glyphType == "deepComponent":
+                for n in self.characterGlyphSet:
+                    dcg = self[n]
+                    for ae in dcg._deepComponents:
+                        if ae.name == oldName:
+                            ae.name = newName
+     
             with open(newPath, "w", encoding = "utf-8") as file:
                 file.write(txt)
             os.remove(oldPath)
+            for layerName in self._fontLayers:
+                f = self._RFont.getLayer(layerName)
+                if oldName not in f: continue
+                f[oldName].name = newName
+                glyph = f[newName]
+                newPath = os.path.join(self.fontPath, glyphType, layerName, fileName)
+                oldPath = os.path.join(self.fontPath, glyphType, layerName, oldFileName)
+                with open(newPath, "w", encoding = "utf-8") as file:
+                    file.write(txt)
+                os.remove(oldPath)
 
-        self.locker.changeLockName(oldName, newName)
-        return True
+            self.locker.changeLockName(oldName, newName)
+            return True
+        else:
+            glyphType = self._findGlyphType(oldName)
+            if glyphType == "cglyphs":
+                bfitem = self._BFont.get_cglyph(oldName)
+            elif glyphType == "dcomponents":
+                bfitem = self._BFont.get_dcomponent(oldName)
+            elif glyphType == "aelements":
+                bfitem = self._BFont.get_aelement(oldName)
+            BF_rcjk2mysql.rename_item_to_mysql(self.bf_log, item = bfitem, new_name = newName, my_sql = self.mysql)
+            self[oldName].name = newName
+            # f = self._RFont.getLayer('foreground')
+            self._RFont.renameGlyph(oldName, newName)
+            self.saveGlyph(self[newName])
+            # self.saveFont("renameGlyph")

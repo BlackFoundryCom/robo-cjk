@@ -75,7 +75,7 @@ import BF_init as BF_init
 # curpath = os.path.dirname(__file__)
 # print(curpath)
 # curpath = mySQLCollabEngine.__path__._path[0]
-bf_log = BF_init.init_log(None)
+bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
 dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
 
 from utils import decorators
