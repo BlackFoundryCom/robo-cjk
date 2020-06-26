@@ -73,6 +73,7 @@ class Font():
         self.mysqlFont = False
         self.mysql = False
         self._glyphs = {}
+        self._RFont = {}
 
     def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
         self.fontPath = fontPath
@@ -114,7 +115,7 @@ class Font():
         self.bf_log = bf_log
 
         self.fontLib = eval(self._BFont.fontlib_data)
-        self.dataBase = eval(self._BFont._database_data)
+        # self.dataBase = eval(self._BFont._database_data)
         self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
         # print(self._BFont.fontlib_data)
 
@@ -208,6 +209,10 @@ class Font():
                 glyphsnames = list(glyphsnames)
             self.locker.removeFiles(glyphsnames)
 
+    def loadCharacterGlyph(self, glyphName):
+        bfitem = self.mysql.select_locked_cglyphs(self.fontName, glyphName)
+        BF_mysql2rcjk.read_item_from_mysql(self.bf_log, bfitem ,self.mysql)
+
     @property
     def lockerUserName(self):
         if not self.mysqlFont:
@@ -284,7 +289,6 @@ class Font():
         xml = BGlyph.xml
         self.insertGlyph(glyph, xml, 'foreground')
         # insertGlyph(self._RFont, name, xml)
-
         if BGlyph.item_type == bfs.AELEMENT:
             for layer in BGlyph.layers:
                 layerName = layer.layername

@@ -1111,7 +1111,7 @@ class RoboCJKView(BaseWindowController):
                     self.RCJKI.dataBase = json.load(file)
         else:
             self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName)
-            self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
+            # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
         
 
         self.RCJKI.toggleWindowController()
@@ -1173,6 +1173,7 @@ class RoboCJKView(BaseWindowController):
         prevGlyphName = sender.get()[sender.getSelection()[0]]
         if sender == self.w.characterGlyph:
             self.prevGlyphName = prevGlyphName["name"]
+            self.RCJKI.currentFont.loadCharacterGlyph(self.prevGlyphName)
         else:
             self.prevGlyphName = prevGlyphName
         self.setGlyphNameToCansvas(sender, self.prevGlyphName)
