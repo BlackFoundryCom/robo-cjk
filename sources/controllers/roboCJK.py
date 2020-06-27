@@ -36,6 +36,8 @@ CG2DC = chars2deepCompo.Chars2DC
 from utils import files
 # reload(files)
 
+from views import movie
+
 from utils import gitEngine as git
 # reload(git)
 
@@ -561,6 +563,8 @@ class RoboCJKController(object):
         if self.isDeepComponent:
             item = ('Add Atomic Element', self.addAtomicElement)
             menuItems.append(item)
+            item = ('Animate this variable glyph', self.animateThisVariableGlyph)
+            menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Atomic Element', self.removeAtomicElement)
                 menuItems.append(item)
@@ -568,6 +572,8 @@ class RoboCJKController(object):
             item = ('Add Deep Component', self.addDeepComponent)
             menuItems.append(item)
             item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
+            menuItems.append(item)
+            item = ('Animate this variable glyph', self.animateThisVariableGlyph)
             menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
@@ -577,6 +583,9 @@ class RoboCJKController(object):
                 item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
                 menuItems.append(item)
         notification["additionContextualMenuItems"].extend(menuItems)
+
+    def animateThisVariableGlyph(self, sender):
+        movie.Movie(self)
 
     def addAtomicElement(self, sender):
         sheets.SelectAtomicElementSheet(self, self.currentFont.atomicElementSet)
