@@ -130,22 +130,22 @@ class Font():
             if glyphType == "cglyphs":
                 lock = self.mysql.lock_cglyph(self.fontName, glyphName)
                 print(">>>>>>")
-                print(lock)
-                print(self.mysql.who_locked_cglyph(self.fontName, glyphName))
+                print("lock ->", lock)
+                print("Who locked ->", self.mysql.who_locked_cglyph(self.fontName, glyphName))
                 print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             elif glyphType == "dcomponents":
                 lock = self.mysql.lock_dcomponent(self.fontName, glyphName)
                 print(">>>>>>")
-                print(lock)
-                print(self.mysql.who_locked_dcomponent(self.fontName, glyphName))
+                print("lock ->", lock)
+                print("Who locked ->", self.mysql.who_locked_dcomponent(self.fontName, glyphName))
                 print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             elif glyphType == "aelements":
                 lock = self.mysql.lock_aelement(self.fontName, glyphName)
                 print(">>>>>>")
-                print(lock)
-                print(self.mysql.who_locked_aelement(self.fontName, glyphName))                
+                print("lock ->", lock)
+                print("Who locked ->", self.mysql.who_locked_aelement(self.fontName, glyphName))                
                 print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             
@@ -288,15 +288,30 @@ class Font():
 
         xml = BGlyph.xml
         self.insertGlyph(glyph, xml, 'foreground')
-        # insertGlyph(self._RFont, name, xml)
-        if BGlyph.item_type == bfs.AELEMENT:
-            for layer in BGlyph.layers:
-                layerName = layer.layername
+
+        # if BGlyph.item_type == bfs.AELEMENT:
+        #     for layer in BGlyph.layers:
+        #         layerName = layer.layername
+        #         glyph = atomicElement.AtomicElement(name)
+        #         xml = layer.xml
+        #         self._RFont.newLayer(layerName)
+        #         self.insertGlyph(glyph, xml, layerName)
+
+        print("----")
+        print(name, BGlyph.layers)
+        print("----")
+        for layer in BGlyph.layers:
+            layerName = layer.layername
+            if name in self.characterGlyphSet:
+                glyph = characterGlyph.CharacterGlyph(name)
+            elif name in self.atomicElementSet:
                 glyph = atomicElement.AtomicElement(name)
-                xml = layer.xml
-                self._RFont.newLayer(layerName)
-                self.insertGlyph(glyph, xml, layerName)
-                # drawGlyph(self._RFont.getLayer(layerName), layerName, xml)
+
+            elif name in self.deepComponentSet:
+                glyph = deepComponent.DeepComponent(name)
+            xml = layer.xml
+            self._RFont.newLayer(layerName)
+            self.insertGlyph(glyph, xml, layerName)
 
     @property
     def _fontLayers(self):
@@ -690,6 +705,10 @@ class Font():
                             axisname = k
                             break
                     if not axisname: continue
+
+                    print(")))))))))))")
+                    print(bglyph, axisname, layer.name, )
+                    print(")))))))))))")
 
                     l = bfs.BfLayer(
                         bglyph, 
