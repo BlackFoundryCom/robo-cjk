@@ -113,6 +113,8 @@ class Font():
                 AE_empty += 1
         DC_empty = 0
         DC_designed = 0
+        DC_designedUnique = set()
+        DC_designedVariant = 0
         DC_maxName = ""
         DC_maxNumber = 0
         DC_averageVariation = []
@@ -121,7 +123,8 @@ class Font():
             if not glyph._deepComponents:
                 DC_empty += 1
             else:
-                DC_designed += 1
+                DC_designedVariant += 1
+                DC_designedUnique.add(n.split("_")[1])
             if len(glyph._glyphVariations) > DC_maxNumber:
                 DC_maxNumber = len(glyph.glyphVariations)
                 DC_maxName = n
@@ -133,6 +136,7 @@ class Font():
         CG_mixed = 0
         CG_withVariation = 0
         CG_withoutVariation = 0
+        CG_withVariationanddeepcomponents = 0
         CG_empty = 0
         for n in self.characterGlyphSet:
             glyph = self[n]
@@ -144,6 +148,8 @@ class Font():
                 CG_mixed += 1
             if glyph._glyphVariations:
                 CG_withVariation += 1
+            if glyph._glyphVariations and glyph._deepComponents and not len(glyph):
+                CG_withVariationanddeepcomponents += 1
             else:
                 CG_withoutVariation += 1
             if not glyph._deepComponents and not len(glyph):
@@ -156,7 +162,8 @@ class Font():
             \t - average of glyph variation: {round(sum(AE_averageVariation)/len(AE_averageVariation), 2)} axis,
             \t - total: {len(self.atomicElementSet)} atomicElements,\n
           • DeepComponents :
-            \t - {DC_designed} designed,
+            \t - {len(DC_designedUnique)} unique designed,
+            \t - {DC_designedVariant} designed (with variants),
             \t - {DC_empty} are empty,
             \t - maximum of glyph variation: '{DC_maxName}' with {DC_maxNumber} axis,
             \t - average of glyph variation: {round(sum(DC_averageVariation)/len(DC_averageVariation), 2)} axis,
@@ -166,6 +173,7 @@ class Font():
             \t - {CG_withOutlines} with outlines,
             \t - {CG_mixed} are mixed,
             \t - {CG_withVariation} with glyph variation,
+            \t - {CG_withVariationanddeepcomponents} with glyph variation and deep components,
             \t - {CG_withoutVariation} without glyph variation,
             \t - {CG_empty} are empty,
             \t - total: {len(self.characterGlyphSet)} characterGlyphs,\n
