@@ -112,115 +112,117 @@ class Movie:
         # maxNbAxes = max(steps)
         # for nbAxes in steps:
 
-        speeds = [min(16, int(10/nbAxes + random.random()*60/nbAxes)) for i in range(nbAxes)]
-        LCM = self.ilcm(speeds)
-        while ((LCM < 300 or LCM > 1200) or self.checkEqual(speeds)):
-            speeds = [int(10/nbAxes + random.random()*60/nbAxes) for i in range(nbAxes)]
-            LCM = self.ilcm(speeds)
-            print(speeds, LCM, (LCM < 300 or LCM > 1200))
+        speeds = [1 for i in range(nbAxes)]
+        # LCM = self.ilcm(speeds)
+        LCM = 60
+        # print(LCM)
+        # while ((LCM < 600 or LCM > 1200) or self.checkEqual(speeds)):
+        #     speeds = [int(10/nbAxes + random.random()*60/nbAxes) for i in range(nbAxes)]
+        #     LCM = self.ilcm(speeds)
+        #     print(speeds, LCM, (LCM < 600 or LCM > 1200))
      
         alpha = 2*math.pi/maxNbAxes
         db.newDrawing()
-        for g in range(LCM):
+        for k in range(nbAxes):
+            for g in range(LCM):
 
-            #for axeIndex, nbAxes in enumerate(steps):
+                H = 700
+                W = 700
+                db.newPage(W*2, H)
+                db.frameDuration(1/30)
 
-                # for start, framestep in framesteps: 
-                #     count = 0 
-            # for g in range(framestep):
+                db.fill(1)
+                db.rect(0, 0, W*2, H)
 
-            H = 700
-            W = 700
-            db.newPage(W*2, H)
-            db.frameDuration(1/30)
+                r = W/3
+                ainc = 0
+                lines = []
+                rands = []
+                values = []
 
-            db.fill(1)
-            db.rect(0, 0, W*2, H)
+                for i in range(nbAxes):
+                    path = db.BezierPath()
+                    path.moveTo((H/2, W/2))
+                    line = (r*math.sin(ainc), r*math.cos(ainc))
+                    path.lineTo((H/2+line[0], W/2+line[1]))
+                    dx = line[0]*.05
+                    dy = line[1]*.05
+                    path.moveTo((H/2+line[0]-dy, W/2+line[1]+dx))
+                    path.lineTo((H/2+line[0]+dy, W/2+line[1]-dx))
+                    db.stroke(.2)
+                    db.strokeWidth(1.5)
+                    db.fill(None)
+                    db.drawPath(path)
+                    ainc += alpha
+                    lines.append((line,axes[i]))
+                    # v = getValueForAxeAtFrame(i, g, nbAxes, LCM, speeds[i])
+                    # values.append(v)
+                    if i == k:
+                        rands.append([1000*abs(math.sin(math.pi*(speeds[i]*c/LCM + speeds[i]))) for c in range(LCM)])
+                    else:
+                        rands.append([0 for c in range(LCM)])
 
-            r = W/3
-            ainc = 0
-            lines = []
-            rands = []
-            values = []
-            for i in range(nbAxes):
-                path = db.BezierPath()
-                path.moveTo((H/2, W/2))
-                line = (r*math.sin(ainc), r*math.cos(ainc))
-                path.lineTo((H/2+line[0], W/2+line[1]))
-                dx = line[0]*.05
-                dy = line[1]*.05
-                path.moveTo((H/2+line[0]-dy, W/2+line[1]+dx))
-                path.lineTo((H/2+line[0]+dy, W/2+line[1]-dx))
-                db.stroke(.2)
-                db.strokeWidth(1.5)
-                db.fill(None)
-                db.drawPath(path)
-                ainc += alpha
-                lines.append((line,axes[i]))
-                # v = getValueForAxeAtFrame(i, g, nbAxes, LCM, speeds[i])
-                # values.append(v)
-                rands.append([500+500*math.sin(2*math.pi*(speeds[i]*c/LCM + speeds[i])) for c in range(LCM)])
-                
-            db.fill(1)
-            db.oval(H/2-H*.01, W/2-W*.01, H*.02, W*.02)
+                db.fill(1)
+                db.oval(H/2-H*.01, W/2-W*.01, H*.02, W*.02)
 
-            patharea = db.BezierPath()
-            patharea.moveTo((H/2, W/2))
-            patharea.lineTo((H/2+lines[0][0][0]*rands[0][g]/1000, W/2+lines[0][0][1]*rands[0][g]/1000))
-            db.fill(0, 0, 0, .1)
-            db.stroke(None)
-            for c, (line, lineName) in enumerate(lines):
-                patharea.lineTo((H/2+line[0]*rands[c][g]/1000, W/2+line[1]*rands[c][g]/1000))
-            patharea.lineTo((H/2+lines[0][0][0]*rands[0][g]/1000, W/2+lines[0][0][1]*rands[0][g]/1000))
-            patharea.lineTo((H/2, W/2))
-            db.drawPath(patharea)
+                patharea = db.BezierPath()
+                patharea.moveTo((H/2, W/2))
+                patharea.lineTo((H/2+lines[0][0][0]*rands[0][g]/1000, W/2+lines[0][0][1]*rands[0][g]/1000))
+                db.fill(0, 0, 0, .1)
+                db.stroke(None)
+                for c, (line, lineName) in enumerate(lines):
+                    patharea.lineTo((H/2+line[0]*rands[c][g]/1000, W/2+line[1]*rands[c][g]/1000))
+                patharea.lineTo((H/2+lines[0][0][0]*rands[0][g]/1000, W/2+lines[0][0][1]*rands[0][g]/1000))
+                patharea.lineTo((H/2, W/2))
+                db.drawPath(patharea)
 
-            for c, (line, lineName) in enumerate(lines):
-                db.fill(0) #1-rands[c]
-                db.stroke(.2)
-                db.strokeWidth(1)
-                db.oval(H/2+line[0]*rands[c][g]/1000-4.5, W/2+line[1]*rands[c][g]/1000-4.5, 9, 9)
-                db.fill(.2)
-                ftxt = db.FormattedString(txt=lineName, font="GrtskTera-Light", fontSize=14, align="center")
-                db.textBox(ftxt, (H/2+line[0]*1.3-30, W/2+line[1]*1.3-10, 60, 20))
+                for c, (line, lineName) in enumerate(lines):
+                    db.fill(0) #1-rands[c]
+                    db.stroke(.2)
+                    db.strokeWidth(1)
+                    db.oval(H/2+line[0]*rands[c][g]/1000-4.5, W/2+line[1]*rands[c][g]/1000-4.5, 9, 9)
+                    db.fill(.2)
+                    ftxt = db.FormattedString(txt=lineName, font="GrtskZetta-Light", fontSize=14, align="center")
+                    db.textBox(ftxt, (H/2+line[0]*1.3-30, W/2+line[1]*1.3-10, 60, 20))
 
 
-            db.save()
-            ld = []
-            for j, l in enumerate(axes):
-                ld.append({'Axis': l, 'PreviewValue':rands[j][g]/1000})
-                
-            # d = {l:rands[j][g]/1000 for (j, l) in enumerate(axes)}
-
-            # glyph = deepolation(NewFont().newGlyph('temp'), ufo[gname], layersInfo = d)
-            glyph = self.RCJKI.currentFont[gname]
-            glyph.preview.computeDeepComponentsPreview(ld)
-            # print(glyph)
-            db.translate(W*1.15, H*.15)
-            db.scale(.7*H/1000)
-            db.stroke(.5)
-            db.fill(None)
-            db.rect(0, 0, 1000, 1000)
-            db.fill(0)
-            db.stroke(None)
-            db.save()
-            db.translate(0, 120)
-
-            db.drawGlyph(glyph.preview.variationPreview)
-    #         for aes in glyph.preview:
-    #             # axis2layerName = {axisName:layerName for axisName, layerName in self.RCJKI.currentFont[aes['name']].lib['robocjk.atomicElement.glyphVariations'].items()}
+                db.save()
+                ld = []
+                for j, l in enumerate(axes):
+                    ld.append({'Axis': l, 'PreviewValue':rands[j][g]/1000})
                     
-    #             # lInfos = {axis2layerName[axisName]:v for axisName, v in aes['coord'].items()}
-    # #            print(ae['coord'])
-    #             for ae in aes.values():
-    #                 glyph = ae[0]
-    #                 print(glyph)
-    #                 db.save()
-    #                 self._drawGlyph(glyph)
-    #                 db.restore()
-            db.restore()
-            db.restore()
-            caption = db.FormattedString(txt='%s-axis' %(nbAxes), font="GrtskMega-Medium", fontSize=14, align="left")
-            db.textBox(caption, (10, 10, W-20, 20))
+                # d = {l:rands[j][g]/1000 for (j, l) in enumerate(axes)}
+
+                # glyph = deepolation(NewFont().newGlyph('temp'), ufo[gname], layersInfo = d)
+                glyph = self.RCJKI.currentFont[gname]
+                glyph.preview.computeDeepComponentsPreview(ld)
+                # print(glyph)
+                db.translate(W*1.15, H*.15)
+                db.scale(.7*H/1000)
+                db.stroke(.5)
+                db.fill(None)
+                db.rect(0, 0, 1000, 1000)
+                db.fill(0)
+                db.stroke(None)
+                db.save()
+                db.translate(0, 120)
+
+                db.drawGlyph(glyph.preview.variationPreview)
+        #         for aes in glyph.preview:
+        #             # axis2layerName = {axisName:layerName for axisName, layerName in self.RCJKI.currentFont[aes['name']].lib['robocjk.atomicElement.glyphVariations'].items()}
+                        
+        #             # lInfos = {axis2layerName[axisName]:v for axisName, v in aes['coord'].items()}
+        # #            print(ae['coord'])
+        #             for ae in aes.values():
+        #                 glyph = ae[0]
+        #                 print(glyph)
+        #                 db.save()
+        #                 self._drawGlyph(glyph)
+        #                 db.restore()
+                db.restore()
+                db.restore()
+                caption = db.FormattedString(txt='%s-axis' %(nbAxes), font="GrtskMega-Medium", fontSize=14, align="left")
+                db.textBox(caption, (10, 10, W-20, 20))
+
         pdfData = db.pdfImage()
 
