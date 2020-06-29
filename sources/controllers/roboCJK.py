@@ -573,8 +573,8 @@ class RoboCJKController(object):
             menuItems.append(item)
             item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
             menuItems.append(item)
-            item = ('Animate this variable glyph', self.animateThisVariableGlyph)
-            menuItems.append(item)
+            # item = ('Animate this variable glyph', self.animateThisVariableGlyph)
+            # menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
