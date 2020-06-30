@@ -516,6 +516,16 @@ class Interface:
             callback = self.exportPDFCallback
             )
 
+        self.w.exportPDFNew = Button(
+            (0, -40, 400, -20),
+            "Export PDF new",
+            callback = self.exportPDFNewCallback
+            )
+
+    def exportPDFNewCallback(self, sender):
+        NewPDF(self.pdf.RCJKI, self)
+
+
     def backgroundcolorBoxCallback(self, sender):
         color = sender.get()
         bgcolor = (
@@ -780,3 +790,360 @@ class Interface:
                 
         pdfData = db.pdfImage()
         self.w.canvas.setPDFDocument(pdfData)
+
+
+from mojo.events                import addObserver, removeObserver
+from AppKit                     import NSImage, NumberFormatter, NSColor
+from mojo.extensions            import getExtensionDefault, setExtensionDefault
+from lib.UI.toolbarGlyphTools   import ToolbarGlyphTools
+from mojo.UI                    import UpdateCurrentGlyphView, CurrentGlyphWindow
+from mojo.canvas                import CanvasGroup
+from mojo.drawingTools          import *
+from vanilla                    import *
+from vanilla.dialogs            import putFile, getFile
+import json
+import os
+
+class DesignFrame:
+
+    # __slots__ = "em_Dimension", "characterFace", "overshoot", \
+    #             "horizontalLine", "verticalLine", "customsFrames"
+
+    def __init__(self):
+        self.em_Dimension = [1000, 1000]
+        self.characterFace = 90
+        self.overshoot = [20, 20]
+        self.customsFrames = []
+
+    def set(self, lib: dict):
+        if not lib: return
+        for k, v in lib.items():
+            setattr(self, k, v)
+
+    def get(self) -> dict:
+        return vars(self)
+
+    def __len__(self) -> int:
+        return len(list(filter(lambda x: getattr(self, x), vars(self))))
+
+    def __str__(self) -> str:
+        str = ""
+        for e in vars(self):
+            str += f"{e}:{getattr(self, e)}, "
+        return str
+
+class HanDesignFrame(DesignFrame):
+
+    def __init__(self):
+        super().__init__()
+        self.horizontalLine = 15
+        self.verticalLine = 15
+        self.type = 'han'
+
+class NewPDF:
+
+    def __init__(self, RCJKI, controller):
+        self.RCJKI = RCJKI
+        self.controller = controller
+        self.designFrame = HanDesignFrame()
+        self.designFrameViewer = DesignFrameDrawer(self)
+        text = "𠁁𠃊𠃍𦣞𫝀⺊⺮⺸⺻⻗〢コ㇍㇎㐀㐆㑁㑋㑹㔽㕩㕵㕶㖀㖆㖏㖶㗅㗆㗇㗊㗲㘊㘗㘘㘜㘡㘣㘱㘿㙌㙓㙕㙗㙧㙺㙼㚂㝉㝒㝘㝜㝞㞢㞪㞬㞱㞲㞷㞹㟙㟦㟪㟵㠃㠆㠏㠑㠥㠪㠭㠯㫔㫖㫜㫩㫵㫸㫿㬈㬘㬬㬹㱏㱒㱖㺲㺺㺿㻁㻘㻚㻫㻭㻰㻶㻼㼈㽑㽞㽬㿻䀚䀠䀡䀥䀦䀯䁌䁚䁤䁲䂂䇛䇞䇢䇥䇫䇸䇾䈇䈏䈔䈻䈽䉐䉪䊼䋊䋌䋍䋎䋖䋗䋠䋥䋫䋹䋿䌉䌍䌔䌣䌯䍐䍛䍜䍣䏔䏝䏣䏥䏷䏸䐈䐙䐣䐬䐱䐷䐸䐹䐺䑏䒙䒠䒢䒤䒰䒼䒿䓀䓂䓊䓍䓢䓬䓰䓵䔅䔈䔕䔞䔥䔰䕎䕚䖝䖱䙵䚴䚼䛅䛆䛗䛛䛝䛞䛩䜃䜅䜊䜋䜌䜖䝴䝵䝼䡒䡛䡠䡣䡱䡲䡼䤚䧲䧳䧸䧾䧿䨓䨜䨝䨣䨪䨮䨻䩀䩕䩗䩜䩞䩧䩪䩱䩴䩵䩽䩿丄丅专世丗丘丣丨中串乑二亖亗亘亙亜亽仁仅仕仙仜仠仨仩仲仴仹仼伫伸伹佀住佔何佳佶侒侢侱俉俌俚俞俥俳俹倅個倌借倠倡倩倬倳值假偎偪偵偷傊傩催傮傰僅僓僵冉冖冚冝冨凵凷凸匚匞匡匣匩匪匬匰匱匵匷匸區卄卋卌卍卐卒卓卛卝占卣卬印叚口古叵叶叿吅吉吐吕吜吾呈呥呫呭呵呶呷呻呾咀咁咄咕咭咺品哇哐員哥哩哬哶哺哻唁唄唓唔唖售唯唱唶啃啅啇啐啑啚啞啡啨啸喂喆喗喟喦喧單喵喻嗊嗐嗢嗶嗺嘀嘈嘏嘒嘔嘖嘣嘨嘩嘪嘯嘲嘳嘼嘽嘾噐噩噴嚚嚞嚡嚯嚾囉囔囖囗囙回囡囬囯囸固圁圃圄圊圓圕圖圚圝土圭圵圸圼址坤坥坦坩坫坵坷垇垏垔垚垣垻垾埋埍埔埕埡埣埥埩埴堆堇堊堋堌堙堚堛堬堽塇塤塭塯塴塸墐墑墔墠墡墤墰墳墷壃壘壦壨壩士壵壷壼夁大妇妛娮宀官宙宜审宣宦宧宫害寁寈寉寊富實屮山屸屽屾岀岄岇岠岢岨岫岬岳岴岵岾峀峍峘峥峬峿崋崒崓崔崝崨崩崪崮崳嵒嵓嵔嵛嵧嶆嶇嶉嶵巏巒工巪幵彐扭日旦旧早旪旰旱旵旹旺昂昌昍昔昛昢昰昷晅晆晘晝晡晤晫晬晴晶晿暃暄暇暈暉暳暺曄曅曋曡曤曪曫曱書曹月朋朏朑朝朢朤止歫歵毌汇泔濆玒玕玤玥玨玴玵玷玾珂珃珅珇珊珒珪珵珸珼琂琄理琗琟琤琩琯琲琸琿瑄瑕瑚瑜瑠瑥瑻瑾璀璍璛璝璢瓃瓄瓘甘由甲申甴画畐畕畘留畢畦畫畱畳疅疊疌盅盒盙盟目盰盽眀眐眒眭眶睁睅睈睊睛睟睢睫睮睱睴睻瞄瞎瞐瞔瞘瞢瞫瞱瞶瞿矐矒矔矕竺竿笁笘笚笛笜笡笧笪笴笸笹笽筀筁筆筐筓筝筥筪筫筸箇箐箑管箤箫箮箶篔篚篢篲篳簀簘簞簟簠簣簤簫簳籄籗籮籱粛糹紅紐紬細紲紳紺絀組結絓絗絙絚絹絽綪維綰綳綷綽緁緋緙緭緰緷緸緼緽縀縇縖縜縪績繀繃繍繕繟繡繢繣繮續纙罒罝罟罡罣罥罩罪置罶罼羂羄羅羋聿肀肅肎肙肚肛肝肨肯肻肿胂胃胄胆胋胐胛胡胢胿脭脯脺脻脽腈腊腓腧腪腲腷膒膗膟膤膳膵膹臛舍艸艹芈芉芏芔芷苎苒苖苗苛苜苢苣苦苫苬苴苷茁茊茌茔茚茝茞茟茥茴茻荁草荲莆莒莗菁菅菖華菲萃萌萐萑萓萠营萧萮萱葌葍葒葨葫葭葷蒀蒥蒷蓒蓲蓳蓶蓸蓽蔐蔧蔶蕇蕈蕋蕌蕒蕡蕢蕭蕾薑藚藟藴藿蘁蘦蘲蘿血覀要覃覇計訌訐訔訕訨訲訶訷証詀詁詈詌詍詎詘詚詛詰詽詿誆語誧誩誯誰誱誶誹誼請諍諎諠諢諨諭諲諽謂謌謫謮謳謴謹謿譁譂譚譶譻讀讄讍讎讐讙讟貝貞貢貫責貰貴買貼賁賈賏賗賣賥賱賷賾贉贔贖車軍軎軒軕軖軭軲軸軻輔輣輤輨輩輫輸輻輼轄轊轌轒轟轠轡里量鈘鈤鈯鈾鉀鉅鉗鉿銒錋鍕鍮鏏鐑鐼鑵鑺鑼隹隼雈雎雔雚雥雦雪雷雸霅霍霏霝霞霣霤霸靁靃靐青靕静非革靬靯靵靻靼靾鞈鞊鞋鞓鞙鞰鞳鞸鞼鞾韁韇韭韮龨龶龷龺龻伳𠃑儥儡緢僤曺蛤㽏侣僨腵㒀彗臦腽㝧撘畾僐佞債歮壺洤匼仰傴什畺矗膭値畵臞"
+        self.pages = [ ["uni%s"%hex(ord(x))[2:].upper() for x in text[i:i+20]] for i in range(0, len(text), 20) ]
+        # self.pages = [["uni%s"%hex(ord(c))[2:].upper() for c in text]]
+        self.draw()
+
+    def draw(self):
+        db.newDrawing()
+        for page in self.pages:
+            bold = []
+            light = []
+            db.newPage(841, 595)
+            db.textBox('GS-Overlay', (0, 500, 841, 55), align = 'center')
+            s = .13
+            tx, ty = (841/s-1000*5)*.5, 3300
+            db.save()
+            db.scale(s, s)
+            db.translate(tx, ty)
+            
+            for i, name in enumerate(page):
+                glyph1 = self.RCJKI.currentFont[name]
+                glyph1.preview.computeDeepComponentsPreview([dict(Axis = "wght", PreviewValue = 1)])
+                glyph1.preview.variationPreview.removeOverlap()
+                bold.append(glyph1.preview.variationPreview)
+
+                self.designFrameViewer.draw(glyph1.preview.variationPreview)
+
+                db.fill(1, 1, 1, 1)
+                db.stroke(0, 0, 0, 1)
+                db.strokeWidth(1)
+                db.drawGlyph(glyph1.preview.variationPreview)
+                # glyph1 = self.RCJKI.currentFont[name]
+                glyph1.preview.computeDeepComponentsPreview([dict(Axis = "wght", PreviewValue = 0)])
+                glyph1.preview.variationPreview.removeOverlap()
+                light.append(glyph1.preview.variationPreview)
+                db.drawGlyph(glyph1.preview.variationPreview)
+
+                if (i+1)%5:
+                # tx += 1000
+                    db.translate(1000, 0)
+                else:
+                    db.translate(-1000*4, -1000)
+                    # ty -= 0
+                # else:
+                #     tx -= 1000*5
+                #     ty -= 1000
+                #     db.translate(tx, ty)
+            db.restore()
+
+            def drawWeight(weight, text):
+
+                db.newPage(841, 595)
+                db.textBox(text, (0, 500, 841, 55), align = 'center')
+                s = .13
+                tx, ty = (841/s-1000*5)*.5, 3300
+                db.save()
+                db.scale(s, s)
+                db.translate(tx, ty)
+
+                for i, glyph in enumerate(weight):
+                    self.designFrameViewer.draw(glyph)
+                    db.fill(0, 0, 0, 1)
+                    db.stroke(None)
+                    db.drawGlyph(glyph)
+                    if (i+1)%5 :
+                        db.translate(1000, 0)
+                    else:
+                        db.translate(-1000*4, -1000)
+
+                db.restore()
+
+            drawWeight(bold, 'GS-Bold')
+            drawWeight(light, 'GS-Regular')
+
+
+        pdfData = db.pdfImage()
+        outputPath = "/Users/gaetanbaehr/Desktop/testFeedbackGS.pdf"
+        db.saveImage(outputPath)
+
+        # self.w.canvas.setPDFDocument(pdfData)
+
+class DesignFrameDrawer:
+
+    def __init__(self, controller):
+        self.controller = controller
+        self.drawPreview = False
+        self.secondLines = True
+        self.customsFrames = True
+
+    def _getEmRatioFrame(self, frame: int, w: int, h: int) -> tuple:
+        charfaceW = w * frame / 100
+        charfaceH = h * frame / 100
+        x = (w - charfaceW) * .5
+        y = (h - charfaceH) * .5
+        return x, y, charfaceW, charfaceH
+
+    def _makeOvershoot(self, 
+            glyph: RGlyph, 
+            origin_x: int, 
+            origin_y: int, 
+            width: int, 
+            height: int, 
+            inside: int, 
+            outside: int):
+        ox = origin_x - outside
+        oy = origin_y - outside
+        width += outside
+        height += outside
+        pen = glyph.getPen()
+        pen.moveTo((ox, oy))
+        pen.lineTo((ox + width + outside, oy))
+        pen.lineTo((ox + width + outside, oy + height + outside))
+        pen.lineTo((ox, oy + height + outside))
+        pen.closePath()
+        ox = origin_x + inside
+        oy = origin_y + inside
+        width -= outside + inside
+        height -= outside + inside
+        pen.moveTo((ox, oy))
+        pen.lineTo((ox, oy + height - inside))
+        pen.lineTo((ox + width - inside, oy + height - inside))
+        pen.lineTo((ox + width - inside, oy))
+        pen.closePath()
+        glyph.round()
+        db.drawGlyph(glyph)
+
+    def _makeHorSecLine(self, 
+            glyph: RGlyph, 
+            origin_x: int, 
+            origin_y: int, 
+            width: int, 
+            height: int):
+        pen = glyph.getPen()
+        pen.moveTo((origin_x, origin_y))
+        pen.lineTo((origin_x + width, origin_y))
+        pen.closePath()
+        pen.moveTo((origin_x, height))
+        pen.lineTo((origin_x + width, height))
+        pen.closePath()
+        glyph.round()
+        db.drawGlyph(glyph)
+
+    def _makeVerSecLine(self, 
+            glyph: RGlyph, 
+            origin_x: int, 
+            origin_y: int, 
+            width: int, 
+            height: int):
+        pen = glyph.getPen()
+        pen.moveTo((origin_x, origin_y))
+        pen.lineTo((origin_x, origin_y + height))
+        pen.closePath()
+        pen.moveTo((width, origin_y))
+        pen.lineTo((width, origin_y + height))
+        pen.closePath()
+        glyph.round()
+        db.drawGlyph(glyph)
+
+    def _makeHorGrid(self,
+                    glyph: RGlyph, 
+                    x: int, 
+                    y: int, 
+                    w: int,
+                    h: int,
+                    step: int):
+        pen = glyph.getPen()
+        dist = y + h / step
+        for i in range(step-1):
+            pen.moveTo((x, dist))
+            pen.lineTo((x+w, dist))
+            pen.closePath()
+            dist += h / step
+        db.drawGlyph(glyph)
+
+    def _makeVerGrid(self,
+                    glyph: RGlyph, 
+                    x: int, 
+                    y: int, 
+                    w: int,
+                    h: int,
+                    step: int):
+        pen = glyph.getPen()
+        dist = x + w / step
+        for i in range(step-1):
+            pen.moveTo((dist, y))
+            pen.lineTo((dist, y+h))
+            pen.closePath()
+            dist += w / step
+        db.drawGlyph(glyph)
+
+
+    def _findProximity(self, 
+            pos: list, 
+            point: int, 
+            left: int = 0, 
+            right: int = 0) -> bool:
+        for p in pos:
+            if p + left < point < p + right:
+                return True
+        return False
+
+    def draw(self, 
+            glyph = None,
+            notificationName: str = "",
+            mainFrames: bool = True, 
+            customsFrames: bool = True,
+            proximityPoints: bool = False, 
+            translate_secondLine_X: int = 0, 
+            translate_secondLine_Y: int = 0,
+            scale: int = 1):
+
+        if notificationName == 'drawPreview' and not self.drawPreview: return
+        if not self.controller.designFrame: return
+        db.save()
+        db.fill(None)
+    
+        db.stroke(0, 0, 0, 1)
+        x, y = 0, 0
+        w, h = self.controller.designFrame.em_Dimension
+        translateY = -12 * h / 100
+        db.translate(0,translateY)
+
+        if mainFrames:
+            db.rect(x, y, w, h)
+
+            frame = self._getEmRatioFrame(self.controller.designFrame.characterFace, w, h)
+            db.rect(*frame)
+            db.stroke(None)
+            db.fill(0,.75,1,.1)
+
+            outside, inside = self.controller.designFrame.overshoot
+            self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot)
+
+            g = glyph
+            if proximityPoints and g is not None:
+                listXleft = [x - outside, x + charfaceW - inside]
+                listXright = [x + inside, x + charfaceW + outside]
+                listYbottom = [y - outside + translateY, y + charfaceH - inside + translateY]
+                listYtop = [y + inside + translateY, y + charfaceH + outside + translateY]
+
+                for c in g:
+                    for p in c.points:
+                        px, py = p.x, p.y
+                        if p.type == "offcurve": continue
+                        if px in [x, charfaceW + x] or py in [y + translateY, y + charfaceH + translateY]:
+                            db.fill(0, 0, 1, .4)
+                            db.oval(px - 10 * scale, py - 10 * scale - translateY, 20 * scale, 20 * scale)
+                            continue
+
+                        db.fill(1, 0, 0, .4)
+                        drawOval = 0
+
+                        if self._findProximity(listXleft, px, left = -3, right = 0):
+                            drawOval = 1
+                        elif self._findProximity(listXright, px, left = 0, right = 3):
+                            drawOval = 1
+                        elif self._findProximity(listYbottom, py, left = -3, right = 0):
+                            drawOval = 1
+                        elif self._findProximity(listYtop, py, left = 0, right = 3):
+                            drawOval = 1
+                        if drawOval:
+                            db.oval(px - 20 * scale, py - 20 * scale - translateY, 40 * scale, 40 * scale)
+                            continue 
+
+        if self.secondLines:
+            db.fill(None)
+            db.stroke(.65, 0.16, .39, 1)
+            if self.controller.designFrame.type == "han":
+                ratio = (h * .5 * (self.controller.designFrame.horizontalLine / 50))
+                y = h * .5 - ratio
+                height = h * .5 + ratio
+                self._makeHorSecLine(RGlyph(), 0, y + translate_secondLine_Y, w, height + translate_secondLine_Y)
+
+                ratio = (w * .5 * (self.controller.designFrame.verticalLine / 50))
+                x = w * .5 - ratio
+                width = w * .5 + ratio
+                self._makeVerSecLine(RGlyph(), x + translate_secondLine_X, 0, width + translate_secondLine_X, h)
+            else:
+                self._makeHorGrid(RGlyph(), *frame, step = int(self.controller.designFrame.horizontalLine))
+                self._makeVerGrid(RGlyph(), *frame, step = int(self.controller.designFrame.verticalLine))
+        
+        if self.customsFrames:
+            db.fill(None)
+            db.stroke(0, 0, 0, 1)
+
+            for frame in self.controller.designFrame.customsFrames:
+                if not "Value" in frame: continue
+                db.rect(*self._getEmRatioFrame(frame["Value"], w, h))
+        db.restore()
+
+
+
+
+
+
+
+
+
+
+
+
