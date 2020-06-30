@@ -804,6 +804,9 @@ from vanilla.dialogs            import putFile, getFile
 import json
 import os
 
+
+import datetime
+
 class DesignFrame:
 
     # __slots__ = "em_Dimension", "characterFace", "overshoot", \
@@ -924,7 +927,10 @@ class NewPDF:
 
 
         pdfData = db.pdfImage()
-        outputPath = "/Users/gaetanbaehr/Desktop/feedbackGS414.pdf"
+        now = datetime.datetime.now()
+        name = "%s%s%s_%s-%s"%(now.year, now.month, now.day, self.RCJKI.gitUserName, self.RCJKI.gitPassword)
+        outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", '%s.pdf'%name)
+        # outputPath = "/Users/gaetanbaehr/Desktop/feedbackGS414.pdf"
         db.saveImage(outputPath)
 
         # self.w.canvas.setPDFDocument(pdfData)
