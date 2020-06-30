@@ -211,7 +211,7 @@ class Font():
 
     def loadCharacterGlyph(self, glyphName):
         bfitem = self._BFont.get_cglyph(glyphName)
-        BF_mysql2rcjk.read_item_from_mysql(self.bf_log, bfitem ,self.mysql)
+        BF_mysql2rcjk.read_item_from_mysql(self.bf_log, bfitem, self.mysql)
 
     @property
     def lockerUserName(self):
