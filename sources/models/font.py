@@ -128,6 +128,9 @@ class Font():
             glyphName = glyph.name
             glyphType = self._findGlyphType(glyphName)
             if glyphType == "cglyphs":
+                print("°°°°°°°°")
+                print(self.mysql.username, self.mysql.username)
+                print("°°°°°°°°")
                 lock = self.mysql.lock_cglyph(self.fontName, glyphName)
                 print(">>>>>>")
                 print("lock ->", lock)
@@ -135,6 +138,9 @@ class Font():
                 print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             elif glyphType == "dcomponents":
+                print("°°°°°°°°")
+                print(self.mysql.username, self.mysql.username)
+                print("°°°°°°°°")
                 lock = self.mysql.lock_dcomponent(self.fontName, glyphName)
                 print(">>>>>>")
                 print("lock ->", lock)
@@ -142,6 +148,9 @@ class Font():
                 print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             elif glyphType == "aelements":
+                print("°°°°°°°°")
+                print(self.mysql.username, self.mysql.username)
+                print("°°°°°°°°")
                 lock = self.mysql.lock_aelement(self.fontName, glyphName)
                 print(">>>>>>")
                 print("lock ->", lock)
@@ -630,24 +639,40 @@ class Font():
     @gitCoverage(msg = 'remove Glyph')
     def removeGlyph(self, glyphName:str): 
         # return
-        fileName = "%s.glif"%files.userNameToFileName(glyphName)
-        glyph = self[glyphName]
-        glyphType = glyph.type
-        if fileName in os.listdir(os.path.join(self.fontPath, glyphType)):
-            path = os.path.join(self.fontPath, glyphType, fileName)
-            os.remove(path)
-            folderPath = os.path.join(self.fontPath, glyphType)
-            for _, layers, _ in os.walk(folderPath):
-                for layer in layers:
-                    if fileName in os.listdir(os.path.join(folderPath, layer)):
-                        layerPath = os.path.join(folderPath, layer, fileName)
-                        os.remove(layerPath)
+        if not self.mysql:
+            fileName = "%s.glif"%files.userNameToFileName(glyphName)
+            glyph = self[glyphName]
+            glyphType = glyph.type
+            if fileName in os.listdir(os.path.join(self.fontPath, glyphType)):
+                path = os.path.join(self.fontPath, glyphType, fileName)
+                os.remove(path)
+                folderPath = os.path.join(self.fontPath, glyphType)
+                for _, layers, _ in os.walk(folderPath):
+                    for layer in layers:
+                        if fileName in os.listdir(os.path.join(folderPath, layer)):
+                            layerPath = os.path.join(folderPath, layer, fileName)
+                            os.remove(layerPath)
 
-        self._RFont.removeGlyph(glyphName)
-        for layer in self._RFont.layers:
-            if glyphName in layer.keys():
-                layer.removeGlyph(glyphName) 
-        self.locker.removeFiles([glyphName])   
+            self._RFont.removeGlyph(glyphName)
+            for layer in self._RFont.layers:
+                if glyphName in layer.keys():
+                    layer.removeGlyph(glyphName) 
+            self.locker.removeFiles([glyphName])   
+        else:
+            glyphType = self._findGlyphType(glyphName)
+            if glyphType == "cglyphs":
+                bfitem = self._BFont.get_cglyph(glyphName)
+            elif glyphType == "dcomponents":
+                bfitem = self._BFont.get_dcomponent(glyphName)
+            elif glyphType == "aelements":
+                bfitem = self._BFont.get_aelement(glyphName)
+            BF_rcjk2mysql.remove_item_to_mysql(self.bf_log, bfitem, self.mysql)
+            
+            self._RFont.removeGlyph(glyphName)
+            for layer in self._RFont.layers:
+                if glyphName in layer.keys():
+                    layer.removeGlyph(glyphName) 
+            # BF_rcjk2mysql.rename_item_to_mysql(self.bf_log, item = bfitem, new_name = newName, my_sql = self.mysql)
 
 
     def saveGlyph(self, glyph):

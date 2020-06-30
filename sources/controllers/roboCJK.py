@@ -138,8 +138,14 @@ class RoboCJKController(object):
     def connect2mysql(self):
         bf_log.info("will connect to mysql")
         self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
+        print("33333")
+        print(self.mysql_userName, self.mysql_password)
+        print("33333")
         self.mysql.logout(self.mysql_userName, self.mysql_password)
-        self.mysql.login(self.mysql_userName, self.mysql_password)
+        log = self.mysql.login(self.mysql_userName, self.mysql_password)
+        print("44444")
+        print(log)
+        print("44444")
         bf_log.info("did connect to mysql")
         bf_log.info(self.mysql.login(self.mysql_userName, self.mysql_password))
 
