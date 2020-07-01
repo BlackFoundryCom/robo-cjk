@@ -272,7 +272,7 @@ class Interface:
             )
         self.w.mainsegmentedButton.set(0)
 
-        self.w.overlay = Group((0, 30, -0, -0))
+        self.w.overlay = Group((10, 30, -10, -0))
         self.w.overlay.inputText = TextEditor((0, 0, -0, -20), '')
         self.w.overlay.generatePDFButton = Button((0, -20, -0, -0),
             "Generate PDF",
@@ -887,17 +887,31 @@ class NewPDF:
 
     def draw(self):
         db.newDrawing()
+        self.designFrameViewer.draw()
+
+        def drawDesignFrame():
+            for e in self.designFrameViewer.elements:
+                glyph, color, type = e
+                if type =='stroke':
+                    db.stroke(*color)
+                    db.fill(None)
+                else:
+                    db.stroke(None)
+                    db.fill(*color)
+                db.drawGlyph(glyph)
+
         for page in self.pages:
             bold = []
             light = []
             db.newPage(841, 595)
-            db.textBox('GS-Overlay', (0, 520, 841, 55), align = 'center')
-            s = .13
-            tx, ty = (841/s-1000*5)*.5, 3300
+
+            db.textBox('GS-Overlay', (0, 530, 841, 55), align = 'center')
+            s = .11
+            tx, ty = (841/s-1000*5)*.5, 4000
             db.save()
             db.scale(s, s)
             db.translate(tx, ty)
-            
+            db.fontSize(60)
             for i, name in enumerate(page):
                 try:
                     glyph1 = self.RCJKI.currentFont[name]
@@ -905,50 +919,57 @@ class NewPDF:
                     glyph1.preview.variationPreview.removeOverlap()
                     bold.append(glyph1.preview.variationPreview)
 
-                    self.designFrameViewer.draw(glyph1.preview.variationPreview)
+                    drawDesignFrame()
+
+                    # self.designFrameViewer.draw(glyph1.preview.variationPreview)
+                    db.fill(0, 0, 0, 1)
+                    db.stroke(None)                    
+                    db.textBox(name, (0, 900, 1000, 100), align = "center")
 
                     db.fill(1, 1, 1, 1)
                     db.stroke(0, 0, 0, 1)
                     db.strokeWidth(1)
+                    
                     db.drawGlyph(glyph1.preview.variationPreview)
-                    # glyph1 = self.RCJKI.currentFont[name]
                     glyph1.preview.computeDeepComponentsPreview([dict(Axis = "wght", PreviewValue = 0)])
                     glyph1.preview.variationPreview.removeOverlap()
                     light.append(glyph1.preview.variationPreview)
                     db.drawGlyph(glyph1.preview.variationPreview)
 
                     if (i+1)%5:
-                    # tx += 1000
                         db.translate(1000, 0)
                     else:
-                        db.translate(-1000*4, -1000)
+                        db.translate(-1000*4, -1200)
                 except:pass
-                    # ty -= 0
-                # else:
-                #     tx -= 1000*5
-                #     ty -= 1000
-                #     db.translate(tx, ty)
+  
             db.restore()
 
             def drawWeight(weight, text):
 
                 db.newPage(841, 595)
-                db.textBox(text, (0, 520, 841, 55), align = 'center')
-                s = .13
-                tx, ty = (841/s-1000*5)*.5, 3300
+                db.textBox(text, (0, 530, 841, 55), align = 'center')
+                s = .11
+                tx, ty = (841/s-1000*5)*.5, 4000
                 db.save()
                 db.scale(s, s)
                 db.translate(tx, ty)
+                db.fontSize(60)
 
                 for i, glyph in enumerate(weight):
-                    self.designFrameViewer.draw(glyph)
+                    # self.designFrameViewer.draw(glyph)
+
+                    drawDesignFrame()
+                    db.fill(0, 0, 0, 1)
+                    db.stroke(None)                    
+                    db.textBox(glyph.name, (0, 900, 1000, 100), align = "center")
+
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)
                     db.drawGlyph(glyph)
                     if (i+1)%5 :
                         db.translate(1000, 0)
                     else:
-                        db.translate(-1000*4, -1000)
+                        db.translate(-1000*4, -1200)
 
                 db.restore()
 
@@ -972,12 +993,42 @@ class DesignFrameDrawer:
         self.drawPreview = False
         self.secondLines = True
         self.customsFrames = True
+        self.elements = []
+        self.draw()
 
-    def _getEmRatioFrame(self, frame: int, w: int, h: int) -> tuple:
+    def _getFrame(self, x: int, y: int, w: int, h:int, ty) -> tuple:
+        glyph = RGlyph()
+        pen = glyph.getPen()
+        pen.moveTo((x, y))
+        pen.lineTo((w+x, y))
+        pen.lineTo((w+x, h+y))
+        pen.lineTo((x, h+y))
+        pen.closePath()
+
+        glyph.round()
+        glyph.moveBy((0, ty))
+
+        self.elements.append((glyph, (0, 0, 0, 1), 'stroke'))
+
+    def _getEmRatioFrame(self, frame: int, w: int, h: int, ty) -> tuple:
         charfaceW = w * frame / 100
         charfaceH = h * frame / 100
         x = (w - charfaceW) * .5
         y = (h - charfaceH) * .5
+
+        glyph = RGlyph()
+        pen = glyph.getPen()
+        pen.moveTo((x, y))
+        pen.lineTo((charfaceW+x, y))
+        pen.lineTo((charfaceW+x, charfaceH+y))
+        pen.lineTo((x, charfaceH+y))
+        pen.closePath()
+
+        glyph.round()
+        glyph.moveBy((0, ty))
+
+        self.elements.append((glyph, (0, 0, 0, 1), 'stroke'))
+
         return x, y, charfaceW, charfaceH
 
     def _makeOvershoot(self, 
@@ -987,7 +1038,8 @@ class DesignFrameDrawer:
             width: int, 
             height: int, 
             inside: int, 
-            outside: int):
+            outside: int,
+            ty):
         ox = origin_x - outside
         oy = origin_y - outside
         width += outside
@@ -1008,14 +1060,18 @@ class DesignFrameDrawer:
         pen.lineTo((ox + width - inside, oy))
         pen.closePath()
         glyph.round()
-        db.drawGlyph(glyph)
+        glyph.moveBy((0, ty))
+
+        self.elements.append((glyph, (0, .75, 1, .1), 'fill'))
+        # db.drawGlyph(glyph)
 
     def _makeHorSecLine(self, 
             glyph: RGlyph, 
             origin_x: int, 
             origin_y: int, 
             width: int, 
-            height: int):
+            height: int,
+            ty):
         pen = glyph.getPen()
         pen.moveTo((origin_x, origin_y))
         pen.lineTo((origin_x + width, origin_y))
@@ -1024,14 +1080,17 @@ class DesignFrameDrawer:
         pen.lineTo((origin_x + width, height))
         pen.closePath()
         glyph.round()
-        db.drawGlyph(glyph)
+        glyph.moveBy((0, ty))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        # db.drawGlyph(glyph)
 
     def _makeVerSecLine(self, 
             glyph: RGlyph, 
             origin_x: int, 
             origin_y: int, 
             width: int, 
-            height: int):
+            height: int,
+            ty):
         pen = glyph.getPen()
         pen.moveTo((origin_x, origin_y))
         pen.lineTo((origin_x, origin_y + height))
@@ -1040,7 +1099,9 @@ class DesignFrameDrawer:
         pen.lineTo((width, origin_y + height))
         pen.closePath()
         glyph.round()
-        db.drawGlyph(glyph)
+        glyph.moveBy((0, ty))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        # db.drawGlyph(glyph)
 
     def _makeHorGrid(self,
                     glyph: RGlyph, 
@@ -1097,88 +1158,35 @@ class DesignFrameDrawer:
 
         if notificationName == 'drawPreview' and not self.drawPreview: return
         if not self.controller.designFrame: return
-        db.save()
-        db.fill(None)
-    
-        db.stroke(0, 0, 0, 1)
         x, y = 0, 0
         w, h = self.controller.designFrame.em_Dimension
         translateY = -12 * h / 100
-        db.translate(0,translateY)
 
         if mainFrames:
-            db.rect(x, y, w, h)
+            self._getFrame(x, y, w, h, translateY)
 
-            frame = self._getEmRatioFrame(self.controller.designFrame.characterFace, w, h)
-            db.rect(*frame)
-            db.stroke(None)
-            db.fill(0,.75,1,.1)
-
+            frame = self._getEmRatioFrame(self.controller.designFrame.characterFace, w, h, translateY)
             outside, inside = self.controller.designFrame.overshoot
-            self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot)
-
-            g = glyph
-            if proximityPoints and g is not None:
-                listXleft = [x - outside, x + charfaceW - inside]
-                listXright = [x + inside, x + charfaceW + outside]
-                listYbottom = [y - outside + translateY, y + charfaceH - inside + translateY]
-                listYtop = [y + inside + translateY, y + charfaceH + outside + translateY]
-
-                for c in g:
-                    for p in c.points:
-                        px, py = p.x, p.y
-                        if p.type == "offcurve": continue
-                        if px in [x, charfaceW + x] or py in [y + translateY, y + charfaceH + translateY]:
-                            db.fill(0, 0, 1, .4)
-                            db.oval(px - 10 * scale, py - 10 * scale - translateY, 20 * scale, 20 * scale)
-                            continue
-
-                        db.fill(1, 0, 0, .4)
-                        drawOval = 0
-
-                        if self._findProximity(listXleft, px, left = -3, right = 0):
-                            drawOval = 1
-                        elif self._findProximity(listXright, px, left = 0, right = 3):
-                            drawOval = 1
-                        elif self._findProximity(listYbottom, py, left = -3, right = 0):
-                            drawOval = 1
-                        elif self._findProximity(listYtop, py, left = 0, right = 3):
-                            drawOval = 1
-                        if drawOval:
-                            db.oval(px - 20 * scale, py - 20 * scale - translateY, 40 * scale, 40 * scale)
-                            continue 
+            self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
 
         if self.secondLines:
-            db.fill(None)
-            db.stroke(.65, 0.16, .39, 1)
             if self.controller.designFrame.type == "han":
                 ratio = (h * .5 * (self.controller.designFrame.horizontalLine / 50))
                 y = h * .5 - ratio
                 height = h * .5 + ratio
-                self._makeHorSecLine(RGlyph(), 0, y + translate_secondLine_Y, w, height + translate_secondLine_Y)
+                self._makeHorSecLine(RGlyph(), 0, y + translate_secondLine_Y, w, height + translate_secondLine_Y, translateY)
 
                 ratio = (w * .5 * (self.controller.designFrame.verticalLine / 50))
                 x = w * .5 - ratio
                 width = w * .5 + ratio
-                self._makeVerSecLine(RGlyph(), x + translate_secondLine_X, 0, width + translate_secondLine_X, h)
+                self._makeVerSecLine(RGlyph(), x + translate_secondLine_X, 0, width + translate_secondLine_X, h, translateY)
             else:
                 self._makeHorGrid(RGlyph(), *frame, step = int(self.controller.designFrame.horizontalLine))
                 self._makeVerGrid(RGlyph(), *frame, step = int(self.controller.designFrame.verticalLine))
         
         if self.customsFrames:
-            db.fill(None)
-            db.stroke(0, 0, 0, 1)
-
             for frame in self.controller.designFrame.customsFrames:
                 if not "Value" in frame: continue
-                db.rect(*self._getEmRatioFrame(frame["Value"], w, h))
-        db.restore()
-
-
-
-
-
-
 
 
 

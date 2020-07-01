@@ -362,6 +362,7 @@ class CharacterGlyphPreview(Preview):
                 )
 
         previewGlyph = RGlyph()
+        previewGlyph.name = self.glyph.name
         for atomicInstance in variationPreview:
             for c in atomicInstance.getTransformedGlyph():
                 previewGlyph.appendContour(c)
