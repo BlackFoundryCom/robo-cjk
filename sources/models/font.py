@@ -925,4 +925,5 @@ class Font():
             # f = self._RFont.getLayer('foreground')
             self._RFont.renameGlyph(oldName, newName)
             self.saveGlyph(self[newName])
+            return True
             # self.saveFont("renameGlyph")
