@@ -263,40 +263,58 @@ class Interface:
     
     def __init__(self, pdf):
         self.pdf = pdf
-        self.w = Window((1200, 800),"PDF Proofer", minSize= (200, 200))    
-        self.w.canvas = DrawView((400, 0, -0, -0))
-        self.w.pageTitle = TextBox(
+        self.w = Window((600, 200),"PDF Proofer", minSize= (200, 200))    
+
+        self.w.mainsegmentedButton = SegmentedButton(
+            (10, 10, -10, 20), 
+            [dict(title = "overlay"), dict(title = "custom")],
+            callback = self.mainsegmentedButtonCallback
+            )
+        self.w.mainsegmentedButton.set(0)
+
+        self.w.overlay = Group((0, 30, -0, -0))
+        self.w.overlay.inputText = TextEditor((0, 0, -0, -20), '')
+        self.w.overlay.generatePDFButton = Button((0, -20, -0, -0),
+            "Generate PDF",
+            callback = self.generatePDFButtonCallback
+            )
+
+        self.w.customPages = Group((0, 30, -0, -0))
+        self.w.customPages.show(0)
+
+        self.w.customPages.canvas = DrawView((400, 0, -0, -0))
+        self.w.customPages.pageTitle = TextBox(
             (10, 10, 100, 20),
             "Pages",
             sizeStyle = 'small'
             )
-        self.w.pagesList = List(
+        self.w.customPages.pagesList = List(
             (10, 30, 80, 180),
             self.pdf.pages,
             selectionCallback = self.pagesListSelectionCallback,
             drawFocusRing = False
             )
-        self.w.newPage = Button(
+        self.w.customPages.newPage = Button(
             (10, 210, 40, 20),
             '+',
             callback = self.newPageCallback,
             sizeStyle = "small"
             )
-        self.w.delPage = Button(
+        self.w.customPages.delPage = Button(
             (50, 210, 40, 20),
             '-',
             callback = self.delPageCallback,
             sizeStyle = "small"
             )
 
-        self.w.page = Group((95, 0, 305, 300))
-        self.w.page.show(False)
-        self.w.page.widthTitle = TextBox(
+        self.w.customPages.page = Group((95, 0, 305, 300))
+        self.w.customPages.page.show(False)
+        self.w.customPages.page.widthTitle = TextBox(
             (0, 30, 45, 20),
             "Width",
             sizeStyle = 'small'
             )
-        self.w.page.pageWidth = EditText(
+        self.w.customPages.page.pageWidth = EditText(
             (40, 30, 50, 20),
             841,
             sizeStyle = 'small',
@@ -304,12 +322,12 @@ class Interface:
             callback = self.pageSizeCallback,
             continuous = False
             )
-        self.w.page.heightTitle = TextBox(
+        self.w.customPages.page.heightTitle = TextBox(
             (98, 30, 45, 20),
             "Height",
             sizeStyle = 'small'
             )
-        self.w.page.pageHeight = EditText(
+        self.w.customPages.page.pageHeight = EditText(
             (145, 30, 50, 20),
             595,
             sizeStyle = 'small',
@@ -317,12 +335,12 @@ class Interface:
             callback = self.pageSizeCallback,
             continuous = False
             )
-        self.w.page.columnsTitle = TextBox(
+        self.w.customPages.page.columnsTitle = TextBox(
             (0, 60, 100, 20),
             "Columns",
             sizeStyle = 'small'
             )
-        self.w.page.columsSlider = Slider(
+        self.w.customPages.page.columsSlider = Slider(
             (0, 80, 195, 20),
             minValue = 1,
             maxValue = 10,
@@ -332,12 +350,12 @@ class Interface:
             callback = self.columsSliderCallback
             )
 
-        self.w.page.linesTitle = TextBox(
+        self.w.customPages.page.linesTitle = TextBox(
             (0, 110, 100, 20),
             "Lines",
             sizeStyle = 'small'
             )
-        self.w.page.linesSlider = Slider(
+        self.w.customPages.page.linesSlider = Slider(
             (0, 130, 195, 20),
             minValue = 1,
             maxValue = 10,
@@ -347,53 +365,53 @@ class Interface:
             callback = self.linesSliderCallback
             )
 
-        self.w.page.marginTitle = TextBox(
+        self.w.customPages.page.marginTitle = TextBox(
             (0, 160, 100, 20),
             "Margin",
             sizeStyle = 'small'
             )
-        self.w.page.marginSlider = Slider(
+        self.w.customPages.page.marginSlider = Slider(
             (0, 180, 195, 20),
             minValue = 10,
             maxValue = 100,
             value = 10,
             callback = self.marginSliderCallback
             )
-        self.w.page.backgrounColorTitle = TextBox(
+        self.w.customPages.page.backgrounColorTitle = TextBox(
             (0, 210, 150, 20),
             "Background color",
             sizeStyle = 'small'
             )
-        self.w.page.backgrounColorWell = ColorWell(
+        self.w.customPages.page.backgrounColorWell = ColorWell(
             (105, 210, 90, 20),
             callback = self.backgroundcolorBoxCallback,
             color = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 1)
             )
 
-        self.w.page.textBoxTitle = TextBox(
+        self.w.customPages.page.textBoxTitle = TextBox(
             (205, 10, 80, 150),
             "Box",
             sizeStyle = 'small'
             )
-        self.w.page.textBoxList = List(
+        self.w.customPages.page.textBoxList = List(
             (205, 30, 80, 200),
             [],
             selectionCallback = self.textBoxListSelectionCallback,
             drawFocusRing = False
             )
         
-        self.w.text = Group((0, 250, 400, 400))
-        self.w.text.show(False)
+        self.w.customPages.text = Group((0, 250, 400, 400))
+        self.w.customPages.text.show(False)
 
-        self.w.text.horizontalLine = HorizontalLine((10, 0, -10, 10))
+        self.w.customPages.text.horizontalLine = HorizontalLine((10, 0, -10, 10))
 
         y = 30
-        self.w.text.fontSizeTitle = TextBox(
+        self.w.customPages.text.fontSizeTitle = TextBox(
             (210, y, 80, 20),
             'FontSize',
             sizeStyle = "small"
             )
-        self.w.text.fontSize = EditText(
+        self.w.customPages.text.fontSize = EditText(
             (280, y, 100, 20),
             10,
             sizeStyle = "small",
@@ -403,23 +421,23 @@ class Interface:
             )
 
         y += 30
-        self.w.text.colorTitle = TextBox(
+        self.w.customPages.text.colorTitle = TextBox(
             (210, y, 80, 20),
             'Color',
             sizeStyle = "small"
             )
-        self.w.text.color = ColorWell(
+        self.w.customPages.text.color = ColorWell(
             (280, y, 100, 20),
             callback = self.textcolorBoxCallback
             )
 
         y += 30
-        self.w.text.trackingTitle = TextBox(
+        self.w.customPages.text.trackingTitle = TextBox(
             (210, y, 80, 20),
             'Tracking',
             sizeStyle = "small"
             )
-        self.w.text.tracking = Slider(
+        self.w.customPages.text.tracking = Slider(
             (280, y, 100, 20),
             minValue = 0,
             maxValue = 100,
@@ -427,12 +445,12 @@ class Interface:
             callback = self.trackingBoxCallback
             )
         y += 30
-        self.w.text.lineHeightTitle = TextBox(
+        self.w.customPages.text.lineHeightTitle = TextBox(
             (210, y, 80, 20),
             'LineHeight',
             sizeStyle = "small"
             )
-        self.w.text.lineHeight = Slider(
+        self.w.customPages.text.lineHeight = Slider(
             (280, y, 100, 20),
             minValue = 500,
             maxValue = 2500,
@@ -440,18 +458,18 @@ class Interface:
             callback = self.lineHeightBoxCallback
             )
         y += 30
-        self.w.text.alignTitle = TextBox(
+        self.w.customPages.text.alignTitle = TextBox(
             (210, y, 80, 20),
             'Align',
             sizeStyle = "small"
             )
-        self.w.text.align = PopUpButton(
+        self.w.customPages.text.align = PopUpButton(
             (280, y, 100, 20),
             ["left", "center", "right"],
             callback = self.alignBoxCallback
             )
 
-        self.w.text.segmentedButton = SegmentedButton(
+        self.w.customPages.text.segmentedButton = SegmentedButton(
             (10, 30, 190, 20),
             segmentDescriptions = [
                                     dict(title = "UFO"),
@@ -460,15 +478,15 @@ class Interface:
             callback = self.segmentedButtonCallback,
             sizeStyle = 'small'
             )
-        self.w.text.segmentedButton.set(0)
+        self.w.customPages.text.segmentedButton.set(0)
 
-        self.w.text.ufo = Group((10, 60, 190, 110))
+        self.w.customPages.text.ufo = Group((10, 60, 190, 110))
 
         self.fontAxis = []
         if self.pdf.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
             self.fontAxis = [dict(Axis = x, PreviewValue = 0) for x in self.pdf.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']]
         slider = SliderListCell(minValue = 0, maxValue = 1)
-        self.w.text.ufo.axis = List(
+        self.w.customPages.text.ufo.axis = List(
             (0, 0, -0,  -0),
             self.fontAxis,
             columnDescriptions = [
@@ -480,25 +498,25 @@ class Interface:
             drawFocusRing = False
             )
 
-        self.w.text.fontManager = PopUpButton(
+        self.w.customPages.text.fontManager = PopUpButton(
             (10, 60, 190, 20),
             FontsList.get(),
             callback = self.fontManagerCallback,
             sizeStyle = "small"
             )
-        self.w.text.fontManager.show(0)
+        self.w.customPages.text.fontManager.show(0)
 
-        self.w.text.textEditorTitle = TextBox(
+        self.w.customPages.text.textEditorTitle = TextBox(
             (10, 180, -10, -0),
             "Text",
             sizeStyle = "small"
             )
-        self.w.text.textEditor = TextEditor(
+        self.w.customPages.text.textEditor = TextEditor(
             (10, 200, -10, -20),
             "",
             callback = self.textEditorCallback
             )
-        self.w.text.setAllGlyphsDone = PopUpButton(
+        self.w.customPages.text.setAllGlyphsDone = PopUpButton(
             (10, -20, -10, -0),
             [
                 "", 
@@ -510,20 +528,32 @@ class Interface:
             # "Set all character glyphs not empty",
             callback = self.setAllGlyphsDoneCallback
             )
-        self.w.exportPDF = Button(
+        self.w.customPages.exportPDF = Button(
             (0, -20, 400, -0),
             "Export PDF",
             callback = self.exportPDFCallback
             )
 
-        self.w.exportPDFNew = Button(
-            (0, -40, 400, -20),
-            "Export PDF new",
-            callback = self.exportPDFNewCallback
-            )
+        # self.w.customPages.exportPDFNew = Button(
+        #     (0, -40, 400, -20),
+        #     "Export PDF new",
+        #     callback = self.exportPDFNewCallback
+        #     )
 
-    def exportPDFNewCallback(self, sender):
-        NewPDF(self.pdf.RCJKI, self)
+    def mainsegmentedButtonCallback(self, sender):
+        for i, group in enumerate([self.w.overlay, self.w.customPages]):
+            group.show(i == sender.get())
+        x, y, _, _ = self.w.getPosSize()
+        if sender.get():
+            self.w.setPosSize((x, y, 1200, 800))
+        else:
+            self.w.setPosSize((x, y, 600, 200))
+
+    def generatePDFButtonCallback(self, sender):
+        NewPDF(self.pdf.RCJKI, self, self.w.overlay.inputText.get())
+
+    # def exportPDFNewCallback(self, sender):
+    #     NewPDF(self.pdf.RCJKI, self)
 
 
     def backgroundcolorBoxCallback(self, sender):
@@ -540,27 +570,27 @@ class Interface:
     def columsSliderCallback(self, sender):
         self.currentPage.columns = int(sender.get())
         self.currentPage.update()
-        self.w.page.textBoxList.set(self.currentPage.textBoxes)
+        self.w.customPages.page.textBoxList.set(self.currentPage.textBoxes)
         self.draw([self.currentPage])
 
     def linesSliderCallback(self, sender):
         self.currentPage.lines = int(sender.get())
         self.currentPage.update()
-        self.w.page.textBoxList.set(self.currentPage.textBoxes)
+        self.w.customPages.page.textBoxList.set(self.currentPage.textBoxes)
         self.draw([self.currentPage])
 
     def marginSliderCallback(self, sender):
         self.currentPage.margin = int(sender.get())
         self.currentPage.update()
-        self.w.page.textBoxList.set(self.currentPage.textBoxes)
+        self.w.customPages.page.textBoxList.set(self.currentPage.textBoxes)
         self.draw([self.currentPage])
 
     def pagesListSelectionCallback(self, sender):
         sel = sender.getSelection()
-        self.w.page.show(sel)
+        self.w.customPages.page.show(sel)
         if not sel:
             self.currentPage = None
-            self.w.page.textBoxList.set([])
+            self.w.customPages.page.textBoxList.set([])
             return
         self.setCurrentPage(sel[0])
         self.draw([self.currentPage])
@@ -568,22 +598,22 @@ class Interface:
     def pageSizeCallback(self, sender):
         if self.currentPage is None:
             return
-        size = (int(self.w.page.pageWidth.get()), int(self.w.page.pageHeight.get()))
+        size = (int(self.w.customPages.page.pageWidth.get()), int(self.w.customPages.page.pageHeight.get()))
         self.currentPage.size = size
         self.currentPage.update()
         self.draw([self.currentPage])
 
     def textBoxListSelectionCallback(self, sender):
         sel = sender.getSelection()
-        self.w.text.show(sel)
+        self.w.customPages.text.show(sel)
         if not sel:
             self.currentTextBox = None
-            self.w.text.textEditor.set("")
+            self.w.customPages.text.textEditor.set("")
             return
         self.currentTextBox = self.currentPage.textBoxes[sel[0]]
-        # self.w.text.textEditor.set(self.currentTextBox.text)
+        # self.w.customPages.text.textEditor.set(self.currentTextBox.text)
         if self.currentTextBox.sourceList:
-            self.w.text.ufo.axis.set(self.currentTextBox.sourceList)
+            self.w.customPages.text.ufo.axis.set(self.currentTextBox.sourceList)
         self.setTextGroupUI()
         self.draw([self.currentPage])
 
@@ -613,7 +643,7 @@ class Interface:
                     if font[name].unicode:
                         text += chr(font[name].unicode)
         self.currentTextBox.text = text 
-        self.w.text.textEditor.set(text)
+        self.w.customPages.text.textEditor.set(text)
         self.draw([self.currentPage])
 
     def newPageCallback(self, sender):
@@ -621,7 +651,7 @@ class Interface:
         self.refresh()
 
     def delPageCallback(self, sender):
-        sel = self.w.pagesList.getSelection()
+        sel = self.w.customPages.pagesList.getSelection()
         if not sel:
             return
         index = sel[0]
@@ -629,21 +659,21 @@ class Interface:
         self.refresh()
 
     def setPageGroupsUI(self):
-        self.w.page.pageWidth.set(self.currentPage.size[0])
-        self.w.page.pageHeight.set(self.currentPage.size[1])
-        self.w.page.columsSlider.set(self.currentPage.columns)
-        self.w.page.linesSlider.set(self.currentPage.lines)
-        self.w.page.marginSlider.set(self.currentPage.margin)
-        self.w.page.backgrounColorWell.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*self.currentPage.backgroundColor))
-        self.w.page.textBoxList.set(self.currentPage.textBoxes)
+        self.w.customPages.page.pageWidth.set(self.currentPage.size[0])
+        self.w.customPages.page.pageHeight.set(self.currentPage.size[1])
+        self.w.customPages.page.columsSlider.set(self.currentPage.columns)
+        self.w.customPages.page.linesSlider.set(self.currentPage.lines)
+        self.w.customPages.page.marginSlider.set(self.currentPage.margin)
+        self.w.customPages.page.backgrounColorWell.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*self.currentPage.backgroundColor))
+        self.w.customPages.page.textBoxList.set(self.currentPage.textBoxes)
 
     def setTextGroupUI(self):
-        self.w.text.fontSize.set(self.currentTextBox.fontSize)
-        self.w.text.textEditor.set(self.currentTextBox.text)
-        self.w.text.color.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*self.currentTextBox.color))
-        self.w.text.tracking.set(self.currentTextBox.tracking)
-        self.w.text.lineHeight.set(self.currentTextBox.lineHeight)
-        self.w.text.segmentedButton.set(self.currentTextBox.type == "Text")
+        self.w.customPages.text.fontSize.set(self.currentTextBox.fontSize)
+        self.w.customPages.text.textEditor.set(self.currentTextBox.text)
+        self.w.customPages.text.color.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*self.currentTextBox.color))
+        self.w.customPages.text.tracking.set(self.currentTextBox.tracking)
+        self.w.customPages.text.lineHeight.set(self.currentTextBox.lineHeight)
+        self.w.customPages.text.segmentedButton.set(self.currentTextBox.type == "Text")
             
     def exportPDFCallback(self, sender):
         path = putFile("pdf")
@@ -654,11 +684,11 @@ class Interface:
         db.saveImage(outputPath)
 
     def newPage(self):
-        size = (int(self.w.page.pageWidth.get()), int(self.w.page.pageHeight.get()))
-        _columns = int(self.w.page.columsSlider.get())
-        _lines = int(self.w.page.linesSlider.get())
-        _margin = self.w.page.marginSlider.get()
-        nscolor = self.w.page.backgrounColorWell.get()
+        size = (int(self.w.customPages.page.pageWidth.get()), int(self.w.customPages.page.pageHeight.get()))
+        _columns = int(self.w.customPages.page.columsSlider.get())
+        _lines = int(self.w.customPages.page.linesSlider.get())
+        _margin = self.w.customPages.page.marginSlider.get()
+        nscolor = self.w.customPages.page.backgrounColorWell.get()
         _color = (
             nscolor.redComponent(),
             nscolor.greenComponent(),
@@ -672,8 +702,8 @@ class Interface:
             margin = _margin,
             backgroundColor = _color
             )
-        index = len(self.w.pagesList.get())-1
-        self.w.pagesList.setSelection([index])
+        index = len(self.w.customPages.pagesList.get())-1
+        self.w.customPages.pagesList.setSelection([index])
         self.setCurrentPage(index)
 
     def setCurrentPage(self, index):
@@ -713,7 +743,7 @@ class Interface:
         self.refresh()  
             
     def refresh(self):
-        self.w.pagesList.set(self.pdf.pages)
+        self.w.customPages.pagesList.set(self.pdf.pages)
         self.draw([self.currentPage])
 
     def ufoAxisListEditCallback(self, sender):
@@ -726,17 +756,17 @@ class Interface:
         self.draw([self.currentPage])        
 
     def segmentedButtonCallback(self, sender):
-        self.w.text.ufo.show(not sender.get())
-        self.w.text.fontManager.show(sender.get())
-        boxIndex = self.w.page.textBoxList.getSelection()[0]
+        self.w.customPages.text.ufo.show(not sender.get())
+        self.w.customPages.text.fontManager.show(sender.get())
+        boxIndex = self.w.customPages.page.textBoxList.getSelection()[0]
         boxType = sender.get()
         self.currentPage.setBoxType(boxIndex,boxType)
-        self.currentTextBox = self.currentPage.textBoxes[self.w.page.textBoxList.getSelection()[0]]
+        self.currentTextBox = self.currentPage.textBoxes[self.w.customPages.page.textBoxList.getSelection()[0]]
         self.draw([self.currentPage])
 
     def draw(self, pages: list, export = False):
         if not pages: return
-        tbs = self.w.page.textBoxList.getSelection()
+        tbs = self.w.customPages.page.textBoxList.getSelection()
         db.newDrawing()
         for page in pages:
             if page is None: continue
@@ -789,7 +819,7 @@ class Interface:
                 db.restore()
                 
         pdfData = db.pdfImage()
-        self.w.canvas.setPDFDocument(pdfData)
+        self.w.customPages.canvas.setPDFDocument(pdfData)
 
 
 from mojo.events                import addObserver, removeObserver
@@ -845,12 +875,12 @@ class HanDesignFrame(DesignFrame):
 
 class NewPDF:
 
-    def __init__(self, RCJKI, controller):
+    def __init__(self, RCJKI, controller, text):
         self.RCJKI = RCJKI
         self.controller = controller
         self.designFrame = HanDesignFrame()
         self.designFrameViewer = DesignFrameDrawer(self)
-        text = "的一了是不我这在人有他来个道你大到就上着们那也说么下出地然中看时要没天过可自子能还之以去好后为都会心得里对身手起小想只而和头她无力面己如什现多样已知些声经前神笑事开点方眼发所但气法意情生两家间将很真话成让老被动当用于见回又军把此才几正战明却龙从十三长女光再向实最行高本打风进定魔给问色国同走其种年口边毫疖尽虱周卡卷觉慕冒散黎北睾丝善妻荣雷七万丈丌与丐丑专且世丘业东严丫丰串丸丹主丽乃久义乌乍乎乐乔乘九乡予争亏互五亟亦产今介令佥兆免兔兜公兰共关兴具典兼内册农凡凹击刃办午半卑南叉及叟史吏唐商啬囊坐垂堇壬夜太夫央失夷夹奂奥孑存少尹尺局展屯川州巨巫差巳平并廿弗弟弱必戋户放斥曲曳更曾未末术朱束柬死母氐民永求爰犀狂率王甚甫甬由甲电畏百直禹羌羲聿肃臧臾良带襄西詹象贝质酋重釜错韦饭马齐齿匆乙入次凶句区外原处尢尸山巛工巾干幺广建异武弓修斗曰欠歹毛氏水火爪爿片牙牛瓜瓦甘田疋痛皿矛立米缶耒耳肉臣臼舟虎虫衣言谷豆貌赤辰酉金隶隹非革骨鬲鹿黑鼎鼠龠"
+        # text = "的一了是不我这在人有他来个道你大到就上着们那也说么下出地然中看时要没天过可自子能还之以去好后为都会心得里对身手起小想只而和头她无力面己如什现多样已知些声经前神笑事开点方眼发所但气法意情生两家间将很真话成让老被动当用于见回又军把此才几正战明却龙从十三长女光再向实最行高本打风进定魔给问色国同走其种年口边毫疖尽虱周卡卷觉慕冒散黎北睾丝善妻荣雷七万丈丌与丐丑专且世丘业东严丫丰串丸丹主丽乃久义乌乍乎乐乔乘九乡予争亏互五亟亦产今介令佥兆免兔兜公兰共关兴具典兼内册农凡凹击刃办午半卑南叉及叟史吏唐商啬囊坐垂堇壬夜太夫央失夷夹奂奥孑存少尹尺局展屯川州巨巫差巳平并廿弗弟弱必戋户放斥曲曳更曾未末术朱束柬死母氐民永求爰犀狂率王甚甫甬由甲电畏百直禹羌羲聿肃臧臾良带襄西詹象贝质酋重釜错韦饭马齐齿匆乙入次凶句区外原处尢尸山巛工巾干幺广建异武弓修斗曰欠歹毛氏水火爪爿片牙牛瓜瓦甘田疋痛皿矛立米缶耒耳肉臣臼舟虎虫衣言谷豆貌赤辰酉金隶隹非革骨鬲鹿黑鼎鼠龠"
         self.pages = [ ["uni%s"%hex(ord(x))[2:].upper() for x in text[i:i+20]] for i in range(0, len(text), 20) ]
         # self.pages = [["uni%s"%hex(ord(c))[2:].upper() for c in text]]
         self.draw()
@@ -928,7 +958,7 @@ class NewPDF:
 
         pdfData = db.pdfImage()
         now = datetime.datetime.now()
-        name = "%s%s%s_%s-%s"%(now.year, now.month, now.day, self.RCJKI.gitUserName, self.RCJKI.gitPassword)
+        name = "%s%s%s_%s"%(now.year, now.month, now.day, self.RCJKI.gitUserName)
         outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", '%s.pdf'%name)
         # outputPath = "/Users/gaetanbaehr/Desktop/feedbackGS414.pdf"
         db.saveImage(outputPath)
