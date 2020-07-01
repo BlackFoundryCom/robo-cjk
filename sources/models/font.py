@@ -306,9 +306,9 @@ class Font():
         #         self._RFont.newLayer(layerName)
         #         self.insertGlyph(glyph, xml, layerName)
 
-        print("----")
-        print(name, BGlyph.layers)
-        print("----")
+        # print("----")
+        # print(name, BGlyph.layers)
+        # print("----")
         for layer in BGlyph.layers:
             layerName = layer.layername
             if name in self.characterGlyphSet:
@@ -599,7 +599,7 @@ class Font():
         else:
             self._RFont.newGlyph(glyphName)
             glyphType = glyphsTypes.bfs(glyphType)
-            print('glyphType', glyphType)
+            # print('glyphType', glyphType)
             BF_rcjk2mysql.new_item_to_mysql(self.bf_log, item_type = glyphType, bfont = self._BFont, new_name = glyphName, my_sql = self.mysql)
             self.getmySQLGlyph(glyphName)
             self.saveGlyph(self[glyphName])
@@ -691,13 +691,13 @@ class Font():
             bglyph = self._BFont.get_dcomponent(name)
         elif glyphtype == "aelements":
             bglyph = self._BFont.get_aelement(name)
-            print(bglyph)
+            # print(bglyph)
 
-        print(self._RFont.layers)
+        # print(self._RFont.layers)
         for layer in self._RFont.layers:
             if layer.name == "foreground": continue
             f = self._RFont.getLayer(layer.name)
-            print(name, layer.name, f.keys())
+            # print(name, layer.name, f.keys())
             if not set([name])-set(f.keys()):
                 variations = glyph._glyphVariations
                 # layername2Axes = {v:k for k, v in axes2layername.items()}
@@ -711,15 +711,15 @@ class Font():
 
                 if blayerGlyph:
                     
-                    print("************")
-                    print("************")
-                    print(layerxml)
-                    print("************")
-                    print(blayerGlyph.xml)
-                    print("************")
-                    print("************")
+                    # print("************")
+                    # print("************")
+                    # print(layerxml)
+                    # print("************")
+                    # print(blayerGlyph.xml)
+                    # print("************")
+                    # print("************")
                     blayerGlyph.set_xml(layerxml)
-                    print("bflyaer_change", blayerGlyph._changed)
+                    # print("bflyaer_change", blayerGlyph._changed)
                 else:
                     axisname = ""
                     for k, v in variations.items():
@@ -731,9 +731,9 @@ class Font():
                             break
                     if not axisname: continue
 
-                    print(")))))))))))")
-                    print(bglyph, axisname, layer.name, )
-                    print(")))))))))))")
+                    # print(")))))))))))")
+                    # print(bglyph, axisname, layer.name, )
+                    # print(")))))))))))")
 
                     l = bfs.BfLayer(
                         bglyph, 
@@ -745,18 +745,18 @@ class Font():
 
         bglyph.rename(name)
 
-        print("############")
-        print("############")
-        print(xml)
-        print("############")
-        print(bglyph.xml)
-        print("############")
-        print("############")
-        print("^^^^^^^^")
-        print(bglyph)
-        print(bglyph._changed)
-        print(bglyph._changed_layers)
-        print("^^^^^^^^")
+        # print("############")
+        # print("############")
+        # print(xml)
+        # print("############")
+        # print(bglyph.xml)
+        # print("############")
+        # print("############")
+        # print("^^^^^^^^")
+        # print(bglyph)
+        # print(bglyph._changed)
+        # print(bglyph._changed_layers)
+        # print("^^^^^^^^")
         bglyph.set_xml(xml)
 
 
@@ -820,16 +820,16 @@ class Font():
                 rglyph = glyph._RGlyph
                 rglyph.lib.update(glyph.lib)
                 xml = rglyph.dumpToGLIF()
-                if name == "DC_65E5_00":
-                    print(xml)
-                    print(rglyph.lib['robocjk.deepComponents'])
+                # if name == "DC_65E5_00":
+                #     print(xml)
+                #     print(rglyph.lib['robocjk.deepComponents'])
 
-                print("----BEFORE-----")
-                print(self._BFont.get_dcomponent(name).xml)
+                # print("----BEFORE-----")
+                # print(self._BFont.get_dcomponent(name).xml)
 
                 self._BFont.get_dcomponent(name).set_xml(xml)
-                print("----AFTER-----")
-                print(self._BFont.get_dcomponent(name).xml)
+                # print("----AFTER-----")
+                # print(self._BFont.get_dcomponent(name).xml)
 
             # for name in self.characterGlyphSet:
             #     glyph = self[name]
@@ -840,9 +840,9 @@ class Font():
             #     self._BFont.get_cglyph(name).set_xml(xml)
 
             BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
-            print('-----')
-            print(self._BFont.get_dcomponent(name)._changed)
-            print('-----')
+            # print('-----')
+            # print(self._BFont.get_dcomponent(name)._changed)
+            # print('-----')
 
     def _hanziExportUFO(self):
         return
@@ -869,7 +869,7 @@ class Font():
         if not self.mysql:
             if not self.locker.userHasLock(self[oldName]): return False
             self.save()
-            print(oldName,newName)
+            # print(oldName,newName)
             f = self._RFont.getLayer('foreground')
             if newName in f.keys(): return False
             self[oldName].name = newName
