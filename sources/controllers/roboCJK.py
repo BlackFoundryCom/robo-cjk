@@ -70,6 +70,7 @@ import copy
 # import mySQLCollabEngine
 
 import BF_engine_mysql as BF_engine_mysql
+import BF_rcjk2mysql
 import BF_init as BF_init
 
 # curpath = os.path.dirname(__file__)
@@ -138,16 +139,21 @@ class RoboCJKController(object):
     def connect2mysql(self):
         bf_log.info("will connect to mysql")
         self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
-        print("33333")
-        print(self.mysql_userName, self.mysql_password)
-        print("33333")
+        # print("33333")
+        # print(self.mysql_userName, self.mysql_password)
+        # print("33333")
         self.mysql.logout(self.mysql_userName, self.mysql_password)
         log = self.mysql.login(self.mysql_userName, self.mysql_password)
-        print("44444")
-        print(log)
-        print("44444")
+        # print("44444")
+        # print(log)
+        # print("44444")
         bf_log.info("did connect to mysql")
         bf_log.info(self.mysql.login(self.mysql_userName, self.mysql_password))
+
+    def loadProject(self, folderpath, fontname):
+        bfont = BF_rcjk2mysql.read_font_from_disk(bf_log, folderpath, fontname)
+        BF_rcjk2mysql.delete_font_from_mysql(bf_log, fontname, self.mysql)
+        BF_rcjk2mysql.insert_newfont_to_mysql(bf_log, bfont, self.mysql)
 
     def getmySQLParams(self):
         pass

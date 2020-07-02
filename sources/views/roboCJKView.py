@@ -44,6 +44,8 @@ from views import textCenter
 
 import os, json, copy
 
+import BF_fontbook_struct as bfs
+import BF_rcjk2mysql
 
 gitCoverage = decorators.gitCoverage
 
@@ -1010,14 +1012,20 @@ class RoboCJKView(BaseWindowController):
                 self.currentFont.save()
 
     def newProjectButtonCallback(self, sender):
-        folder = putFile()
-        if not folder: return
-        askYesNo('Would you like to create a private locker repository?', resultCallback = self.askYesNocallback)
-        path = '{}.rcjk'.format(folder)
-        files.makepath(os.path.join(path, 'folder.proofer'))
-        self.RCJKI.projectRoot = os.path.split(path)[0]
-        self.RCJKI.setGitEngine()
-        self.setrcjkFiles()
+        if not self.RCJKI.currentFont.mysqlFont:
+            folder = putFile()
+            if not folder: return
+            askYesNo('Would you like to create a private locker repository?', resultCallback = self.askYesNocallback)
+            path = '{}.rcjk'.format(folder)
+            files.makepath(os.path.join(path, 'folder.proofer'))
+            self.RCJKI.projectRoot = os.path.split(path)[0]
+            self.RCJKI.setGitEngine()
+            self.setrcjkFiles()
+        else:
+            projectName = AskString('', value = "Untitled", title = "Project Name")
+            bfont = bfs.BfFont(projectName)
+            t = BF_rcjk2mysql.insert_newfont_to_mysql(self.RCJKI.bf_log, bfont, self.RCJKI.mysql)
+            self.setmySQLRCJKFiles()
 
     def askYesNocallback(self, sender):
         self.RCJKI.privateLocker = sender
@@ -1042,6 +1050,7 @@ class RoboCJKView(BaseWindowController):
             rcjkFiles = []
         else:
             rcjkFiles = [x[1] for x in self.RCJKI.mysql.select_fonts()]
+        rcjkFiles.append("-- insert .rcjk project")  
         self.w.rcjkFiles.setItems(rcjkFiles)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
@@ -1094,32 +1103,40 @@ class RoboCJKView(BaseWindowController):
         self.currentrcjkFile = sender.getItem() 
         # if self.currentrcjkFile is None:
         #     self.currentrcjkFile = ""
-        self.RCJKI.dataBase = {}
-        
-        self.RCJKI.currentFont = font.Font()
-        if not self.RCJKI.mysql:
-            fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
-            self.RCJKI.currentFont._init_for_git(fontPath, 
-                self.RCJKI.gitUserName, 
-                self.RCJKI.gitPassword, 
-                self.RCJKI.gitHostLocker, 
-                self.RCJKI.gitHostLockerPassword, 
-                self.RCJKI.privateLocker
-                )
-            if 'database.json' in os.listdir(fontPath):
-                with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
-                    self.RCJKI.dataBase = json.load(file)
+        if self.currentrcjkFile == "-- insert .rcjk project":
+            paths = getFolder()
+            folderpath = paths[0]
+            fontname = os.path.basename(folderpath).split(".rcjk")[0]
+            self.RCJKI.loadProject(folderpath, fontname)
+
+            self.setmySQLRCJKFiles()
         else:
-            self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName)
-            # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
-        
+            self.RCJKI.dataBase = {}
+            
+            self.RCJKI.currentFont = font.Font()
+            if not self.RCJKI.mysql:
+                fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
+                self.RCJKI.currentFont._init_for_git(fontPath, 
+                    self.RCJKI.gitUserName, 
+                    self.RCJKI.gitPassword, 
+                    self.RCJKI.gitHostLocker, 
+                    self.RCJKI.gitHostLockerPassword, 
+                    self.RCJKI.privateLocker
+                    )
+                if 'database.json' in os.listdir(fontPath):
+                    with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
+                        self.RCJKI.dataBase = json.load(file)
+            else:
+                self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName)
+                # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
+            
 
-        self.RCJKI.toggleWindowController()
+            self.RCJKI.toggleWindowController()
 
-        self.w.atomicElement.set(self.currentFont.atomicElementSet)
-        self.w.deepComponent.set(self.currentFont.deepComponentSet)
-        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
-        self.w.characterGlyph.set(charSet)
+            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+            self.w.characterGlyph.set(charSet)
 
         # return
 
@@ -1310,16 +1327,17 @@ class RoboCJKView(BaseWindowController):
             return False
         glyphType = self.RCJKI.currentFont[glyphName].type
         GlyphsthatUse = set()
-        if glyphType != 'characterGlyph':
-            for name in glyphset:
-                glyph = self.RCJKI.currentFont[name]
-                if glyphType == 'atomicElement':
-                    d =  glyph._deepComponents
-                elif glyphType == 'deepComponent':
-                    d =  glyph._deepComponents
-                for ae in d:
-                    if ae.name == glyphName:
-                        GlyphsthatUse.add(name)
+        if not self.RCJKI.currentFont.mysqlFont:
+            if glyphType != 'characterGlyph':
+                for name in glyphset:
+                    glyph = self.RCJKI.currentFont[name]
+                    if glyphType == 'atomicElement':
+                        d =  glyph._deepComponents
+                    elif glyphType == 'deepComponent':
+                        d =  glyph._deepComponents
+                    for ae in d:
+                        if ae.name == glyphName:
+                            GlyphsthatUse.add(name)
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
             answer = AskYesNoCancel(

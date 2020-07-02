@@ -119,6 +119,12 @@ class Font():
         self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
         # print(self._BFont.fontlib_data)
 
+    def saveFontlib(self):
+        pass
+
+    def saveDatabase(self):
+        pass
+
     def lockGlyph(self, glyph):
         if not self.mysqlFont:
             # locked, alreadyLocked = self.locker.batchLock([glyph])
@@ -128,34 +134,34 @@ class Font():
             glyphName = glyph.name
             glyphType = self._findGlyphType(glyphName)
             if glyphType == "cglyphs":
-                print("°°°°°°°°")
-                print(self.mysql.username, self.mysql.username)
-                print("°°°°°°°°")
+                # print("°°°°°°°°")
+                # print(self.mysql.username, self.mysql.username)
+                # print("°°°°°°°°")
                 lock = self.mysql.lock_cglyph(self.fontName, glyphName)
-                print(">>>>>>")
-                print("lock ->", lock)
-                print("Who locked ->", self.mysql.who_locked_cglyph(self.fontName, glyphName))
-                print(">>>>>>")
+                # print(">>>>>>")
+                # print("lock ->", lock)
+                # print("Who locked ->", self.mysql.who_locked_cglyph(self.fontName, glyphName))
+                # print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             elif glyphType == "dcomponents":
-                print("°°°°°°°°")
-                print(self.mysql.username, self.mysql.username)
-                print("°°°°°°°°")
+                # print("°°°°°°°°")
+                # print(self.mysql.username, self.mysql.username)
+                # print("°°°°°°°°")
                 lock = self.mysql.lock_dcomponent(self.fontName, glyphName)
-                print(">>>>>>")
-                print("lock ->", lock)
-                print("Who locked ->", self.mysql.who_locked_dcomponent(self.fontName, glyphName))
-                print(">>>>>>")
+                # print(">>>>>>")
+                # print("lock ->", lock)
+                # print("Who locked ->", self.mysql.who_locked_dcomponent(self.fontName, glyphName))
+                # print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             elif glyphType == "aelements":
-                print("°°°°°°°°")
-                print(self.mysql.username, self.mysql.username)
-                print("°°°°°°°°")
+                # print("°°°°°°°°")
+                # print(self.mysql.username, self.mysql.username)
+                # print("°°°°°°°°")
                 lock = self.mysql.lock_aelement(self.fontName, glyphName)
-                print(">>>>>>")
-                print("lock ->", lock)
-                print("Who locked ->", self.mysql.who_locked_aelement(self.fontName, glyphName))                
-                print(">>>>>>")
+                # print(">>>>>>")
+                # print("lock ->", lock)
+                # print("Who locked ->", self.mysql.who_locked_aelement(self.fontName, glyphName))                
+                # print(">>>>>>")
                 return lock in [self.mysqlUserName, None], None
             
 
@@ -178,6 +184,7 @@ class Font():
         else:
             for glyph in glyphs:
                 self.lockGlyph(glyph)
+            return True
 
     def batchUnlockGlyphs(self, glyphs:list = []):
         if not self.mysqlFont:
@@ -185,6 +192,7 @@ class Font():
         else:
             for glyph in glyphs:
                 self.unlockGlyph(glyph)
+            return True
 
     def glyphLockedBy(self, glyph):
         if not self.mysqlFont:
@@ -546,6 +554,9 @@ class Font():
 
     def insertGlyph(self, glyph, string, layerName):  
         if glyph is None: return
+        # print("ptpptp")
+        # print(string)
+        # print("ptpptp")
         glyph.setParent(self)
         pen = glyph.naked().getPointPen()
         readGlyphFromString(string, glyph.naked(), pen)
@@ -602,35 +613,64 @@ class Font():
 
     @gitCoverage(msg = 'duplicate Glyph')
     def duplicateGlyph(self, glyphName:str, newGlyphName:str):
-        glyphType = self[glyphName].type
+        if not self.mysqlFont:
+            glyphType = self[glyphName].type
 
-        filename = files.userNameToFileName(glyphName)
-        newFileName = files.userNameToFileName(newGlyphName)
+            filename = files.userNameToFileName(glyphName)
+            newFileName = files.userNameToFileName(newGlyphName)
 
-        glyphPath = os.path.join(self.fontPath, glyphType, "%s.glif"%filename)
-        newGlyphPath = os.path.join(self.fontPath, glyphType, "%s.glif"%newFileName)
+            glyphPath = os.path.join(self.fontPath, glyphType, "%s.glif"%filename)
+            newGlyphPath = os.path.join(self.fontPath, glyphType, "%s.glif"%newFileName)
 
-        if glyphType == "deepComponent":
-            new_glyph = deepComponent.DeepComponent(newGlyphName)
-        elif glyphType == "atomicElement":
-            new_glyph = atomicElement.AtomicElement(newGlyphName)
-        elif glyphType == "characterGlyph":
-            new_glyph = characterGlyph.CharacterGlyph(newGlyphName)
+            if glyphType == "deepComponent":
+                new_glyph = deepComponent.DeepComponent(newGlyphName)
+            elif glyphType == "atomicElement":
+                new_glyph = atomicElement.AtomicElement(newGlyphName)
+            elif glyphType == "characterGlyph":
+                new_glyph = characterGlyph.CharacterGlyph(newGlyphName)
 
-        self.duplicateGLIF(glyphName, glyphPath, newGlyphName, newGlyphPath)
-        self.addGlyph(new_glyph, newFileName, "foreground")
+            self.duplicateGLIF(glyphName, glyphPath, newGlyphName, newGlyphPath)
+            self.addGlyph(new_glyph, newFileName, "foreground")
 
-        for _, layers, _ in os.walk(os.path.join(self.fontPath, glyphType)):
-            for layer in layers:
-                layerDirectory = os.path.join(self.fontPath, glyphType, layer)
-                if "%s.glif"%filename in os.listdir(layerDirectory) and "%s.glif"%newFileName not in os.listdir(layerDirectory):
-                    layerGlyphPath = os.path.join(layerDirectory, "%s.glif"%filename)
-                    newLayerGlyphPath = os.path.join(layerDirectory, "%s.glif"%newFileName)
+            for _, layers, _ in os.walk(os.path.join(self.fontPath, glyphType)):
+                for layer in layers:
+                    layerDirectory = os.path.join(self.fontPath, glyphType, layer)
+                    if "%s.glif"%filename in os.listdir(layerDirectory) and "%s.glif"%newFileName not in os.listdir(layerDirectory):
+                        layerGlyphPath = os.path.join(layerDirectory, "%s.glif"%filename)
+                        newLayerGlyphPath = os.path.join(layerDirectory, "%s.glif"%newFileName)
 
-                    self.duplicateGLIF(glyphName, layerGlyphPath, newGlyphName, newLayerGlyphPath)
-                    self.addGlyph(new_glyph, newFileName, layer)
+                        self.duplicateGLIF(glyphName, layerGlyphPath, newGlyphName, newLayerGlyphPath)
+                        self.addGlyph(new_glyph, newFileName, layer)
 
-        self.getGlyph(self[newGlyphName])
+            self.getGlyph(self[newGlyphName])
+        else:
+            # self._RFont.newGlyph(newGlyphName)
+            # self._RFont[newGlyphName] = self._RFont[glyphName].copy()
+
+            # layers = self._RFont.layers
+            # for layer in layers:
+            #     l = self._RFont.getLayer(layer.name)
+            #     if layer.name == "foreground": continue
+            #     if glyphName in l.keys():
+            #         l.newGlyph(newGlyphName)
+            #         l[newGlyphName] = l[glyphName].copy()
+
+            glyphType = self._findGlyphType(glyphName)
+            if glyphType == "cglyphs":
+                bfitem = self._BFont.get_cglyph(glyphName)
+            elif glyphType == "dcomponents":
+                bfitem = self._BFont.get_dcomponent(glyphName)
+            elif glyphType == "aelements":
+                bfitem = self._BFont.get_aelement(glyphName)
+
+            t = BF_rcjk2mysql.duplicate_item_to_mysql(self.bf_log, bfitem, newGlyphName, self.mysql)
+            # print("------")
+            # print(t)
+            # print("------")
+            
+            self.getmySQLGlyph(newGlyphName)
+            # self.saveGlyph(self[newGlyphName])
+            # print("titititiititit")
 
     @gitCoverage(msg = 'remove Glyph')
     def removeGlyph(self, glyphName:str): 

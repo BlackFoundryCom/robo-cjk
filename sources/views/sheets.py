@@ -797,6 +797,7 @@ class LockController:
         self.currentGlyphName = None
         # self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
         self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.currentUserLockedGlyphs()]
+        self.lockedList = []
         self.w.unlock.lockedGlyphsList = List(
             (10, 30, 150, -40),
             self.lockedList,
@@ -838,7 +839,8 @@ class LockController:
     def segmentedButtonCallback(self, sender):
         for i, group in enumerate(self.locksGroup):
             group.show(i == sender.get())
-        self.resetList()
+        if sender.get():
+            self.resetList()
 
     def lockedGlyphsListSelectionCallback(self, sender):
         sel = sender.getSelection()
