@@ -128,6 +128,9 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         if not g.width:
             g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
     else:
+        print("°°°°°°°°°")
+        print(locked)
+        print("°°°°°°°°°")
         if not locked: return
     try:
         CurrentGlyphWindow().close()
@@ -415,8 +418,18 @@ class ComponentWindow():
                 print('this glyph has no Unicode')
                 return
         char = chr(self.RCJKI.currentGlyph.unicode)
-        if char in self.RCJKI.dataBase:
-            self.w.componentList.set(self.RCJKI.dataBase[char])
+        if not self.RCJKI.currentFont.mysqlFont:
+            
+            if char in self.RCJKI.dataBase:
+                self.w.componentList.set(self.RCJKI.dataBase[char])
+        else:
+            # d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
+            d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, "53E3")
+            print(d)
+            if d is None:
+                d = []
+            # print( )
+            self.w.componentList.set(d)
         self.w.char.set(char)
 
     def editButtonCallback(self, sender):
@@ -1025,6 +1038,9 @@ class RoboCJKView(BaseWindowController):
             projectName = AskString('', value = "Untitled", title = "Project Name")
             bfont = bfs.BfFont(projectName)
             t = BF_rcjk2mysql.insert_newfont_to_mysql(self.RCJKI.bf_log, bfont, self.RCJKI.mysql)
+            print("-----")
+            print(t)
+            print("-----")
             self.setmySQLRCJKFiles()
 
     def askYesNocallback(self, sender):
@@ -1127,6 +1143,7 @@ class RoboCJKView(BaseWindowController):
                     with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
                         self.RCJKI.dataBase = json.load(file)
             else:
+                self.RCJKI.dataBase = True
                 self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName)
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
             

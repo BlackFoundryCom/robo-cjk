@@ -142,7 +142,8 @@ class Font():
                 # print("lock ->", lock)
                 # print("Who locked ->", self.mysql.who_locked_cglyph(self.fontName, glyphName))
                 # print(">>>>>>")
-                return lock in [self.mysqlUserName, None], None
+                # print(lock, self.mysqlUserName)
+                return lock in [self.mysqlUserName], None
             elif glyphType == "dcomponents":
                 # print("°°°°°°°°")
                 # print(self.mysql.username, self.mysql.username)
@@ -152,7 +153,8 @@ class Font():
                 # print("lock ->", lock)
                 # print("Who locked ->", self.mysql.who_locked_dcomponent(self.fontName, glyphName))
                 # print(">>>>>>")
-                return lock in [self.mysqlUserName, None], None
+                # print(lock, self.mysqlUserName)
+                return lock in [self.mysqlUserName], None
             elif glyphType == "aelements":
                 # print("°°°°°°°°")
                 # print(self.mysql.username, self.mysql.username)
@@ -162,7 +164,8 @@ class Font():
                 # print("lock ->", lock)
                 # print("Who locked ->", self.mysql.who_locked_aelement(self.fontName, glyphName))                
                 # print(">>>>>>")
-                return lock in [self.mysqlUserName, None], None
+                # print(lock, self.mysqlUserName)
+                return lock in [self.mysqlUserName], None
             
 
     def unlockGlyph(self, glyph):
