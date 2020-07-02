@@ -203,14 +203,10 @@ class Font():
         if not self.mysqlFont:
             return self.locker.myLockedGlyphs
         else:
-            glyphName = glyph.name
-            glyphType = self._findGlyphType(glyphName)
-            if glyphType == "cglyphs":
-                return self.mysql.select_locked_cglyphs(self.fontName, glyphName)
-            elif glyphType == "dcomponents":
-                return self.mysql.select_locked_dcomponents(self.fontName, glyphName)
-            elif glyphType == "aelements":
-                return self.mysql.select_locked_aelements(self.fontName, glyphName)
+            cglyphs = [x[0] for x in self.mysql.select_locked_cglyphs(self.fontName)]
+            dcomponents = [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName)]
+            aelements = [x[0] for x in self.mysql.select_locked_aelements(self.fontName)]
+            return cglyphs + dcomponents + aelements
 
     def removeLockerFiles(self, glyphsnames:list = []):
         if not self.mysqlFont:
