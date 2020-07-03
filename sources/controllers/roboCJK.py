@@ -36,6 +36,8 @@ CG2DC = chars2deepCompo.Chars2DC
 from utils import files
 # reload(files)
 
+from views import movie
+
 from utils import gitEngine as git
 # reload(git)
 
@@ -83,6 +85,7 @@ from utils import decorators
 # reload(decorators)
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
+
 
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
@@ -139,14 +142,8 @@ class RoboCJKController(object):
     def connect2mysql(self):
         bf_log.info("will connect to mysql")
         self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
-        # print("33333")
-        # print(self.mysql_userName, self.mysql_password)
-        # print("33333")
         self.mysql.logout(self.mysql_userName, self.mysql_password)
-        log = self.mysql.login(self.mysql_userName, self.mysql_password)
-        # print("44444")
-        # print(log)
-        # print("44444")
+        self.mysql.login(self.mysql_userName, self.mysql_password)
         bf_log.info("did connect to mysql")
         bf_log.info(self.mysql.login(self.mysql_userName, self.mysql_password))
 
@@ -190,14 +187,15 @@ class RoboCJKController(object):
     def _launchInterface(self):
         self.roboCJKView = roboCJKView.RoboCJKView(self)
 
+    # def connect2mysql(self):
+    #     self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
+    #     self.mysql.login(self.mysql_userName, self.mysql_password)
+
     def setGitEngine(self):
-        bf_log.info("will set git engine")
         global gitEngine
         gitEngine = git.GitEngine(self.projectRoot)
         self.user = gitEngine.user()
-        bf_log.info(self.user)
         self.gitEngine = gitEngine
-        bf_log.info("did set git engine")
 
     def toggleObservers(self, forceKill=False):
         if self.observers or forceKill:
@@ -261,7 +259,6 @@ class RoboCJKController(object):
         self.roboCJKView.w.characterGlyphPreview.update()
         
         # self.currentFont.locker.unlock(self.currentGlyph)
-        
         if not self.mysql:
             self.currentFont.save()
             if self.currentGlyph is not None:
@@ -291,7 +288,7 @@ class RoboCJKController(object):
                 ]
         else:
             self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
                 ]
         self.currentViewSourceList.set(self.currentGlyph.sourcesList)
         self.currentViewSourceValue.set("")
@@ -472,7 +469,8 @@ class RoboCJKController(object):
         l = []
         if len(self.currentGlyph.selectedElement) == 1:
             for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
-                l.append({'Axis':axisName, 'PreviewValue':value})
+                minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
+                l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
         element.slidersList.set(l)
         self.sliderValue = None
 
@@ -493,16 +491,26 @@ class RoboCJKController(object):
             self.setListWithSelectedElement()
     
     def doUndo(self):
+        def _getKeys(glyph):
+            if glyph.type == "characterGlyph":
+                return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
+            else:
+                return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
+        if self.currentGlyph.type == "characterGlyph":
+            view = self.characterGlyphView
+        else:
+            view = self.deepComponentView
+
         if len(self.currentGlyph.stackUndo_lib) >= 1:
             if self.currentGlyph.indexStackUndo_lib > 0:
                 self.currentGlyph.indexStackUndo_lib -= 1
 
                 if self.currentGlyph.indexStackUndo_lib == len(self.currentGlyph.stackUndo_lib)-1:    
-                    deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
-                    glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+                    deepComponentsKey, glyphVariationsKey = _getKeys(self.currentGlyph)
+                    # glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
                     lib = RLib()
-                    lib[deepComponentsKey] = copy.deepcopy(self.currentGlyph._deepComponents)
-                    lib[glyphVariationsKey] = copy.deepcopy(self.currentGlyph._glyphVariations)
+                    lib[deepComponentsKey] = copy.deepcopy(self.currentGlyph._deepComponents.getList())
+                    lib[glyphVariationsKey] = copy.deepcopy(self.currentGlyph._glyphVariations.getDict())
                     self.currentGlyph.stackUndo_lib.append(lib)
             else:
                 self.currentGlyph.indexStackUndo_lib = 0
@@ -511,9 +519,13 @@ class RoboCJKController(object):
             self.currentGlyph._initWithLib(lib)
 
             self.updateDeepComponent()
-            self.characterGlyphView.sourcesList.set(self.currentGlyph.sourcesList)
+            view.sourcesList.set(self.currentGlyph.sourcesList)
 
     def doRedo(self):
+        if self.currentGlyph.type == "characterGlyph":
+            view = self.characterGlyphView
+        else:
+            view = self.deepComponentView
         if self.currentGlyph.stackUndo_lib:
 
             if self.currentGlyph.indexStackUndo_lib < len(self.currentGlyph.stackUndo_lib)-1:
@@ -524,10 +536,8 @@ class RoboCJKController(object):
             lib = copy.deepcopy(self.currentGlyph.stackUndo_lib[self.currentGlyph.indexStackUndo_lib])
             self.currentGlyph._initWithLib(lib)
 
-            
-
             self.updateDeepComponent()
-            self.characterGlyphView.sourcesList.set(self.currentGlyph.sourcesList)
+            view.sourcesList.set(self.currentGlyph.sourcesList)
 
     @refresh
     def keyDown(self, info):
@@ -598,6 +608,8 @@ class RoboCJKController(object):
         if self.isDeepComponent:
             item = ('Add Atomic Element', self.addAtomicElement)
             menuItems.append(item)
+            item = ('Animate this variable glyph', self.animateThisVariableGlyph)
+            menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Atomic Element', self.removeAtomicElement)
                 menuItems.append(item)
@@ -606,16 +618,28 @@ class RoboCJKController(object):
             menuItems.append(item)
             item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
             menuItems.append(item)
+            # item = ('Animate this variable glyph', self.animateThisVariableGlyph)
+            # menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
+            variationsAxes = self.currentGlyph.glyphVariations.axes
+            if all([len(self.currentGlyph), *(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
+                item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
+                menuItems.append(item)
         notification["additionContextualMenuItems"].extend(menuItems)
+
+    def animateThisVariableGlyph(self, sender):
+        movie.Movie(self)
 
     def addAtomicElement(self, sender):
         sheets.SelectAtomicElementSheet(self, self.currentFont.atomicElementSet)
 
     def addDeepComponent(self, sender):
         sheets.SelectDeepComponentSheet(self, self.currentFont.deepComponentSet)
+
+    def fixGlyphCompatibility(self, sender):
+        sheets.FixGlyphCompatibility(self, self.currentGlyph)        
 
     def removeAtomicElement(self, sender):
         self.currentGlyph.removeAtomicElementAtIndex()
@@ -645,11 +669,11 @@ class RoboCJKController(object):
             
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axis, 'PreviewValue':0} for axis in self.currentGlyph._glyphVariations.axes]
+                l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
 
         self.currentViewSourceList.set(l)
         self.currentGlyph.sourcesList = l

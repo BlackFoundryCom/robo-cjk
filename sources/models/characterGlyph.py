@@ -57,11 +57,12 @@ class CharacterGlyph(Glyph):
         self.outlinesPreview = None
         self.preview = glyphPreview.CharacterGlyphPreview(self)
 
-        lib = RLib()
-        lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
-        lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
-        self.stackUndo_lib = [lib]
-        self.indexStackUndo_lib = 0
+        # lib = RLib()
+        # lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
+        # lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
+        # self.stackUndo_lib = [lib]
+        # self.indexStackUndo_lib = 0
+        self._setStackUndo()
         self.save()
 
     @property
@@ -81,20 +82,20 @@ class CharacterGlyph(Glyph):
             if lib:
                 if variationGlyphsKey not in lib.keys():
                     deepComponents = lib[deepComponentsKeyOld]
-                    glyphVariations = lib[glyphVariationsKey]
+                    variationGlyphs = lib[glyphVariationsKey]
                 else:
                     deepComponents = lib[deepComponentsKey]
-                    glyphVariations = lib[variationGlyphsKey]
+                    variationGlyphs = lib[variationGlyphsKey]
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
                     deepComponents = self._RGlyph.lib[deepComponentsKeyOld]
-                    glyphVariations = self._RGlyph.lib[glyphVariationsKey]
+                    variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
-                    glyphVariations = self._RGlyph.lib[variationGlyphsKey]
+                    variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
 
             self._deepComponents = DeepComponents(deepComponents)      
-            self._glyphVariations = VariationGlyphs(glyphVariations)
+            self._glyphVariations = VariationGlyphs(variationGlyphs)
         except:
             self._deepComponents = DeepComponents()
             self._glyphVariations = VariationGlyphs()

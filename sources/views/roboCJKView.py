@@ -18,6 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
 from vanilla.dialogs import getFolder, putFile, askYesNo
+from mojo.canvas import Canvas
 from fontParts.ui import AskYesNoCancel, AskString
 from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView, PostBannerNotification
 from defconAppKit.windows.baseWindow import BaseWindowController
@@ -128,9 +129,6 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         if not g.width:
             g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
     else:
-        print("°°°°°°°°°")
-        print(locked)
-        print("°°°°°°°°°")
         if not locked: return
     try:
         CurrentGlyphWindow().close()
@@ -214,7 +212,23 @@ class CharacterWindow:
             formatter = NumberFormatter(),
             sizeStyle = "small",
             callback = self.scaleCallback)
+        self.w.sliders.canvas = Canvas((0, 65, -0, -0), delegate = self)
         self.char = ""
+
+    def draw(self):
+        pass
+
+    def mouseDragged(self, point):
+        x, y = self.RCJKI.drawer.refGlyphPos
+        dx = point.deltaX()
+        dy = point.deltaY()
+        x += dx
+        y -= dy
+        sensibility = 1
+        self.RCJKI.drawer.refGlyphPos = [x*sensibility, y*sensibility]  
+        self.w.sliders.x.set(x)
+        self.w.sliders.y.set(y)
+        UpdateCurrentGlyphView()
 
     def sliderCallback(self, sender):
         self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
@@ -1013,6 +1027,11 @@ class RoboCJKView(BaseWindowController):
 
         f.save(os.path.join(self.RCJKI.currentFont.fontPath, "teeest.ufo"))
         
+    # def loadProjectButtonCallback(self, sender):
+    #     folder = getFolder()
+    #     if not folder: return
+    #     self.RCJKI.projectRoot = folder[0]
+    #     sheets.UsersInfos(self.RCJKI, self.w)
     def loadProjectButtonCallback(self, sender):
         # folder = getFolder()
         # if not folder: return
@@ -1038,9 +1057,6 @@ class RoboCJKView(BaseWindowController):
             projectName = AskString('', value = "Untitled", title = "Project Name")
             bfont = bfs.BfFont(projectName)
             t = BF_rcjk2mysql.insert_newfont_to_mysql(self.RCJKI.bf_log, bfont, self.RCJKI.mysql)
-            print("-----")
-            print(t)
-            print("-----")
             self.setmySQLRCJKFiles()
 
     def askYesNocallback(self, sender):
@@ -1049,7 +1065,7 @@ class RoboCJKView(BaseWindowController):
     @property
     def mysql(self):
         return self.RCJKI.mysql
-    
+
     @gitCoverage()
     def setrcjkFiles(self):
         rcjkFiles = list(filter(lambda x: x.endswith(".rcjk"), 
@@ -1057,17 +1073,18 @@ class RoboCJKView(BaseWindowController):
         self.w.rcjkFiles.setItems(rcjkFiles)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
-    @gitCoverage()
-    def reloadProjectCallback(self, sender):
-        self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
-
     def setmySQLRCJKFiles(self):
+        # if self.RCJKI.mysql is None:
         if not self.RCJKI.mysql:
             rcjkFiles = []
         else:
             rcjkFiles = [x[1] for x in self.RCJKI.mysql.select_fonts()]
         rcjkFiles.append("-- insert .rcjk project")  
         self.w.rcjkFiles.setItems(rcjkFiles)
+        self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
+
+    @gitCoverage()
+    def reloadProjectCallback(self, sender):
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
     def rcjkFilesSelectionCallback(self, sender):
@@ -1155,17 +1172,6 @@ class RoboCJKView(BaseWindowController):
             charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
             self.w.characterGlyph.set(charSet)
 
-        # return
-
-        
-
-        
-
-        # self.w.atomicElement.set(self.currentFont.atomicElementSet)
-        # self.w.deepComponent.set(self.currentFont.deepComponentSet)
-        # charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
-        # self.w.characterGlyph.set(charSet)
-
     def GlyphsListDoubleClickCallback(self, sender):
         items = sender.get()
         selection = sender.getSelection()
@@ -1216,9 +1222,6 @@ class RoboCJKView(BaseWindowController):
         # else:
         #     user = self.RCJKI.mysql.who_locked_cglyph(self.currentrcjkFile, prevGlyphName)
         user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[self.prevGlyphName])
-        print("-----")
-        print(user)
-        print("-----")
         if user: 
             self.w.lockerInfoTextBox.set('Locked by: ' + user)
         else:

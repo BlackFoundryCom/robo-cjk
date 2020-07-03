@@ -10,24 +10,18 @@ body {
 
 h1 {
 	color: white;
-	font-family: "Grtsk";
-	font-variation-settings: "wght" 1000, "slnt" 0, "wdth" 0;
-	font-size: 28.5vw;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 23.5vw;
 }
 
 a {
 	color: #f6cb34;
 	text-decoration: inherit; 
-	font-variation-settings: "wght" 800, "slnt" -15, "wdth" 300;
 }
 
-a:hover{
-	font-variation-settings: "wght" 800, "slnt" -15, "wdth" 1000;
-}
 
 h2 {
-	font-family: "Grtsk";
-	font-variation-settings: "wght" 600, "slnt" 0, "wdth" 500;
+	font-family: 'IBM Plex Mono', monospace;
 	font-size: 7vw;
 	color: #48799c;	
 	line-height: 6.5vw;
@@ -35,8 +29,7 @@ h2 {
 
 h3{
 	color: white;
-	font-family: "Grtsk";
-	font-variation-settings: "wght" 600, "slnt" 0, "wdth" 300;
+	font-family: 'IBM Plex Mono', monospace;
 	font-size: 16px;
 }
 
@@ -49,7 +42,7 @@ footer{
 }
 
 @font-face {
-    font-family: "Grtsk";
+    font-family: 'IBM Plex Mono', monospace;
     src: url("./fonts/TRY_Grtsk Variable.ttf");
     font-style: normal;
     font-weight: normal;
@@ -65,7 +58,7 @@ footer{
 .title{
 	width: 100%;
 	text-align: left;
-	margin-top: -23vw;
+	margin-top: -20vw;
 	margin-bottom: -15vw;
 }
 
@@ -81,8 +74,7 @@ footer{
 }
 
 .cell{
-	font-family: "Grtsk";
-	font-variation-settings: "wght" 300, "slnt" 0, "wdth" 300;
+	font-family: 'IBM Plex Mono', monospace;
 	font-size: 16px;
 	color: white;
 	text-align: left;
@@ -90,15 +82,13 @@ footer{
 }
 
 .warning{
-	font-family: "Grtsk";
-	font-variation-settings: "wght" 800, "slnt" 15, "wdth" 100;
+	font-family: 'IBM Plex Mono', monospace;
 	color: #E74C3C;		
 	font-size: 20px;
 }
 
 .ready{
-	font-family: "Grtsk";
-	font-variation-settings: "wght" 800, "slnt" 15, "wdth" 100;
+	font-family: 'IBM Plex Mono', monospace;
 	font-size: 20px;
 }
 

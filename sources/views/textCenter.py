@@ -192,8 +192,13 @@ class TextCenter:
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.w = Window((800, 300), "Text Center", minSize = (400, 320))
+        self.w.leftInput = EditText(
+            (0, 0, 60, 20),
+            "",
+            callback = self.inputCallback
+            )
         self.w.input = EditText(
-            (0, 0, -60, 20),
+            (60, 0, -60, 20),
             "",
             callback = self.inputCallback
             )
@@ -296,18 +301,24 @@ class TextCenter:
         self.w.multiLineView.update()
         
     def inputCallback(self, sender):
-        self.input(sender.get())
+        self.input(self.w.leftInput.get(), self.w.input.get())
 
-    def input(self, t):
+    def input(self, l, t):
+        l = l.replace("/", " ")
         t = t.replace("/", " ")
         txt = t.split()
         glyphs = []
         for e in txt:
             try:
+                for c in l:
+                    glyphs.append(self.RCJKI.currentFont[c])    
                 glyphs.append(self.RCJKI.currentFont[e])
             except:
                 for c in e:
-                    try: glyphs.append(self.RCJKI.currentFont[files.unicodeName(c)])
+                    try:
+                        for x in l: 
+                            glyphs.append(self.RCJKI.currentFont[files.unicodeName(x)])
+                        glyphs.append(self.RCJKI.currentFont[files.unicodeName(c)])
                     except: continue
         self.w.multiLineView.set(glyphs)
 

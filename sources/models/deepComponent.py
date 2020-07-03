@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from mojo.roboFont import *
 from imp import reload
 from models import glyph
-# reload(glyph)
+reload(glyph)
 from models import component, glyphPreview
 # reload(component)
 # reload(glyphPreview)
@@ -29,6 +29,7 @@ from utils import interpolation, decorators
 glyphUndo = decorators.glyphUndo
 import copy
 Glyph = glyph.Glyph
+glyphAddRemoveUndo = decorators.glyphAddRemoveUndo
 
 DeepComponentNamed = component.DeepComponentNamed
 DeepComponents = component.DeepComponents
@@ -56,6 +57,7 @@ class DeepComponent(Glyph):
         self.name = name
         self.type = "deepComponent"
         self.preview = glyphPreview.DeepComponentPreview(self)
+        self._setStackUndo()
         self.save()
 
     @property
@@ -66,14 +68,22 @@ class DeepComponent(Glyph):
     def glyphVariations(self):
         return self._glyphVariations
     
-    def _initWithLib(self):
+    def _initWithLib(self, lib=None):
         try:
-            if variationGlyphsKey not in self._RGlyph.lib.keys():
-                deepComponents = self._RGlyph.lib[atomicElementsKey]
-                variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
+            if lib:
+                if variationGlyphsKey not in lib.keys():
+                    deepComponents = lib[atomicElementsKey]
+                    variationGlyphs = lib[glyphVariationsKey]
+                else:
+                    deepComponents = lib[deepComponentsKey]
+                    variationGlyphs = lib[variationGlyphsKey]
             else:
-                deepComponents = self._RGlyph.lib[deepComponentsKey]
-                variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
+                if variationGlyphsKey not in self._RGlyph.lib.keys():
+                    deepComponents = self._RGlyph.lib[atomicElementsKey]
+                    variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
+                else:
+                    deepComponents = self._RGlyph.lib[deepComponentsKey]
+                    variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
             self._deepComponents = DeepComponents(deepComponents)
             self._glyphVariations = VariationGlyphs(variationGlyphs)
         except:
@@ -96,13 +106,8 @@ class DeepComponent(Glyph):
             self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[axisName] = value
         else:
             self._deepComponents[self.selectedElement[0]].coord[axisName] = value
-
-    def getAtomicElementMinMaxValue(self, axisName):
-        if not self.selectedElement: return
-        selectedAtomicElementName = self._deepComponents[self.selectedElement[0]].name
-        atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
-        return atomicElement.minValue, atomicElement.maxValue
-
+    
+    @glyphAddRemoveUndo
     def addAtomicElementNamed(self, atomicElementName, items = False):
         if not items:
             d = DeepComponentNamed(atomicElementName)
@@ -118,6 +123,7 @@ class DeepComponent(Glyph):
         self.preview.computeDeepComponentsPreview(update = False)
         self.preview.computeDeepComponents(update = False)
 
+    @glyphAddRemoveUndo
     def removeAtomicElementAtIndex(self):
         if not self.selectedElement: return
         self.removeDeepComponents(self.selectedElement)
@@ -143,4 +149,5 @@ class DeepComponent(Glyph):
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
+
         self.lib.update(lib)
