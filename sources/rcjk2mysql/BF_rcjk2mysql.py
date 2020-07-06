@@ -25,11 +25,11 @@ import json
 
 import plistlib
 
-from rcjk2mysql import BF_author
-from rcjk2mysql import BF_init
-from rcjk2mysql import BF_engine_mysql
-from rcjk2mysql import BF_fontbook_struct as bfs
-from rcjk2mysql import BF_tools as bft
+import BF_author
+import BF_init
+import BF_engine_mysql
+import BF_fontbook_struct as bfs
+import BF_tools as bft
 
 
 glyphname = '<glyph name="'

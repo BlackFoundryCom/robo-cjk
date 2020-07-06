@@ -27,10 +27,10 @@ from typing import Tuple, List, Dict
 # from CollabEExml import cee_persit_sys
 import pymysql
 
-from rcjk2mysql import BF_author
-from rcjk2mysql import BF_init
+import BF_author
+import BF_init
 
-from rcjk2mysql import BF_topic_msg as bftop 
+import BF_topic_msg as bftop 
 import pymysql
 import pymysql.err
 

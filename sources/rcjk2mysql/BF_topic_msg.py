@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from rcjk2mysql import BF_author
+import BF_author
 
 _COMPAGNY = "B[F]"
 _TSEP = "/"

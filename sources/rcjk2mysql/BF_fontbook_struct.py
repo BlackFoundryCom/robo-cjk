@@ -22,7 +22,7 @@ import copy
 import plistlib
 
 from typing import Dict, Union, List, Any, Optional, Iterable, Set, Tuple, Iterator
-from rcjk2mysql import BF_author
+import BF_author
 
 NONE, CGLYPH, DCOMPONENT, AELEMENT, AELAYER, LAYER, CGLYPH_2_DCOMPONENT, DCOMPONENT_2_AELEMENT = range(8)
 XML_CG_DEFAULT = """<?xml version='1.0' encoding='UTF-8'?>

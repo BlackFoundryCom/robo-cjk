@@ -27,8 +27,8 @@ import paho.mqtt.client as mqtt
 
 from typing import Callable, Tuple, Any, Dict
 
-from rcjk2mysql import BF_author
-from rcjk2mysql import BF_init
+import BF_author
+import BF_init
 
 bf_log = logging.getLogger(__name__)
 

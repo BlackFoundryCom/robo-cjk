@@ -20,11 +20,11 @@ import sys
 import os
 import functools
 
-from rcjk2mysql import BF_author
-from rcjk2mysql import BF_init
-from rcjk2mysql import BF_topic_msg as bftop
-from rcjk2mysql import BF_engine_msg as bmsg
-from rcjk2mysql import BF_engine_mysql as bmysql
+import BF_author
+import BF_init
+import BF_topic_msg as bftop
+import BF_engine_msg as bmsg
+import BF_engine_mysql as bmysql
 
 # import BF_fontbook_struct as bfs
 # import BF_tools as bft

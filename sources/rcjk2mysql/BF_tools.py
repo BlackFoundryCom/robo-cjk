@@ -23,8 +23,9 @@ import shutil
 import json
 import pickle
 import logging
-from rcjk2mysql import BF_author
-from rcjk2mysql import BF_fontbook_struct as bfs
+
+import BF_author
+import BF_fontbook_struct as bfs
 
 logger = logging.getLogger(__name__)
 

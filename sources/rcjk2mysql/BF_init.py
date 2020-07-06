@@ -26,9 +26,7 @@ from typing import Tuple, Dict
 
 import urllib.request
 
-
-
-from rcjk2mysql import BF_007d
+import BF_007d
 
 _LOCAL=".local"
 _REMOTE=".remote"

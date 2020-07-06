@@ -20,7 +20,7 @@ import os
 import sys
 import logging
 
-from rcjk2mysql import BF_fontbook_struct as bfs
+import BF_fontbook_struct as bfs
 
 old_bfs_instances = (bfs.BfFont, bfs.BfCGlyph, bfs.BfDComponent, bfs.BfAElement, bfs.BfLayer)
 new_bfs_instances = (bfs.BfFont, bfs.BfCGlyph, bfs.BfDComponent, bfs.BfAElement, bfs.BfLayer)

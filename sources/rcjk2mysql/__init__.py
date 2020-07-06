@@ -16,21 +16,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-from imp import reload
-from controllers import roboCJK
-# reload(roboCJK)
-
 import sys, os
-# sys.path.append('~/sources/rcjk2mysql')
 sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
-import BF_author
 
+import BF_007d
+import BF_007e
 import BF_author
+import BF_engine_msg
+import BF_engine_mysql
+import BF_factory_rcjk
+import BF_fontbook_struct
 import BF_init
-import BF_engine_mysql as bmy
-import BF_fontbook_struct as bfs
-import BF_tools as bft
-
-RCJKI = roboCJK.RoboCJKController()
-RCJKI._launchInterface()
-
+import BF_mysql2rcjk
+import BF_rcjk2mysql
+import BF_struct2mysql
+import BF_tools
+import BF_topic_msg

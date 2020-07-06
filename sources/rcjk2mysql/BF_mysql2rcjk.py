@@ -19,11 +19,11 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 import sys
 import os
 
-from rcjk2mysql import BF_author
-from rcjk2mysql import BF_init
-from rcjk2mysql import BF_engine_mysql as bmy
-from rcjk2mysql import BF_fontbook_struct as bfs
-from rcjk2mysql import BF_tools as bft
+import BF_author
+import BF_init
+import BF_engine_mysql as bmy
+import BF_fontbook_struct as bfs
+import BF_tools as bft
 
 
 
