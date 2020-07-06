@@ -20,5 +20,5 @@ import os
 
 __author__ = "Yves Duprat <yduprat<at>gmail.com> (c) Black Foundry - Paris"
 __status__ = "Dev"
-__version__ = "2020.4"
-__date__ = "Apr 2020"
+__version__ = "2020.7"
+__date__ = "July 2020"
