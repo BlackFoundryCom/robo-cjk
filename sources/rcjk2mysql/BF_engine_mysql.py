@@ -657,7 +657,8 @@ class Rcjk2MysqlObject(MysqlPersit):
 	def on_transaction(self, name: str="trans1"):
 		try:
 			self.bf_log.info(f"\t\t +++++ START TRANSACTION +++++")
-			self.__execute(f"start transaction")
+			# self.__execute(f"start transaction")
+			self.conn.begin()
 			yield self
 		except:
 			self.invalidate()
@@ -729,7 +730,7 @@ class Rcjk2MysqlObject(MysqlPersit):
 		else:
 			user = "NO LOGIN"
 		msg = f"USER:{user:16s} - IP:{BF_init._MY_IP:15s} - MSG:{req[:MAX_CHARS]}"
-		self.bf_log.info(msg)
+		self.bf_log.debug(msg)
 		try:
 			self.prepare_msg_and_send(req[:MAX_CHARS])
 		except:
@@ -738,7 +739,7 @@ class Rcjk2MysqlObject(MysqlPersit):
 			try:
 				self.curs.execute(req)
 				if req.startswith("call") and self.curs.description:
-					self.bf_log.info(f"columns of call are:{[d[0] for d in self.curs.description]}")
+					self.bf_log.debug(f"columns of call are:{[d[0] for d in self.curs.description]}")
 			except MySqlConnexionBroken as e:
 				self._ping()
 				self.curs.execute(req)
@@ -748,7 +749,7 @@ class Rcjk2MysqlObject(MysqlPersit):
 			finally:				
 				return self.curs.fetchall()
 		else:
-			print(f"Req is '{req}'")
+			self.bf_log.debug(f"Req is '{req}'")
 			return req
 			
 	def __execute_4docs(self, req: str):
