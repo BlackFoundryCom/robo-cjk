@@ -78,7 +78,9 @@ from rcjk2mysql import BF_init as BF_init
 # curpath = os.path.dirname(__file__)
 # print(curpath)
 # curpath = mySQLCollabEngine.__path__._path[0]
-bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
+# bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
+print(os.path.join(os.getcwd(), 'rcjk2mysql'))
+bf_log = BF_init.init_log(os.path.join(os.getcwd(), 'rcjk2mysql'))
 try:
     dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
 except:
