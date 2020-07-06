@@ -23,7 +23,6 @@ import shutil
 import json
 import pickle
 import logging
-
 import BF_author
 import BF_fontbook_struct as bfs
 

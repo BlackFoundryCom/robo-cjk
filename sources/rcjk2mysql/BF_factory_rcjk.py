@@ -19,6 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 import sys
 import os
 import functools
+from typing import Callable, Tuple
 
 import BF_author
 import BF_init
@@ -26,14 +27,50 @@ import BF_topic_msg as bftop
 import BF_engine_msg as bmsg
 import BF_engine_mysql as bmysql
 
-# import BF_fontbook_struct as bfs
-# import BF_tools as bft
+from dataclasses import dataclass
+
+ALL_TOPICS = (bftop.TOPIC_MYSQL_ALL, bftop.TOPIC_APPLICATION_TODO, bftop.TOPIC_APPLICATION_LISTEN)
+TYPE_SENDER, TYPE_RECEIVER, TYPE_BOTH = range(3)
+
+@dataclass
+class ParamMsg:
+    '''Class for keeping track of an item in inventory.'''
+    type_msg: int=TYPE_SENDER
+    config_mymsg: str=BF_init._REMOTE
+
+@dataclass
+class ReceiverParamMsg(ParamMsg):
+    '''Class for keeping track of an item in inventory.'''
+    topics: Tuple[str, ...]
+    callback: Callable[[str, str], None]
+    callback_self: bool=False
+    type_msg: int=TYPE_RECEIVER
+    config_mymsg: str=BF_init._REMOTE
+
+class NewFactoryRCJK:
+    SENDER = None
+    def __init__(self, config_mysql: str, conf_mymsg: ParamMsg):
+        self._curpath = os.path.dirname(__file__)
+        self._bf_log = BF_init.init_log(self._curpath)
+        dict_mysql_params, dict_mymsg_params = BF_init.init_params(self._bf_log, self._curpath, config_mysql, conf_mymsg.config_mymsg) 
+        self._my_sql = bmysql.Rcjk2MysqlObject(dict_mysql_params,self._bf_log)
+        if conf_mymsg.type_msg == TYPE_SENDER:
+            self._my_msg = bmsg.CeeMosquittoSender(dict_mymsg_params, self._bf_log)
+        elif conf_mymsg.type_msg in (TYPE_RECEIVER, TYPE_BOTH):
+            # if callback_self set to True, 
+            # add self as first paramter as with the callback
+            if conf_mymsg.callback_self:
+                conf_mymsg.callback = functools.partial(conf_mymsg.callback, self)
+            self._my_msg = bmsg.CeeMosquittoManager(FactoryRCJK.ALL_TOPICS, dict_mymsg_params, self._bf_log, conf_mymsg.callback or self.on_receive)
+        else:
+            raise ValueError("Bad value to type_msg")    
+        
+        # set a static sender
+        if not FactoryRCJK.SENDER:
+            FactoryRCJK.SENDER = functools.partialmethod(self.my_msg.send_msg)
 
 
 class FactoryRCJK:
-    ALL_TOPICS = (bftop.TOPIC_MYSQL_ALL, bftop.TOPIC_APPLICATION_TODO, bftop.TOPIC_APPLICATION_LISTEN)
-
-    TYPE_SENDER, TYPE_RECEIVER, TYPE_BOTH = range(3)
     SENDER = None
     def __init__(self, config_mysql: str, config_mymsg: str, 
                     type_msg: int=TYPE_SENDER, callback=None, callback_self: bool=None):
@@ -41,14 +78,16 @@ class FactoryRCJK:
         self._bf_log = BF_init.init_log(self._curpath)
         dict_mysql_params, dict_mymsg_params = BF_init.init_params(self._bf_log, self._curpath, config_mysql, config_mymsg) 
         self._my_sql = bmysql.Rcjk2MysqlObject(dict_mysql_params,self._bf_log)
-        if type_msg == FactoryRCJK.TYPE_SENDER:
+        if type_msg == TYPE_SENDER:
             self._my_msg = bmsg.CeeMosquittoSender(dict_mymsg_params, self._bf_log)
-        else:
+        elif type_msg in (TYPE_RECEIVER, TYPE_BOTH):
             # if callback_self set to True, 
             # add self as first paramter as with the callback
             if callback_self:
                 callback = functools.partial(callback, self)
             self._my_msg = bmsg.CeeMosquittoManager(FactoryRCJK.ALL_TOPICS, dict_mymsg_params, self._bf_log, callback or self.on_receive)
+        else:
+            raise ValueError("Bad value to type_msg")    
         
         # set a static sender
         if not FactoryRCJK.SENDER:

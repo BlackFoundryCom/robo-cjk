@@ -44,10 +44,10 @@ XML_DEFAULT = """<?xml version='1.0' encoding='UTF-8'?>
 def name_2_unicode(name: str) -> str:
 	"""
 	"""
-	if "." in name or not name.startswith("uni"):
+	if not name.startswith("uni"):
 		return ""
-	unicode = name[3:]
 	try:
+		unicode = name[3:]
 		int(unicode, 16)
 		return unicode
 	except:
@@ -272,7 +272,14 @@ class BfBaseObj:
 		# 	pass
 		if new_name != self._name:
 			self._name = new_name
+			self.update_xml(new_name)
 			self._changed = True
+
+	def update_xml(self, new_name:str):
+		"""
+		"""
+		self.xml = self.xml.replace(self.name, new_name, 1)
+
 
 	def set_xml(self, xml: str):
 		if xml != self._xml:
@@ -585,14 +592,22 @@ class BfCGlyph(BfItem):
 
 	# Duplicate 
 	# -------------------
+
 	def duplicate(self, new_name: str) -> "BfCGlyph":
 		"""
 		deepcopy of a CG
 		"""
 		new_unicode = name_2_unicode(new_name)
 		new_xml = self.xml.replace(self.name, new_name, 1).replace(self.unicode, new_unicode, 1)
-
+	
 		return BfCGlyph(self.font, new_name, new_unicode, new_xml)._duplicate_sets_from(self)
+
+	def update_xml(self, new_name: str):
+		"""
+		"""
+		super().update_xml(new_name)
+		new_unicode = name_2_unicode(new_name)
+		self.xml = self.xml.replace(self.name, new_name, 1).replace(self.unicode, new_unicode, 1)
 
 	# changed internal data (name, xml or specific)
 	# -------------------------------------------

@@ -433,6 +433,7 @@ def rename_item_to_mysql(bf_log, item: bfs.BfItem, new_name: str,
 	# reset internal changed flag 
 	if ret:
 		item.rename(new_name)
+		item.update_xml(new_name)
 		# item._reset_name()
 		item._reset_changed(False)
 	

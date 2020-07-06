@@ -217,8 +217,7 @@ class Rcjk2MysqlObject(MysqlPersit):
 
 	# ----------------- Database.json  part ---------------
 	def select_dbjson_key(self, fontname:str, unicode:str) -> List[str]:
-
-		dbkey = f"$.\\u{unicode}"
+		dbkey = f"$.{chr(int(unicode,16))}"
 		req = "call rcjk_p_select_font_dbjson_key('{}',{!a},'{}')".format(fontname, dbkey, self.username)
 		self.bf_log.info(f"\t\t-> SELECT DBJJON KEY {fontname} from '{req}'")
 		if not self.dev:
@@ -227,8 +226,8 @@ class Rcjk2MysqlObject(MysqlPersit):
 
 		return 1
 
-	def insert_dbjson_key(self, fontname, unicode:str, dbvalues: List[str]) -> Tuple[int]:
-		dbkey = f"$.\\u{unicode}"
+	def insert_dbjson_key(self, fontname, unicode:str, dbvalues: str) -> Tuple[int]:
+		dbkey = f"$.{chr(int(unicode,16))}"
 		req = "select rcjk_insert_font_dbjson_key('{}',{!a},{!a},'{}')".format(fontname, dbkey, dbvalues, self.username)
 		self.bf_log.info(f"\t\t-> INSERT DBJON KEY '{req}'")
 		if not self.dev:
@@ -237,7 +236,7 @@ class Rcjk2MysqlObject(MysqlPersit):
 
 		return 1
 	def update_dbjson_key(self, fontname, unicode:str, dbvalues: str) -> Tuple[int]:
-		dbkey = f"$.\\u{unicode}"
+		dbkey = f"$.{chr(int(unicode,16))}"
 		req = "select rcjk_update_font_dbjson_key('{}',{!a},{!a},'{}')".format(fontname, dbkey, dbvalues, self.username)
 		self.bf_log.info(f"\t\t-> UPDATE DBJON KEY'{req}'")
 		if not self.dev:
@@ -246,7 +245,8 @@ class Rcjk2MysqlObject(MysqlPersit):
 
 		return 1
 
-	def delete_dbjson_key(self, fontname:str, dbkey:str):
+	def delete_dbjson_key(self, fontname:str, unicode:str):
+		dbkey = f"$.{chr(int(unicode,16))}"
 		req = "call rcjk_p_delete_font_dbjon_key('{}',{!a}','{}')".format(fontname, dbkey, self.username)
 		self.bf_log.info(f"\t\t-> DELETE DBJON KEY '{req}'")
 		if not self.dev:
