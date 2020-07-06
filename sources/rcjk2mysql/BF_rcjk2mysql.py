@@ -237,9 +237,8 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 		except Exception as e:
 			bf_log.error(f"Create a font error -> {type(e)} on {str(e)}")
 			return 
-		else:
-				
-			bf_log.debug(f"Insert font '{bfont.name}' -> '{ret[3::2]}'")
+		else:	
+			bf_log.debug(f"Insert font '{bfont.name}'")
 
 		bf_log.info("--------------------------- AE -----------------------------------")
 		# AELEMENT part 
