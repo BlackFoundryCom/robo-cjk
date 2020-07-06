@@ -84,7 +84,7 @@ class EditingSheet():
             )
         self.w.editField = TextEditor(
             (80, 0, -0, -20),
-            "".join(self.RCJKI.dataBase[self.char])
+            ""
             )
         self.w.closeButton = Button(
             (80, -20, -0, -0),
@@ -92,13 +92,26 @@ class EditingSheet():
             sizeStyle = "small",
             callback = self.closeCallback
             )
+
+        self.setUI()
         self.w.open()
+
+    def setUI(self):
+        if not self.RCJKI.currentFont.mysqlFont:
+            self.w.editField.set("".join(self.RCJKI.dataBase[self.char]))
+        else:
+            self.w.editField.set(self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:])))
 
     def closeCallback(self, sender):
         components = list(self.w.editField.get())
-        self.RCJKI.dataBase[self.char] = components
+        if not self.RCJKI.currentFont.mysqlFont:
+            self.RCJKI.dataBase[self.char] = components
+            self.RCJKI.exportDataBase()
+        else:
+            string = "".join(["\\\\u%s"%hex(ord(x))[2:] for x in components])
+            print(string)
+            self.RCJKI.mysql.update_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), string)
         self.c.w.componentList.set(components)
-        self.RCJKI.exportDataBase()
         self.w.close()
 
 def getRelatedGlyphs(font, glyphName, regenerated = []):

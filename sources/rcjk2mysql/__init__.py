@@ -24,7 +24,7 @@ import BF_007e
 import BF_author
 import BF_engine_msg
 import BF_engine_mysql
-import BF_factory_rcjk
+# import BF_factory_rcjk
 import BF_fontbook_struct
 import BF_init
 import BF_mysql2rcjk
