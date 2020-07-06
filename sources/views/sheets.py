@@ -31,6 +31,13 @@ blackrobocjk_locker = "com.black-foundry.blackrobocjk_locker"
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 
+cwd = os.getcwd()
+connectorPath = os.path.join(cwd, "rcjk2mysql", "Config", "connectors.cfg")
+# head, tail = os.path.split(cwd)
+# print("cwd", cwd)
+# print("head", head)
+# print("tail", tail)
+
 class SelectLayerSheet():
     def __init__(self, RCJKI, availableLayers):
         self.RCJKI = RCJKI
@@ -571,7 +578,7 @@ class NewCharacterGlyph:
                     name = files.unicodeName(c)
                     for dcname in self.addGlyph(name, addRelatedDC):
                         glyphs.append(self.RCJKI.currentFont[dcname])
-        self.lockGlyphs(glyphs)
+        # self.lockGlyphs(glyphs)
         self.window.deepComponent.set(self.RCJKI.currentFont.deepComponentSet)
         charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.RCJKI.currentFont.characterGlyphSet]
         self.window.characterGlyph.set(charSet)
@@ -605,7 +612,7 @@ class NewCharacterGlyph:
             name = files.unicodeName(character)
             for dcname in self.addGlyph(name):
                 glyphs.append(self.RCJKI.currentFont[dcname])
-        self.lockGlyphs(glyphs)
+        # self.lockGlyphs(glyphs)
         print("-----------------")
         print("ADDED CHARACTERS: \n%s"%characters)
         print("-----------------")
@@ -619,7 +626,7 @@ class NewCharacterGlyph:
             name = files.unicodeName(character)
             for dcname in self.addGlyph(name):
                 glyphs.append(self.RCJKI.currentFont[dcname])
-        self.lockGlyphs(glyphs)
+        # self.lockGlyphs(glyphs)
         print("-----------------")
         print("ADDED CHARACTERS: \n%s"%characters)
         print("-----------------")
@@ -718,9 +725,29 @@ class Login:
             (90, 40, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"mysql_password", "")
             )
+        # self.w.mysql.loadConnectorTitle = TextBox(
+        #     (10, 70, 100, 20),
+        #     "Load Connector"
+        #     )
+        self.w.mysql.loadConnector = Button(
+            (90, 70, -10, 20),
+            "Load Connector",
+            callback = self.loadConnectorCallback
+            # getExtensionDefault(blackrobocjk_locker+"mysql_password", "")
+            )
 
         self.w.setDefaultButton(self.w.closeButton)
         self.w.open()
+
+    def loadConnectorCallback(self, sender):
+        paths = getFile()
+        path = paths[0]
+        with open(path, 'r', encoding = 'utf-8') as file:
+            connector = file.read()
+        with open(connectorPath, 'w', encoding = 'utf-8') as file:
+            file.write(connector)
+        # print(connector)
+        # print(self.__file__.__path__)
 
     def cancelCallback(self, sender):
         self.w.close()

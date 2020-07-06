@@ -71,15 +71,18 @@ import copy
 
 # import mySQLCollabEngine
 
-import BF_engine_mysql as BF_engine_mysql
-import BF_rcjk2mysql
-import BF_init as BF_init
+from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
+from rcjk2mysql import BF_rcjk2mysql
+from rcjk2mysql import BF_init as BF_init
 
 # curpath = os.path.dirname(__file__)
 # print(curpath)
 # curpath = mySQLCollabEngine.__path__._path[0]
 bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
-dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
+try:
+    dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
+except:
+    pass
 
 from utils import decorators
 # reload(decorators)
@@ -140,6 +143,7 @@ class RoboCJKController(object):
         self.bf_log = bf_log
 
     def connect2mysql(self):
+        dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
         bf_log.info("will connect to mysql")
         self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
         self.mysql.logout(self.mysql_userName, self.mysql_password)

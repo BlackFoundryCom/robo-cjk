@@ -35,9 +35,9 @@ from models import atomicElement, deepComponent, characterGlyph
 # reload(deepComponent)
 # reload(characterGlyph)
 
-import BF_mysql2rcjk as BF_mysql2rcjk
-import BF_fontbook_struct as bfs
-import BF_rcjk2mysql
+from rcjk2mysql import BF_mysql2rcjk as BF_mysql2rcjk
+from rcjk2mysql import BF_fontbook_struct as bfs
+from rcjk2mysql import BF_rcjk2mysql
 
 class glyphsTypes:
 
@@ -666,7 +666,7 @@ class Font():
         #     bglyph = self._BFont.get_dcomponent(name)
         # elif glyphtype == "aelements":
         #     bglyph = self._BFont.get_aelement(name)
-        bfitem = self._getBFItem(name)
+        bglyph = self._getBFItem(name)
             
         for layer in self._RFont.layers:
             if layer.name == "foreground": continue
