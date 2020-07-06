@@ -239,7 +239,7 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 			return 
 		else:
 				
-			bf_log.info(f"Insert font '{bfont.name}' -> '{ret}'")
+			bf_log.debug(f"Insert font '{bfont.name}' -> '{ret[3::2]}'")
 
 		bf_log.info("--------------------------- AE -----------------------------------")
 		# AELEMENT part 
