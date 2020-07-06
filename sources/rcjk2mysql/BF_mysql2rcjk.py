@@ -116,7 +116,7 @@ def read_font_from_mysql(bf_log, fontname: str, my_sql:bmy.Rcjk2MysqlObject,
 			return None
 
 		my_sql.sdebug = True 
-		bf_log.info(f"SELECT FONTS {res}")
+		bf_log.debug(f"SELECT FONTS {res}")
 
 
 		bf_log.info(f"{' test ':-^40s}")

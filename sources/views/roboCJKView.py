@@ -1069,6 +1069,10 @@ class RoboCJKView(BaseWindowController):
         else:
             projectName = AskString('', value = "Untitled", title = "Project Name")
             bfont = bfs.BfFont(projectName)
+            print("----")
+            print(bfont.database_data, bfont.database_name)
+            print(bfont.fontlib_data, bfont.fontlib_name)
+            print("----")
             t = BF_rcjk2mysql.insert_newfont_to_mysql(self.RCJKI.bf_log, bfont, self.RCJKI.mysql)
             self.setmySQLRCJKFiles()
 
