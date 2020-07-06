@@ -21,15 +21,7 @@ from controllers import roboCJK
 # reload(roboCJK)
 
 import sys, os
-# sys.path.append('~/sources/rcjk2mysql')
 sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
-import BF_author
-
-import BF_author
-import BF_init
-import BF_engine_mysql as bmy
-import BF_fontbook_struct as bfs
-import BF_tools as bft
 
 RCJKI = roboCJK.RoboCJKController()
 RCJKI._launchInterface()

@@ -143,7 +143,7 @@ class Rcjk2MysqlObject(MysqlPersit):
 		self.bf_log.info(f"\t\t-> SELECT FONTS")
 		return self.__execute(req)
 
-	def select_cglyphs(self, fontname: str, with_xml=False) -> List:
+	def select_cglyphs(self, fontname: str, with_xml=True) -> List:
 		req = "call rcjk_p_select_cglyphs('{}',{},'{}')".format(fontname, int(with_xml), self.username)
 		self.bf_log.info(f"\t\t-> SELECT CGs")
 		return self.__execute(req)

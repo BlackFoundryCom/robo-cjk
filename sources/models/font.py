@@ -39,6 +39,9 @@ from rcjk2mysql import BF_mysql2rcjk as BF_mysql2rcjk
 from rcjk2mysql import BF_fontbook_struct as bfs
 from rcjk2mysql import BF_rcjk2mysql
 
+
+from vanilla.dialogs import message
+
 class glyphsTypes:
 
     atomicElement = 'aelements'
@@ -104,6 +107,11 @@ class Font():
     def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName):
         self.mysqlFont = True
         self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
+        print("----")
+        for x in self._BFont.cglyphs:
+            print(x.xml)
+            break
+        # print(self._BFont.cglyphs[0].xml)
         self._RFont = NewFont(
             familyName=fontName, 
             styleName='Regular', 
@@ -226,8 +234,17 @@ class Font():
     def __getitem__(self, name):
         if self.mysqlFont:
             try:
-                return self._glyphs[self._RFont[name]]
+                if not isinstance(name, str):
+                    name = name["name"]
+                # self.getmySQLGlyph(name)
+                if not set([name]) - set(self._RFont.keys()):
+                    return self._glyphs[self._RFont[name]]
+                else:
+                    self.getmySQLGlyph(name)
+                    return self._glyphs[self._RFont[name]]
             except:
+                if isinstance(name, dict):
+                    name = name["name"]
                 self.getmySQLGlyph(name)
                 return self._glyphs[self._RFont[name]]
         return self._glyphs[self._RFont[name]]
@@ -261,29 +278,41 @@ class Font():
             pen = glyph.naked().getPointPen()
             readGlyphFromString(xml, glyph.naked(), pen)
 
-        if name in self.characterGlyphSet:
-            glyph = characterGlyph.CharacterGlyph(name)
-            BGlyph = self._BFont.get_cglyph(name)
-        elif name in self.atomicElementSet:
+        if not isinstance(name, str):
+            name = name["name"]
+        if name in self.atomicElementSet:
             glyph = atomicElement.AtomicElement(name)
             BGlyph = self._BFont.get_aelement(name)
         elif name in self.deepComponentSet:
             glyph = deepComponent.DeepComponent(name)
             BGlyph = self._BFont.get_dcomponent(name)
+        elif name in self.characterGlyphSet:
+            glyph = characterGlyph.CharacterGlyph(name)
+            BGlyph = self._BFont.get_cglyph(name)
+            # if name == "uni3575":
+            print("-)-)-)-)")
+            print(name)
+            print(BGlyph.xml)
+            print("-)-)-)-)")
+        else:
+            message(f'{name} not in font')
 
         xml = BGlyph.xml
         self.insertGlyph(glyph, xml, 'foreground')
 
         for layer in BGlyph.layers:
             layerName = layer.layername
-            if name in self.characterGlyphSet:
-                glyph = characterGlyph.CharacterGlyph(name)
-            elif name in self.atomicElementSet:
+            
+            if name in self.atomicElementSet:
                 glyph = atomicElement.AtomicElement(name)
 
             elif name in self.deepComponentSet:
                 glyph = deepComponent.DeepComponent(name)
+            elif name in self.characterGlyphSet:
+                glyph = characterGlyph.CharacterGlyph(name)
+
             xml = layer.xml
+
             self._RFont.newLayer(layerName)
             self.insertGlyph(glyph, xml, layerName)
 

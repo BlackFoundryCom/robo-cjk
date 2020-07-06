@@ -45,8 +45,8 @@ from views import textCenter
 
 import os, json, copy
 
-from rcjk2mysql import BF_fontbook_struct as bfs
-from rcjk2mysql import BF_rcjk2mysql
+import BF_fontbook_struct as bfs
+import BF_rcjk2mysql
 
 gitCoverage = decorators.gitCoverage
 
@@ -1211,11 +1211,11 @@ class RoboCJKView(BaseWindowController):
             if lists != sender:
                 lists.setSelection([])
         prevGlyphName = sender.get()[sender.getSelection()[0]]
-        if sender == self.w.characterGlyph:
-            self.prevGlyphName = prevGlyphName["name"]
-            self.RCJKI.currentFont.loadCharacterGlyph(self.prevGlyphName)
-        else:
-            self.prevGlyphName = prevGlyphName
+        # if sender == self.w.characterGlyph:
+        #     self.prevGlyphName = prevGlyphName["name"]
+        #     self.RCJKI.currentFont.loadCharacterGlyph(self.prevGlyphName)
+        # else:
+        self.prevGlyphName = prevGlyphName
         self.setGlyphNameToCansvas(sender, self.prevGlyphName)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
