@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
-from vanilla.dialogs import getFolder, putFile, askYesNo
+from vanilla.dialogs import getFolder, putFile, askYesNo, message
 from mojo.canvas import Canvas
 from fontParts.ui import AskYesNoCancel, AskString
 from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView, PostBannerNotification
@@ -437,8 +437,8 @@ class ComponentWindow():
             if char in self.RCJKI.dataBase:
                 self.w.componentList.set(self.RCJKI.dataBase[char])
         else:
-            # d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
-            d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, "53E3")
+            d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
+            # d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, "53E3")
             print(d)
             if d is None:
                 d = []
@@ -1141,6 +1141,7 @@ class RoboCJKView(BaseWindowController):
             folderpath = paths[0]
             fontname = os.path.basename(folderpath).split(".rcjk")[0]
             self.RCJKI.loadProject(folderpath, fontname)
+            message("Load done")
 
             self.setmySQLRCJKFiles()
         else:

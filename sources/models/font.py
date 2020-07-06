@@ -55,11 +55,11 @@ class glyphsTypes:
     @classmethod
     def bfs(cls, type):
         if type == 'atomicElement':
-            return 3
+            return bfs.AELEMENT
         if type == 'deepComponent':
-            return 2
+            return bfs.DCOMPONENT
         if type == 'characterGlyph':
-            return 1
+            return bfs.CGLYPH
 
     @classmethod
     def robocjk(cls, type):
@@ -107,10 +107,10 @@ class Font():
     def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName):
         self.mysqlFont = True
         self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
-        print("----")
-        for x in self._BFont.cglyphs:
-            print(x.xml)
-            break
+        # print("----")
+        # for x in self._BFont.cglyphs:
+        #     print(x.xml)
+        #     break
         # print(self._BFont.cglyphs[0].xml)
         self._RFont = NewFont(
             familyName=fontName, 
@@ -290,10 +290,10 @@ class Font():
             glyph = characterGlyph.CharacterGlyph(name)
             BGlyph = self._BFont.get_cglyph(name)
             # if name == "uni3575":
-            print("-)-)-)-)")
-            print(name)
-            print(BGlyph.xml)
-            print("-)-)-)-)")
+            # print("-)-)-)-)")
+            # print(name)
+            # print(BGlyph.xml)
+            # print("-)-)-)-)")
         else:
             message(f'{name} not in font')
 
@@ -305,7 +305,6 @@ class Font():
             
             if name in self.atomicElementSet:
                 glyph = atomicElement.AtomicElement(name)
-
             elif name in self.deepComponentSet:
                 glyph = deepComponent.DeepComponent(name)
             elif name in self.characterGlyphSet:
@@ -542,6 +541,7 @@ class Font():
 
     def insertGlyph(self, glyph, string, layerName):  
         if glyph is None: return
+        if string is None: return
         glyph.setParent(self)
         pen = glyph.naked().getPointPen()
         readGlyphFromString(string, glyph.naked(), pen)
