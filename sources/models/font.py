@@ -121,7 +121,11 @@ class Font():
         self.mysql = mysql
         self.mysqlUserName = mysqlUserName
         self.bf_log = bf_log
-        self.fontLib = eval(self._BFont.fontlib_data)
+
+        fontlib = self._BFont.fontlib_data
+        if fontlib is None:
+            fontlib = '{}'
+        self.fontLib = eval(fontlib)
         self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
 
     def saveFontlib(self):

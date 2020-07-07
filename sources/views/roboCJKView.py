@@ -108,9 +108,8 @@ class EditingSheet():
             self.RCJKI.dataBase[self.char] = components
             self.RCJKI.exportDataBase()
         else:
-            string = "".join(["\\\\u%s"%hex(ord(x))[2:] for x in components])
-            print(string)
-            self.RCJKI.mysql.update_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), string)
+            data = tuple([hex(ord(x))[2:] for x in components])
+            self.RCJKI.mysql.update_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), data)
         self.c.w.componentList.set(components)
         self.w.close()
 
@@ -1069,6 +1068,10 @@ class RoboCJKView(BaseWindowController):
         else:
             projectName = AskString('', value = "Untitled", title = "Project Name")
             bfont = bfs.BfFont(projectName)
+            print("----")
+            print(bfont.database_data, bfont.database_name)
+            print(bfont.fontlib_data, bfont.fontlib_name)
+            print("----")
             t = BF_rcjk2mysql.insert_newfont_to_mysql(self.RCJKI.bf_log, bfont, self.RCJKI.mysql)
             self.setmySQLRCJKFiles()
 
