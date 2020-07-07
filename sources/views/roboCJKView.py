@@ -108,9 +108,8 @@ class EditingSheet():
             self.RCJKI.dataBase[self.char] = components
             self.RCJKI.exportDataBase()
         else:
-            string = "".join(["\\\\u%s"%hex(ord(x))[2:] for x in components])
-            print(string)
-            self.RCJKI.mysql.update_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), string)
+            data = tuple([hex(ord(x))[2:] for x in components])
+            self.RCJKI.mysql.update_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), data)
         self.c.w.componentList.set(components)
         self.w.close()
 
