@@ -58,7 +58,7 @@ def str_2_bytes(xml: str) -> bytes:
 
 class BfFont:
 	def __init__(self, name: str, 
-					database_name: str="database.json", database_data: str=None,
+					database_name: str="database.json", database_data: str="{}",
 					fontlib_name: str="fontLib.json", fontlib_data: str="{}"):
 		self._name = name
 		self._database_name = database_name
