@@ -77,6 +77,7 @@ class Font():
         self.mysql = False
         self._glyphs = {}
         self._RFont = {}
+        self.dataBase = {}
 
     def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
         self.fontPath = fontPath
@@ -126,7 +127,32 @@ class Font():
         if fontlib is None:
             fontlib = '{}'
         self.fontLib = eval(fontlib)
+
+        database = self._BFont.database_data
+        if database is None:
+            database = '{}'
+        self.dataBase = json.loads(database)
+        # print(self.dataBase)
         self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
+
+    def selectDatabaseKey(self, key):
+        if not self.mysqlFont:
+            char = chr(int(key, 16))
+            return "".join(self.dataBase[char])
+        else:
+            return self.mysql.select_font_database_key(self.fontName, key)
+
+    def updateDatabaseKey(self, key, values):
+        if not self.mysqlFont:
+            char = chr(int(key, 16))
+            self.dataBase[char] = values
+        else:
+            data = tuple([hex(ord(x))[2:] for x in values])
+            self.mysql.update_font_database_key(self.fontName, key, data)
+            self.loadMysqlDataBase()
+
+    def loadMysqlDataBase(self):
+        self.dataBase = json.loads(self._BFont.database_data)
 
     def saveFontlib(self):
         pass
@@ -298,8 +324,8 @@ class Font():
             # print(name)
             # print(BGlyph.xml)
             # print("-)-)-)-)")
-        else:
-            message(f'{name} not in font')
+        # else:
+        #     message(f'{name} not in font')
 
         xml = BGlyph.xml
         self.insertGlyph(glyph, xml, 'foreground')

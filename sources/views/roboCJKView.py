@@ -97,19 +97,22 @@ class EditingSheet():
         self.w.open()
 
     def setUI(self):
-        if not self.RCJKI.currentFont.mysqlFont:
-            self.w.editField.set("".join(self.RCJKI.dataBase[self.char]))
-        else:
-            self.w.editField.set(self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:])))
+        unicode = str(hex(self.RCJKI.currentGlyph.unicode)[2:])
+        self.w.editField.set(self.RCJKI.currentFont.selectDatabaseKey(unicode))
+        # if not self.RCJKI.currentFont.mysqlFont:
+        #     self.w.editField.set("".join(self.RCJKI.dataBase[self.char]))
+        # else:
+        #     self.w.editField.set(self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:])))
 
     def closeCallback(self, sender):
         components = list(self.w.editField.get())
+        self.RCJKI.currentFont.updateDatabaseKey(str(hex(self.RCJKI.currentGlyph.unicode)[2:]), components)
         if not self.RCJKI.currentFont.mysqlFont:
-            self.RCJKI.dataBase[self.char] = components
+            # self.RCJKI.dataBase[self.char] = components
             self.RCJKI.exportDataBase()
-        else:
-            data = tuple([hex(ord(x))[2:] for x in components])
-            self.RCJKI.mysql.update_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), data)
+        # else:
+        #     data = tuple([hex(ord(x))[2:] for x in components])
+        #     self.RCJKI.mysql.update_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), data)
         self.c.w.componentList.set(components)
         self.w.close()
 
@@ -271,9 +274,10 @@ class CharacterWindow:
             l = [chr(int(n[3:], 16)) for n in result]
 
         elif self.filter in [2, 3]:
-            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponent.atomicElements"]])
+            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponents"]])
             for c in self.relatedChars:
-                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.dataBase[c]]
+                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
+                # compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.selectDatabaseKey(hex(ord(c))[2:].upper())]
                 inside = len(set(compo) - DCSet) == 0
                 if self.filter == 2 and inside:
                     l.append(c)
@@ -306,7 +310,7 @@ class CharacterWindow:
         try:
             _, code, _ = self.RCJKI.currentGlyph.name.split("_") 
             char = chr(int(code, 16))
-            for k, v in self.RCJKI.dataBase.items():
+            for k, v in self.RCJKI.currentFont.dataBase.items():
                 if char in v:
                     self.relatedChars.add(k)
         except: pass
@@ -444,18 +448,19 @@ class ComponentWindow():
                 print('this glyph has no Unicode')
                 return
         char = chr(self.RCJKI.currentGlyph.unicode)
-        if not self.RCJKI.currentFont.mysqlFont:
+        # if not self.RCJKI.currentFont.mysqlFont:
             
-            if char in self.RCJKI.dataBase:
-                self.w.componentList.set(self.RCJKI.dataBase[char])
-        else:
-            d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
-            # d = self.RCJKI.mysql.select_dbjson_key(self.RCJKI.currentFont.fontName, "53E3")
-            print(d)
-            if d is None:
-                d = []
-            # print( )
-            self.w.componentList.set(d)
+        #     if char in self.RCJKI.currentFont.dataBase:
+        #         self.w.componentList.set(self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:]))
+        # else:
+        #     d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
+        #     # d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, "53E3")
+        #     print(d)
+        d = self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:])
+        if d is None:
+            d = []
+        # print( )
+        self.w.componentList.set(d)
         self.w.char.set(char)
 
     def editButtonCallback(self, sender):
@@ -883,13 +888,13 @@ class RoboCJKView(BaseWindowController):
 
         if option2 == "that can be fully designed":
             l = []
-            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponent.atomicElements"]])
+            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponents"]])
             for name in self.currentFont.characterGlyphSet:
                 try:
                     c = chr(int(name[3:].split(".")[0], 16))
-                    self.RCJKI.dataBase[c]
+                    self.RCJKI.currentFont.dataBase[c]
                 except: continue
-                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.dataBase[c]]
+                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
                 inside = len(set(compo) - DCSet) == 0
                 if inside:
                     l.append(name)
@@ -1161,7 +1166,7 @@ class RoboCJKView(BaseWindowController):
 
             self.setmySQLRCJKFiles()
         else:
-            self.RCJKI.dataBase = {}
+            # self.RCJKI.dataBase = {}
             
             self.RCJKI.currentFont = font.Font()
             if not self.RCJKI.mysql:
@@ -1175,10 +1180,12 @@ class RoboCJKView(BaseWindowController):
                     )
                 if 'database.json' in os.listdir(fontPath):
                     with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
-                        self.RCJKI.dataBase = json.load(file)
+                        self.RCJKI.currentFont.dataBase = json.load(file)
             else:
-                self.RCJKI.dataBase = True
+                # self.RCJKI.dataBase = True
                 self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName)
+                self.RCJKI.currentFont.loadMysqlDataBase()
+                # self.RCJKI.currentFont.dataBase
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
             
 

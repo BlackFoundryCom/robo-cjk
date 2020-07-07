@@ -135,7 +135,7 @@ class RoboCJKController(object):
         self.importDCFromCG = None
         self.sliderValue = None
         self.sliderName = None
-        self.dataBase = {}
+        # self.dataBase = {}
         self.copy = []
         self.px, self.py = 0,0
 
@@ -303,7 +303,7 @@ class RoboCJKController(object):
             self.closeComponentWindow()
         else:
             installTool(self.transformationTool)
-            if self.dataBase:
+            if self.currentFont.dataBase:
                 if self.currentGlyph.type =='characterGlyph':
                     self.closeCharacterWindow()
                     if self.currentGlyph.name.startswith("uni"):
@@ -329,7 +329,7 @@ class RoboCJKController(object):
 
     def exportDataBase(self):
         with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
-            file.write(json.dumps(self.dataBase))
+            file.write(json.dumps(self.currentFont.dataBase))
 
     def closeCharacterWindow(self):
         if self.characterWindow is not None:

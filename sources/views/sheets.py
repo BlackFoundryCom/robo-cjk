@@ -411,10 +411,10 @@ class FontInfosSheet():
         if path.endswith("txt"):
             with open(path, 'r', encoding = 'utf-8') as file:
                 txt = file.readlines()
-            self.RCJKI.dataBase = {}
+            self.RCJKI.currentFont.dataBase = {}
             for line in txt:
                 k, v = line.strip('\n').split(':')
-                self.RCJKI.dataBase[k] = v
+                self.RCJKI.currentFont.dataBase[k] = v
         elif path.endswith("json"):
             with open(path, 'r', encoding = 'utf-8') as file:
                 self.RCJKI.dataBase = json.load(file)
@@ -552,8 +552,8 @@ class NewCharacterGlyph:
         except:
             self.RCJKI.currentFont.newGlyph("characterGlyph", name)
             added.add(name)
-            if addRelatedDC and self.RCJKI.dataBase:
-                dcChars = self.RCJKI.dataBase[chr(int(name[3:], 16))]
+            if addRelatedDC and self.RCJKI.currentFont.dataBase:
+                dcChars = self.RCJKI.currentFont.selectDatabaseKey(name[3:])
                 DC = set(["DC_%s_00"%hex(ord(c))[2:].upper() for c in dcChars])
                 # for name in DC:
                 #     added.add(name)
@@ -635,7 +635,7 @@ class NewCharacterGlyph:
     def getRelatedCharacterToSelected(self, deepComponents):
         relatedChars = set()
         deepComponentsSet = set(deepComponents)
-        for k, v in self.RCJKI.dataBase.items():
+        for k, v in self.RCJKI.currentFont.dataBase.items():
             setv = set(v)
             if setv & deepComponentsSet:
                 if not setv - deepComponentsSet:
