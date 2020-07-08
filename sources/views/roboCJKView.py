@@ -456,7 +456,8 @@ class ComponentWindow():
         #     d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
         #     # d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, "53E3")
         #     print(d)
-        d = self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:])
+        # d = self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:])
+        d = self.RCJKI.currentFont.dataBase.get(char, [])
         if d is None:
             d = []
         # print( )
