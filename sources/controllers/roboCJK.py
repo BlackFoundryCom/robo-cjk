@@ -619,6 +619,7 @@ class RoboCJKController(object):
         # if self.isAtomic:
         #     item = ('Attach Layer to Atomic Element', self.addLayerToAtomicElement)
         #     menuItems.append(item)
+        # print("type is ", self.isCharacterGlyph)
         if self.isDeepComponent:
             item = ('Add Atomic Element', self.addAtomicElement)
             menuItems.append(item)
@@ -632,15 +633,18 @@ class RoboCJKController(object):
             menuItems.append(item)
             item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
             menuItems.append(item)
+
             # item = ('Animate this variable glyph', self.animateThisVariableGlyph)
             # menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
             variationsAxes = self.currentGlyph.glyphVariations.axes
-            if all([len(self.currentGlyph), *(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
-                item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
-                menuItems.append(item)
+            # self.currentFont[self.currentGlyph.name]
+            if len(self.currentGlyph):
+                if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
+                    item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
+                    menuItems.append(item)
         notification["additionContextualMenuItems"].extend(menuItems)
 
     def animateThisVariableGlyph(self, sender):

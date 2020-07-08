@@ -18,7 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import sys, os
 import subprocess
-print(sys.path)
+
 try:
 	paho = subprocess.run(['pip3','install','paho-mqtt'])
 	pymysql = subprocess.run(['pip3','install','pymysql'])
