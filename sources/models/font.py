@@ -96,8 +96,8 @@ class Font():
         if 'fontLib.json' in os.listdir(self.fontPath):
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, 'r') as file:
-                f = json.load(file)
-            for k, v in f.items():
+                self.fontLib = json.load(file)
+            for k, v in self.fontLib.items():
                 self._RFont.lib[k] = v
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)

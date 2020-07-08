@@ -272,6 +272,14 @@ class RoboCJKController(object):
 
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
+
+        # fontname = self.currentFont._RFont.familyName
+        del self.currentFont._RFont
+        self.currentFont._RFont = NewFont(
+            familyName=self.currentFont.fontName, 
+            styleName='Regular', 
+            showUI = False
+            )
         
 
     def closeimportDCFromCG(self):
