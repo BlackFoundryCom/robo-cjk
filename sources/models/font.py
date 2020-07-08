@@ -97,8 +97,9 @@ class Font():
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, 'r') as file:
                 self.fontLib = json.load(file)
-            for k, v in self.fontLib.items():
-                self._RFont.lib[k] = v
+            self._initFontLib(self.fontLib)
+            # for k, v in self.fontLib.items():
+            #     self._RFont.lib[k] = v
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
@@ -118,6 +119,11 @@ class Font():
             styleName='Regular', 
             showUI = False
             )
+        self._fullRFont = NewFont(
+            familyName=fontName, 
+            styleName='Regular', 
+            showUI = False
+            )
         self.fontName = fontName
         self.mysql = mysql
         self.mysqlUserName = mysqlUserName
@@ -127,6 +133,7 @@ class Font():
         if fontlib is None:
             fontlib = '{}'
         self.fontLib = eval(fontlib)
+        self._initFontLib(self.fontLib)
 
         database = self._BFont.database_data
         if database is None:
@@ -134,6 +141,10 @@ class Font():
         self.dataBase = json.loads(database)
         # print(self.dataBase)
         self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
+
+    def _initFontLib(self, lib):
+        for k, v in lib.items():
+            self._RFont.lib[k] = v
 
     def selectDatabaseKey(self, key):
         if not self.mysqlFont:
@@ -198,6 +209,18 @@ class Font():
             for glyph in glyphs:
                 self.lockGlyph(glyph)
             return True
+
+    def exportDataBase(self):
+        if not self.mysqlFont:
+            with open(os.path.join(self.fontPath, "database.json"), 'w', encoding="utf-8") as file:
+                file.write(json.dumps(self.dataBase))
+        else:
+            print(")-))-)")
+            self._BFont.database_data = str(self.dataBase)
+            # print(self._BFont.database_data)
+            BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
+            # print(self._BFont.database_data)
+            print(")-))-)")
 
     def batchUnlockGlyphs(self, glyphs:list = []):
         if not self.mysqlFont:

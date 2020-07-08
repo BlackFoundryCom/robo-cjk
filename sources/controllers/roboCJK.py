@@ -336,8 +336,12 @@ class RoboCJKController(object):
         self.updateDeepComponent()
 
     def exportDataBase(self):
-        with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
-            file.write(json.dumps(self.currentFont.dataBase))
+        self.currentFont.exportDataBase()
+        # if not self.currentFont.mysqlFont:
+        #     with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
+        #         file.write(json.dumps(self.currentFont.dataBase))
+        # else:
+        #     self.currentFont._BFont.database_data = str(self.currentFont.dataBase)
 
     def closeCharacterWindow(self):
         if self.characterWindow is not None:
