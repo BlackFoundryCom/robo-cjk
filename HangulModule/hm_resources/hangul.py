@@ -62,7 +62,7 @@ class Composition:
     def __init__(self, composition = {}):
         if not composition:
             cwd = os.getcwd()
-            path = os.path.join(cwd, 'resources', 'HangulUnicode.txt')
+            path = os.path.join(cwd, 'hm_resources', 'HangulUnicode.txt')
             with open(path, "r", encoding = "utf-8") as file:
                 encoding = file.read()
 

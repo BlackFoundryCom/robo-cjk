@@ -1,6 +1,6 @@
 from imp import reload
 from interface import dataController
-from resources import hangul
+from hm_resources import hangul
 import copy
 reload(dataController)
 reload(hangul)
