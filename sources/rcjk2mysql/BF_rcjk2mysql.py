@@ -125,8 +125,8 @@ def read_font_from_disk(bf_log, curpath: str, fontname: str) -> bfs.BfFont:
 	for curfile in os.listdir(curpath):
 		if curfile == font.database_name:
 			bf_log.info(f"'{curfile}' loading in font")
-			with open(os.path.join(curpath, font.database_name), "r") as fp:
-				font.database_data = fp.read().replace("\\u","\\\\u")
+			with open(os.path.join(curpath, font.database_name), encoding='utf-8') as fp:
+				font.database_data = fp.read()
 			# with open(os.path.join(curpath, font.database_name), encoding='utf-8') as fp:
 			# 	data = json.load(fp)
 			# 	font.database_data = data
