@@ -2,7 +2,7 @@ from vanilla import *
 from vanilla.dialogs import putFile, getFile
 import json
 from imp import reload
-from resources import hangul
+from hm_resources import hangul
 reload(hangul)
 
 class UsersNames(Group):

@@ -272,6 +272,14 @@ class RoboCJKController(object):
 
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
+
+        # fontname = self.currentFont._RFont.familyName
+        del self.currentFont._RFont
+        self.currentFont._RFont = NewFont(
+            familyName=self.currentFont.fontName, 
+            styleName='Regular', 
+            showUI = False
+            )
         
 
     def closeimportDCFromCG(self):
@@ -328,8 +336,12 @@ class RoboCJKController(object):
         self.updateDeepComponent()
 
     def exportDataBase(self):
-        with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
-            file.write(json.dumps(self.currentFont.dataBase))
+        self.currentFont.exportDataBase()
+        # if not self.currentFont.mysqlFont:
+        #     with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
+        #         file.write(json.dumps(self.currentFont.dataBase))
+        # else:
+        #     self.currentFont._BFont.database_data = str(self.currentFont.dataBase)
 
     def closeCharacterWindow(self):
         if self.characterWindow is not None:
@@ -611,6 +623,7 @@ class RoboCJKController(object):
         # if self.isAtomic:
         #     item = ('Attach Layer to Atomic Element', self.addLayerToAtomicElement)
         #     menuItems.append(item)
+        # print("type is ", self.isCharacterGlyph)
         if self.isDeepComponent:
             item = ('Add Atomic Element', self.addAtomicElement)
             menuItems.append(item)
@@ -624,15 +637,18 @@ class RoboCJKController(object):
             menuItems.append(item)
             item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
             menuItems.append(item)
+
             # item = ('Animate this variable glyph', self.animateThisVariableGlyph)
             # menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
             variationsAxes = self.currentGlyph.glyphVariations.axes
-            if all([len(self.currentGlyph), *(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
-                item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
-                menuItems.append(item)
+            # self.currentFont[self.currentGlyph.name]
+            if len(self.currentGlyph):
+                if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
+                    item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
+                    menuItems.append(item)
         notification["additionContextualMenuItems"].extend(menuItems)
 
     def animateThisVariableGlyph(self, sender):
