@@ -132,7 +132,9 @@ class Font():
         fontlib = self._BFont.fontlib_data
         if fontlib is None:
             fontlib = '{}'
-        self.fontLib = eval(fontlib)
+        print(fontlib)
+        # self.fontLib = eval(fontlib)
+        self.fontLib = json.loads(fontlib)
         self._initFontLib(self.fontLib)
 
         database = self._BFont.database_data
@@ -216,9 +218,13 @@ class Font():
                 file.write(json.dumps(self.dataBase))
         else:
             print(")-))-)")
-            self._BFont.database_data = str(self.dataBase)
-            # print(self._BFont.database_data)
-            BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
+            # self._BFont.database_data = str(self.dataBase)
+            # # print(self._BFont.database_data)
+            self.mysql.update_font_database_data(self.fontName, str(self.dataBase))
+            print(str(self.dataBase))
+            print(self.mysql.select_font(self.fontName))
+            #print(self.mysql.select_font_database_data(self.fontName))
+            # BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
             # print(self._BFont.database_data)
             print(")-))-)")
 
@@ -333,6 +339,10 @@ class Font():
 
         if not isinstance(name, str):
             name = name["name"]
+
+        # print("glyphset:", self.characterGlyphSet)
+        print("name:", name)
+
         if name in self.atomicElementSet:
             glyph = atomicElement.AtomicElement(name)
             BGlyph = self._BFont.get_aelement(name)
