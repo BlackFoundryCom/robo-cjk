@@ -70,6 +70,12 @@ MYSQL_CG_NAME, MYSQL_CG_XML, MYSQL_CG_UNICODE=range(2, 5)
 MYSQL_DCAE_NAME, MYSQL_DCAE_XML=range(2, 4)
 MYSQL_LAY_GLYPHNAME, MYSQL_LAY_AXISNAME, MYSQL_LAY_LAYERNAME, MYSQL_LAY_XML=range(2, 6)
 
+def hex2uni(val: str):
+	return  f"\\\\u{val}"
+
+def	hex2uni_v(val: str):
+	return f"{chr(int(val, 16))}"
+
 class Rcjk2MysqlObject(MysqlPersit):
 	def __init__(self, dict_params: dict, bf_log: logging.Logger=None, 
 						username: str=None, debug: bool=False):
@@ -188,9 +194,9 @@ class Rcjk2MysqlObject(MysqlPersit):
 		return self.__execute(req)
 
 	def insert_font(self, fontname: str, 
-						database_name: str=None, database_data: str=None, 
-						fontlib_name: str=None, fontlib_data: str=None) -> str:
-		req = "select rcjk_insert_font('{}','{}','{}','{}','{}','{}')".format(fontname, 
+						database_name: str=None, database_data: str="{}", 
+						fontlib_name: str=None, fontlib_data: str="{}") -> str:
+		req = "select rcjk_insert_font('{}','{}',{!a},'{}','{}','{}')".format(fontname, 
 																			database_name, database_data,
 																			fontlib_name, fontlib_data, 
 																			self.username)
@@ -199,12 +205,13 @@ class Rcjk2MysqlObject(MysqlPersit):
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	def update_font(self, fontname: str, 
-						database_name: str=None, database_data: str=None, 
-						fontlib_name: str=None, fontlib_data: str=None) -> str:
+						database_name: str=None, database_data: str="{}", 
+						fontlib_name: str=None, fontlib_data: str="{}") -> str:
 		req = "select rcjk_update_font('{}','{}','{}','{}','{}','{}')".format(fontname, 
 																			database_name, database_data,
 																			fontlib_name, fontlib_data, 
 																			self.username)
+		return 1 
 		ret = self.__execute(req)
 		self.bf_log.info(f"\t\t-> UPDATE FONT {ret}")
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
@@ -216,32 +223,38 @@ class Rcjk2MysqlObject(MysqlPersit):
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	# ----------------- Database.json  part ---------------
+	def update_font_database_data(self, fontname:str, database_data: str):
+		req = "select rcjk_update_font_database_data('{}',{!a},'{}')".format(fontname, database_data, self.username)
+		self.bf_log.info(f"\t\t-> UPDATE database DATA '{req[:300]}'")
+		ret = self.__execute(req)
+		return ret and ret[FIRST_LINE][FIRST_COLUMN]
+
 	def select_font_database_key(self, fontname:str, unicode:str) -> List[str]:
-		dbkey = f"$.\\{chr(int(unicode,16))}"
-		req = "call rcjk_p_select_font_dbjson_key('{}',{!a},'{}')".format(fontname, dbkey, self.username)
+		dbkey = f'$."{hex2uni(unicode)}"'
+		req = "call rcjk_p_select_font_dbjson_key('{}','{}','{}')".format(fontname, dbkey, self.username)
 		self.bf_log.info(f"\t\t-> SELECT DBJSON KEY from '{req}'")
 		ret = self.__execute(req)
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	def insert_font_database_key(self, fontname, unicode:str, dbvalues: tuple) -> Tuple[int]:
-		dbkey = f"$.\\{chr(int(unicode,16))}"
-		db_newvalues = "".join(f"\\{chr(int(unicode,16))}")
-		req = "select rcjk_insert_font_dbjson_key('{}',{!a},{!a},'{}')".format(fontname, dbkey, db_newvalues, self.username)
+		dbkey = f'$."{hex2uni(unicode)}"'
+		db_newvalues = "".join(hex2uni_v(x) for x in dbvalues)
+		req = "select rcjk_insert_font_dbjson_key('{}','{}',{!a},'{}')".format(fontname, dbkey, db_newvalues, self.username)
 		self.bf_log.info(f"\t\t-> INSERT DBJSON KEY '{req}'")
 		ret = self.__execute(req)
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	def update_font_database_key(self, fontname, unicode:str, dbvalues: tuple) -> Tuple[int]:
-		dbkey = f"$.\\{chr(int(unicode,16))}"
-		db_newvalues = "".join(f"\\{chr(int(unicode,16))}")
-		req = "select rcjk_update_font_dbjson_key('{}',{!a},{!a},'{}')".format(fontname, dbkey, db_newvalues, self.username)
+		dbkey = f'$."{hex2uni(unicode)}"'
+		db_newvalues = "".join(hex2uni_v(x) for x in dbvalues)
+		req = "select rcjk_update_font_dbjson_key('{}','{}',{!a},'{}')".format(fontname, dbkey, db_newvalues, self.username)
 		self.bf_log.info(f"\t\t-> UPDATE DBJSON KEY'{req}'")
 		ret = self.__execute(req)
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	def delete_font_database_key(self, fontname:str, unicode:str):
-		dbkey = f"$.\\{chr(int(unicode,16))}"
-		req = "select rcjk_delete_font_dbjson_key('{}',{!a},'{}')".format(fontname, dbkey, self.username)
+		dbkey = f'$."{hex2uni(unicode)}"'
+		req = "select rcjk_delete_font_dbjson_key('{}','{}','{}')".format(fontname, dbkey, self.username)
 		self.bf_log.info(f"\t\t-> DELETE DBJSON KEY '{req}'")
 		ret = self.__execute(req)
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
