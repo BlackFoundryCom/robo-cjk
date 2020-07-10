@@ -566,6 +566,15 @@ class GlyphPreviewCanvas(CanvasGroup):
             self.glyph.sourcesList = [
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
+        try:
+            # print(type(self.glyph.color), self.glyph.color)
+            # if self.glyph._RGlyph.markColor is not None:
+            #     # print('here', self.glyph._RGlyph.markColor)
+            #     mjdt.fill(*(1, 0, 0, 1))
+            mjdt.rect(0, 0, 200, 20)
+            mjdt.fill(None)
+        except:
+            pass
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
@@ -585,3 +594,4 @@ class GlyphPreviewCanvas(CanvasGroup):
                 scale, 
                 (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
                 )
+

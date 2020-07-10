@@ -60,6 +60,11 @@ class Glyph(RGlyph):
         self.indexStackUndo_lib = 0
         # self.transformationWithMouse = False
 
+    @property
+    def color(self):
+        return self._RGlyph.mark
+    
+
     def save(self):
         self.lib.clear()
 
