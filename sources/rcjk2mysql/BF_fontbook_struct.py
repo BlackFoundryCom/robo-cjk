@@ -25,6 +25,7 @@ from typing import Dict, Union, List, Any, Optional, Iterable, Set, Tuple, Itera
 import BF_author
 
 NONE, CGLYPH, DCOMPONENT, AELEMENT, AELAYER, LAYER, CGLYPH_2_DCOMPONENT, DCOMPONENT_2_AELEMENT = range(8)
+
 XML_CG_DEFAULT = """<?xml version='1.0' encoding='UTF-8'?>
 <glyph name="{}" format="2">
   <advance width="1000"/>
@@ -41,6 +42,8 @@ XML_DEFAULT = """<?xml version='1.0' encoding='UTF-8'?>
 </glyph>
 """
 
+XML_COLOR_MARKUP='public.markColor'
+TUPLE_ZEROF = (0.0,0.0,0.0,0.0)
 def name_2_unicode(name: str) -> str:
 	"""
 	"""
@@ -329,7 +332,7 @@ class BfItem(BfBaseObj):
 	_XML_SUBITEM_STRING = "robocjk.deepComponents"
 	_XML_LAYER_STRING = "robocjk.glyphVariationGlyphs"
 
-	def __init__(self, font: BfFont, name: str, item_type: int=NONE, xml:str=None, color: tuple=(0.0,0.0,0.0,0.0)):
+	def __init__(self, font: BfFont, name: str, item_type: int=NONE, xml:str=None, color: tuple=TUPLE_ZEROF):
 		# base attr
 		super().__init__(font, name, item_type, xml)
 
@@ -473,13 +476,17 @@ class BfItem(BfBaseObj):
 	@classmethod
 	def _get_layers_from_xml(cls, xml: bytes) -> Set[str]:
 		return set(cls._get_layers_from_xml_as_dict(xml))
-		# if xml:
-		# 	# get lib part 
-		# 	try:
-		# 		data = plistlib.loads(xml)
-		# 		return {item["layerName"] for item in data[cls._XML_LAYER_STRING].values()} 
-		# 	except Exception as e:
-		# 		return set()
+
+	def _updated_color(self):
+		"""
+		"""		
+		if self.xml:
+			# get lib part 
+			try:
+				data = plistlib.loads(self.xml)
+				self._color = tuple(data[XML_COLOR_MARKUP].split(','))
+			except Exception as e:
+				pass
 
 	def set_xml(self, xml: str, update_subitem=True):
 		if xml != self._xml:
@@ -495,6 +502,8 @@ class BfItem(BfBaseObj):
 					# add new ones 
 					self._set_subitems(sub - self.subitems_names())
 
+			# update color
+			self._updated_color()
 
 	# set of names 
 	# -----------------
@@ -600,9 +609,9 @@ class BfItem(BfBaseObj):
 class BfCGlyph(BfItem):
 	__slots__ = BfItem.__slots__ + ("_unicode", "dcomponents")
 	_XML_LAYER_STRING = "robocjk.fontVariationGlyphs"
-	def __init__(self, font: BfFont, name: str, unicode: str = None, xml: str=None):
+	def __init__(self, font: BfFont, name: str, unicode: str = None, xml: str=None, color: tuple=TUPLE_ZEROF):
 		new_xml = xml or XML_CG_DEFAULT.format(name, name_2_unicode(name))
-		super().__init__(font, name, CGLYPH, new_xml)
+		super().__init__(font, name, CGLYPH, new_xml, color)
 		self._subitem_type = DCOMPONENT
 		self._unicode = unicode 
 
@@ -672,9 +681,9 @@ class BfCGlyph(BfItem):
 class BfDComponent(BfItem):
 	__slots__ = BfItem.__slots__ + ("aelements", ) 
 
-	def __init__(self, font: BfFont, name: str, xml: str=None):
+	def __init__(self, font: BfFont, name: str, xml: str=None,color: tuple=TUPLE_ZEROF):
 		new_xml = xml or XML_DEFAULT.format(name)
-		super().__init__(font, name, DCOMPONENT, new_xml)
+		super().__init__(font, name, DCOMPONENT, new_xml, color)
 		self._subitem_type = AELEMENT
 
 	# Duplicate 
@@ -709,9 +718,9 @@ class BfAElement(BfItem):
 	__slots__ = BfItem.__slots__ + ("aelayers", ) 
 	_XML_SUBITEM_STRING = None
 
-	def __init__(self, font: BfFont, name: str, xml: str=None):
+	def __init__(self, font: BfFont, name: str, xml: str=None, color: tuple=TUPLE_ZEROF):
 		new_xml = xml or XML_DEFAULT.format(name)
-		super().__init__(font, name, AELEMENT, new_xml)
+		super().__init__(font, name, AELEMENT, new_xml, color)
 		self._subitem_type = LAYER
 
 	# Duplicate 

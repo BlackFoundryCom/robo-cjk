@@ -144,11 +144,11 @@ def read_font_from_mysql(bf_log, fontname: str, my_sql:bmy.Rcjk2MysqlObject,
 						color = elem[bmy.MYSQL_CG_COLOR]
 						unicode = elem[bmy.MYSQL_CG_UNICODE]
 						# bf_log.info(elem[:4])
-						bfs.BfCGlyph(bfont, name, unicode, xml)
+						bfs.BfCGlyph(bfont, name, unicode, xml, color)
 					elif ftype == bfs.DCOMPONENT:
-						bfs.BfDComponent(bfont, name, xml)
+						bfs.BfDComponent(bfont, name, xml, color)
 					elif ftype == bfs.AELEMENT:
-						bfs.BfAElement(bfont, name, xml)
+						bfs.BfAElement(bfont, name, xml, color)
 					elif ftype == bfs.LAYER:
 						# bf_log.info(f"{elem[:-1]}")
 						axisname = elem[bmy.MYSQL_LAY_AXISNAME]
