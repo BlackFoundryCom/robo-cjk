@@ -483,8 +483,9 @@ class BfItem(BfBaseObj):
 		if self.xml:
 			# get lib part 
 			try:
-				data = plistlib.loads(self.xml)
-				self._color = tuple(data[XML_COLOR_MARKUP].split(','))
+				data = plistlib.loads(str_2_bytes(self.xml))
+				x = data[XML_COLOR_MARKUP]
+				self._color = x.split(',')
 			except Exception as e:
 				pass
 
