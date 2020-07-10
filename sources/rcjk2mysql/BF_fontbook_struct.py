@@ -323,13 +323,13 @@ class BfBaseObj:
 class BfItem(BfBaseObj):
 	# From BfBaseObj -> "font", "_name", "_old_name", "_item_type", "_xml", "_changed"
 
-	__slots__ = BfBaseObj.__slots__ + ("_subitems", "_subitem_type", "_changed_subitems",\
+	__slots__ = BfBaseObj.__slots__ + ("_color", "_subitems", "_subitem_type", "_changed_subitems",\
 										"_layers", "_changed_layers")
 
 	_XML_SUBITEM_STRING = "robocjk.deepComponents"
 	_XML_LAYER_STRING = "robocjk.glyphVariationGlyphs"
 
-	def __init__(self, font: BfFont, name: str, item_type: int=NONE, xml:str=None):
+	def __init__(self, font: BfFont, name: str, item_type: int=NONE, xml:str=None, color: tuple=(0.0,0.0,0.0,0.0)):
 		# base attr
 		super().__init__(font, name, item_type, xml)
 
@@ -339,6 +339,9 @@ class BfItem(BfBaseObj):
 
 		# set of layer 
 		self._layers = set()
+
+		# color
+		self._color = color
 
 		# change flags
 		self._changed_subitems = False
@@ -350,6 +353,19 @@ class BfItem(BfBaseObj):
 	@property
 	def layers(self):
 		return self._layers
+
+	@property
+	def color(self):
+		return str(self._color)
+
+	@property
+	def tcolor(self):
+		return self._color
+
+	@tcolor.setter 
+	def tcolor(self, new_color: tuple):
+		self._color = new_color
+		self._changed = True
 
 	# duplication
 	# -----------------
@@ -597,17 +613,26 @@ class BfCGlyph(BfItem):
 		"""
 		deepcopy of a CG
 		"""
-		new_unicode = name_2_unicode(new_name)
-		new_xml = self.xml.replace(self.name, new_name, 1).replace(self.unicode, new_unicode, 1)
-	
+		if self.xml:
+			new_xml = self.xml.replace(self.name, new_name, 1)
+			new_unicode = name_2_unicode(new_name)
+			if new_unicode:
+				new_xml = new_xml.replace(self.unicode, new_unicode, 1)
+		else:
+			new_xml = self.xml
+		
 		return BfCGlyph(self.font, new_name, new_unicode, new_xml)._duplicate_sets_from(self)
 
 	def update_xml(self, new_name: str):
 		"""
 		"""
 		super().update_xml(new_name)
-		new_unicode = name_2_unicode(new_name)
-		self.xml = self.xml.replace(self.name, new_name, 1).replace(self.unicode, new_unicode, 1)
+		self.xml = self.xml.replace(self.name, new_name, 1)
+		
+		if self.unicode:
+			new_unicode = name_2_unicode(new_name)
+			if new_unicode:
+				self.xml = self.xml.replace(self.unicode, new_unicode, 1)
 
 	# changed internal data (name, xml or specific)
 	# -------------------------------------------
@@ -658,7 +683,7 @@ class BfDComponent(BfItem):
 		"""
 		deepcopy of a DC
 		"""
-		new_xml = self.xml.replace(self.name, new_name, 1)
+		new_xml = self.xml.replace(self.name, new_name, 1) if self.xml else self.xml
 		return BfDComponent(self.font, new_name, new_xml)._duplicate_sets_from(self) 
 
 	# set / unset subitems
@@ -695,7 +720,7 @@ class BfAElement(BfItem):
 		"""
 		deepcopy of an element
 		"""
-		new_xml = self.xml.replace(self.name, new_name, 1)
+		new_xml = self.xml.replace(self.name, new_name, 1) if self.xml else self.xml
 		return BfAElement(self.font, new_name, new_xml)._duplicate_sets_from(self)
 
 	# str representation
