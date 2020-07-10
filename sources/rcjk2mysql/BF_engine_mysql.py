@@ -66,8 +66,8 @@ item_todo = ("font", "cglyph", "dcomponent", "aelement", "layer")
 # position of column in each tuple 
 MYSQL_FONT_NAME, MYSQL_FONT_DBNAME, MYSQL_FONT_DBDATA,\
 					MYSQL_FONT_FLIBNAME, MYSQL_FONT_FLIBDATA= range(1, 6)
-MYSQL_CG_NAME, MYSQL_CG_XML, MYSQL_CG_UNICODE=range(2, 5)
-MYSQL_DCAE_NAME, MYSQL_DCAE_XML=range(2, 4)
+MYSQL_CG_NAME, MYSQL_CG_XML, MYSQL_CG_COLOR, MYSQL_CG_UNICODE=range(2, 6)
+MYSQL_DCAE_NAME, MYSQL_DCAE_XML, MYSQL_DCAE_COLOR=range(2, 5)
 MYSQL_LAY_GLYPHNAME, MYSQL_LAY_AXISNAME, MYSQL_LAY_LAYERNAME, MYSQL_LAY_XML=range(2, 6)
 
 def hex2uni(val: str):
@@ -120,6 +120,21 @@ class Rcjk2MysqlObject(MysqlPersit):
 
 	# login  parts
 	# -----------------------------
+	@contextmanager
+	def cmlogin(self, username: str, password: str) -> str:
+		try:
+			if self.login(username, password) > 0:
+				yield self
+
+		except:
+			self.bf_log.info("logout from ko ...")
+			self.logout(username, password)
+		else:
+			self.bf_log.info("logout from ok ...")
+			self.logout(username, password)
+
+
+
 	def login(self, username: str, password: str) -> str:
 		req = "select rcjk_login('{}','{}','{}')".format(username, password, BF_init._MY_IP)
 		ret = self.__execute(req)
@@ -241,6 +256,10 @@ class Rcjk2MysqlObject(MysqlPersit):
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	def select_font_database_key(self, fontname:str, unicode:str) -> List[str]:
+		"""
+		key of json
+		cf https://stackoverflow.com/questions/35735454/mysql-json-extract-path-expression-error/35735594
+		"""
 		dbkey = f'"{hex2uni(unicode)}"'
 		req = "call rcjk_p_select_font_dbjson_key('{}','$.{}','{}')".format(fontname, dbkey, self.username)
 		self.bf_log.info(f"\t\t-> SELECT DBJSON KEY from '{req}'")
@@ -290,28 +309,30 @@ class Rcjk2MysqlObject(MysqlPersit):
 		self.bf_log.info(f"\t\t-> SELECT CGLYPH {ret}")
 		return ret
 
-	def insert_cglyph(self, fontname: str, cglyphname: str, xml: str, 
-								unicode: str, old_name:str = None):
+	def insert_cglyph(self, fontname: str, cglyphname: str, 
+										xml: str, colorglyph: str, 
+										unicode: str, old_name:str = None):
 
 		# rename part 
 		if old_name and old_name != cglyphname:
 			ret = self.rename_cglyph(fontname, cglyphname, old_name)
 
-		req = "select rcjk_insert_glyph('{}','{}',1,{!a},'{}','{}')".format(fontname, cglyphname, 
-																			xml, unicode,  self.username)
+		req = "select rcjk_insert_glyph('{}','{}',1,{!a},'{}','{}','{}')".format(fontname, cglyphname, 
+																				xml, colorglyph, 
+																				unicode,  self.username)
 		ret = self.__execute(req)
 		self.bf_log.info(f"\t\t-> INSERT CGLYPH {ret}")
 		return ret and ret[FIRST_LINE][FIRST_COLUMN] 
 
-	def update_cglyph(self, fontname: str, cglyphname: str, 
-							xml: str, unicode: str,
-							old_name:str = None) -> str:
-
+	def update_cglyph(self, fontname: str, cglyphname: str, xml: str, colorglyph: str, 
+								unicode: str, old_name:str = None) -> str:
 		# rename part 
 		if old_name and old_name != cglyphname:
 			ret = self.rename_cglyph(fontname, cglyphname, old_name)
 
-		req = "select rcjk_update_glyph('{}','{}',1,{!a},'{}','{}')".format(fontname, cglyphname, xml, unicode, self.username)
+		req = "select rcjk_update_glyph('{}','{}',1,{!a},'{}','{}','{}')".format(fontname, cglyphname, 
+																				xml, colorglyph,
+																				unicode, self.username)
 		ret = self.__execute(req)
 		self.bf_log.info(f"\t\t-> UPDATE CGLYPH {ret}")
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
@@ -340,6 +361,7 @@ class Rcjk2MysqlObject(MysqlPersit):
 	# 	self.bf_log.info(f"\t\t-> UNSET CGLYPH 2 DCOMPONENT ALL {ret}")
 	# 	return ret
 
+	#
 	def delete_cglyph(self, fontname: str, name: str):
 		req = "call rcjk_p_delete_cglyph('{}','{}', 1, '{}')".format(fontname, name, self.username)
 		self.bf_log.info(f"\t\t-> DELETE CGLYPH {fontname}.{name} from '{req}'")
@@ -352,28 +374,30 @@ class Rcjk2MysqlObject(MysqlPersit):
 		ret = self.__execute(req)
 		return ret
 
-	def insert_dcomponent(self, fontname: str, dcomponentname:str, xml: str,
+	def insert_dcomponent(self, fontname: str, dcomponentname:str, xml: str, colorglyph: str,
 							old_name:str = None) -> List:
 
 		# rename part 
 		if old_name and old_name != dcomponentname:
 			ret = self.rename_dcomponent(fontname, dcomponentname, old_name)
 
-		req = "select rcjk_insert_glyph('{}','{}',2,{!a},NULL,'{}')".format(fontname, dcomponentname, 
-																			xml, self.username)
+		req = "select rcjk_insert_glyph('{}','{}',2,{!a},'{}',NULL,'{}')".format(fontname, dcomponentname, 
+																			xml, colorglyph,
+																			self.username)
 		ret = self.__execute(req)
 		self.bf_log.info(f"\t\t-> INSERT DCOMPONENT {ret}")
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
-	def update_dcomponent(self, fontname: str, dcomponentname:str, xml: str,
+	def update_dcomponent(self, fontname: str, dcomponentname:str, xml: str, colorglyph: str,
 							old_name:str = None) -> List:
 
 		# rename part 
 		if old_name and old_name != dcomponentname:
 			ret = self.rename_dcomponent(fontname, dcomponentname, old_name)
 
-		req = "select rcjk_update_glyph('{}','{}',2,{!a},NULL,'{}')".format(fontname, dcomponentname, 
-																			xml, self.username)
+		req = "select rcjk_update_glyph('{}','{}',2,{!a},'{}',NULL,'{}')".format(fontname, dcomponentname, 
+																			xml, colorglyph, 
+																			self.username)
 		ret = self.__execute(req)
 		self.bf_log.info(f"\t\t-> UPDATE DCOMPONENT {ret}")
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
@@ -414,17 +438,15 @@ class Rcjk2MysqlObject(MysqlPersit):
 		ret = self.__execute(req)
 		return ret
 
-	def insert_aelement(self, fontname: str, 
-							aelementname:str, 
-							xml: str,
-							old_name:str = None
-							) -> int:
+	def insert_aelement(self, fontname: str, aelementname:str, xml: str, colorglyph: str,
+											old_name:str = None) -> int:
 		# rename part 
 		if old_name and old_name != aelementname:
 			ret = self.rename_aelement(fontname, aelementname, old_name)
 
-		req = "select rcjk_insert_glyph('{}','{}',3,{!a},NULL,'{}')".format(fontname,aelementname, 
-																			xml, self.username)
+		req = "select rcjk_insert_glyph('{}','{}',3,{!a},'{}',NULL,'{}')".format(fontname,aelementname, 
+																			xml, colorglyph, 
+																			self.username)
 		ret = self.__execute(req)		
 		self.bf_log.info(f"\t\t-> INSERT AELEMENT {ret}")
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
@@ -432,14 +454,16 @@ class Rcjk2MysqlObject(MysqlPersit):
 	def update_aelement(self, fontname: str, 
 							aelementname:str, 
 							xml: str,
+							colorglyph: str, 
 							old_name:str = None
 							) -> int:
 		# rename part 
 		if old_name and old_name != aelementname:
 			ret = self.rename_aelement(fontname, aelementname, old_name)
 
-		req = "select rcjk_update_glyph('{}','{}',3, {!a},NULL,'{}')".format(fontname, aelementname, 
-																			xml, self.username)
+		req = "select rcjk_update_glyph('{}','{}',3, {!a},'{}',NULL,'{}')".format(fontname, aelementname, 
+																			xml, colorglyph, 
+																			self.username)
 		ret = self.__execute(req)
 		self.bf_log.info(f"\t\t-> UPDATE AELEMENT {ret}")
 		return ret and ret[FIRST_LINE][FIRST_COLUMN]
@@ -692,14 +716,15 @@ class Rcjk2MysqlObject(MysqlPersit):
 	def on_transaction(self, name: str="trans1"):
 		try:
 			self.bf_log.info(f"\t\t +++++ START TRANSACTION +++++")
+			# self.curs.execute("START TRANSACTION")
 			self.conn.begin()
 			yield self
 		except:
-			self.bf_log.info(f"\t\t +++++ VALIDATE (COMMIT) +++++")
-			return self.conn.commit()
-		else:
-			self.bf_log.info(f"\t\t +++++ INVALIDATE (ROLLBACK) +++++")
+			self.bf_log.info(f"\t\t +++++ ROLLBACK +++++")
 			return self.conn.rollback()
+		else:
+			self.bf_log.info(f"\t\t +++++ COMMIT +++++")
+			return self.conn.commit()
 		
 
 	def validate(self):

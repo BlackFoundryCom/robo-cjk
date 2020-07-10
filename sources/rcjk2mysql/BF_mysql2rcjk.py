@@ -139,7 +139,9 @@ def read_font_from_mysql(bf_log, fontname: str, my_sql:bmy.Rcjk2MysqlObject,
 				for elem in res:
 					name = elem[bmy.MYSQL_DCAE_NAME]
 					xml = elem[bmy.MYSQL_DCAE_XML]
+					color = elem[bmy.MYSQL_DCAE_COLOR]
 					if ftype == bfs.CGLYPH:
+						color = elem[bmy.MYSQL_CG_COLOR]
 						unicode = elem[bmy.MYSQL_CG_UNICODE]
 						# bf_log.info(elem[:4])
 						bfs.BfCGlyph(bfont, name, unicode, xml)

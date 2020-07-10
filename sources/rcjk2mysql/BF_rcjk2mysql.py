@@ -243,7 +243,7 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 		bf_log.info("--------------------------- AE -----------------------------------")
 		# AELEMENT part 
 		for ae in bfont.aelements:
-			my_sql.insert_aelement(bfont.name, ae.name, ae.xml, ae.old_name)
+			my_sql.insert_aelement(bfont.name, ae.name, ae.xml, ae.color, ae.old_name)
 			# ADD AELAYER
 			for ael in ae.layers:
 				# bf_log.info(f"aelname: {ael.axisname}, lib: {ael.xml[:100]}")
@@ -253,7 +253,7 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 		bf_log.info("-------------------------- DC ------------------------------------")
 		for dc in bfont.dcomponents:
 			# LINK BETWEEN DCOMPONENT AND AELEMENT*
-			my_sql.insert_dcomponent(bfont.name, dc.name, dc.xml, dc.old_name)
+			my_sql.insert_dcomponent(bfont.name, dc.name, dc.xml, dc.color, dc.old_name)
 			for ael in dc.layers:
 				my_sql.insert_dc_layer(bfont.name, ael.axisname, dc.name, ael.layername, ael.xml)
 
@@ -264,7 +264,7 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 		bf_log.info("-------------------------- CG -----------------------------------")
 		for cg in bfont.cglyphs:
 			# LINK BETWEEN CGLYPH AND DCOMPONENT
-			my_sql.insert_cglyph(bfont.name, cg.name, cg.xml, cg.unicode, cg.old_name)
+			my_sql.insert_cglyph(bfont.name, cg.name, cg.xml, cg.color, cg.unicode, cg.old_name)
 			bf_log.info("-------------------------- CG LAYERS -----------------------------------")
 			for ael in cg.layers:
 				bf_log.info(f"{ ael.axisname:-^80s}")
@@ -322,7 +322,7 @@ def update_font_to_mysql(bf_log, bfont: bfs.BfFont, my_sql:BF_engine_mysql.Rcjk2
 					for cg in bfont.cglyphs:
 						if cg._changed:
 							bf_log.info(f"CG {cg.name} changed ....")
-							res = func(bfont.name, cg.name, cg.xml, cg.unicode, cg.old_name)
+							res = func(bfont.name, cg.name, cg.xml, cg.color, cg.unicode, cg.old_name)
 							bf_log.info(res)
 							for ael in cg.layers:
 								if ael._changed:
@@ -334,7 +334,7 @@ def update_font_to_mysql(bf_log, bfont: bfs.BfFont, my_sql:BF_engine_mysql.Rcjk2
 					for dc in bfont.dcomponents:
 						if dc._changed:
 							bf_log.info(f"DC {dc.name} changed ....")
-							res = func(bfont.name, dc.name, dc.xml, dc.old_name)
+							res = func(bfont.name, dc.name, dc.xml, dc.color, dc.old_name)
 							bf_log.info(res)
 							for ael in dc.layers:
 								if ael._changed:
@@ -346,7 +346,7 @@ def update_font_to_mysql(bf_log, bfont: bfs.BfFont, my_sql:BF_engine_mysql.Rcjk2
 					for ae in bfont.aelements:
 						if ae._changed:
 							bf_log.info(f"AE {ae.name} changed ....")
-							res = func(bfont.name, ae.name, ae.xml, ae.old_name)
+							res = func(bfont.name, ae.name, ae.xml, ae.color, ae.old_name)
 							bf_log.info(res)
 							for ael in ae.layers:
 								if ael._changed:
@@ -392,17 +392,17 @@ def duplicate_item_to_mysql(bf_log, item: bfs.BfItem, new_name: str,
 	# create a new one 
 	if item.item_type == bfs.CGLYPH:
 		if my_sql.lock_cglyph(item.font.name, item.name) == my_sql.username:
-			ret = my_sql.insert_cglyph(new_item.font.name, new_item.name, new_item.xml, new_item.unicode)
+			ret = my_sql.insert_cglyph(new_item.font.name, new_item.name, new_item.xml, new_item.color, new_item.unicode)
 			for ael in new_item.layers:
 				my_sql.insert_gc_layer(new_item.font.name, ael.axisname, new_item.name, ael.layername, ael.xml)
 	elif item.item_type == bfs.DCOMPONENT:
 		if my_sql.lock_dcomponent(item.font.name, item.name) == my_sql.username:
-			ret = my_sql.insert_dcomponent(new_item.font.name, new_item.name, new_item.xml)
+			ret = my_sql.insert_dcomponent(new_item.font.name, new_item.name, new_item.xml, new_item.color)
 			for ael in new_item.layers:
 				my_sql.insert_dc_layer(new_item.font.name, ael.axisname, new_item.name, ael.layername, ael.xml)
 	elif item.item_type == bfs.AELEMENT:
 		if my_sql.lock_aelement(item.font.name, item.name) == my_sql.username:
-			ret = my_sql.insert_aelement(new_item.font.name, new_item.name, new_item.xml)
+			ret = my_sql.insert_aelement(new_item.font.name, new_item.name, new_item.xml, new_item.color)
 			for ael in new_item.layers:
 				my_sql.insert_ae_layer(new_item.font.name, ael.axisname, new_item.name, ael.layername, ael.xml)
 
@@ -448,17 +448,18 @@ def new_item_to_mysql(bf_log, item_type: int, # one value from bfs.CGLYPH, bfs.D
 	# get all items already locked 
 	if item_type == bfs.CGLYPH:
 		new_item = bfs.BfCGlyph(bfont, new_name)
-		ret = my_sql.insert_cglyph(new_item.font.name, new_item.name, new_item.xml, new_item.unicode)
+		ret = my_sql.insert_cglyph(new_item.font.name, new_item.name, new_item.xml, 
+									new_item.color, new_item.unicode)
 		userlock = my_sql.lock_cglyph(new_item.font.name, new_item.name)
 
 	elif item_type == bfs.DCOMPONENT:
 		new_item = bfs.BfDComponent(bfont, new_name)
-		ret = my_sql.insert_dcomponent(new_item.font.name, new_item.name, new_item.xml)
+		ret = my_sql.insert_dcomponent(new_item.font.name, new_item.name, new_item.xml, new_item.color)
 		userlock = my_sql.lock_dcomponent(new_item.font.name, new_item.name)
 
 	elif item_type == bfs.AELEMENT:
 		new_item = bfs.BfAElement(bfont, new_name)
-		ret = my_sql.insert_aelement(new_item.font.name, new_item.name, new_item.xml)
+		ret = my_sql.insert_aelement(new_item.font.name, new_item.name, new_item.xml, new_item.color)
 		userlock = my_sql.lock_aelement(new_item.font.name, new_item.name)
 
 	# reset internal changed flag 
@@ -502,11 +503,11 @@ def update_item_to_mysql(bf_log, item: bfs.BfItem,
 					      }
 	if item._changed:
 		if item.item_type == bfs.CGLYPH:
-			my_sql.update_cglyph(item.font.name, item.name, item.xml, item.unicode, item.old_name)			
+			my_sql.update_cglyph(item.font.name, item.name, item.xml, item.color, item.unicode, item.old_name)			
 		elif item.item_type == bfs.DCOMPONENT:
-			my_sql.update_dcomponent(item.font.name, item.name, item.xml, item.old_name)
+			my_sql.update_dcomponent(item.font.name, item.name, item.xml, item.color, item.old_name)
 		elif item.item_type == bfs.AELEMENT:
-			my_sql.update_aelement(item.font.name, item.name, item.xml, item.old_name)
+			my_sql.update_aelement(item.font.name, item.name, item.xml, item.color, item.old_name)
 		
 	# all layers of this item
 	with my_sql.on_transaction("test"): 
