@@ -41,7 +41,6 @@ from views import PDFProofer
 from views import scriptingWindow
 # reload(scriptingWindow)
 from views import textCenter
-# from views import tableDelegate
 # reload(textCenter)
 
 import os, json, copy
@@ -627,12 +626,6 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement = List(
             (10, 160, 200, 190),
             [],
-            columnDescriptions = [
-                {"title":"name"},
-                # {"title":"markcolor", "width":40, "editable":False}
-                ],
-            drawFocusRing = False,
-            showColumnTitles = False,
             allowsMultipleSelection = False,
             doubleClickCallback = self.GlyphsListDoubleClickCallback,
             editCallback = self.GlyphsListEditCallback,
@@ -687,12 +680,6 @@ class RoboCJKView(BaseWindowController):
         self.w.deepComponent = List(
             (210, 160, 200, 190),
             [],
-            columnDescriptions = [
-                {"title":"name"},
-                # {"title":"markcolor", "width":40, "editable":False}
-                ],
-            drawFocusRing = False,
-            showColumnTitles = False,
             allowsMultipleSelection = False,
             doubleClickCallback = self.GlyphsListDoubleClickCallback,
             editCallback = self.GlyphsListEditCallback,
@@ -747,8 +734,7 @@ class RoboCJKView(BaseWindowController):
             [],
             columnDescriptions = [
                 {"title":"char", "width":20, "editable":False}, 
-                {"title":"name"},
-                # {"title":"markcolor", "width":40, "editable":False}
+                {"title":"name"}
                 ],
             drawFocusRing = False,
             showColumnTitles = False,
@@ -861,8 +847,7 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
-        charSet = [dict(name = x) for x in sorted(filteredList)]
-        self.w.atomicElement.set(charSet)
+        self.w.atomicElement.set(sorted(filteredList))
 
     def filterDeepComponentCallback(self, sender):
         filteredList = self.filterGlyphs(
@@ -876,8 +861,7 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
-        charSet = [dict(name = x) for x in sorted(filteredList)]
-        self.w.deepComponent.set(charSet)
+        self.w.deepComponent.set(sorted(filteredList))
 
     def filterCharacterGlyphCallback(self, sender):
         filteredList = self.filterGlyphs(
@@ -1208,37 +1192,18 @@ class RoboCJKView(BaseWindowController):
 
             self.RCJKI.toggleWindowController()
 
-            charSet = [dict(name = x) for x in self.currentFont.atomicElementSet]
-            self.w.atomicElement.set(charSet)
-            # self.atomicElementdelegate = tableDelegate.TableDelegate.alloc().initWithMaster(self.w.atomicElement)
-            # tableView = self.w.atomicElement.getNSTableView()
-            # tableView.setDelegate_(self.atomicElementdelegate)
-
-            charSet = [dict(name = x) for x in self.currentFont.deepComponentSet]
-            self.w.deepComponent.set(charSet)
-            # self.deepComponentdelegate = tableDelegate.TableDelegate.alloc().initWithMaster(self.w.deepComponent)
-            # tableView = self.w.deepComponent.getNSTableView()
-            # tableView.setDelegate_(self.deepComponentdelegate)
-            
+            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.deepComponent.set(self.currentFont.deepComponentSet)
             charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
             self.w.characterGlyph.set(charSet)
-            # self.characterGlyphdelegate = tableDelegate.TableDelegate.alloc().initWithMaster(self.w.characterGlyph)
-            # tableView = self.w.characterGlyph.getNSTableView()
-            # tableView.setDelegate_(self.characterGlyphdelegate)
-
-    # def setDelegateView(self):
-
-
-    # def tableView_dataCellForTableColumn_row_(self, tableView, tableColumn, row, designStep, glist):
-    #     self.RCJKI.tableView_dataCellForTableColumn_row_(tableView, tableColumn, row, self.w, glist, designStep, self.RCJKI.currentFont)
 
     def GlyphsListDoubleClickCallback(self, sender):
         items = sender.get()
         selection = sender.getSelection()
         if not selection: return
-        glyphName = items[selection[0]]["name"]
-        # if sender == self.w.characterGlyph:
-        #     glyphName = glyphName["name"]
+        glyphName = items[selection[0]]
+        if sender == self.w.characterGlyph:
+            glyphName = glyphName["name"]
         try:
             CurrentGlyphWindow().close()
         except:pass
@@ -1249,9 +1214,9 @@ class RoboCJKView(BaseWindowController):
         sel = sender.getSelection()
         if not sel or self.prevGlyphName is None or self.currentFont is None: 
             return
-        newGlyphName = sender.get()[sel[0]]["name"]
-        # if sender == self.w.characterGlyph:
-        #     newGlyphName = newGlyphName["name"]
+        newGlyphName = sender.get()[sel[0]]
+        if sender == self.w.characterGlyph:
+            newGlyphName = newGlyphName["name"]
         if newGlyphName == self.prevGlyphName: return
         if not self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName):
             if sender == self.w.characterGlyph:
@@ -1357,9 +1322,9 @@ class RoboCJKView(BaseWindowController):
     def _duplicateGlyph(self, UIList, glyphset):
         sel = UIList.getSelection()
         if not sel: return False
-        glyphName = UIList[sel[0]]["name"]
-        # if UIList == self.w.characterGlyph:
-        #     glyphName = glyphName["name"]
+        glyphName = UIList[sel[0]]
+        if UIList == self.w.characterGlyph:
+            glyphName = glyphName["name"]
         glyph = self.currentFont[glyphName]
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(glyph)
         user = self.RCJKI.currentFont.glyphLockedBy(glyph)
