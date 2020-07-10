@@ -177,7 +177,10 @@ class GroupPosition(Group):
         if not sel:
             return
         oldName = self.currentGroup
-        newName = sender.get()[sel[0]].get("groups")
+        get = sender.get()
+        print(get)
+        if not get: return
+        newName = get[sel[0]].get("groups")
         if newName == oldName: return
         self.hangulModule.groups.renameGroup(oldName, newName)
         self.currentGroup = newName

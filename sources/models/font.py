@@ -217,9 +217,9 @@ class Font():
                 file.write(json.dumps(self.dataBase))
         else:
             print(")-))-)")
-            self._BFont.database_data = str(self.dataBase)
+            self._BFont.database_data = json.dumps(self.dataBase)
             # print(self._BFont.database_data)
-            self.mysql.update_font_database_data(self.fontName, str(self.dataBase))
+            self.mysql.update_font_database_data(self.fontName, json.dumps(self.dataBase))
             print(self.mysql.select_font(self.fontName))
             # BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
             # print(self._BFont.database_data)
