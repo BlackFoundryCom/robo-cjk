@@ -123,15 +123,19 @@ class Rcjk2MysqlObject(MysqlPersit):
 	@contextmanager
 	def cmlogin(self, username: str, password: str) -> str:
 		try:
+			done = False
 			if self.login(username, password) > 0:
+				done = True
 				yield self
 
 		except:
 			self.bf_log.info("logout from ko ...")
-			self.logout(username, password)
+			if done:
+				self.logout(username, password)
 		else:
 			self.bf_log.info("logout from ok ...")
-			self.logout(username, password)
+			if done:
+				self.logout(username, password)
 
 
 
