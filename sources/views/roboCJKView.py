@@ -889,7 +889,7 @@ class RoboCJKView(BaseWindowController):
 
         if option2 == "that can be fully designed":
             l = []
-            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponents"]])
+            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont.get(x)._RGlyph.lib["robocjk.deepComponents"]])
             for name in self.currentFont.characterGlyphSet:
                 try:
                     c = chr(int(name[3:].split(".")[0], 16))
@@ -903,24 +903,24 @@ class RoboCJKView(BaseWindowController):
 
         elif option2 == "that are not empty":
             if glyphtype == "characterGlyph":
-                l = [x for x in allGlyphs if self.RCJKI.currentFont[x]._deepComponents or len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
             elif glyphtype == "deepComponent":
-                l = [x for x in allGlyphs if self.RCJKI.currentFont[x]._deepComponents or len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
             else:
-                l = [x for x in allGlyphs if len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if len(self.RCJKI.currentFont.get(x))]
             return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that have outlines":
-            l = [x for x in allGlyphs if len(self.RCJKI.currentFont[x])]
+            l = [x for x in allGlyphs if len(self.RCJKI.currentFont.get(x))]
             return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that are empty":
             if glyphtype == "characterGlyph":
-                l = [x for x in allGlyphs if not self.RCJKI.currentFont[x]._deepComponents and not len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
             elif glyphtype == "deepComponent":
-                l = [x for x in allGlyphs if not self.RCJKI.currentFont[x]._deepComponents and not len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
             else:
-                l = [x for x in allGlyphs if not len(self.RCJKI.currentFont[x])]
+                l = [x for x in allGlyphs if not len(self.RCJKI.currentFont.get(x))]
             return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that are in font":
