@@ -47,6 +47,7 @@ class Glyph(RGlyph):
     def __init__(self):
         super().__init__()
         self.type = None
+        self._RFont = None
         # self.preview = None
         self.sourcesList = []
 
@@ -76,7 +77,7 @@ class Glyph(RGlyph):
 
     @property
     def _RGlyph(self):
-        return self.currentFont._RFont[self.name]
+        return self._RFont[self.name]
 
     @property
     def flatComponents(self):
