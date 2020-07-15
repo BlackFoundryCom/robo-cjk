@@ -121,7 +121,7 @@ class Font():
             showUI = False
             )
         self._fullRFont = NewFont(
-            familyName=fontName, 
+            familyName="%s-full"%fontName, 
             styleName='Regular', 
             showUI = False
             )
@@ -176,6 +176,12 @@ class Font():
             data = tuple([hex(ord(x))[2:] for x in values])
             self.mysql.update_font_database_key(self.fontName, key, data)
             self.loadMysqlDataBase()
+
+    def get(self, name):
+        if self.mysqlFont:
+            return self._glyphs[self._fullRFont[name]]
+        else:
+            return self[x]
 
     def loadMysqlDataBase(self):
         self.dataBase = json.loads(self._BFont.database_data)
@@ -261,9 +267,9 @@ class Font():
         if not self.mysqlFont:
             return self.locker.myLockedGlyphs
         else:
-            cglyphs = [x[0] for x in self.mysql.select_locked_cglyphs(self.fontName)]
-            dcomponents = [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName)]
-            aelements = [x[0] for x in self.mysql.select_locked_aelements(self.fontName)]
+            cglyphs = [x[0] for x in self.mysql.select_locked_cglyphs(self.fontName) if x[1] == self.mysqlUserName]
+            dcomponents = [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName) if x[1] == self.mysqlUserName]
+            aelements = [x[0] for x in self.mysql.select_locked_aelements(self.fontName) if x[1] == self.mysqlUserName]
             return cglyphs + dcomponents + aelements
 
     def removeLockerFiles(self, glyphsnames:list = []):
@@ -395,7 +401,7 @@ class Font():
         AE_maxNumber = 0
         AE_averageVariation = []
         for n in self.atomicElementSet:
-            glyph = self[n]
+            glyph = self.get(n)
             if len(glyph._glyphVariations) > AE_maxNumber:
                 AE_maxNumber = len(glyph._glyphVariations)
                 AE_maxName = n
@@ -411,7 +417,7 @@ class Font():
         DC_maxNumber = 0
         DC_averageVariation = []
         for n in self.deepComponentSet:
-            glyph = self[n]
+            glyph = self.get(n)
             if not glyph._deepComponents:
                 DC_empty += 1
             else:
@@ -431,7 +437,7 @@ class Font():
         CG_withVariationanddeepcomponents = 0
         CG_empty = 0
         for n in self.characterGlyphSet:
-            glyph = self[n]
+            glyph = self.get(n)
             if glyph._deepComponents:
                 CG_withDC += 1
             if len(glyph):
@@ -447,7 +453,7 @@ class Font():
             if not glyph._deepComponents and not len(glyph):
                 CG_empty += 1
         string = f"""
-        Current state of {self.fontPath.split('/')[-1]}:\n
+        Current state of {self.fontName}:\n
           • AtomicElements :
             \t - {AE_empty} are empty,
             \t - maximum of glyph variation: '{AE_maxName}' with {AE_maxNumber} axis,
