@@ -45,6 +45,7 @@ CHECKING1 = (1, .5, 0, 1)
 CHECKING2 = (1, 1, 0, 1)
 CHECKING3 = (0, 0, 1, 1)
 VALIDATE = (0, 1, .5, 1)
+STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, VALIDATE)
 
 def setListAesthetic(element):
     element.getNSTableView().setUsesAlternatingRowBackgroundColors_(False)
@@ -242,10 +243,16 @@ class DCCG_View(CanvasGroup):
             )
 
         self.glyphState = PopUpButton(
-            (5, -265, -50, 20),
-            ["In Progress", "Checking round 1", "Checking round 2", "Checking round 3", "Validate"]
+            (5, -265, -100, 20),
+            ["In Progress", "Checking round 1", "Checking round 2", "Checking round 3", "Validate"],
+            callback = self.glyphStateCallback
             )
         # self.setglyphState()
+
+        self.glyphStateColor = ColorWell(
+            (-100, -265, -5, 20)
+            )
+        self.glyphStateColor.getNSColorWell().setBordered_(False)
 
         self.sourcesTitle = TextBox(
             (0, -240, -0, 20), 
@@ -314,20 +321,26 @@ class DCCG_View(CanvasGroup):
         self.selectedSourceAxis = None
 
     def setglyphState(self):
-        color = self.RCJKI.currentGlyph.markColor
+        color = self.RCJKI.currentGlyph.stateColor
         state = self.glyphState
         if color is None:
             state.set(0)
-        elif color == (1, 0, 0, 1):
+            self.glyphStateCallback(state)
+        elif color == INPROGRESS:
             state.set(0)
-        elif color == (1, .5, 0, 1):
+        elif color == CHECKING1:
             state.set(1)
-        elif color == (1, 1, 0, 1):
+        elif color == CHECKING2:
             state.set(2)
-        elif color == (0, 0, 1, 1):
+        elif color == CHECKING3:
             state.set(3)
-        else:
+        elif color == VALIDATE:
             state.set(4)
+
+    def glyphStateCallback(self, sender):
+        state = sender.get()
+        self.RCJKI.currentGlyph.stateColor = STATE_COLORS[state]
+        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
 
     def roundToGridCallback(self, sender):
         self.RCJKI.roundToGrid = sender.get()

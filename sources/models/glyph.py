@@ -62,9 +62,12 @@ class Glyph(RGlyph):
         # self.transformationWithMouse = False
 
     @property
-    def color(self):
+    def stateColor(self):
         return self._RGlyph.mark
-    
+
+    @stateColor.setter
+    def stateColor(self, value:tuple = (1, 1, 1, 1)):
+        self._RGlyph.markColor = value
 
     def save(self):
         self.lib.clear()
