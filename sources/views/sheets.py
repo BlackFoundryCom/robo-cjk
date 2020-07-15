@@ -173,6 +173,7 @@ class SelectAtomicElementSheet():
         sel = sender.getSelection()
         if not sel: return
         self.atomicElementName = sender.get()[sel[0]]
+        self.RCJKI.currentFont[self.atomicElementName]
         self.previewGlyph = self.RCJKI.currentFont._RFont[self.atomicElementName]
         self.parent.sheet.canvasPreview.update()
     
@@ -197,7 +198,7 @@ class SelectFontVariationSheet():
         self.RCJKI = RCJKI
         self.view = view
         self.parent = CurrentGlyphWindow()
-        self.parent.sheet = Sheet((300, 40), self.parent.w)
+        self.parent.sheet = Sheet((300, 140), self.parent.w)
         l = [axis for axis in self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', []) if axis not in self.RCJKI.currentGlyph._glyphVariations.axes]
         if not l: l=[""]
         popupbuttonlist = PopUpButtonListCell(l)
@@ -487,6 +488,7 @@ class NewCharacterGlyph:
         self.deepComponentList = []
         for n in self.RCJKI.currentFont.deepComponentSet:
             if not n.startswith("DC"): continue
+            if not int(n.split('_')[1], 16) in range(0x110000): continue
             cell = dict(sel = 0, char = chr(int(n.split('_')[1], 16)))
             if cell not in self.deepComponentList:
                 self.deepComponentList.append(cell)
