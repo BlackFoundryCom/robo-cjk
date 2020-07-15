@@ -243,6 +243,7 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 		bf_log.info("--------------------------- AE -----------------------------------")
 		# AELEMENT part 
 		for ae in bfont.aelements:
+			bf_log.info(f"{ ae.name:-^80s}")
 			my_sql.insert_aelement(bfont.name, ae.name, ae.xml, ae.color, ae.old_name)
 			# ADD AELAYER
 			for ael in ae.layers:
@@ -253,6 +254,7 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 		bf_log.info("-------------------------- DC ------------------------------------")
 		for dc in bfont.dcomponents:
 			# LINK BETWEEN DCOMPONENT AND AELEMENT*
+			bf_log.info(f"{ dc.name:-^80s}")
 			my_sql.insert_dcomponent(bfont.name, dc.name, dc.xml, dc.color, dc.old_name)
 			for ael in dc.layers:
 				my_sql.insert_dc_layer(bfont.name, ael.axisname, dc.name, ael.layername, ael.xml)
@@ -264,6 +266,7 @@ def insert_newfont_to_mysql(bf_log, bfont:bfs.BfFont, my_sql:BF_engine_mysql.Rcj
 		bf_log.info("-------------------------- CG -----------------------------------")
 		for cg in bfont.cglyphs:
 			# LINK BETWEEN CGLYPH AND DCOMPONENT
+			bf_log.info(f"{ cg.name:-^80s}")
 			my_sql.insert_cglyph(bfont.name, cg.name, cg.xml, cg.color, cg.unicode, cg.old_name)
 			bf_log.info("-------------------------- CG LAYERS -----------------------------------")
 			for ael in cg.layers:
