@@ -40,6 +40,13 @@ refresh = decorators.refresh
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 numberFormatter = NumberFormatter()
 
+INPROGRESS = (1, 0, 0, 1)
+CHECKING1 = (1, .5, 0, 1)
+CHECKING2 = (1, 1, 0, 1)
+CHECKING3 = (0, 0, 1, 1)
+VALIDATE = (0, 1, .5, 1)
+STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, VALIDATE)
+
 def setListAesthetic(element):
     element.getNSTableView().setUsesAlternatingRowBackgroundColors_(False)
     element.getNSTableView().setBackgroundColor_(transparentColor)
@@ -220,7 +227,7 @@ class DCCG_View(CanvasGroup):
         # self.verticalLine = VerticalLine((-1, -275, -0, -0))
 
         self.roundToGrid = CheckBox(
-            (5, -265, -0, 20),
+            (5, -285, -0, 20),
             'Round to grid',
             value = self.RCJKI.roundToGrid,
             callback = self.roundToGridCallback,
@@ -228,12 +235,24 @@ class DCCG_View(CanvasGroup):
             )
         
         self.drawOnlyDeepolation = CheckBox(
-            (150, -265, -0, 20),
+            (150, -285, -0, 20),
             'Draw only deepolation',
             value = self.RCJKI.drawOnlyDeepolation,
             callback = self.drawOnlyDeepolationCallback,
             sizeStyle = "small"
             )
+
+        self.glyphState = PopUpButton(
+            (5, -265, -100, 20),
+            ["In Progress", "Checking round 1", "Checking round 2", "Checking round 3", "Validate"],
+            callback = self.glyphStateCallback
+            )
+        # self.setglyphState()
+
+        self.glyphStateColor = ColorWell(
+            (-100, -265, -5, 20)
+            )
+        self.glyphStateColor.getNSColorWell().setBordered_(False)
 
         self.sourcesTitle = TextBox(
             (0, -240, -0, 20), 
@@ -301,6 +320,29 @@ class DCCG_View(CanvasGroup):
         setListAesthetic(self.slidersList)
         self.selectedSourceAxis = None
 
+    def setglyphState(self):
+        color = self.RCJKI.currentGlyph.stateColor
+        state = self.glyphState
+        if color is None:
+            state.set(0)
+            self.glyphStateCallback(state)
+        elif color == INPROGRESS:
+            state.set(0)
+        elif color == CHECKING1:
+            state.set(1)
+        elif color == CHECKING2:
+            state.set(2)
+        elif color == CHECKING3:
+            state.set(3)
+        elif color == VALIDATE:
+            state.set(4)
+
+    def glyphStateCallback(self, sender):
+        return
+        state = sender.get()
+        self.RCJKI.currentGlyph.stateColor = STATE_COLORS[state]
+        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
+
     def roundToGridCallback(self, sender):
         self.RCJKI.roundToGrid = sender.get()
         self.RCJKI.updateDeepComponent(update = False)
@@ -316,6 +358,7 @@ class DCCG_View(CanvasGroup):
         elif self.RCJKI.isCharacterGlyph:
             self.sourcesTitle.set("Font Variation's Axis")
             self.sliderTitle.set("Deep Component's Axis")
+        self.setglyphState()
 
     @lockedProtect
     def sourcesListDoubleClickCallback(self, sender):
@@ -568,8 +611,9 @@ class GlyphPreviewCanvas(CanvasGroup):
                 ]
         try:
             # print(type(self.glyph.color), self.glyph.color)
-            # if self.glyph._RGlyph.markColor is not None:
-            #     # print('here', self.glyph._RGlyph.markColor)
+            if self.glyph._RGlyph.markColor is not None:
+                print("here")
+                # print('here', self.glyph._RGlyph.markColor)
             #     mjdt.fill(*(1, 0, 0, 1))
             mjdt.rect(0, 0, 200, 20)
             mjdt.fill(None)

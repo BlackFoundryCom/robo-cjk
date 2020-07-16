@@ -47,6 +47,7 @@ class Glyph(RGlyph):
     def __init__(self):
         super().__init__()
         self.type = None
+        self._RFont = None
         # self.preview = None
         self.sourcesList = []
 
@@ -61,9 +62,12 @@ class Glyph(RGlyph):
         # self.transformationWithMouse = False
 
     @property
-    def color(self):
+    def stateColor(self):
         return self._RGlyph.mark
-    
+
+    @stateColor.setter
+    def stateColor(self, value:tuple = (1, 1, 1, 1)):
+        self._RGlyph.markColor = value
 
     def save(self):
         self.lib.clear()
@@ -76,7 +80,7 @@ class Glyph(RGlyph):
 
     @property
     def _RGlyph(self):
-        return self.currentFont._RFont[self.name]
+        return self._RFont[self.name]
 
     @property
     def flatComponents(self):

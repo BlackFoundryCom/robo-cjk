@@ -135,7 +135,7 @@ class GlyphUsingDC(Group):
     def characterGlyphUsing(self, code):
         characters = []
         for name in self.c.RCJKI.currentFont.characterGlyphSet:
-            glyph = self.c.RCJKI.currentFont[name]
+            glyph = self.c.RCJKI.currentFont.get(name)
             for dc in glyph._deepComponents:
                 if code in dc.name:
                     characters.append(name)
@@ -180,7 +180,7 @@ class DCUsingAE(Group):
     def deepComponentGlyphUsing(self, aename):
         deepComponents = []
         for name in self.c.RCJKI.currentFont.deepComponentSet:
-            glyph = self.c.RCJKI.currentFont[name]
+            glyph = self.c.RCJKI.currentFont.get(name)
             for dc in glyph._deepComponents:
                 if aename == dc.name:
                     deepComponents.append(name)
@@ -276,7 +276,6 @@ class TextCenter:
                             size=180, 
                             collapsed=True, 
                             canResize=1),
-
                        ]
 
         self.w.accordionView = AccordionView((0, 120, 200, -0),

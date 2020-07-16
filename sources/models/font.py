@@ -22,6 +22,7 @@ from mojo.roboFont import *
 import json
 import os
 import copy
+import time
 
 from imp import reload
 from utils import decorators, files, locker
@@ -120,10 +121,11 @@ class Font():
             showUI = False
             )
         self._fullRFont = NewFont(
-            familyName=fontName, 
+            familyName="%s-full"%fontName, 
             styleName='Regular', 
             showUI = False
             )
+        self._fullGlyphs = {}
         self.fontName = fontName
         self.mysql = mysql
         self.mysqlUserName = mysqlUserName
@@ -142,6 +144,18 @@ class Font():
         self.dataBase = json.loads(database)
         # print(self.dataBase)
         self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
+        start = time.time()
+        for glyphset in [self.atomicElementSet, self.deepComponentSet, self.characterGlyphSet]:
+            for name in glyphset:
+                self.getmySQLGlyph(name, font = self._fullRFont)
+        stop = time.time()
+        print("full font need:", stop-start)
+    #     self.insertFullRFont()
+
+    # def insertFullRFont(self):
+    #     print(self.atomicElementSet[1])
+    #     print(self.deepComponentSet[1])
+    #     print(self.characterGlyphSet[1])
 
     def _initFontLib(self, lib):
         for k, v in lib.items():
@@ -162,6 +176,12 @@ class Font():
             data = tuple([hex(ord(x))[2:] for x in values])
             self.mysql.update_font_database_key(self.fontName, key, data)
             self.loadMysqlDataBase()
+
+    def get(self, name):
+        if self.mysqlFont:
+            return self._glyphs[self._fullRFont[name]]
+        else:
+            return self[x]
 
     def loadMysqlDataBase(self):
         self.dataBase = json.loads(self._BFont.database_data)
@@ -216,14 +236,11 @@ class Font():
             with open(os.path.join(self.fontPath, "database.json"), 'w', encoding="utf-8") as file:
                 file.write(json.dumps(self.dataBase))
         else:
-            print(")-))-)")
             self._BFont.database_data = json.dumps(self.dataBase)
             # print(self._BFont.database_data)
             self.mysql.update_font_database_data(self.fontName, json.dumps(self.dataBase))
-            print(self.mysql.select_font(self.fontName))
             # BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
             # print(self._BFont.database_data)
-            print(")-))-)")
 
     def batchUnlockGlyphs(self, glyphs:list = []):
         if not self.mysqlFont:
@@ -250,9 +267,9 @@ class Font():
         if not self.mysqlFont:
             return self.locker.myLockedGlyphs
         else:
-            cglyphs = [x[0] for x in self.mysql.select_locked_cglyphs(self.fontName)]
-            dcomponents = [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName)]
-            aelements = [x[0] for x in self.mysql.select_locked_aelements(self.fontName)]
+            cglyphs = [x[0] for x in self.mysql.select_locked_cglyphs(self.fontName) if x[1] == self.mysqlUserName]
+            dcomponents = [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName) if x[1] == self.mysqlUserName]
+            aelements = [x[0] for x in self.mysql.select_locked_aelements(self.fontName) if x[1] == self.mysqlUserName]
             return cglyphs + dcomponents + aelements
 
     def removeLockerFiles(self, glyphsnames:list = []):
@@ -326,7 +343,9 @@ class Font():
     def shallowDocument(self):
         return self._RFont.shallowDocument()
 
-    def getmySQLGlyph(self, name):
+    def getmySQLGlyph(self, name, font = None):
+        if font is None:
+            font = self._RFont
 
         def insertGlyph(layer, name, xml):
             layer.newGlyph(name)
@@ -354,7 +373,7 @@ class Font():
         #     message(f'{name} not in font')
         if BGlyph is None: return
         xml = BGlyph.xml
-        self.insertGlyph(glyph, xml, 'foreground')
+        self.insertGlyph(glyph, xml, 'foreground', font)
 
         for layer in BGlyph.layers:
             layerName = layer.layername
@@ -368,8 +387,8 @@ class Font():
 
             xml = layer.xml
 
-            self._RFont.newLayer(layerName)
-            self.insertGlyph(glyph, xml, layerName)
+            font.newLayer(layerName)
+            self.insertGlyph(glyph, xml, layerName, font)
 
     @property
     def _fontLayers(self):
@@ -382,7 +401,7 @@ class Font():
         AE_maxNumber = 0
         AE_averageVariation = []
         for n in self.atomicElementSet:
-            glyph = self[n]
+            glyph = self.get(n)
             if len(glyph._glyphVariations) > AE_maxNumber:
                 AE_maxNumber = len(glyph._glyphVariations)
                 AE_maxName = n
@@ -398,7 +417,7 @@ class Font():
         DC_maxNumber = 0
         DC_averageVariation = []
         for n in self.deepComponentSet:
-            glyph = self[n]
+            glyph = self.get(n)
             if not glyph._deepComponents:
                 DC_empty += 1
             else:
@@ -418,7 +437,7 @@ class Font():
         CG_withVariationanddeepcomponents = 0
         CG_empty = 0
         for n in self.characterGlyphSet:
-            glyph = self[n]
+            glyph = self.get(n)
             if glyph._deepComponents:
                 CG_withDC += 1
             if len(glyph):
@@ -434,7 +453,7 @@ class Font():
             if not glyph._deepComponents and not len(glyph):
                 CG_empty += 1
         string = f"""
-        Current state of {self.fontPath.split('/')[-1]}:\n
+        Current state of {self.fontName}:\n
           • AtomicElements :
             \t - {AE_empty} are empty,
             \t - maximum of glyph variation: '{AE_maxName}' with {AE_maxNumber} axis,
@@ -595,14 +614,21 @@ class Font():
         self[glyph.name]._RGlyph.lib.clear()
         self[glyph.name]._RGlyph.lib.update(self[glyph.name].lib)
 
-    def insertGlyph(self, glyph, string, layerName):  
+    def insertGlyph(self, glyph, string, layerName, font = None):  
         if glyph is None: return
         if string is None: return
+        if font is None:
+            font = self._RFont
+        #     _glyphs = self._glyphs
+        # else:
+        #     _glyphs = self._fullGlyphs
         glyph.setParent(self)
         pen = glyph.naked().getPointPen()
         readGlyphFromString(string, glyph.naked(), pen)
-        layer = self._RFont.getLayer(layerName)
+        layer = font.getLayer(layerName)
         layer.insertGlyph(glyph)
+        # if font == self._RFont:
+        glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
         glyph._initWithLib()
 
