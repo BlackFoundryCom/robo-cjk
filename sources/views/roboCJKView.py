@@ -523,7 +523,7 @@ class RoboCJKView(BaseWindowController):
 
         self.w.loadProjectButton = Button(
             (10, 10, 200, 20), 
-            "Load Git Repo", 
+            "Login & load projects", 
             callback = self.loadProjectButtonCallback,
             )
         self.w.saveProjectButton = Button(
