@@ -359,7 +359,7 @@ class BfItem(BfBaseObj):
 
 	@property
 	def color(self):
-		return str(self._color)
+		return ",".join(str(x) for x in self._color)
 
 	@property
 	def tcolor(self):
@@ -485,7 +485,7 @@ class BfItem(BfBaseObj):
 			try:
 				data = plistlib.loads(str_2_bytes(self.xml))
 				x = data[XML_COLOR_MARKUP]
-				self._color = x.split(',')
+				self._color = tuple([float(x) for x in x.split(',')]) 
 			except Exception as e:
 				pass
 
