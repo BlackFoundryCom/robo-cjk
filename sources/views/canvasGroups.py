@@ -338,6 +338,7 @@ class DCCG_View(CanvasGroup):
             state.set(4)
 
     def glyphStateCallback(self, sender):
+        return
         state = sender.get()
         self.RCJKI.currentGlyph.stateColor = STATE_COLORS[state]
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
