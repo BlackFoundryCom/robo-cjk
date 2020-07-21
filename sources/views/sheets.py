@@ -756,7 +756,11 @@ class Login:
         self.w.close()
 
     def closeCallback(self, sender):
-        if not self.w.git.userName.get() or not self.w.git.password.get() or not self.w.git.hostlocker.get(): return
+        if not self.w.segmentedButton.get():
+            if not self.w.mysql.userName.get() or not self.w.mysql.password.get():
+                return
+        else:
+            if not self.w.git.userName.get() or not self.w.git.password.get() or not self.w.git.hostlocker.get(): return
 
         self.RCJKI.gitUserName = self.w.git.userName.get()
         self.RCJKI.gitPassword = self.w.git.password.get()
