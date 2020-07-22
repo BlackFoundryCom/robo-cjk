@@ -611,7 +611,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                 ]
         try:
             # print(type(self.glyph.color), self.glyph.color)
-            if self.glyph._RGlyph.markColor is not None:
+            if self.glyph.stateColor is not None:
                 print("here")
                 # print('here', self.glyph._RGlyph.markColor)
             #     mjdt.fill(*(1, 0, 0, 1))

@@ -778,16 +778,18 @@ class Font():
         # elif glyphtype == "aelements":
         #     bglyph = self._BFont.get_aelement(name)
         bglyph = self._getBFItem(name)
-            
+        # print("save1")
         for layer in self._RFont.layers:
             if layer.name == "foreground": continue
+            # print("save1.1")
             f = self._RFont.getLayer(layer.name)
             if not set([name])-set(f.keys()):
+                # print("save1.2")
                 variations = glyph._glyphVariations
                 layerGlyph = f[name]
                 layerxml = layerGlyph.dumpToGLIF()
                 blayerGlyph = bglyph.get_layer_name(layer.name)
-
+                # print("save1.3")
                 if blayerGlyph:
                     blayerGlyph.set_xml(layerxml)
                 else:
@@ -800,7 +802,7 @@ class Font():
                             axisname = k
                             break
                     if not axisname: continue
-
+                    # print("save1.4")
                     l = bfs.BfLayer(
                         bglyph, 
                         axisname, 
@@ -808,12 +810,13 @@ class Font():
                         layerxml
                         )
                     l._changed = True
-
+        # print("save2")
         bglyph.rename(name)
+        # print("save3")
         bglyph.set_xml(xml)
-
+        # print("save4")
         BF_rcjk2mysql.update_item_to_mysql(self.bf_log, bglyph, self.mysql)
-
+        # print("save5")
 
     @gitCoverage(msg = 'font save')
     def save(self):

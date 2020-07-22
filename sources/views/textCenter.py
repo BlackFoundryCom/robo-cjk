@@ -329,7 +329,7 @@ class TextCenter:
 
     def draw(self, info):
         self.w.pointSize.set(self.w.multiLineView.getPointSize())
-        glyph = self.RCJKI.currentFont[info["glyph"].name]
+        glyph = self.RCJKI.currentFont.get(info["glyph"].name)
         scale = info["scale"]
 
         def drawVariation(glyph, sourcelist, drawer):
@@ -351,10 +351,14 @@ class TextCenter:
                     )
 
         if glyph.type in ['deepComponent', 'characterGlyph']:
+            print("glyph", glyph)
             if self.sourcesList:# and glyph.glyphVariations:
                 try:
+                    print("Step1")
+                    print("glyph", glyph)
                     drawVariation(glyph, self.sourcesList, self.RCJKI.drawer)
                 except:
+                    print("finally Step2")
                     drawPreview(glyph, self.RCJKI.drawer)
                 # glyph.preview.computeDeepComponentsPreview(self.sourcesList, update = False)
                 # self.RCJKI.drawer.drawVariationPreview(
@@ -364,6 +368,7 @@ class TextCenter:
                 #         (0, 0, 0, 0)
                 #         )
             else:
+                print("Step3")
                 drawPreview(glyph, self.RCJKI.drawer)
                 # glyph.preview.computeDeepComponents(update = False)
                 # self.RCJKI.drawer.drawAxisPreview(
