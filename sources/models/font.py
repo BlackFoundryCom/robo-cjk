@@ -305,22 +305,30 @@ class Font():
             yield self[name]
 
     def __getitem__(self, name):
+        def _returnGlyph(name):
+            try:
+                print('will return %s from self._fullRFont'%name)
+                return self._glyphs[self._fullRFont[name]]
+            except:
+                print('will return %s from self._RFont'%name)
+                return self._glyphs[self._RFont[name]]
+
+
         if self.mysqlFont:
             try:
                 if not isinstance(name, str):
                     name = name["name"]
-                # self.getmySQLGlyph(name)
                 if not set([name]) - set(self._RFont.keys()):
-                    return self._glyphs[self._RFont[name]]
+                    _returnGlyph(name)
                 else:
                     self.getmySQLGlyph(name)
-                    return self._glyphs[self._RFont[name]]
+                    _returnGlyph(name)
             except:
                 if isinstance(name, dict):
                     name = name["name"]
                 self.getmySQLGlyph(name)
-                return self._glyphs[self._RFont[name]]
-        return self._glyphs[self._RFont[name]]
+                _returnGlyph(name)
+        _returnGlyph(name)
 
     def __len__(self):
         return len(self._RFont.keys())
