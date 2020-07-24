@@ -305,30 +305,22 @@ class Font():
             yield self[name]
 
     def __getitem__(self, name):
-        def _returnGlyph(name):
-            try:
-                print('will return %s from self._fullRFont'%name)
-                return self._glyphs[self._fullRFont[name]]
-            except:
-                print('will return %s from self._RFont'%name)
-                return self._glyphs[self._RFont[name]]
-
-
         if self.mysqlFont:
             try:
                 if not isinstance(name, str):
                     name = name["name"]
+                # self.getmySQLGlyph(name)
                 if not set([name]) - set(self._RFont.keys()):
-                    _returnGlyph(name)
+                    return self._glyphs[self._RFont[name]]
                 else:
                     self.getmySQLGlyph(name)
-                    _returnGlyph(name)
+                    return self._glyphs[self._RFont[name]]
             except:
                 if isinstance(name, dict):
                     name = name["name"]
                 self.getmySQLGlyph(name)
-                _returnGlyph(name)
-        _returnGlyph(name)
+                return self._glyphs[self._RFont[name]]
+        return self._glyphs[self._RFont[name]]
 
     def __len__(self):
         return len(self._RFont.keys())
@@ -786,18 +778,16 @@ class Font():
         # elif glyphtype == "aelements":
         #     bglyph = self._BFont.get_aelement(name)
         bglyph = self._getBFItem(name)
-        # print("save1")
+            
         for layer in self._RFont.layers:
             if layer.name == "foreground": continue
-            # print("save1.1")
             f = self._RFont.getLayer(layer.name)
             if not set([name])-set(f.keys()):
-                # print("save1.2")
                 variations = glyph._glyphVariations
                 layerGlyph = f[name]
                 layerxml = layerGlyph.dumpToGLIF()
                 blayerGlyph = bglyph.get_layer_name(layer.name)
-                # print("save1.3")
+
                 if blayerGlyph:
                     blayerGlyph.set_xml(layerxml)
                 else:
@@ -810,7 +800,7 @@ class Font():
                             axisname = k
                             break
                     if not axisname: continue
-                    # print("save1.4")
+
                     l = bfs.BfLayer(
                         bglyph, 
                         axisname, 
@@ -818,13 +808,12 @@ class Font():
                         layerxml
                         )
                     l._changed = True
-        # print("save2")
+
         bglyph.rename(name)
-        # print("save3")
         bglyph.set_xml(xml)
-        # print("save4")
+
         BF_rcjk2mysql.update_item_to_mysql(self.bf_log, bglyph, self.mysql)
-        # print("save5")
+
 
     @gitCoverage(msg = 'font save')
     def save(self):

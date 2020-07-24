@@ -600,7 +600,6 @@ class GlyphPreviewCanvas(CanvasGroup):
         if not self.RCJKI.get("currentFont"): return
         if not self.glyphName: return
         self.glyph = self.RCJKI.currentFont[self.glyphName]
-        if self.glyph is None: return 
         d = self.glyph._glyphVariations
         if self.glyph.type ==  "atomicElement":
             self.glyph.sourcesList = [
@@ -612,7 +611,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                 ]
         try:
             # print(type(self.glyph.color), self.glyph.color)
-            if self.glyph.stateColor is not None:
+            if self.glyph._RGlyph.markColor is not None:
                 print("here")
                 # print('here', self.glyph._RGlyph.markColor)
             #     mjdt.fill(*(1, 0, 0, 1))

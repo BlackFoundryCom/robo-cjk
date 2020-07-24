@@ -280,7 +280,7 @@ class RoboCJKController(object):
             styleName='Regular', 
             showUI = False
             )
-        self.currentFont._initFontLib(self.currentFont.fontLib)
+        
 
     def closeimportDCFromCG(self):
         if self.importDCFromCG is not None:

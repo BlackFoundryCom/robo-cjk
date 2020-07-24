@@ -63,9 +63,7 @@ class Glyph(RGlyph):
 
     @property
     def stateColor(self):
-        if self._RGlyph is None:
-            return None
-        return self._RGlyph.markColor
+        return self._RGlyph.mark
 
     @stateColor.setter
     def stateColor(self, value:tuple = (1, 1, 1, 1)):
