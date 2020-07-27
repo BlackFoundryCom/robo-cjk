@@ -109,7 +109,7 @@ class Group:
 	def users(self):
 		return self._users
 
-	# IMPORT / EXPORT
+	# Import / Export
 	# --------------------
 
 	def initGroup(self, data):
@@ -270,11 +270,12 @@ class BackLogGlyph:
 	
 class Team:
 
-	__slots__ = '_backlog_glyphs', '_groups'
+	__slots__ = '_backlog_glyphs', '_groups', '_manager'
 
 	def __init__(self):
 		self._backlog_glyphs = BackLogGlyph()
 		self._groups = Groups()
+		self._manager = str()
 
 	# Properties
 	# --------------------
@@ -288,10 +289,18 @@ class Team:
 		self._backlog_glyphs = BackLogGlyph(list(value))
 
 	@property
+	def manager(self):
+		return self._manager
+
+	@manager.setter
+	def manager(self, value):
+		self._manager = value
+
+	@property
 	def groups(self):
 		return self._groups
 
-	# IMPORT / EXPORT
+	# Import / Export
 	# --------------------
 	
 	def initFromJSON(self, data:dict):
@@ -305,13 +314,15 @@ class Team:
 			}
 		"""
 		self._backlog_glyphs = BackLogGlyph(data.get("backlog_glyphs", ""))
+		self._manager = data.get("manager", "")
 		for groupname in data.get("groups"):
 			groupData = data.get("groups")[groupname]
 			self._groups.add(groupname, groupData)
 
 	def _asDict(self):
 		return {'backlog_glyphs': self.backlog_glyphs,
-		'groups' : self._groups.export()
+		'groups' : self._groups.export(),
+		'manager': self.manager
 		}
 
 	def export(self):
@@ -365,6 +376,7 @@ if __name__ == '__main__':
 
 	teamjson = {
 		"backlog_glyphs" : 'abcdefhj',
+		"manager": 'claire',
 		"groups": {
 					"group1": {
 								"backlog_glyphs": "klmnop",
@@ -465,14 +477,14 @@ if __name__ == '__main__':
 
 	print("\n ---- TEAM ----")
 
-	ruosiGlyphs = team.getUserGlyphs("ruosi")	
-	print("ruosiGlyphs ->", ruosiGlyphs)
+	glyphs = team.getUserGlyphs("Jeremie")	
+	print("JeremieGlyphs ->", glyphs)
 
 	totoGlyphs = team.getUserGlyphs("toto")	
 	print("totoGlyphs ->", totoGlyphs)
 
-	ruosiGroup = team.getUserGroup("ruosi")	
-	print("ruosi's group is ->", ruosiGroup)
+	group = team.getUserGroup("Jeremie")	
+	print("Jeremie's group is ->", group)
 
 	# help(team)
 
