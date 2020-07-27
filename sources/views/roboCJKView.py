@@ -1230,6 +1230,15 @@ class RoboCJKView(BaseWindowController):
                 sender.set(charSet)
             self.setGlyphNameToCansvas(sender, self.prevGlyphName)
 
+        self.w.atomicElement.setSelection([])
+        self.w.deepComponent.setSelection([])
+        self.w.characterGlyph.setSelection([])
+
+        self.w.atomicElement.set(self.currentFont.atomicElementSet)
+        self.w.deepComponent.set(self.currentFont.deepComponentSet)
+        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+        self.w.characterGlyph.set(charSet)
+
     def GlyphsListSelectionCallback(self, sender):
         if not sender.getSelection(): return
         for lists in self.lists:
