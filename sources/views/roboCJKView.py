@@ -1239,6 +1239,9 @@ class RoboCJKView(BaseWindowController):
         charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
         self.w.characterGlyph.set(charSet)
 
+        index = sender.get().index(newGlyphName)
+        sender.setSelection([index])
+
     def GlyphsListSelectionCallback(self, sender):
         if not sender.getSelection(): return
         for lists in self.lists:
