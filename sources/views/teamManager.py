@@ -267,6 +267,20 @@ class BackLogGlyph:
 	def __iter__(self):
 		for x in self._glyphs:
 			yield x
+
+class Manager:
+
+	def __init__(self, manager = []):
+		self._manager = set(manager)
+
+	def add(self, user):
+		self._manager.add(user)
+
+	def remove(self, user):
+		self._manager.remove(user)
+
+	def export(self):
+		return list(self._manager)
 	
 class Team:
 
@@ -275,7 +289,7 @@ class Team:
 	def __init__(self):
 		self._backlog_glyphs = BackLogGlyph()
 		self._groups = Groups()
-		self._manager = str()
+		self._manager = Manager()
 
 	# Properties
 	# --------------------
@@ -294,7 +308,7 @@ class Team:
 
 	@manager.setter
 	def manager(self, value):
-		self._manager = value
+		self._manager = Manager(value)
 
 	@property
 	def groups(self):
@@ -314,7 +328,7 @@ class Team:
 			}
 		"""
 		self._backlog_glyphs = BackLogGlyph(data.get("backlog_glyphs", ""))
-		self._manager = data.get("manager", "")
+		self._manager = Manager(data.get("manager", []))
 		for groupname in data.get("groups"):
 			groupData = data.get("groups")[groupname]
 			self._groups.add(groupname, groupData)
@@ -322,7 +336,7 @@ class Team:
 	def _asDict(self):
 		return {'backlog_glyphs': self.backlog_glyphs,
 		'groups' : self._groups.export(),
-		'manager': self.manager
+		'manager': self._manager.export()
 		}
 
 	def export(self):
@@ -372,11 +386,28 @@ class Team:
 		"""
 		return self.groups.get(name)
 
+class TeamManagerView:
+
+	def __init__(self, RCJKI, parentWindow):
+		self.w = Sheet((600, 600), parentWindow)
+		self.w.closeButton = Button(
+			(10, 30, -10, -10),
+			"close",
+			callback = self.closeButtonCallback
+			)
+		self.team = Team()
+
+	def closeButtonCallback(self, sender):
+		self.w.close()
+
+	def launchInterface(self):
+		self.w.open()
+
 if __name__ == '__main__':
 
 	teamjson = {
 		"backlog_glyphs" : 'abcdefhj',
-		"manager": 'claire',
+		"manager": ['claire'],
 		"groups": {
 					"group1": {
 								"backlog_glyphs": "klmnop",
