@@ -79,7 +79,9 @@ from rcjk2mysql import BF_init as BF_init
 # print(curpath)
 # curpath = mySQLCollabEngine.__path__._path[0]
 # bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
+import sys
 print(os.path.join(os.getcwd(), 'rcjk2mysql'))
+print('sys path', sys.path)
 bf_log = BF_init.init_log(os.path.join(os.getcwd(), 'rcjk2mysql'))
 try:
     dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
@@ -91,10 +93,16 @@ from utils import decorators
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
 
+from AppKit import NSSearchPathForDirectoriesInDomains
+APPNAME = 'RoboFont'
 
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
 class RoboCJKController(object):
+
+
+    hiddenSavePath = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'mySQLSave')
+    files.makepath(hiddenSavePath)
 
     def __init__(self):
         self.observers = False
@@ -300,6 +308,8 @@ class RoboCJKController(object):
             styleName='Regular', 
             showUI = False
             )
+        files.makepath(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        self.currentFont._RFont.save(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
         
 
     def closeimportDCFromCG(self):

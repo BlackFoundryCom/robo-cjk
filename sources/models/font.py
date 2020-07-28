@@ -107,7 +107,7 @@ class Font():
         self.getGlyphs()
         self.createLayersFromVariationAxis()
 
-    def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName):
+    def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, fontpath = None):
         self.mysqlFont = True
         self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
         # print("----")
@@ -118,8 +118,11 @@ class Font():
         self._RFont = NewFont(
             familyName=fontName, 
             styleName='Regular', 
-            showUI = False
+            showUI = False,
             )
+        if fontpath is not None:
+            files.makepath(os.path.join(fontpath, "%s.ufo"%fontName))
+            self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
         self._fullRFont = NewFont(
             familyName="%s-full"%fontName, 
             styleName='Regular', 
