@@ -240,7 +240,10 @@ class RoboCJKController(object):
 
     def fontDidSave(self, info):
         if self.currentFont and self.currentFont._RFont == CurrentFont():
-            self.currentFont.save()
+            if self.currentGlyph:
+                self.currentFont.saveGlyph(self.currentGlyph)
+            else:
+                self.currentFont.save()
         else:
             print('no font object')
 

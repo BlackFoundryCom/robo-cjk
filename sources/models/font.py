@@ -869,25 +869,36 @@ class Font():
 
             self._hanziExportUFO()
         else:
-            for name in self.atomicElementSet:
-                glyph = self[name]
-                glyph.save()
-                rglyph = glyph._RGlyph
-                rglyph.lib.update(glyph.lib)
-                xml = rglyph.dumpToGLIF()
-                aelement = self._BFont.get_aelement(name)
+            userGlyphs = self.currentUserLockedGlyphs()
+            for n in userGlyphs:
+                self.saveGlyph(self.get(n))
+            # for name in [x[0] for x in self.mysql.select_locked_aelements(self.fontName) if x[1] == self.mysqlUserName]:
+            #     glyph = self[name]
+            #     glyph.save()
+            #     rglyph = glyph._RGlyph
+            #     rglyph.lib.update(glyph.lib)
+            #     xml = rglyph.dumpToGLIF()
+            #     aelement = self._BFont.get_aelement(name)
 
-                aelement.set_xml(xml)
+            #     aelement.set_xml(xml)
 
-            for name in self.deepComponentSet:
-                glyph = self[name]
-                glyph.save()
-                rglyph = glyph._RGlyph
-                rglyph.lib.update(glyph.lib)
-                xml = rglyph.dumpToGLIF()
-                self._BFont.get_dcomponent(name).set_xml(xml)
+            # for name in [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName) if x[1] == self.mysqlUserName]:
+            #     glyph = self[name]
+            #     glyph.save()
+            #     rglyph = glyph._RGlyph
+            #     rglyph.lib.update(glyph.lib)
+            #     xml = rglyph.dumpToGLIF()
+            #     self._BFont.get_dcomponent(name).set_xml(xml)
 
-            BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
+            # for name in self.characterGlyphSet:
+            #     glyph = self[name]
+            #     glyph.save()
+            #     rglyph = glyph._RGlyph
+            #     rglyph.lib.update(glyph.lib)
+            #     xml = rglyph.dumpToGLIF()
+            #     self._BFont.get_dcomponent(name).set_xml(xml)
+
+            # BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
 
     def _hanziExportUFO(self):
         return

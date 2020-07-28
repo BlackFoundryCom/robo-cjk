@@ -61,6 +61,12 @@ class Glyph(RGlyph):
         self.indexStackUndo_lib = 0
         # self.transformationWithMouse = False
 
+    def __bool__(self):
+        if bool(self._glyphVariations):
+            return True
+        else:
+            return bool(self._deepComponents)
+
     @property
     def stateColor(self):
         mark = self._RGlyph.markColor
