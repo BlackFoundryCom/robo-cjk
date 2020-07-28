@@ -513,7 +513,10 @@ class RoboCJKController(object):
             addObserver(self, 'mouseDragged', 'mouseDragged')
 
     def mouseDragged(self, point):
-        self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
+        try:
+            self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
+        except:
+            pass
 
     def setListWithSelectedElement(self):
         if self.isDeepComponent:
