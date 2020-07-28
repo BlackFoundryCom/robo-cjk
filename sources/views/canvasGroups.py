@@ -43,7 +43,7 @@ numberFormatter = NumberFormatter()
 INPROGRESS = (1, 0, 0, 1)
 CHECKING1 = (1, .5, 0, 1)
 CHECKING2 = (1, 1, 0, 1)
-CHECKING3 = (0, 0, 1, 1)
+CHECKING3 = (0, .5, 1, 1)
 VALIDATE = (0, 1, .5, 1)
 STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, VALIDATE)
 
