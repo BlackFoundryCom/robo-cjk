@@ -152,6 +152,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     g = font[glyphName]._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
+    RCJKI.currentView.setglyphState()
 
 class CharacterWindow:
 

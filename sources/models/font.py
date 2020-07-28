@@ -311,28 +311,28 @@ class Font():
                     name = name["name"]
                 # self.getmySQLGlyph(name)
                 if not set([name]) - set(self._RFont.keys()):
-                    try:
-                        return self._glyphs[self._RFont[name]]
-                    except:
-                        return self._glyphs[self._fullRFont[name]]
+                    # try:
+                    return self._glyphs[self._RFont[name]]
+                    # except:
+                    #     return self._glyphs[self._fullRFont[name]]
                 else:
                     self.getmySQLGlyph(name)
-                    try:
-                        return self._glyphs[self._RFont[name]]
-                    except:
-                        return self._glyphs[self._fullRFont[name]]
+                    # try:
+                    return self._glyphs[self._RFont[name]]
+                    # except:
+                    #     return self._glyphs[self._fullRFont[name]]
             except:
                 if isinstance(name, dict):
                     name = name["name"]
                 self.getmySQLGlyph(name)
-                try:
-                    return self._glyphs[self._RFont[name]]
-                except:
-                    return self._glyphs[self._fullRFont[name]]
-        try:
-            return self._glyphs[self._RFont[name]]
-        except:
-            return self._glyphs[self._fullRFont[name]]
+                # try:
+                return self._glyphs[self._RFont[name]]
+                # except:
+                #     return self._glyphs[self._fullRFont[name]]
+        # try:
+        return self._glyphs[self._RFont[name]]
+        # except:
+        #     return self._glyphs[self._fullRFont[name]]
 
     def __len__(self):
         return len(self._RFont.keys())

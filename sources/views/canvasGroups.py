@@ -325,7 +325,6 @@ class DCCG_View(CanvasGroup):
         state = self.glyphState
         if color is None:
             state.set(0)
-            self.glyphStateCallback(state)
         elif color == INPROGRESS:
             state.set(0)
         elif color == CHECKING1:
@@ -336,11 +335,14 @@ class DCCG_View(CanvasGroup):
             state.set(3)
         elif color == VALIDATE:
             state.set(4)
+        self.glyphStateCallback(state)
 
     def glyphStateCallback(self, sender):
-        return
+        # return
         state = sender.get()
         self.RCJKI.currentGlyph.stateColor = STATE_COLORS[state]
+        if STATE_COLORS[state] == VALIDATE:
+            self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
 
     def roundToGridCallback(self, sender):
@@ -609,16 +611,11 @@ class GlyphPreviewCanvas(CanvasGroup):
             self.glyph.sourcesList = [
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
-        try:
-            # print(type(self.glyph.color), self.glyph.color)
-            if self.glyph._RGlyph.markColor is not None:
-                print("here")
-                # print('here', self.glyph._RGlyph.markColor)
-            #     mjdt.fill(*(1, 0, 0, 1))
+
+        if self.glyph.stateColor is not None:
+            mjdt.fill(*self.glyph.stateColor)
             mjdt.rect(0, 0, 200, 20)
-            mjdt.fill(None)
-        except:
-            pass
+
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)

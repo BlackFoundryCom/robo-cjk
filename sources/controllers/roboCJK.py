@@ -245,6 +245,26 @@ class RoboCJKController(object):
         if self.isAtomic: return
         self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
 
+    def decomposeGlyphToBackupLayer(self, glyph):
+        def _decompose(glyph, axis, layername):
+            if layername not in self.currentFont._RFont.layers:
+                self.currentFont._RFont.newLayer(layername)
+                glyph.preview.computeDeepComponents(axis)
+                ais = glyph.preview.axisPreview
+                f = self.currentFont._RFont.getLayer(layername)
+                f.newGlyph(glyph.name)
+                g1 = f[glyph.name]
+                g1.clear()
+                for ai in ais:
+                    for c in ai.transformedGlyph:
+                        g1.appendContour(c)
+
+        for axis in self.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
+            axisLayerName = "backup_%s"%axis
+            _decompose(glyph, axis, axisLayerName)
+        masterLayerName = "backup_master"
+        _decompose(glyph, '', masterLayerName)
+
     def glyphWindowWillClose(self, notification):
         # self.closeimportDCFromCG()
         self.closeComponentWindow()
@@ -352,6 +372,15 @@ class RoboCJKController(object):
         if self.componentWindow is not None:
             self.componentWindow.close()
             self.componentWindow = None
+
+    @property 
+    def currentView(self):
+        if self.isAtomic:
+            return self.atomicView
+        elif self.isDeepComponent:
+            return self.deepComponentView
+        elif self.isCharacterGlyph:
+            return self.characterGlyphView
 
     @property 
     def currentViewSourceList(self):
