@@ -268,28 +268,28 @@ class BackLogGlyph:
 		for x in self._glyphs:
 			yield x
 
-class Manager:
+class Managers:
 
-	def __init__(self, manager = []):
-		self._manager = set(manager)
+	def __init__(self, managers = []):
+		self._managers = set(managers)
 
 	def add(self, user):
-		self._manager.add(user)
+		self._managers.add(user)
 
 	def remove(self, user):
-		self._manager.remove(user)
+		self._managers.remove(user)
 
 	def export(self):
-		return list(self._manager)
+		return list(self._managers)
 	
 class Team:
 
-	__slots__ = '_backlog_glyphs', '_groups', '_manager'
+	__slots__ = '_backlog_glyphs', '_groups', '_managers'
 
 	def __init__(self):
 		self._backlog_glyphs = BackLogGlyph()
 		self._groups = Groups()
-		self._manager = Manager()
+		self._managers = Managers()
 
 	# Properties
 	# --------------------
@@ -303,12 +303,12 @@ class Team:
 		self._backlog_glyphs = BackLogGlyph(list(value))
 
 	@property
-	def manager(self):
-		return self._manager
+	def managers(self):
+		return self._managers
 
-	@manager.setter
-	def manager(self, value):
-		self._manager = Manager(value)
+	@managers.setter
+	def managers(self, value):
+		self._managers = Managers(value)
 
 	@property
 	def groups(self):
@@ -328,7 +328,7 @@ class Team:
 			}
 		"""
 		self._backlog_glyphs = BackLogGlyph(data.get("backlog_glyphs", ""))
-		self._manager = Manager(data.get("manager", []))
+		self._managers = Managers(data.get("managers", []))
 		for groupname in data.get("groups"):
 			groupData = data.get("groups")[groupname]
 			self._groups.add(groupname, groupData)
@@ -336,7 +336,7 @@ class Team:
 	def _asDict(self):
 		return {'backlog_glyphs': self.backlog_glyphs,
 		'groups' : self._groups.export(),
-		'manager': self._manager.export()
+		'managers': self._managers.export()
 		}
 
 	def export(self):
@@ -407,7 +407,7 @@ if __name__ == '__main__':
 
 	teamjson = {
 		"backlog_glyphs" : 'abcdefhj',
-		"manager": ['claire'],
+		"managerS": ['claire'],
 		"groups": {
 					"group1": {
 								"backlog_glyphs": "klmnop",
