@@ -34,6 +34,8 @@ charsets = characterSets.characterSets
 CG2DC = chars2deepCompo.Chars2DC
 
 from utils import files
+
+from controllers import teamManager
 # reload(files)
 
 from views import movie
@@ -119,6 +121,7 @@ class RoboCJKController(object):
         self.privateLocker = True
         self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition, (0, 180, 1000, 600))
         self.drawOnlyDeepolation = False
+        self.teamManager = teamManager.TeamManagerController(self)
         # installTool(self.transformationTool)
 
         self.locked = False

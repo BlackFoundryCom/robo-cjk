@@ -578,6 +578,13 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.generateFontButton.enable(False)
 
+        self.w.teamManagerButton = Button(
+            (10, 100, 200, 20),
+            "Team manager",
+            callback = self.teamManagerButtonCallback,
+            )
+        self.w.teamManagerButton.enable(False)
+
         self.RCJKI.textCenterWindows = []
         self.w.textCenterButton = Button(
             (410, 70, 200, 20),
@@ -960,6 +967,9 @@ class RoboCJKView(BaseWindowController):
         self.lockController = sheets.LockController(self.RCJKI, self.w)
         self.lockController.open()
 
+    def teamManagerButtonCallback(self, sender):
+        self.RCJKI.teamManager.launchInterface()
+
     def generateFontButtonCallback(self, sender):
         # axis = self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']
         # print(axis)
@@ -1122,6 +1132,7 @@ class RoboCJKView(BaseWindowController):
         self.w.newProjectButton.enable(True)
         self.w.fontInfos.enable(True)
         self.w.generateFontButton.enable(True)
+        self.w.teamManagerButton.enable(True)
         self.w.rcjkFiles.enable(True)
         self.w.textCenterButton.enable(True)
         self.w.codeEditorButton.enable(True)
