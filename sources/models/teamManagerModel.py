@@ -386,23 +386,6 @@ class Team:
 		"""
 		return self.groups.get(name)
 
-class TeamManagerView:
-
-	def __init__(self, RCJKI, parentWindow):
-		self.w = Sheet((600, 600), parentWindow)
-		self.w.closeButton = Button(
-			(10, 30, -10, -10),
-			"close",
-			callback = self.closeButtonCallback
-			)
-		self.team = Team()
-
-	def closeButtonCallback(self, sender):
-		self.w.close()
-
-	def launchInterface(self):
-		self.w.open()
-
 if __name__ == '__main__':
 
 	teamjson = {
