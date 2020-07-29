@@ -357,16 +357,18 @@ class CharacterWindow:
         char = sender.get()[sel[0]]
         name = files.unicodeName(char)
         font = self.RCJKI.currentFont
-        self.RCJKI.gitEngine.createGitignore()
-        self.RCJKI.gitEngine.pull()
+        if not self.RCJKI.currentFont.mysqlFont:
+            self.RCJKI.gitEngine.createGitignore()
+            self.RCJKI.gitEngine.pull()
         try:
             font[name]
         except:
             font.newGlyph("characterGlyph", name)
             # font.locker.batchLock([font[name]])
             font.batchLockGlyphs([font[name]])
-            self.RCJKI.gitEngine.commit("new glyph")
-            self.RCJKI.gitEngine.push()
+            if not self.RCJKI.currentFont.mysqlFont:
+                self.RCJKI.gitEngine.commit("new glyph")
+                self.RCJKI.gitEngine.push()
         finally:
             openGlyphWindowIfLockAcquired(self.RCJKI, name)
 
