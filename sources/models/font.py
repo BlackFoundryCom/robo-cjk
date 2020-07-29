@@ -123,6 +123,9 @@ class Font():
         if fontpath is not None:
             files.makepath(os.path.join(fontpath, "%s.ufo"%fontName))
             self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
+
+        print("fontpath")
+        print(os.path.join(fontpath, "%s.ufo"%fontName))
         self._fullRFont = NewFont(
             familyName="%s-full"%fontName, 
             styleName='Regular', 
@@ -869,9 +872,10 @@ class Font():
 
             self._hanziExportUFO()
         else:
-            userGlyphs = self.currentUserLockedGlyphs()
-            for n in userGlyphs:
-                self.saveGlyph(self.get(n))
+            return
+            # userGlyphs = self.currentUserLockedGlyphs()
+            # for n in userGlyphs:
+            #     self.saveGlyph(self.get(n))
             # for name in [x[0] for x in self.mysql.select_locked_aelements(self.fontName) if x[1] == self.mysqlUserName]:
             #     glyph = self[name]
             #     glyph.save()

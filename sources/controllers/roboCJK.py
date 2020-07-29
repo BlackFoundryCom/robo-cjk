@@ -75,6 +75,8 @@ from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
 from rcjk2mysql import BF_rcjk2mysql
 from rcjk2mysql import BF_init as BF_init
 
+import shutil
+
 # curpath = os.path.dirname(__file__)
 # print(curpath)
 # curpath = mySQLCollabEngine.__path__._path[0]
@@ -300,19 +302,21 @@ class RoboCJKController(object):
             self.currentFont.save()
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
-
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
 
         # fontname = self.currentFont._RFont.familyName
-        del self.currentFont._RFont
-        self.currentFont._RFont = NewFont(
-            familyName=self.currentFont.fontName, 
-            styleName='Regular', 
-            showUI = False
-            )
-        files.makepath(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
-        self.currentFont._RFont.save(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # del self.currentFont._RFont
+        # shutil.rmtree(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # self.currentFont._RFont = NewFont(
+        #     familyName=self.currentFont.fontName, 
+        #     styleName='Regular', 
+        #     showUI = False
+        #     )
+        # print("fontpath")
+        # print(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # files.makepath(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # self.currentFont._RFont.save(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
         
 
     def closeimportDCFromCG(self):

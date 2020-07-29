@@ -943,7 +943,11 @@ class RoboCJKView(BaseWindowController):
         #     self.RCJKI.textCenterWindow.close()
         if self.RCJKI.get('currentFont'):
             if self.currentFont is not None:
-                self.currentFont.save()
+                if self.currentGlyph:
+                    self.currentFont.saveGlyph(self.currentGlyph)
+                else:
+                    self.currentFont.save()
+                # self.currentFont.save()
             self.RCJKI.toggleWindowController(False)
         self.RCJKI.toggleObservers(forceKill=True)
 
