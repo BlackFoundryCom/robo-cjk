@@ -341,7 +341,7 @@ class DCCG_View(CanvasGroup):
         # return
         state = sender.get()
         self.RCJKI.currentGlyph.stateColor = STATE_COLORS[state]
-        if STATE_COLORS[state] == VALIDATE:
+        if STATE_COLORS[state] == VALIDATE and self.RCJKI.currentGlyph.type == "characterGlyph":
             self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
 

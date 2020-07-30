@@ -29,6 +29,18 @@ import copy
 # reload(deepComponent)
 DeepComponents = component.DeepComponents
 
+INPROGRESS = (1, 0, 0, 1)
+CHECKING1 = (1, .5, 0, 1)
+CHECKING2 = (1, 1, 0, 1)
+CHECKING3 = (0, .5, 1, 1)
+VALIDATE = (0, 1, .5, 1)
+STATE_COLORS = {
+    INPROGRESS:"INPROGRESS", 
+    CHECKING1:"CHECKING1", 
+    CHECKING2:"CHECKING2", 
+    CHECKING3:"CHECKING3", 
+    VALIDATE:"VALIDATE"}
+
 def compute(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
@@ -50,6 +62,7 @@ class Glyph(RGlyph):
         self._RFont = None
         # self.preview = None
         self.sourcesList = []
+        self._designState = ""
 
     def _setStackUndo(self):
         # if self.type != 'atomicElement':
@@ -66,6 +79,15 @@ class Glyph(RGlyph):
             return True
         else:
             return bool(self._deepComponents)
+
+    @property
+    def designState(self):
+        self.designState = STATE_COLORS.get(self.stateColor, "")
+        return self._designState
+
+    @designState.setter
+    def designState(self, value):
+        self._designState = value    
 
     @property
     def stateColor(self):
