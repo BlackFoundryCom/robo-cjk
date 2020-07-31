@@ -138,6 +138,7 @@ class Font():
         self.bf_log = bf_log
 
         fontlib = self._BFont.fontlib_data
+        print(fontlib)
         if fontlib is None:
             fontlib = '{}'
         # self.fontLib = eval(fontlib)
@@ -158,6 +159,18 @@ class Font():
         print("full font need:", stop-start)
     #     self.insertFullRFont()
 
+    def loadTeam(self):
+        return self.fontLib.get('teamManager', {})
+
+    def saveTeam(self, teamDict):
+        self.fontLib['teamManager'] = teamDict
+        print("save team", teamDict)
+        if self.mysqlFont:
+            self.mysql.update_font_fontlib_data(self.fontName, json.dumps(self.fontLib))
+            
+        else:
+            pass
+        
     # def insertFullRFont(self):
     #     print(self.atomicElementSet[1])
     #     print(self.deepComponentSet[1])

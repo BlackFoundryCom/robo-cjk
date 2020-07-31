@@ -27,4 +27,70 @@ class TeamManagerController:
 		self.interface = teamManagerView.TeamManagerUI(self)
 
 	def launchInterface(self):
+		self.loadTeam()
 		self.interface.launchInterface()
+		self.interface.setUI()
+		self.getglobalbacklog()
+
+	def saveTeam(self):
+		teamDict = self.team.export()
+		self.RCJKI.currentFont.saveTeam(teamDict)
+		self.RCJKI.currentFont.save()
+
+	def loadTeam(self):
+		teamDict = self.RCJKI.currentFont.loadTeam()
+		self.team.initFromJSON(teamDict)
+
+
+	def getglobalbacklog(self):
+		f = self.RCJKI.currentFont
+		DCDone = set()
+		for n in f.deepComponentSet:
+			g = f[n]
+			if g.designState == "VALIDATE":
+				if n.split("_") and len(n.split("_")) > 1:
+					DCDone.add(chr(int(n.split("_")[1], 16)))
+
+		backlog = ""
+		for k, v in self.RCJKI.currentFont.dataBase.items():
+		    v = v.strip("\n")
+		    dcuse = set(v)
+		    if not len(dcuse-DCDone):
+		        backlog += k
+		return list(backlog)
+
+	####### MANAGERS #######
+    #----------------------
+
+	def addManager(self, name):
+		self.team.managers.add(name)
+
+	def removeManager(self, name):
+		self.team.managers.remove(name)
+
+	def renameManager(self, oldname, newname):
+		self.team.managers.rename(oldname, newname)
+
+	def permissionToEditManagers(self):
+		if not self.team.managers:
+			return True
+		elif self.RCJKI.mysql_userName in self.team.managers: 
+			return True
+		return False
+
+	####### GROUPS #######
+    #----------------------
+
+	@property
+	def groups(self):
+		return self.team.groups.list
+
+	def addGroup(self, name):
+		self.team.groups.add(name)
+
+	def removeGroup(self, name):
+		self.team.groups.remove(name)
+
+	def renameGroup(self, oldname, newname):
+		self.team.groups.rename(oldname, newname)
+

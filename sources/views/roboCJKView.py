@@ -37,6 +37,8 @@ from models import font
 from views import sheets
 # reload(sheets)
 from views import PDFProofer
+
+from controllers import teamManager
 # reload(PDFProofer)
 from views import scriptingWindow
 # reload(scriptingWindow)
@@ -968,6 +970,7 @@ class RoboCJKView(BaseWindowController):
         self.lockController.open()
 
     def teamManagerButtonCallback(self, sender):
+        self.RCJKI.teamManager = teamManager.TeamManagerController(self.RCJKI)
         self.RCJKI.teamManager.launchInterface()
 
     def generateFontButtonCallback(self, sender):

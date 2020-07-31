@@ -231,6 +231,10 @@ class Groups:
 		if not hasattr(self, name): return
 		return getattr(self, name)
 
+	@property
+	def list(self):
+		return list(vars(self))
+
 	def _asDict(self):
 		groups = {}
 		for x in vars(self):
@@ -268,6 +272,9 @@ class BackLogGlyph:
 		for x in self._glyphs:
 			yield x
 
+	def export(self):
+		return self._glyphs
+
 class Managers:
 
 	def __init__(self, managers = []):
@@ -279,8 +286,26 @@ class Managers:
 	def remove(self, user):
 		self._managers.remove(user)
 
+	def rename(self, oldname, newname):
+		self._managers.remove(oldname)
+		self._managers.add(newname)
+
 	def export(self):
 		return list(self._managers)
+
+	def __contains__(self, value):
+		return value in self._managers
+
+	def __iter__(self):
+		for x in self._managers:
+			yield x
+
+	def __bool__(self):
+		return bool(self.managersList)
+
+	@property
+	def managersList(self):
+		return sorted(list(self._managers))
 	
 class Team:
 
@@ -327,14 +352,15 @@ class Team:
 					"group2": {"backlog_glyphs": "AZERTYU", "users": {"user3": {'backlog': 'WXCV', 'inProgress': '', 'done': ''}, "user4": {'backlog': 'QSDF', 'inProgress': '', 'done': ''}}}},
 			}
 		"""
+		# if not data: return
 		self._backlog_glyphs = BackLogGlyph(data.get("backlog_glyphs", ""))
 		self._managers = Managers(data.get("managers", []))
-		for groupname in data.get("groups"):
+		for groupname in data.get("groups", []):
 			groupData = data.get("groups")[groupname]
 			self._groups.add(groupname, groupData)
 
 	def _asDict(self):
-		return {'backlog_glyphs': self.backlog_glyphs,
+		return {'backlog_glyphs': self.backlog_glyphs.export(),
 		'groups' : self._groups.export(),
 		'managers': self._managers.export()
 		}
