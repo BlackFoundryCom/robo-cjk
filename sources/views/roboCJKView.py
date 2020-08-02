@@ -37,6 +37,8 @@ from models import font
 from views import sheets
 # reload(sheets)
 from views import PDFProofer
+
+from controllers import teamManager
 # reload(PDFProofer)
 from views import scriptingWindow
 # reload(scriptingWindow)
@@ -141,10 +143,10 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
             getRelatedGlyphs(font, glyphName)
             # font.getGlyph(font[glyphName])
             g = font[glyphName]._RGlyph
-        if not g.width:
-            g.width = font._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
     else:
         if not locked: return
+    if not g.width:
+        g.width = font.defaultGlyphWidth
     try:
         CurrentGlyphWindow().close()
     except: pass
@@ -152,6 +154,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     g = font[glyphName]._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
+    RCJKI.currentView.setglyphState()
 
 class CharacterWindow:
 
@@ -356,16 +359,18 @@ class CharacterWindow:
         char = sender.get()[sel[0]]
         name = files.unicodeName(char)
         font = self.RCJKI.currentFont
-        self.RCJKI.gitEngine.createGitignore()
-        self.RCJKI.gitEngine.pull()
+        if not self.RCJKI.currentFont.mysqlFont:
+            self.RCJKI.gitEngine.createGitignore()
+            self.RCJKI.gitEngine.pull()
         try:
             font[name]
         except:
             font.newGlyph("characterGlyph", name)
             # font.locker.batchLock([font[name]])
             font.batchLockGlyphs([font[name]])
-            self.RCJKI.gitEngine.commit("new glyph")
-            self.RCJKI.gitEngine.push()
+            if not self.RCJKI.currentFont.mysqlFont:
+                self.RCJKI.gitEngine.commit("new glyph")
+                self.RCJKI.gitEngine.push()
         finally:
             openGlyphWindowIfLockAcquired(self.RCJKI, name)
 
@@ -574,6 +579,13 @@ class RoboCJKView(BaseWindowController):
             callback = self.generateFontButtonCallback,
             )
         self.w.generateFontButton.enable(False)
+
+        self.w.teamManagerButton = Button(
+            (10, 100, 200, 20),
+            "Team manager",
+            callback = self.teamManagerButtonCallback,
+            )
+        self.w.teamManagerButton.enable(False)
 
         self.RCJKI.textCenterWindows = []
         self.w.textCenterButton = Button(
@@ -942,7 +954,11 @@ class RoboCJKView(BaseWindowController):
         #     self.RCJKI.textCenterWindow.close()
         if self.RCJKI.get('currentFont'):
             if self.currentFont is not None:
-                self.currentFont.save()
+                if self.currentGlyph:
+                    self.currentFont.saveGlyph(self.currentGlyph)
+                else:
+                    self.currentFont.save()
+                # self.currentFont.save()
             self.RCJKI.toggleWindowController(False)
         self.RCJKI.toggleObservers(forceKill=True)
 
@@ -952,6 +968,10 @@ class RoboCJKView(BaseWindowController):
     def lockControllerDCButtonCallback(self, sender):
         self.lockController = sheets.LockController(self.RCJKI, self.w)
         self.lockController.open()
+
+    def teamManagerButtonCallback(self, sender):
+        self.RCJKI.teamManager = teamManager.TeamManagerController(self.RCJKI)
+        self.RCJKI.teamManager.launchInterface()
 
     def generateFontButtonCallback(self, sender):
         # axis = self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']
@@ -1115,6 +1135,7 @@ class RoboCJKView(BaseWindowController):
         self.w.newProjectButton.enable(True)
         self.w.fontInfos.enable(True)
         self.w.generateFontButton.enable(True)
+        self.w.teamManagerButton.enable(True)
         self.w.rcjkFiles.enable(True)
         self.w.textCenterButton.enable(True)
         self.w.codeEditorButton.enable(True)
@@ -1184,7 +1205,7 @@ class RoboCJKView(BaseWindowController):
                         self.RCJKI.currentFont.dataBase = json.load(file)
             else:
                 # self.RCJKI.dataBase = True
-                self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName)
+                self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName, self.RCJKI.hiddenSavePath)
                 self.RCJKI.currentFont.loadMysqlDataBase()
                 # self.RCJKI.currentFont.dataBase
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
@@ -1229,6 +1250,18 @@ class RoboCJKView(BaseWindowController):
                 charSet = [dict(char = files.unicodeName2Char(x["name"]), name = x["name"]) for x in sender.get()]
                 sender.set(charSet)
             self.setGlyphNameToCansvas(sender, self.prevGlyphName)
+
+        self.w.atomicElement.setSelection([])
+        self.w.deepComponent.setSelection([])
+        self.w.characterGlyph.setSelection([])
+
+        self.w.atomicElement.set(self.currentFont.atomicElementSet)
+        self.w.deepComponent.set(self.currentFont.deepComponentSet)
+        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+        self.w.characterGlyph.set(charSet)
+
+        index = sender.get().index(newGlyphName)
+        sender.setSelection([index])
 
     def GlyphsListSelectionCallback(self, sender):
         if not sender.getSelection(): return

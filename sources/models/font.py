@@ -107,7 +107,7 @@ class Font():
         self.getGlyphs()
         self.createLayersFromVariationAxis()
 
-    def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName):
+    def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, fontpath = None):
         self.mysqlFont = True
         self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
         # print("----")
@@ -118,8 +118,14 @@ class Font():
         self._RFont = NewFont(
             familyName=fontName, 
             styleName='Regular', 
-            showUI = False
+            showUI = False,
             )
+        if fontpath is not None:
+            files.makepath(os.path.join(fontpath, "%s.ufo"%fontName))
+            self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
+
+        print("fontpath")
+        print(os.path.join(fontpath, "%s.ufo"%fontName))
         self._fullRFont = NewFont(
             familyName="%s-full"%fontName, 
             styleName='Regular', 
@@ -132,6 +138,7 @@ class Font():
         self.bf_log = bf_log
 
         fontlib = self._BFont.fontlib_data
+        print(fontlib)
         if fontlib is None:
             fontlib = '{}'
         # self.fontLib = eval(fontlib)
@@ -152,6 +159,18 @@ class Font():
         print("full font need:", stop-start)
     #     self.insertFullRFont()
 
+    def loadTeam(self):
+        return self.fontLib.get('teamManager', {})
+
+    def saveTeam(self, teamDict):
+        self.fontLib['teamManager'] = teamDict
+        print("save team", teamDict)
+        if self.mysqlFont:
+            self.mysql.update_font_fontlib_data(self.fontName, json.dumps(self.fontLib))
+            
+        else:
+            pass
+        
     # def insertFullRFont(self):
     #     print(self.atomicElementSet[1])
     #     print(self.deepComponentSet[1])
@@ -311,16 +330,28 @@ class Font():
                     name = name["name"]
                 # self.getmySQLGlyph(name)
                 if not set([name]) - set(self._RFont.keys()):
+                    # try:
                     return self._glyphs[self._RFont[name]]
+                    # except:
+                    #     return self._glyphs[self._fullRFont[name]]
                 else:
                     self.getmySQLGlyph(name)
+                    # try:
                     return self._glyphs[self._RFont[name]]
+                    # except:
+                    #     return self._glyphs[self._fullRFont[name]]
             except:
                 if isinstance(name, dict):
                     name = name["name"]
                 self.getmySQLGlyph(name)
+                # try:
                 return self._glyphs[self._RFont[name]]
+                # except:
+                #     return self._glyphs[self._fullRFont[name]]
+        # try:
         return self._glyphs[self._RFont[name]]
+        # except:
+        #     return self._glyphs[self._fullRFont[name]]
 
     def __len__(self):
         return len(self._RFont.keys())
@@ -854,25 +885,37 @@ class Font():
 
             self._hanziExportUFO()
         else:
-            for name in self.atomicElementSet:
-                glyph = self[name]
-                glyph.save()
-                rglyph = glyph._RGlyph
-                rglyph.lib.update(glyph.lib)
-                xml = rglyph.dumpToGLIF()
-                aelement = self._BFont.get_aelement(name)
+            return
+            # userGlyphs = self.currentUserLockedGlyphs()
+            # for n in userGlyphs:
+            #     self.saveGlyph(self.get(n))
+            # for name in [x[0] for x in self.mysql.select_locked_aelements(self.fontName) if x[1] == self.mysqlUserName]:
+            #     glyph = self[name]
+            #     glyph.save()
+            #     rglyph = glyph._RGlyph
+            #     rglyph.lib.update(glyph.lib)
+            #     xml = rglyph.dumpToGLIF()
+            #     aelement = self._BFont.get_aelement(name)
 
-                aelement.set_xml(xml)
+            #     aelement.set_xml(xml)
 
-            for name in self.deepComponentSet:
-                glyph = self[name]
-                glyph.save()
-                rglyph = glyph._RGlyph
-                rglyph.lib.update(glyph.lib)
-                xml = rglyph.dumpToGLIF()
-                self._BFont.get_dcomponent(name).set_xml(xml)
+            # for name in [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName) if x[1] == self.mysqlUserName]:
+            #     glyph = self[name]
+            #     glyph.save()
+            #     rglyph = glyph._RGlyph
+            #     rglyph.lib.update(glyph.lib)
+            #     xml = rglyph.dumpToGLIF()
+            #     self._BFont.get_dcomponent(name).set_xml(xml)
 
-            BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
+            # for name in self.characterGlyphSet:
+            #     glyph = self[name]
+            #     glyph.save()
+            #     rglyph = glyph._RGlyph
+            #     rglyph.lib.update(glyph.lib)
+            #     xml = rglyph.dumpToGLIF()
+            #     self._BFont.get_dcomponent(name).set_xml(xml)
+
+            # BF_rcjk2mysql.update_font_to_mysql(self.bf_log, self._BFont, self.mysql)
 
     def _hanziExportUFO(self):
         return

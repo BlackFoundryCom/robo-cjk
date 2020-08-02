@@ -34,6 +34,8 @@ charsets = characterSets.characterSets
 CG2DC = chars2deepCompo.Chars2DC
 
 from utils import files
+
+from controllers import teamManager
 # reload(files)
 
 from views import movie
@@ -75,11 +77,15 @@ from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
 from rcjk2mysql import BF_rcjk2mysql
 from rcjk2mysql import BF_init as BF_init
 
+import shutil
+
 # curpath = os.path.dirname(__file__)
 # print(curpath)
 # curpath = mySQLCollabEngine.__path__._path[0]
 # bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
+import sys
 print(os.path.join(os.getcwd(), 'rcjk2mysql'))
+print('sys path', sys.path)
 bf_log = BF_init.init_log(os.path.join(os.getcwd(), 'rcjk2mysql'))
 try:
     dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
@@ -91,10 +97,16 @@ from utils import decorators
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
 
+from AppKit import NSSearchPathForDirectoriesInDomains
+APPNAME = 'RoboFont'
 
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
 class RoboCJKController(object):
+
+
+    hiddenSavePath = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'mySQLSave')
+    files.makepath(hiddenSavePath)
 
     def __init__(self):
         self.observers = False
@@ -109,6 +121,7 @@ class RoboCJKController(object):
         self.privateLocker = True
         self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition, (0, 180, 1000, 600))
         self.drawOnlyDeepolation = False
+        # self.teamManager = teamManager.TeamManagerController(self)
         # installTool(self.transformationTool)
 
         self.locked = False
@@ -232,7 +245,10 @@ class RoboCJKController(object):
 
     def fontDidSave(self, info):
         if self.currentFont and self.currentFont._RFont == CurrentFont():
-            self.currentFont.save()
+            if self.currentGlyph:
+                self.currentFont.saveGlyph(self.currentGlyph)
+            else:
+                self.currentFont.save()
         else:
             print('no font object')
 
@@ -244,6 +260,26 @@ class RoboCJKController(object):
         self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
         self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
+
+    def decomposeGlyphToBackupLayer(self, glyph):
+        def _decompose(glyph, axis, layername):
+            if layername not in self.currentFont._RFont.layers:
+                self.currentFont._RFont.newLayer(layername)
+                glyph.preview.computeDeepComponents(axis)
+                ais = glyph.preview.axisPreview
+                f = self.currentFont._RFont.getLayer(layername)
+                f.newGlyph(glyph.name)
+                g1 = f[glyph.name]
+                g1.clear()
+                for ai in ais:
+                    for c in ai.transformedGlyph:
+                        g1.appendContour(c)
+
+        for axis in self.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
+            axisLayerName = "backup_%s"%axis
+            _decompose(glyph, axis, axisLayerName)
+        masterLayerName = "backup_master"
+        _decompose(glyph, '', masterLayerName)
 
     def glyphWindowWillClose(self, notification):
         # self.closeimportDCFromCG()
@@ -269,17 +305,21 @@ class RoboCJKController(object):
             self.currentFont.save()
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
-
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
 
         # fontname = self.currentFont._RFont.familyName
-        del self.currentFont._RFont
-        self.currentFont._RFont = NewFont(
-            familyName=self.currentFont.fontName, 
-            styleName='Regular', 
-            showUI = False
-            )
+        # del self.currentFont._RFont
+        # shutil.rmtree(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # self.currentFont._RFont = NewFont(
+        #     familyName=self.currentFont.fontName, 
+        #     styleName='Regular', 
+        #     showUI = False
+        #     )
+        # print("fontpath")
+        # print(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # files.makepath(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # self.currentFont._RFont.save(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
         
 
     def closeimportDCFromCG(self):
@@ -352,6 +392,15 @@ class RoboCJKController(object):
         if self.componentWindow is not None:
             self.componentWindow.close()
             self.componentWindow = None
+
+    @property 
+    def currentView(self):
+        if self.isAtomic:
+            return self.atomicView
+        elif self.isDeepComponent:
+            return self.deepComponentView
+        elif self.isCharacterGlyph:
+            return self.characterGlyphView
 
     @property 
     def currentViewSourceList(self):
@@ -471,7 +520,10 @@ class RoboCJKController(object):
             addObserver(self, 'mouseDragged', 'mouseDragged')
 
     def mouseDragged(self, point):
-        self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
+        try:
+            self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
+        except:
+            pass
 
     def setListWithSelectedElement(self):
         if self.isDeepComponent:
