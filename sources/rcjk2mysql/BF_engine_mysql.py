@@ -143,19 +143,19 @@ class Rcjk2MysqlObject(MysqlPersit):
 		req = "select rcjk_login('{}','{}','{}')".format(username, password, BF_init._MY_IP)
 		ret = self.__execute(req)
 		self.bf_log.info(f"login {ret}")
-		if ret[FIRST_LINE][FIRST_COLUMN] > 0:
+		if ret and ret[FIRST_LINE][FIRST_COLUMN] > 0:
 			self.username = username
 			self.password = password
-		return ret[FIRST_LINE][FIRST_COLUMN]
+		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	def logout(self, username: str, password: str) -> str:
 		req = "select rcjk_logout('{}','{}','{}')".format(username, password, BF_init._MY_IP)
 		ret = self.__execute(req)
 		self.bf_log.info(f"logout {ret}")
-		if ret[FIRST_LINE][FIRST_COLUMN] == 1:
+		if ret and ret[FIRST_LINE][FIRST_COLUMN] == 1:
 			self.username = None
 			self.password = None 
-		return ret[FIRST_LINE][FIRST_COLUMN]
+		return ret and ret[FIRST_LINE][FIRST_COLUMN]
 
 	def who_login(self, username: str) -> str:
 		req = "call rcjk_p_select_whologin('{username}')"
