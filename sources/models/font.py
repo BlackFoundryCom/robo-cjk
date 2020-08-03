@@ -845,6 +845,8 @@ class Font():
 
         BF_rcjk2mysql.update_item_to_mysql(self.bf_log, bglyph, self.mysql)
 
+        self.getmySQLGlyph(glyph.name, font = self._fullRFont)
+        self.getmySQLGlyph(glyph.name)
 
     @gitCoverage(msg = 'font save')
     def save(self):

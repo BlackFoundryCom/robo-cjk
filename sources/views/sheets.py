@@ -584,6 +584,7 @@ class NewCharacterGlyph:
         # self.lockGlyphs(glyphs)
         self.window.deepComponent.set(self.RCJKI.currentFont.deepComponentSet)
         charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.RCJKI.currentFont.characterGlyphSet]
+        self.window.characterGlyph.setSelection([])
         self.window.characterGlyph.set(charSet)
         self.w.close()
 

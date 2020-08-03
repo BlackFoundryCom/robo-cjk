@@ -40,11 +40,11 @@ refresh = decorators.refresh
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 numberFormatter = NumberFormatter()
 
-INPROGRESS = (1, 0, 0, 1)
-CHECKING1 = (1, .5, 0, 1)
-CHECKING2 = (1, 1, 0, 1)
-CHECKING3 = (0, .5, 1, 1)
-VALIDATE = (0, 1, .5, 1)
+INPROGRESS = (1., 0., 0., 1.)
+CHECKING1 = (1., .5, 0., 1.)
+CHECKING2 = (1., 1., 0., 1.)
+CHECKING3 = (0., .5, 1., 1.)
+VALIDATE = (0., 1., .5, 1.)
 STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, VALIDATE)
 
 def setListAesthetic(element):
@@ -335,6 +335,8 @@ class DCCG_View(CanvasGroup):
             state.set(3)
         elif color == VALIDATE:
             state.set(4)
+        else:
+            state.set(0)
         self.glyphStateCallback(state)
 
     def glyphStateCallback(self, sender):
