@@ -25,10 +25,19 @@ def managerLocked(func):
         func(self, *args, **kwargs)
     return wrapper
 
+def lockUI(func):
+    def wrapper(self, *args, **kwargs):
+        if self._lock: return
+        self._lock = True
+        func(self, *args, **kwargs)
+        self._lock = False
+    return wrapper
+
 class TeamManagerUI:
     
     def __init__(self, TMC):
         self.TMC = TMC
+        self._lock = False
         self.username = self.TMC.RCJKI.mysql_userName
         self.w = Window((1205, 600), "Team Manager")
 
@@ -139,6 +148,7 @@ class TeamManagerUI:
 
     def setUI(self):
         self.w.managersPopUpButton.setItems(self.TMC.team.managers.managersList)
+        self.setGroupList()
 
     def windowWillClose(self, sender):
         self.TMC.saveTeam()
@@ -158,6 +168,7 @@ class TeamManagerUI:
     #----------------------
 
     # @managerLocked
+    @lockUI
     def groupsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
@@ -165,6 +176,7 @@ class TeamManagerUI:
         self.selectedGroup = sender.get()[sel[0]]
 
     @managerLocked
+    @lockUI
     def groupsListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
@@ -176,6 +188,7 @@ class TeamManagerUI:
         self.setGroupList()
 
     @managerLocked
+    @lockUI
     def addGroupsButtonCallback(self, sender):
         i = 0
         while True:
@@ -187,6 +200,7 @@ class TeamManagerUI:
         self.setGroupList()
 
     @managerLocked
+    @lockUI
     def removeGroupsButtonCallback(self, sender):
         sel = self.w.groupsBox.groupsList.getSelection()
         if not sel:
