@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
+from AppKit import NSDragOperationMove
+
+globalBacklogListDragType = "globalBacklogListDragType"
 
 def managerLocked(func):
     def wrapper(self, *args, **kwargs):
@@ -69,10 +72,19 @@ class TeamManagerUI:
             (5, 5, -5, 20), 
             'Global backlog'
             )
+        self.TMC.getglobalbacklog()
         self.w.globalBacklogBox.backlogList = List(
-            (5, 30, -5, -50), 
-            self.TMC.getglobalbacklog(), 
-            drawFocusRing = False
+            (5, 30, -5, -70), 
+            self.TMC.globalBacklog,
+            drawFocusRing = False,
+            selectionCallback = self.backlogListSelectionCallback,
+            dragSettings=dict(type=globalBacklogListDragType, callback=self.globalBacklogListDragCallback),
+            # selfWindowDropSettings=dict(type=globalBacklogListDragType, operation=NSDragOperationMove, callback=self.globalBacklogListDropCallback),
+            )
+        self.w.globalBacklogBox.backlogSelectionTitle = TextBox(
+            (5, -65, -5, 20), '0 selected',
+            sizeStyle = 'small',
+            alignment = "center"
             )
         self.w.globalBacklogBox.backlogUpdateButton = Button(
             (5, -45, -5, 25), 
@@ -96,7 +108,7 @@ class TeamManagerUI:
             self.TMC.groups, 
             drawFocusRing = False, 
             selectionCallback = self.groupsListSelectionCallback, 
-            editCallback = self.groupsListEditCallback
+            editCallback = self.groupsListEditCallback,
             )
         self.w.groupsBox.addGroupsButton = Button(
             (5, -25, 100, 20), 
@@ -109,9 +121,20 @@ class TeamManagerUI:
             callback = self.removeGroupsButtonCallback
             )
         
-        self.w.groupsBox.groupsBacklogTitle = TextBox((210, 10, 100, 20), 'Backlog')
-        self.w.groupsBox.groupsBacklogList = List((210, 35, 90, -30), [], drawFocusRing = False)
-        self.w.groupsBox.backlogTotalTitle = TextBox((210, -20, 90, 20), "376 glyphs", alignment = 'center', sizeStyle = "small")
+        self.w.groupsBox.groupsBacklogTitle = TextBox(
+            (210, 10, 100, 20), 'Backlog')
+        self.w.groupsBox.groupsBacklogList = List(
+            (210, 35, 90, -30), 
+            [], 
+            drawFocusRing = False,
+            selfWindowDropSettings=dict(type=globalBacklogListDragType, operation=NSDragOperationMove, callback=self.globalBacklogListDropCallback),
+            )
+        self.w.groupsBox.backlogTotalTitle = TextBox(
+            (210, -20, 90, 20), 
+            "0 glyphs", 
+            alignment = 'center', 
+            sizeStyle = "small"
+            )
         
         self.w.groupsBox.groupsWIPTitle = TextBox((300, 10, 100, 20), 'WIP')
         self.w.groupsBox.groupsWIPList = List((300, 35, 90, -30), [], drawFocusRing = False)
@@ -160,9 +183,30 @@ class TeamManagerUI:
     ####### BACKLOG #######
     #----------------------
 
+    def backlogListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        title = '%s selected'%len(sel)
+        self.w.globalBacklogBox.backlogSelectionTitle.set(title)
+
     def backlogUpdateButtonCallback(self, sender):
         self.w.globalBacklogBox.backlogList.setSelection([])
-        self.w.globalBacklogBox.backlogList.set(self.TMC.getglobalbacklog())
+        self.TMC.getglobalbacklog()
+        self.w.globalBacklogBox.backlogList.set(self.TMC.globalBacklog)
+
+    def globalBacklogListDragCallback(self, sender, indexes):
+        self.globalBacklogListDragElements = [x for i, x in enumerate(sender.get()) if i in indexes]
+
+    def globalBacklogListDropCallback(self, sender, dropInfos):
+        isProposal = dropInfos["isProposal"]
+        if not isProposal:
+            if self.selectedGroup:
+                glyphs = "".join(self.globalBacklogListDragElements)
+                self.TMC.team.get(self.selectedGroup)._addBackLogGlyphs(glyphs)
+                self.TMC.team.backlog_glyphs.remove(glyphs)
+                self.w.globalBacklogBox.backlogList.setSelection([])
+                self.w.globalBacklogBox.backlogList.set(self.TMC.team.backlog_glyphs._glyphs)
+                self.updateGroupsUI()
+        return True
 
     ####### GROUPS #######
     #----------------------
@@ -172,6 +216,7 @@ class TeamManagerUI:
     def groupsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
+            self.selectedGroup = ""
             return
         self.selectedGroup = sender.get()[sel[0]]
 
@@ -210,8 +255,12 @@ class TeamManagerUI:
         self.setGroupList()
 
     def setGroupList(self):
-        self.w.groupsBox.groupsList.setSelection([])
         self.w.groupsBox.groupsList.set(self.TMC.groups)
+
+    def updateGroupsUI(self):
+        if self.selectedGroup:
+            self.w.groupsBox.groupsBacklogList.set(list(self.TMC.team.get(self.selectedGroup).backlog_glyphs))
+            self.w.groupsBox.backlogTotalTitle.set("%s glyphs"%len(self.w.groupsBox.groupsBacklogList.get()))
 
 class ProjectManagerEditSheet:
 

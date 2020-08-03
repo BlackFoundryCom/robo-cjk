@@ -84,6 +84,7 @@ class Group:
 	def __init__(self, name):
 		self._name = name
 		self._users = set()
+		self._backlog_glyphs = ''
 
 	def get(self, userName):
 		"""
@@ -257,7 +258,9 @@ class BackLogGlyph:
 		self.__iadd__(other)
 
 	def remove(self, other):
+		print(self._glyphs)
 		self._glyphs = "".join(set(self._glyphs)-set(other))
+		print(self._glyphs)
 
 	def __iadd__(self, other):
 		self._glyphs += "".join(set(other)-set(self._glyphs))	

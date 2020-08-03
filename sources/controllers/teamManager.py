@@ -41,7 +41,6 @@ class TeamManagerController:
 		teamDict = self.RCJKI.currentFont.loadTeam()
 		self.team.initFromJSON(teamDict)
 
-
 	def getglobalbacklog(self):
 		f = self.RCJKI.currentFont
 		DCDone = set()
@@ -57,7 +56,13 @@ class TeamManagerController:
 		    dcuse = set(v)
 		    if not len(dcuse-DCDone):
 		        backlog += k
-		return list(backlog)
+		self.team.backlog_glyphs = backlog
+		# return list(backlog)
+
+	@property
+	def globalBacklog(self):
+		return self.team.backlog_glyphs
+	
 
 	####### MANAGERS #######
     #----------------------
