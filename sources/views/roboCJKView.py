@@ -1315,6 +1315,7 @@ class RoboCJKView(BaseWindowController):
         self.currentFont.newGlyph('deepComponent', name)
         # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
         # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
+        self.w.deepComponent.setSelection([])
         self.w.deepComponent.set(self.currentFont.deepComponentSet)
 
     def newAtomicElementCallback(self, sender):
@@ -1322,6 +1323,7 @@ class RoboCJKView(BaseWindowController):
         self.currentFont.newGlyph('atomicElement', name)
         # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
         # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
+        self.w.atomicElement.setSelection([])
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
     def duplicateAtomicElementCallback(self, sender):
@@ -1333,6 +1335,7 @@ class RoboCJKView(BaseWindowController):
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
             index = self.currentFont.atomicElementSet.index(newGlyphName)
+            self.w.atomicElement.setSelection([])
             self.w.atomicElement.set(self.currentFont.atomicElementSet)
             self.w.atomicElement.setSelection([index])
 
@@ -1341,6 +1344,7 @@ class RoboCJKView(BaseWindowController):
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
             index = self.currentFont.deepComponentSet.index(newGlyphName)
+            self.w.deepComponent.setSelection([])
             self.w.deepComponent.set(self.currentFont.deepComponentSet)
             self.w.deepComponent.setSelection([index])
 
@@ -1349,6 +1353,7 @@ class RoboCJKView(BaseWindowController):
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
             index = self.currentFont.characterGlyphSet.index(newGlyphName)
+            self.w.characterGlyph.setSelection([])
             self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
             self.w.characterGlyph.setSelection([index])
 
