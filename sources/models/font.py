@@ -107,7 +107,7 @@ class Font():
         self.getGlyphs()
         self.createLayersFromVariationAxis()
 
-    def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, fontpath = None):
+    def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, mysqlPassword, fontpath = None):
         self.mysqlFont = True
         self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
         # print("----")
@@ -135,6 +135,7 @@ class Font():
         self.fontName = fontName
         self.mysql = mysql
         self.mysqlUserName = mysqlUserName
+        self.mysqlPassword = mysqlPassword
         self.bf_log = bf_log
 
         fontlib = self._BFont.fontlib_data
@@ -793,7 +794,10 @@ class Font():
             return self._BFont.get_aelement(glyphName)
 
     def saveGlyph(self, glyph):
-        if glyph is None: return     
+        if glyph is None: return  
+
+        self.mysql.login(self.mysqlUserName, self.mysqlPassword)
+
         name = glyph.name
 
         glyph.save()

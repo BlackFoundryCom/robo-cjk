@@ -1205,7 +1205,7 @@ class RoboCJKView(BaseWindowController):
                         self.RCJKI.currentFont.dataBase = json.load(file)
             else:
                 # self.RCJKI.dataBase = True
-                self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName, self.RCJKI.hiddenSavePath)
+                self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName,self.RCJKI.mysql_password, self.RCJKI.hiddenSavePath)
                 self.RCJKI.currentFont.loadMysqlDataBase()
                 # self.RCJKI.currentFont.dataBase
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
