@@ -219,6 +219,7 @@ class TeamManagerUI:
             self.selectedGroup = ""
             return
         self.selectedGroup = sender.get()[sel[0]]
+        self.updateGroupsUI()
 
     @managerLocked
     @lockUI

@@ -945,6 +945,8 @@ class Font():
         font.save(os.path.join(self.fontPath, "hanziUFO.ufo"))
 
     def renameGlyph(self, oldName, newName):
+        if not set([newName]) - set(self.atomicElementSet + self.deepComponentSet + self.characterGlyphSet):
+            return
         if not self.mysql:
             if not self.locker.userHasLock(self[oldName]): return False
             self.save()
