@@ -27,9 +27,9 @@ class User:
 
 	def __init__(self, **kwargs):
 		self.manager = False
-		self.backlog = ""
-		self.inProgress = ""
-		self.done = ""
+		self.backlog = []
+		self.inProgress = []
+		self.done = []
 		for k, v in kwargs.items():
 			setattr(self, k, v)
 		
@@ -45,34 +45,34 @@ class User:
 	def export(self):
 		return self._asDict()
 
-	def _addGlyphs(self, glyphs:str = ""):
+	def _addGlyphs(self, glyphs:list = []):
 		glyphs = set(self.backlog) | set(glyphs)
-		self.backlog = ''.join(sorted(list(glyphs)))
+		self.backlog = sorted(list(glyphs))
 
-	def _removeGlyphs(self, glyphs:str = ""):
+	def _removeGlyphs(self, glyphs:list = []):
 		def _recreateGlyphsList(glyphlist):
 			backlog = set(glyphlist) - set(glyphs)
-			glyphlist = ''.join(sorted(list(backlog)))
+			glyphlist = sorted(list(backlog))
 		for glyphlist in [self.backlog, self.inProgress, self.done]:
 			_recreateGlyphsList(glyphlist)
 
-	def moveGlyphsToInProgress(self, glyphs:str = ''):
+	def moveGlyphsToInProgress(self, glyphs:list = []):
 		"""
 		Move a list of glyphs from backlog to inprogess
 		"""
 		glyphs = set(self.backlog) & set(glyphs)
-		self.inProgress += "".join(glyphs)
-		self.backlog = "".join(set(self.backlog)-glyphs)
+		self.inProgress.extend(list(glyphs))
+		self.backlog = list(set(self.backlog)-glyphs)
 
-	def moveGlyphsToDone(self, glyphs:str = ''):
+	def moveGlyphsToDone(self, glyphs:list = []):
 		"""
 		Move a list of glyphs from inprogress to done
 		"""
 		glyphs = set(self.inProgress) & set(glyphs)
-		self.done += "".join(glyphs)
-		self.inProgress = "".join(set(self.inProgress)-glyphs)
+		self.done.extend(list(glyphs))
+		self.inProgress = list(set(self.inProgress)-glyphs)
 
-	def moveBackGlyphsToBacklog(self, glyphs:str = ''):
+	def moveBackGlyphsToBacklog(self, glyphs:list = []):
 		pass
 
 	@property
@@ -84,7 +84,7 @@ class Group:
 	def __init__(self, name):
 		self._name = name
 		self._users = set()
-		self._backlog_glyphs = ''
+		self._backlog_glyphs = []
 
 	def get(self, userName):
 		"""
@@ -110,11 +110,16 @@ class Group:
 	def users(self):
 		return self._users
 
+	@property
+	def glyphs(self):
+		glyphs = [x for user in self._users for x in getattr(self, user).glyphs]
+		return glyphs
+	
 	# Import / Export
 	# --------------------
 
 	def initGroup(self, data):
-		self._backlog_glyphs = data.get("backlog_glyphs", "")
+		self._backlog_glyphs = data.get("backlog_glyphs", [])
 		for user in data.get("users", {}):
 			self._addUser(user, data.get("users").get(user))
 
@@ -150,28 +155,28 @@ class Group:
 		self._users = [x for x in self._users if x != userName]
 
 		if appendUserGlyphsToBackLog:
-			self._addBackLogGlyphs(userGlyphs.get("backlog"))
+			self._addBackLogGlyphs(userGlyphs.get("backlog", []))
 		return userGlyphs
 
 	# Glyphs
 	# --------------------
 
-	def _addBackLogGlyphs(self, glyphs:str = ""):
+	def _addBackLogGlyphs(self, glyphs:list = []):
 		glyphs = set(self._backlog_glyphs) | set(glyphs)
-		self._backlog_glyphs = ''.join(sorted(list(glyphs)))
+		self._backlog_glyphs = sorted(list(glyphs))
 
-	def _removeBackLogGlyphs(self, glyphs:str = ""):
+	def _removeBackLogGlyphs(self, glyphs:list = []):
 		glyphs = set(self._backlog_glyphs) - set(glyphs)
-		self._backlog_glyphs = ''.join(sorted(list(glyphs)))
+		self._backlog_glyphs = sorted(list(glyphs))
 
-	def addGlyphsToUser(self, userName:str, glyphs:str = ""):
+	def addGlyphsToUser(self, userName:str, glyphs:list = []):
 		if not hasattr(self, userName): return
-		glyphsList = "".join(set(glyphs) & set(self._backlog_glyphs))
+		glyphsList = list(set(glyphs) & set(self._backlog_glyphs))
 		getattr(self, userName)._addGlyphs(glyphsList)
 		self._removeBackLogGlyphs(glyphsList)
 		return getattr(self, userName).glyphs
 
-	def removeGlyphsToUser(self, userName:str, glyphs:str = ""):
+	def removeGlyphsToUser(self, userName:str, glyphs:list = []):
 		return NotImplemented
 
 
@@ -251,22 +256,20 @@ class Groups:
 
 class BackLogGlyph:
 
-	def __init__(self, glyphs = ""):
-		self._glyphs = "".join(set(glyphs))
+	def __init__(self, glyphs:list = []):
+		self._glyphs = list(set(glyphs))
 
 	def add(self, other):
 		self.__iadd__(other)
 
 	def remove(self, other):
-		print(self._glyphs)
-		self._glyphs = "".join(set(self._glyphs)-set(other))
-		print(self._glyphs)
+		self._glyphs = list(set(self._glyphs)-set(other))
 
 	def __iadd__(self, other):
-		self._glyphs += "".join(set(other)-set(self._glyphs))	
+		self._glyphs += list(set(other)-set(self._glyphs))	
 
 	def __repr__(self):
-		return ''.join(sorted(self._glyphs))
+		return ' '.join(sorted(self._glyphs))
 
 	def __str__(self):
 		return repr(self)
@@ -342,6 +345,11 @@ class Team:
 	def groups(self):
 		return self._groups
 
+	@property
+	def allTeamsGlyphs(self):
+		glyphs = [x for group in self._groups for x in group.glyphs]
+		return glyphs
+
 	# Import / Export
 	# --------------------
 	
@@ -356,7 +364,10 @@ class Team:
 			}
 		"""
 		# if not data: return
-		self._backlog_glyphs = BackLogGlyph(data.get("backlog_glyphs", ""))
+		print("----")
+		print(data)
+		print("----")
+		self._backlog_glyphs = BackLogGlyph(data.get("backlog_glyphs", []))
 		self._managers = Managers(data.get("managers", []))
 		for groupname in data.get("groups", []):
 			groupData = data.get("groups")[groupname]
@@ -402,8 +413,8 @@ class Team:
 	# Groups
 	# --------------------
 
-	def addGlyphsToGroup(self, glyphs:str, group:str):
-		glyphs = ''.join(set(self._backlog_glyphs) & set(glyphs))
+	def addGlyphsToGroup(self, glyphs:list, group:str):
+		glyphs = list(set(self._backlog_glyphs) & set(glyphs))
 		self.groups.get(group)._addBackLogGlyphs(glyphs)
 		self._backlog_glyphs.remove(glyphs)
 
@@ -418,33 +429,33 @@ class Team:
 if __name__ == '__main__':
 
 	teamjson = {
-		"backlog_glyphs" : 'abcdefhj',
+		"backlog_glyphs" : ['a', 'b', 'c', 'd', 'e', 'f', 'h', 'j'],
 		"managerS": ['claire'],
 		"groups": {
 					"group1": {
-								"backlog_glyphs": "klmnop",
+								"backlog_glyphs": ['k', 'l', 'm', 'n', 'o', 'p'],
 								"users": { 
 											"ruosi": {	
 														'manager': False,
-														'backlog': 'qrst'
+														'backlog': ['q', 'r', 's', 't']
 													},
 											"Jeremie": {	
 														'manager': True,
-														'backlog': 'uvx',
-														'done': 'w'
+														'backlog': ['u', 'v', 'x'],
+														'done': ['w']
 													},
 										},
 								},
 					"group2": {
-								"backlog_glyphs": "AZERTYU",
+								"backlog_glyphs": ["A", "Z", "E", "R", "T", "Y", "U"],
 								"users": { 
 											"claire": {
 														'manager': True,
-														'backlog': 'WXCV'
+														'backlog': ['W', 'X', 'C', 'V']
 													},
 											"Robin": {	
 														'manager': False,
-														'backlog': 'QSDF'
+														'backlog': ['Q', 'S', 'D', 'F']
 													},
 										},
 								},
@@ -461,10 +472,10 @@ if __name__ == '__main__':
 
 	print("\n ---- BACKLOG ----")
 
-	team.backlog_glyphs.add('z')
+	team.backlog_glyphs.add(['z'])
 	print("add", team.backlog_glyphs)
 
-	team.backlog_glyphs.remove('df')
+	team.backlog_glyphs.remove(['d', 'f'])
 	print("remove", team.backlog_glyphs)
 
 	# team.backlog_glyphs = 'helloworld'
@@ -485,7 +496,7 @@ if __name__ == '__main__':
 	print("data from the removed group ->", groupData)
 	print("\nremove Group: ", team.export())	
 
-	team.addGlyphsToGroup("abc", "china")
+	team.addGlyphsToGroup(["a", "b", "c"], "china")
 
 	####### GROUP #######	
 	#--------------------
@@ -499,7 +510,7 @@ if __name__ == '__main__':
 	print("backlogChina ->", backlogChina)
 
 	print("add user")
-	team.get("chenRongTeam").addUser("Gaetan", {"backlog":"xyz"})
+	team.get("chenRongTeam").addUser("Gaetan", {"backlog":["x", "y", "z"]})
 	print("add User Gaetan", team.export())
 
 	print("removeUser")
@@ -508,7 +519,7 @@ if __name__ == '__main__':
 	print("Ruosi's glyphs", ruosisGlyphs)
 
 	print("add glyphs to user")
-	team.get("chenRongTeam").addGlyphsToUser("Jeremie", "nop")
+	team.get("chenRongTeam").addGlyphsToUser("Jeremie", ["n", "o", "p"])
 	print("add glyphs to Jeremie", team.export())
 
 	print("remove glyphs to user")
@@ -529,6 +540,9 @@ if __name__ == '__main__':
 	group = team.getUserGroup("Jeremie")	
 	print("Jeremie's group is ->", group)
 
+	allglyphs = team.allTeamsGlyphs
+	print("All team glyphs are -> ", allglyphs)
+
 	# help(team)
 
 	####### USERS #######
@@ -536,11 +550,11 @@ if __name__ == '__main__':
 
 	print("\n ---- USER ----")
 
-	team.get("chenRongTeam").get("Gaetan").moveGlyphsToInProgress("ze")
+	team.get("chenRongTeam").get("Gaetan").moveGlyphsToInProgress(["z", "e"])
 	print("move glyphs to in progress ->", team.export())
 
-	team.get("chenRongTeam").get("Jeremie").moveGlyphsToInProgress("op")
+	team.get("chenRongTeam").get("Jeremie").moveGlyphsToInProgress(["o", "p"])
 	print("move glyphs to in progress ->", team.export())
 
-	team.get("chenRongTeam").get("Jeremie").moveGlyphsToDone("o")
+	team.get("chenRongTeam").get("Jeremie").moveGlyphsToDone(["o"])
 	print("move glyphs to in progress ->", team.export())

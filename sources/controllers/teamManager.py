@@ -50,12 +50,14 @@ class TeamManagerController:
 				if n.split("_") and len(n.split("_")) > 1:
 					DCDone.add(chr(int(n.split("_")[1], 16)))
 
-		backlog = ""
+		backlog = []
 		for k, v in self.RCJKI.currentFont.dataBase.items():
 		    v = v.strip("\n")
 		    dcuse = set(v)
 		    if not len(dcuse-DCDone):
-		        backlog += k
+		        backlog.append(k)
+		backlog = list(set(backlog)-set(self.team.allTeamsGlyphs))
+		print("self.team.allTeamsGlyphs", self.team.allTeamsGlyphs)
 		self.team.backlog_glyphs = backlog
 		# return list(backlog)
 

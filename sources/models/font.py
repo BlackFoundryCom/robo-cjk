@@ -143,7 +143,7 @@ class Font():
         if fontlib is None:
             fontlib = '{}'
         # self.fontLib = eval(fontlib)
-        self.fontLib = json.loads(fontlib)
+        self.fontLib = json.loads(fontlib)#.decode()
         self._initFontLib(self.fontLib)
 
         database = self._BFont.database_data
@@ -168,7 +168,6 @@ class Font():
         print("save team", teamDict)
         if self.mysqlFont:
             self.mysql.update_font_fontlib_data(self.fontName, json.dumps(self.fontLib))
-            
         else:
             pass
         
