@@ -200,11 +200,11 @@ class TeamManagerUI:
         isProposal = dropInfos["isProposal"]
         if not isProposal:
             if self.selectedGroup:
-                glyphs = self.globalBacklogListDragElements
+                glyphs = self.TMC.charListFromUnicodeNames(self.globalBacklogListDragElements)
                 self.TMC.team.get(self.selectedGroup)._addBackLogGlyphs(glyphs)
                 self.TMC.team.backlog_glyphs.remove(glyphs)
                 self.w.globalBacklogBox.backlogList.setSelection([])
-                self.w.globalBacklogBox.backlogList.set(self.TMC.team.backlog_glyphs._glyphs)
+                self.w.globalBacklogBox.backlogList.set(self.TMC.globalBacklog)
                 self.updateGroupsUI()
         return True
 
@@ -261,7 +261,7 @@ class TeamManagerUI:
 
     def updateGroupsUI(self):
         if self.selectedGroup:
-            self.w.groupsBox.groupsBacklogList.set(list(self.TMC.team.get(self.selectedGroup).backlog_glyphs))
+            self.w.groupsBox.groupsBacklogList.set(self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).backlog_glyphs))
             self.w.groupsBox.backlogTotalTitle.set("%s glyphs"%len(self.w.groupsBox.groupsBacklogList.get()))
         else:
             self.w.groupsBox.groupsBacklogList.set([])
