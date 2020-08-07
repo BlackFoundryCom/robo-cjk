@@ -20,6 +20,7 @@ from vanilla import *
 from AppKit import NSDragOperationMove
 
 globalBacklogListDragType = "globalBacklogListDragType"
+groupsBacklogListDragType = "groupsBacklogListDragType"
 
 def managerLocked(func):
     def wrapper(self, *args, **kwargs):
@@ -41,6 +42,8 @@ def setUsersUI(func):
         func(self, *args, **kwargs)
         if self.selectedGroup:
             self.w.usersBox.usersList.set(self.TMC.team.get(self.selectedGroup).users)
+            if self.selectedUserName:
+                self.w.usersBox.usersBacklogList.set(self.TMC.team.get(self.selectedGroup).get(self.selectedUserName).backlog)
     return wrapper
 
 class TeamManagerUI:
@@ -135,6 +138,7 @@ class TeamManagerUI:
             [], 
             drawFocusRing = False,
             selfWindowDropSettings=dict(type=globalBacklogListDragType, operation=NSDragOperationMove, callback=self.globalBacklogListDropCallback),
+            dragSettings=dict(type=groupsBacklogListDragType, callback=self.groupsBacklogListDragCallback),
             )
         self.w.groupsBox.backlogTotalTitle = TextBox(
             (210, -20, 90, 20), 
@@ -144,7 +148,10 @@ class TeamManagerUI:
             )
         
         self.w.groupsBox.groupsWIPTitle = TextBox((300, 10, 100, 20), 'WIP')
-        self.w.groupsBox.groupsWIPList = List((300, 35, 90, -30), [], drawFocusRing = False)
+        self.w.groupsBox.groupsWIPList = List(
+            (300, 35, 90, -30), 
+            [], drawFocusRing = False,
+            )
         self.w.groupsBox.WIPTotalTitle = TextBox((300, -20, 90, 20), "206 glyphs", alignment = 'center', sizeStyle = "small")
         
         self.w.groupsBox.groupsDoneTitle = TextBox((390, 10, 100, 20), 'Done')
@@ -172,7 +179,10 @@ class TeamManagerUI:
             )
         
         self.w.usersBox.usersBacklogTitle = TextBox((210, 10, -5, 20), 'Backlog')
-        self.w.usersBox.usersBacklogList = List((210, 35, 100, -30), [], drawFocusRing = False)
+        self.w.usersBox.usersBacklogList = List(
+            (210, 35, 100, -30), [], drawFocusRing = False,
+            selfWindowDropSettings=dict(type=groupsBacklogListDragType, operation=NSDragOperationMove, callback=self.groupsBacklogListDropCallback),
+            )
         self.w.usersBox.backlogTotalTitle = TextBox((210, -20, 90, 20), "76 glyphs", alignment = 'center', sizeStyle = "small")
         
         self.w.usersBox.usersInProgressTitle = TextBox((310, 10, -5, 20), 'WIP')
@@ -290,6 +300,9 @@ class TeamManagerUI:
             self.w.groupsBox.groupsBacklogList.set([])
             self.w.groupsBox.backlogTotalTitle.set("0 glyphs")
 
+    ####### USERS #######
+    #----------------------
+
     @managerLocked
     @lockUI
     @setUsersUI
@@ -336,6 +349,27 @@ class TeamManagerUI:
         if newname != self.selectedUserName:
             self.TMC.renameUserFromGroup(self.selectedUserName, newname, self.selectedGroup)
 
+    # @managerLocked
+    # @lockUI
+    # @setUsersUI
+    def groupsBacklogListDragCallback(self, sender, indexes):
+        self.groupBacklogListDragElements = [x for i, x in enumerate(sender.get()) if i in indexes]
+
+    # @managerLocked
+    # @lockUI
+    # @setUsersUI
+    def groupsBacklogListDropCallback(self, sender, dropInfos):
+        isProposal = dropInfos["isProposal"]
+        if not isProposal:
+            if self.selectedUserName:
+                glyphs = self.TMC.charListFromUnicodeNames(self.groupBacklogListDragElements)
+                self.TMC.team.get(self.selectedGroup).get(self.selectedUserName)._addGlyphs(glyphs)
+                self.TMC.team.get(self.selectedGroup).removeGlyphFromBacklog(glyphs)
+                self.w.groupsBox.groupsBacklogList.setSelection([])
+                self.w.groupsBox.groupsBacklogList.set(self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).backlog_glyphs))
+                if self.selectedUserName:
+                    self.w.usersBox.usersBacklogList.set(self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).get(self.selectedUserName).backlog))
+        return True
 
 class ProjectManagerEditSheet:
 

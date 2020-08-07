@@ -186,6 +186,10 @@ class Group:
 	def removeGlyphsToUser(self, userName:str, glyphs:list = []):
 		return NotImplemented
 
+	def removeGlyphFromBacklog(self, glyphs: list):
+		for glyph in glyphs:
+			self.backlog_glyphs.remove(glyph)
+
 
 class Groups:
 
