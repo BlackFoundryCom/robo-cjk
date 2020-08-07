@@ -86,6 +86,10 @@ class Group:
 		self._users = set()
 		self._backlog_glyphs = []
 
+	def __iter__(self):
+		for user in self.users:
+			yield user
+
 	def get(self, userName):
 		"""
 		return a user from its name
@@ -152,11 +156,14 @@ class Group:
 		if not hasattr(self, userName): return
 		userGlyphs = getattr(self, userName).export()
 		delattr(self, userName)
-		self._users = [x for x in self._users if x != userName]
+		self._users.remove(userName)
 
 		if appendUserGlyphsToBackLog:
 			self._addBackLogGlyphs(userGlyphs.get("backlog", []))
 		return userGlyphs
+
+	def renameUser(self, oldname, newname):
+		self.addUser(newname, self.removeUser(oldname))
 
 	# Glyphs
 	# --------------------

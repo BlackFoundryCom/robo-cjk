@@ -36,6 +36,13 @@ def lockUI(func):
         self._lock = False
     return wrapper
 
+def setUsersUI(func):
+    def wrapper(self, *args, **kwargs):
+        func(self, *args, **kwargs)
+        if self.selectedGroup:
+            self.w.usersBox.usersList.set(self.TMC.team.get(self.selectedGroup).users)
+    return wrapper
+
 class TeamManagerUI:
     
     def __init__(self, TMC):
@@ -144,10 +151,25 @@ class TeamManagerUI:
         self.w.groupsBox.groupsDoneList = List((390, 35, 90, -30), [], drawFocusRing = False)
         self.w.groupsBox.doneTotalTitle = TextBox((390, -20, 90, 20), "106 glyphs", alignment = 'center', sizeStyle = "small")
         
-        self.w.usersBox.usersTitle = TextBox((5, 10, 150, 20), 'Users')
-        self.w.usersBox.usersList = List((5, 35, 200, -30), ["ChenRong"], drawFocusRing = False)
-        self.w.usersBox.addusersButton = Button((5, -25, 100, 20), '+')
-        self.w.usersBox.removeusersButton = Button((105, -25, 100, 20), '-')
+        self.selectedUserName = ""
+        self.w.usersBox.usersTitle = TextBox(
+            (5, 10, 150, 20), 'Users')
+        self.w.usersBox.usersList = List(
+            (5, 35, 200, -30), 
+            [], 
+            drawFocusRing = False,
+            selectionCallback = self.usersListSelectionCallback,
+            editCallback = self.usersListEditCallback,
+            )
+        self.w.usersBox.addusersButton = Button(
+            (5, -25, 100, 20), 
+            '+',
+            callback = self.addusersButtonCallback)
+        self.w.usersBox.removeusersButton = Button(
+            (105, -25, 100, 20), 
+            '-',
+            callback = self.removeusersButtonCallback
+            )
         
         self.w.usersBox.usersBacklogTitle = TextBox((210, 10, -5, 20), 'Backlog')
         self.w.usersBox.usersBacklogList = List((210, 35, 100, -30), [], drawFocusRing = False)
@@ -213,6 +235,7 @@ class TeamManagerUI:
 
     # @managerLocked
     @lockUI
+    @setUsersUI
     def groupsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel:
@@ -266,6 +289,53 @@ class TeamManagerUI:
         else:
             self.w.groupsBox.groupsBacklogList.set([])
             self.w.groupsBox.backlogTotalTitle.set("0 glyphs")
+
+    @managerLocked
+    @lockUI
+    @setUsersUI
+    def addusersButtonCallback(self, sender):
+        groupName = self.selectedGroup
+        i = 0
+        while True:
+            userName = "newUser%s"%str(i).zfill(2)
+            if userName not in self.TMC.team.get(groupName):
+                break
+            i += 1
+        self.TMC.addGroupUser(groupName, userName)
+
+    @managerLocked
+    @lockUI
+    @setUsersUI
+    def removeusersButtonCallback(self, sender):
+        sel = self.w.usersBox.usersList.getSelection()
+        if not sel:
+            return
+        groupName = self.selectedGroup
+        username = self.w.usersBox.usersList.get()[sel[0]]
+        self.TMC.removeGroupUser(groupName, userName)
+
+    @managerLocked
+    @lockUI
+    @setUsersUI
+    def usersListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.selectedUserName = ""
+            return
+        self.selectedUserName = sender.get()[sel[0]]
+
+    @managerLocked
+    @lockUI
+    @setUsersUI
+    def usersListEditCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            return
+        if not self.selectedUserName: return
+        newname = sender.get()[sel[0]]
+        if newname != self.selectedUserName:
+            self.TMC.renameUserFromGroup(self.selectedUserName, newname, self.selectedGroup)
+
 
 class ProjectManagerEditSheet:
 

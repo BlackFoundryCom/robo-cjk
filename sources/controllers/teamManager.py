@@ -59,7 +59,10 @@ class TeamManagerController:
                 n = files.unicodeName(k)
                 backlog.append(n)
         backlog = list(set(backlog)-set(self.team.allTeamsGlyphs))
-        print("self.team.allTeamsGlyphs", self.team.allTeamsGlyphs)
+        # print("backlog", backlog)
+        # print("allTeamsGlyphs", self.team.allTeamsGlyphs)
+
+        # print("self.team.allTeamsGlyphs", self.team.allTeamsGlyphs)
         self.team.backlog_glyphs = backlog
         # return list(backlog)
 
@@ -108,4 +111,15 @@ class TeamManagerController:
 
     def renameGroup(self, oldname, newname):
         self.team.groups.rename(oldname, newname)
+
+    def addGroupUser(self, groupname, username):
+        self.team.get(groupname).addUser(username)
+
+    def removeGroupUser(self, groupname, username):
+        self.team.get(groupname).removeUser(username, appendUserGlyphsToBackLog = True)
+
+    def renameUserFromGroup(self, oldname, newname, groupname):
+        self.team.get(groupname).renameUser(oldname, newname)
+
+
 
