@@ -324,10 +324,12 @@ class Font():
             yield self[name]
 
     def __getitem__(self, name):
+        if not isinstance(name, str):
+            name = name["name"]
         if self.mysqlFont:
             try:
-                if not isinstance(name, str):
-                    name = name["name"]
+                # if not isinstance(name, str):
+                #     name = name["name"]
                 # self.getmySQLGlyph(name)
                 if not set([name]) - set(self._RFont.keys()):
                     # try:
@@ -663,10 +665,15 @@ class Font():
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
         glyph._initWithLib()
-        if glyph.markColor is not None:
-            glyph.stateColor = glyph.markColor 
-        glyph._RGlyph.markColor = glyph.markColor
-        print(glyph.name, glyph.stateColor, glyph.markColor)
+
+        # if layer[glyph.name].markColor is not None:
+        #     layer[glyph.name].stateColor = layer[glyph.name].markColor 
+        # layer[glyph.name].markColor = layer[glyph.name].markColor
+
+        # if glyph.markColor is not None:
+        #     glyph.stateColor = glyph.markColor 
+        # glyph.markColor = glyph.markColor
+        # print(glyph.name, glyph.stateColor, glyph.markColor)
 
     @property
     def atomicElementSet(self):

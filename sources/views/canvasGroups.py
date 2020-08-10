@@ -614,7 +614,6 @@ class GlyphPreviewCanvas(CanvasGroup):
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
 
-        print(self.glyph.stateColor)
         if self.glyph.stateColor is not None:
             mjdt.fill(*self.glyph.stateColor)
             mjdt.rect(0, 0, 200, 20)

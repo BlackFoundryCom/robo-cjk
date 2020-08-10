@@ -69,7 +69,7 @@ class DeepComponent(Glyph):
         return self._glyphVariations
     
     def _initWithLib(self, lib=None):
-        print("_initWithLib", self.name, lib)
+        # print("_initWithLib", self.name, lib)
         try:
             if lib:
                 if variationGlyphsKey not in lib.keys():
