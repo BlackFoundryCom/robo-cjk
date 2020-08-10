@@ -656,12 +656,17 @@ class Font():
         glyph.setParent(self)
         pen = glyph.naked().getPointPen()
         readGlyphFromString(string, glyph.naked(), pen)
+                # print(glyph.name, glyph.markColor)
         layer = font.getLayer(layerName)
         layer.insertGlyph(glyph)
         # if font == self._RFont:
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
         glyph._initWithLib()
+        if glyph.markColor is not None:
+            glyph.stateColor = glyph.markColor 
+        glyph._RGlyph.markColor = glyph.markColor
+        print(glyph.name, glyph.stateColor, glyph.markColor)
 
     @property
     def atomicElementSet(self):

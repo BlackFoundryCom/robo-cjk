@@ -47,13 +47,13 @@ class TeamManagerController:
         DCDone = set()
         for n in f.deepComponentSet:
             g = f[n]
-            if g.designState == "VALIDATE":
+            if g.designState == "DONE":
                 if n.split("_") and len(n.split("_")) > 1:
                     DCDone.add(chr(int(n.split("_")[1], 16)))
 
         backlog = []
         for k, v in self.RCJKI.currentFont.dataBase.items():
-            v = v.strip("\n")
+            # v = v.strip("\n")
             dcuse = set(v)
             if not len(dcuse-DCDone):
                 n = files.unicodeName(k)

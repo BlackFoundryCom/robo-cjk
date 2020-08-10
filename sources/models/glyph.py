@@ -33,13 +33,13 @@ INPROGRESS = (1, 0, 0, 1)
 CHECKING1 = (1, .5, 0, 1)
 CHECKING2 = (1, 1, 0, 1)
 CHECKING3 = (0, .5, 1, 1)
-VALIDATE = (0, 1, .5, 1)
+DONE = (0, 1, .5, 1)
 STATE_COLORS = {
     INPROGRESS:"INPROGRESS", 
     CHECKING1:"CHECKING1", 
     CHECKING2:"CHECKING2", 
     CHECKING3:"CHECKING3", 
-    VALIDATE:"VALIDATE"}
+    DONE:"DONE"}
 
 def compute(func):
     def wrapper(self, *args, **kwargs):
@@ -97,7 +97,7 @@ class Glyph(RGlyph):
         return mark
 
     @stateColor.setter
-    def stateColor(self, value:tuple = (1, 1, 1, 1)):
+    def stateColor(self, value:tuple):
         self._RGlyph.markColor = value
 
     def save(self):

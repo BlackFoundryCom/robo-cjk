@@ -44,8 +44,8 @@ INPROGRESS = (1., 0., 0., 1.)
 CHECKING1 = (1., .5, 0., 1.)
 CHECKING2 = (1., 1., 0., 1.)
 CHECKING3 = (0., .5, 1., 1.)
-VALIDATE = (0., 1., .5, 1.)
-STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, VALIDATE)
+DONE = (0., 1., .5, 1.)
+STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
 
 def setListAesthetic(element):
     element.getNSTableView().setUsesAlternatingRowBackgroundColors_(False)
@@ -244,7 +244,7 @@ class DCCG_View(CanvasGroup):
 
         self.glyphState = PopUpButton(
             (5, -265, -100, 20),
-            ["In Progress", "Checking round 1", "Checking round 2", "Checking round 3", "Validate"],
+            ["In Progress", "Checking round 1", "Checking round 2", "Checking round 3", "Done"],
             callback = self.glyphStateCallback
             )
         # self.setglyphState()
@@ -333,7 +333,7 @@ class DCCG_View(CanvasGroup):
             state.set(2)
         elif color == CHECKING3:
             state.set(3)
-        elif color == VALIDATE:
+        elif color == DONE:
             state.set(4)
         else:
             state.set(0)
@@ -343,7 +343,7 @@ class DCCG_View(CanvasGroup):
         # return
         state = sender.get()
         self.RCJKI.currentGlyph.stateColor = STATE_COLORS[state]
-        if STATE_COLORS[state] == VALIDATE and self.RCJKI.currentGlyph.type == "characterGlyph":
+        if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
             self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
 
@@ -614,6 +614,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
 
+        print(self.glyph.stateColor)
         if self.glyph.stateColor is not None:
             mjdt.fill(*self.glyph.stateColor)
             mjdt.rect(0, 0, 200, 20)
