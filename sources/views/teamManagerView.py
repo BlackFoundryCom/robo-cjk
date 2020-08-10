@@ -43,7 +43,20 @@ def setUsersUI(func):
         if self.selectedGroup:
             self.w.usersBox.usersList.set(self.TMC.team.get(self.selectedGroup).users)
             if self.selectedUserName:
-                self.w.usersBox.usersBacklogList.set(self.TMC.team.get(self.selectedGroup).get(self.selectedUserName).backlog)
+                user = self.TMC.team.get(self.selectedGroup).get(self.selectedUserName)
+                if user is not None:
+                    self.w.usersBox.usersBacklogList.set(self.TMC.unicodeNamesFromCharList(user.backlog))
+                    self.w.usersBox.backlogTotalTitle.set('%s glyphs'%len(user.backlog))
+            else:
+                self.w.usersBox.usersBacklogList.set([])
+                self.w.usersBox.backlogTotalTitle.set('0 glyphs')
+        else:
+            self.w.usersBox.usersList.setSelection([])
+            self.w.usersBox.usersBacklogList.setSelection([])
+            self.w.usersBox.usersList.set([])
+            self.w.usersBox.usersBacklogList.set([])
+            self.w.usersBox.backlogTotalTitle.set('0 glyphs')
+
     return wrapper
 
 class TeamManagerUI:
@@ -152,11 +165,11 @@ class TeamManagerUI:
             (300, 35, 90, -30), 
             [], drawFocusRing = False,
             )
-        self.w.groupsBox.WIPTotalTitle = TextBox((300, -20, 90, 20), "206 glyphs", alignment = 'center', sizeStyle = "small")
+        self.w.groupsBox.WIPTotalTitle = TextBox((300, -20, 90, 20), "0 glyphs", alignment = 'center', sizeStyle = "small")
         
         self.w.groupsBox.groupsDoneTitle = TextBox((390, 10, 100, 20), 'Done')
         self.w.groupsBox.groupsDoneList = List((390, 35, 90, -30), [], drawFocusRing = False)
-        self.w.groupsBox.doneTotalTitle = TextBox((390, -20, 90, 20), "106 glyphs", alignment = 'center', sizeStyle = "small")
+        self.w.groupsBox.doneTotalTitle = TextBox((390, -20, 90, 20), "0 glyphs", alignment = 'center', sizeStyle = "small")
         
         self.selectedUserName = ""
         self.w.usersBox.usersTitle = TextBox(
@@ -178,20 +191,27 @@ class TeamManagerUI:
             callback = self.removeusersButtonCallback
             )
         
-        self.w.usersBox.usersBacklogTitle = TextBox((210, 10, -5, 20), 'Backlog')
+        self.w.usersBox.usersBacklogTitle = TextBox(
+            (210, 10, -5, 20), 
+            'Backlog')
         self.w.usersBox.usersBacklogList = List(
-            (210, 35, 100, -30), [], drawFocusRing = False,
+            (210, 35, 100, -30), [], 
+            drawFocusRing = False,
             selfWindowDropSettings=dict(type=groupsBacklogListDragType, operation=NSDragOperationMove, callback=self.groupsBacklogListDropCallback),
             )
-        self.w.usersBox.backlogTotalTitle = TextBox((210, -20, 90, 20), "76 glyphs", alignment = 'center', sizeStyle = "small")
+        self.w.usersBox.backlogTotalTitle = TextBox(
+            (210, -20, 90, 20), 
+            "0 glyphs", 
+            alignment = 'center', 
+            sizeStyle = "small")
         
         self.w.usersBox.usersInProgressTitle = TextBox((310, 10, -5, 20), 'WIP')
         self.w.usersBox.usersInProgressList = List((310, 35, 100, -30), [], drawFocusRing = False)
-        self.w.usersBox.WIPTotalTitle = TextBox((310, -20, 100, 20), "73 glyphs", alignment = 'center', sizeStyle = "small")        
+        self.w.usersBox.WIPTotalTitle = TextBox((310, -20, 100, 20), "0 glyphs", alignment = 'center', sizeStyle = "small")        
         
         self.w.usersBox.usersDoneTitle = TextBox((410, 10, -5, 20), 'Done')
         self.w.usersBox.usersDoneList = List((410, 35, 100, -30), [], drawFocusRing = False)
-        self.w.usersBox.doneTotalTitle = TextBox((410, -20, 100, 20), "47 glyphs", alignment = 'center', sizeStyle = "small")
+        self.w.usersBox.doneTotalTitle = TextBox((410, -20, 100, 20), "0 glyphs", alignment = 'center', sizeStyle = "small")
 
         self.w.bind("close", self.windowWillClose)
 
@@ -248,6 +268,7 @@ class TeamManagerUI:
     @setUsersUI
     def groupsListSelectionCallback(self, sender):
         sel = sender.getSelection()
+        self.selectedUserName = ""
         if not sel:
             self.selectedGroup = ""
             self.updateGroupsUI()
@@ -296,9 +317,13 @@ class TeamManagerUI:
         if self.selectedGroup:
             self.w.groupsBox.groupsBacklogList.set(self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).backlog_glyphs))
             self.w.groupsBox.backlogTotalTitle.set("%s glyphs"%len(self.w.groupsBox.groupsBacklogList.get()))
+            self.w.groupsBox.groupsWIPList.set(self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).inProgress))
+            self.w.groupsBox.WIPTotalTitle.set("%s glyphs"%len(self.w.groupsBox.groupsWIPList.get()))
         else:
             self.w.groupsBox.groupsBacklogList.set([])
             self.w.groupsBox.backlogTotalTitle.set("0 glyphs")
+            self.w.groupsBox.groupsWIPList.set([])
+            self.w.groupsBox.WIPTotalTitle.set("0 glyphs")
 
     ####### USERS #######
     #----------------------
@@ -348,6 +373,7 @@ class TeamManagerUI:
         newname = sender.get()[sel[0]]
         if newname != self.selectedUserName:
             self.TMC.renameUserFromGroup(self.selectedUserName, newname, self.selectedGroup)
+            self.selectedUserName = newname
 
     # @managerLocked
     # @lockUI
@@ -363,12 +389,15 @@ class TeamManagerUI:
         if not isProposal:
             if self.selectedUserName:
                 glyphs = self.TMC.charListFromUnicodeNames(self.groupBacklogListDragElements)
+                print(self.selectedGroup, self.selectedUserName, self.TMC.team.get(self.selectedGroup).get(self.selectedUserName))
                 self.TMC.team.get(self.selectedGroup).get(self.selectedUserName)._addGlyphs(glyphs)
                 self.TMC.team.get(self.selectedGroup).removeGlyphFromBacklog(glyphs)
                 self.w.groupsBox.groupsBacklogList.setSelection([])
                 self.w.groupsBox.groupsBacklogList.set(self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).backlog_glyphs))
                 if self.selectedUserName:
-                    self.w.usersBox.usersBacklogList.set(self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).get(self.selectedUserName).backlog))
+                    backlog = self.TMC.unicodeNamesFromCharList(self.TMC.team.get(self.selectedGroup).get(self.selectedUserName).backlog)
+                    self.w.usersBox.usersBacklogList.set(backlog)
+                    self.w.usersBox.backlogTotalTitle.set('%s glyphs'%len(backlog))
         return True
 
 class ProjectManagerEditSheet:

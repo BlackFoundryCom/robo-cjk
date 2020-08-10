@@ -58,12 +58,17 @@ class TeamManagerController:
             if not len(dcuse-DCDone):
                 n = files.unicodeName(k)
                 backlog.append(n)
+
+        print('backlog', backlog)
+        print('self.team.allTeamsGlyphs', self.team.allTeamsGlyphs)
         backlog = list(set(backlog)-set(self.team.allTeamsGlyphs))
+        print('backlog', backlog)
         # print("backlog", backlog)
         # print("allTeamsGlyphs", self.team.allTeamsGlyphs)
 
         # print("self.team.allTeamsGlyphs", self.team.allTeamsGlyphs)
         self.team.backlog_glyphs = backlog
+        print('backlog', self.team.backlog_glyphs)
         # return list(backlog)
 
     @property

@@ -118,6 +118,11 @@ class Group:
 	def glyphs(self):
 		glyphs = [x for user in self._users for x in getattr(self, user).glyphs]
 		return glyphs
+
+	@property
+	def inProgress(self):
+		return [x for user in self.users for x in getattr(self, user).backlog + getattr(self, user).inProgress]
+	
 	
 	# Import / Export
 	# --------------------
