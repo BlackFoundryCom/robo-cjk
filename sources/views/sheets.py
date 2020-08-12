@@ -199,7 +199,7 @@ class SelectFontVariationSheet():
         self.view = view
         self.parent = CurrentGlyphWindow()
         self.parent.sheet = Sheet((300, 140), self.parent.w)
-        l = [axis for axis in self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', []) if axis not in self.RCJKI.currentGlyph._glyphVariations.axes]
+        l = [axis for axis in self.RCJKI.currentFont.fontVariations if axis not in self.RCJKI.currentGlyph._glyphVariations.axes]
         if not l: l=[""]
         popupbuttonlist = PopUpButtonListCell(l)
         self.parent.sheet.fontVariationsList = List((0, 0, -0, 20), 
@@ -321,7 +321,7 @@ class FontInfosSheet():
     def __init__(self, RCJKI, parentWindow, posSize):
         self.RCJKI = RCJKI
         if not self.RCJKI.get("currentFont"): return
-        fontvariations = self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', [])
+        fontvariations = self.RCJKI.currentFont.fontVariations
         if 'robocjk.defaultGlyphWidth' not in self.RCJKI.currentFont._RFont.lib:
             self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth'] = 1000
         defaultGlyphWidth = self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth']
@@ -383,6 +383,7 @@ class FontInfosSheet():
 
     def fontVariationAxisListEditCallback(self, sender):
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'] = sender.get()
+        self.RCJKI.currentFont.fontVariations = sender.get()
 
     def addVariationCallback(self, sender):
         l = 0
@@ -392,6 +393,7 @@ class FontInfosSheet():
             name = files.normalizeCode(files.int_to_column_id(l), 4)
         self.s.fontVariationAxisList.append(name)
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'].append(name)
+        self.RCJKI.currentFont.fontVariations.append(name)
 
     def defaultGlyphWidthCallback(self, sender):
         try:
@@ -406,6 +408,7 @@ class FontInfosSheet():
         l.pop(sel[0])
         self.s.fontVariationAxisList.set(l)
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'] = self.s.fontVariationAxisList.get()
+        self.RCJKI.currentFont.fontVariations = self.s.fontVariationAxisList.get()
 
     def loadDataBaseCallback(self, sender):
         path = getFile()[0]

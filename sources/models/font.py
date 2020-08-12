@@ -102,11 +102,14 @@ class Font():
             self._initFontLib(self.fontLib)
             # for k, v in self.fontLib.items():
             #     self._RFont.lib[k] = v
+        self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
         self.getGlyphs()
         self.createLayersFromVariationAxis()
+
+        print("53E3", self["DC_53E3_00"]._RGlyph.markColor)
 
     def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, mysqlPassword, fontpath = None):
         self.mysqlFont = True
@@ -146,6 +149,8 @@ class Font():
         # self.fontLib = eval(fontlib)
         self.fontLib = json.loads(fontlib)#.decode()
         self._initFontLib(self.fontLib)
+
+        self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
 
         database = self._BFont.database_data
         if database is None:
@@ -513,8 +518,8 @@ class Font():
         return string
 
     def createLayersFromVariationAxis(self):
-        if not self._RFont.lib.get('robocjk.fontVariations', ""): return
-        for variation in self._RFont.lib['robocjk.fontVariations']:
+        if not self.fontVariations: return
+        for variation in self.fontVariations:
             if variation not in [x.name for x in self._RFont.layers]:
                 self._RFont.newLayer(variation)
 
@@ -644,6 +649,7 @@ class Font():
         tree = ET.parse(glifPath)
         root = tree.getroot()
         self.insertGlyph(glyph, ET.tostring(root), layerName)
+        color = glyph.markColor
         self[glyph.name].save()
         self[glyph.name]._RGlyph.lib.clear()
         self[glyph.name]._RGlyph.lib.update(self[glyph.name].lib)
@@ -653,28 +659,14 @@ class Font():
         if string is None: return
         if font is None:
             font = self._RFont
-        #     _glyphs = self._glyphs
-        # else:
-        #     _glyphs = self._fullGlyphs
         glyph.setParent(self)
         pen = glyph.naked().getPointPen()
         readGlyphFromString(string, glyph.naked(), pen)
-                # print(glyph.name, glyph.markColor)
         layer = font.getLayer(layerName)
         layer.insertGlyph(glyph)
-        # if font == self._RFont:
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
         glyph._initWithLib()
-
-        # if layer[glyph.name].markColor is not None:
-        #     layer[glyph.name].stateColor = layer[glyph.name].markColor 
-        # layer[glyph.name].markColor = layer[glyph.name].markColor
-
-        # if glyph.markColor is not None:
-        #     glyph.stateColor = glyph.markColor 
-        # glyph.markColor = glyph.markColor
-        # print(glyph.name, glyph.stateColor, glyph.markColor)
 
     @property
     def atomicElementSet(self):

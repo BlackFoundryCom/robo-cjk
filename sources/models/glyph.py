@@ -101,7 +101,11 @@ class Glyph(RGlyph):
         self._RGlyph.markColor = value
 
     def save(self):
+        # print("glyohsave", self.name, self.stateColor)
+        color = self.markColor
         self.lib.clear()
+        self.markColor = color
+        # print("glyohsave", self.name, self.stateColor)
 
     def getParent(self):
         return self.currentFont

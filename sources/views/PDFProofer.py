@@ -483,8 +483,8 @@ class Interface:
         self.w.customPages.text.ufo = Group((10, 60, 190, 110))
 
         self.fontAxis = []
-        if self.pdf.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
-            self.fontAxis = [dict(Axis = x, PreviewValue = 0) for x in self.pdf.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']]
+        if self.pdf.RCJKI.currentFont.fontVariations:
+            self.fontAxis = [dict(Axis = x, PreviewValue = 0) for x in self.pdf.RCJKI.currentFont.fontVariations]
         slider = SliderListCell(minValue = 0, maxValue = 1)
         self.w.customPages.text.ufo.axis = List(
             (0, 0, -0,  -0),
@@ -919,7 +919,7 @@ class NewPDF:
             db.fontSize(60)
             for i, name in enumerate(page):
                 try:
-                    for variation in self.RCJKI.currentFont.fontLib.get("robocjk.fontVariations", []):
+                    for variation in self.RCJKI.currentFont.fontVariations:
                         glyph1 = self.RCJKI.currentFont[name]
                         glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
                         glyph1.preview.variationPreview.removeOverlap()

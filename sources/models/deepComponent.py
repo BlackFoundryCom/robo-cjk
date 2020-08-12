@@ -142,6 +142,7 @@ class DeepComponent(Glyph):
         self._glyphVariations.removeAxis(name)
 
     def save(self):
+        color = self.markColor
         self.lib.clear()
         lib = RLib()
 
@@ -152,3 +153,4 @@ class DeepComponent(Glyph):
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
 
         self.lib.update(lib)
+        self.markColor = color

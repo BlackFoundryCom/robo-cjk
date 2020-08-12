@@ -143,6 +143,7 @@ class CharacterGlyph(Glyph):
         self.selectedElement = []
 
     def save(self):
+        color = self.markColor
         self.lib.clear()
         lib = RLib()
 
@@ -161,3 +162,4 @@ class CharacterGlyph(Glyph):
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)
+        self.markColor = color

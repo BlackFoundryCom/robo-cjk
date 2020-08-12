@@ -242,8 +242,8 @@ class TextCenter:
         self.w.multiLineView.setLineHeight(200)
 
         self.sourcesList = []
-        if self.RCJKI.currentFont.fontLib.get('robocjk.fontVariations', ''):
-            self.sourcesList = [dict(Axis = x, PreviewValue = 0) for x in self.RCJKI.currentFont.fontLib['robocjk.fontVariations']]
+        if self.RCJKI.currentFont.fontVariations:
+            self.sourcesList = [dict(Axis = x, PreviewValue = 0) for x in self.RCJKI.currentFont.fontVariations]
 
         slider = SliderListCell(minValue = 0, maxValue = 1)
         self.w.sourcesList = List(

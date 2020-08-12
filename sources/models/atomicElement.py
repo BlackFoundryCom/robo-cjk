@@ -73,6 +73,7 @@ class AtomicElement(Glyph):
         self._glyphVariations.removeAxis(axisName)
 
     def save(self):
+        color = self.markColor
         self.lib.clear()
         lib = RLib()
         
@@ -88,3 +89,4 @@ class AtomicElement(Glyph):
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
 
         self.lib.update(lib)
+        self.markColor = color

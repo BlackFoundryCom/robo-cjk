@@ -275,7 +275,7 @@ class RoboCJKController(object):
                     for c in ai.transformedGlyph:
                         g1.appendContour(c)
 
-        for axis in self.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
+        for axis in self.currentFont.fontVariations:
             axisLayerName = "backup_%s"%axis
             _decompose(glyph, axis, axisLayerName)
         masterLayerName = "backup_master"
