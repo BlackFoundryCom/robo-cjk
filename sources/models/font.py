@@ -85,6 +85,7 @@ class Font():
         
         self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
         name = os.path.split(fontPath)[1].split('.')[0]
+        self.fontName = name
         self._RFont = NewFont(
             familyName=name, 
             styleName='Regular', 

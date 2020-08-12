@@ -882,16 +882,12 @@ class NewPDF:
         self.controller = controller
         self.designFrame = HanDesignFrame()
         self.designFrameViewer = DesignFrameDrawer(self)
-        # text = "的一了是不我这在人有他来个道你大到就上着们那也说么下出地然中看时要没天过可自子能还之以去好后为都会心得里对身手起小想只而和头她无力面己如什现多样已知些声经前神笑事开点方眼发所但气法意情生两家间将很真话成让老被动当用于见回又军把此才几正战明却龙从十三长女光再向实最行高本打风进定魔给问色国同走其种年口边毫疖尽虱周卡卷觉慕冒散黎北睾丝善妻荣雷七万丈丌与丐丑专且世丘业东严丫丰串丸丹主丽乃久义乌乍乎乐乔乘九乡予争亏互五亟亦产今介令佥兆免兔兜公兰共关兴具典兼内册农凡凹击刃办午半卑南叉及叟史吏唐商啬囊坐垂堇壬夜太夫央失夷夹奂奥孑存少尹尺局展屯川州巨巫差巳平并廿弗弟弱必戋户放斥曲曳更曾未末术朱束柬死母氐民永求爰犀狂率王甚甫甬由甲电畏百直禹羌羲聿肃臧臾良带襄西詹象贝质酋重釜错韦饭马齐齿匆乙入次凶句区外原处尢尸山巛工巾干幺广建异武弓修斗曰欠歹毛氏水火爪爿片牙牛瓜瓦甘田疋痛皿矛立米缶耒耳肉臣臼舟虎虫衣言谷豆貌赤辰酉金隶隹非革骨鬲鹿黑鼎鼠龠"
         self.pages = [ ["uni%s"%hex(ord(x))[2:].upper() for x in text[i:i+20]] for i in range(0, len(text), 20) ]
-        # self.pages = [["uni%s"%hex(ord(c))[2:].upper() for c in text]]
         self.draw()
 
     def draw(self):
-        # db.newDrawing()
-        # self.designFrameViewer.draw()
-
         user = self.RCJKI.gitUserName
+        now = datetime.datetime.now()
         date = "%s%s%s_%s%s%s"%(now.year, str(now.month).zfill(2), str(now.day).zfill(2), str(now.hour).zfill(2), str(now.minute).zfill(2), str(now.second).zfill(2))
 
         def drawDesignFrame():
@@ -910,11 +906,11 @@ class NewPDF:
             db.newDrawing()
             self.designFrameViewer.draw()
 
-            bold = []
-            light = []
+            glyphsVariations = {}
+            # light = []
             db.newPage(FRAMEX, FRAMEY)
 
-            db.textBox('GS-Overlay', (0, FRAMEY-65, FRAMEX, 55), align = 'center')
+            db.textBox('%s-Overlay'%self.RCJKI.currentFont.fontName, (0, FRAMEY-105, FRAMEX, 55), align = 'center')
             s = .11
             tx, ty = (FRAMEX/s-1000*4)*.5, 1000 * 5.8
             db.save()
@@ -923,42 +919,42 @@ class NewPDF:
             db.fontSize(60)
             for i, name in enumerate(page):
                 try:
-                    glyph1 = self.RCJKI.currentFont[name]
-                    glyph1.preview.computeDeepComponentsPreview([dict(Axis = "WGHT", PreviewValue = 1)])
-                    glyph1.preview.variationPreview.removeOverlap()
-                    bold.append(glyph1.preview.variationPreview)
+                    for variation in self.RCJKI.currentFont.fontLib.get("robocjk.fontVariations", []):
+                        glyph1 = self.RCJKI.currentFont[name]
+                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
+                        glyph1.preview.variationPreview.removeOverlap()
+                        if variation not in glyphsVariations.keys():
+                            glyphsVariations[variation] = []
+                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
 
-                    drawDesignFrame()
+                        drawDesignFrame()
+                        db.fill(0, 0, 0, 1)
+                        db.stroke(None)                    
+                        db.textBox(name, (0, 900, 1000, 100), align = "center")
 
-                    # self.designFrameViewer.draw(glyph1.preview.variationPreview)
-                    db.fill(0, 0, 0, 1)
-                    db.stroke(None)                    
-                    db.textBox(name, (0, 900, 1000, 100), align = "center")
+                        db.fill(1, 1, 1, 1)
+                        db.stroke(0, 0, 0, 1)
+                        db.strokeWidth(1)
+                        
+                        db.drawGlyph(glyph1.preview.variationPreview)
+                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 0)])
+                        glyph1.preview.variationPreview.removeOverlap()
+                        variation = "normal"
+                        if variation not in glyphsVariations.keys():
+                            glyphsVariations[variation] = []
+                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
+                        db.drawGlyph(glyph1.preview.variationPreview)
 
-                    db.fill(1, 1, 1, 1)
-                    db.stroke(0, 0, 0, 1)
-                    db.strokeWidth(1)
-                    
-                    db.drawGlyph(glyph1.preview.variationPreview)
-                    glyph1.preview.computeDeepComponentsPreview([dict(Axis = "WGHT", PreviewValue = 0)])
-                    glyph1.preview.variationPreview.removeOverlap()
-                    light.append(glyph1.preview.variationPreview)
-                    db.drawGlyph(glyph1.preview.variationPreview)
-
-                    if (i+1)%4:
-                        db.translate(1000, 0)
-                    else:
-                        db.translate(-1000*3, -1200)
+                        if (i+1)%4:
+                            db.translate(1000, 0)
+                        else:
+                            db.translate(-1000*3, -1200)
                 except Exception as e:
                     raise e
-
-  
             db.restore()
 
-            pdfData = db.pdfImage()
-            now = datetime.datetime.now()
-            
-            outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s.pdf'%(date, str(pageIndex).zfill(2), "Overlay"))
+            pdfData = db.pdfImage()            
+            outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s-%s.pdf'%(date, str(pageIndex).zfill(2), self.RCJKI.currentFont.fontName, "Overlay"))
             files.makepath(outputPath)
             db.saveImage(outputPath)
 
@@ -968,7 +964,7 @@ class NewPDF:
                 self.designFrameViewer.draw()
 
                 db.newPage(FRAMEX, FRAMEY)
-                db.textBox(text, (0, FRAMEY-65, FRAMEX, 55), align = 'center')
+                db.textBox(text, (0, FRAMEY-105, FRAMEX, 55), align = 'center')
                 s = .11
                 tx, ty = (FRAMEX/s-1000*4)*.5, 1000 * 5.8
                 db.save()
@@ -997,14 +993,13 @@ class NewPDF:
                 files.makepath(outputPath)
                 db.saveImage(outputPath)
 
-            drawWeight(bold, 'GS-Bold')
-            drawWeight(light, 'GS-Regular')
+            for variations, weights in glyphsVariations.items():
+                drawWeight(weights, '%s-%s'%(self.RCJKI.currentFont.fontName, variations))
 
             textPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_text.txt'%(date, str(pageIndex).zfill(2)))
             files.makepath(textPath)
             with open(textPath, 'w', encoding = 'utf-8') as file:
                 file.write("".join([chr(int(x[3:], 16)) for x in page]))
-
 
 class DesignFrameDrawer:
 
