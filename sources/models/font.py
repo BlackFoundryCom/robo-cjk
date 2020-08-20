@@ -109,8 +109,6 @@ class Font():
         self.getGlyphs()
         self.createLayersFromVariationAxis()
 
-        print("53E3", self["DC_53E3_00"]._RGlyph.markColor)
-
     def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, mysqlPassword, fontpath = None):
         self.mysqlFont = True
         self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
