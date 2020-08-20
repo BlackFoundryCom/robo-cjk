@@ -115,6 +115,7 @@ class Glyph(RGlyph):
 
     @property
     def _RGlyph(self):
+        self.getParent()[self.name]
         return self._RFont[self.name]
 
     @property
