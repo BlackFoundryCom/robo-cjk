@@ -1249,7 +1249,7 @@ class RoboCJKView(BaseWindowController):
             if sender == self.w.characterGlyph:
                 charSet = [dict(char = files.unicodeName2Char(x["name"]), name = x["name"]) for x in sender.get()]
                 sender.set(charSet)
-            self.setGlyphNameToCansvas(sender, self.prevGlyphName)
+            self.setGlyphNameToCanvas(sender, self.prevGlyphName)
 
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
@@ -1274,7 +1274,7 @@ class RoboCJKView(BaseWindowController):
         #     self.RCJKI.currentFont.loadCharacterGlyph(self.prevGlyphName)
         # else:
         self.prevGlyphName = prevGlyphName
-        self.setGlyphNameToCansvas(sender, self.prevGlyphName)
+        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
         # else:
@@ -1285,7 +1285,7 @@ class RoboCJKView(BaseWindowController):
         else:
             self.w.lockerInfoTextBox.set("")
 
-    def setGlyphNameToCansvas(self, sender, glyphName):
+    def setGlyphNameToCanvas(self, sender, glyphName):
         if sender == self.w.atomicElement:
             self.w.atomicElementPreview.glyphName = glyphName
             self.w.atomicElementPreview.update()
@@ -1460,7 +1460,7 @@ class RoboCJKView(BaseWindowController):
             self.w.atomicElement.setSelection([])
             self.w.atomicElement.set(self.currentFont.atomicElementSet)
             self.prevGlyphName = ""
-            self.setGlyphNameToCansvas(self.w.atomicElement, self.prevGlyphName)
+            self.setGlyphNameToCanvas(self.w.atomicElement, self.prevGlyphName)
             self.w.lockerInfoTextBox.set("")
 
     def removeDeepComponentCallback(self, sender):
@@ -1469,7 +1469,7 @@ class RoboCJKView(BaseWindowController):
             self.w.deepComponent.setSelection([])
             self.w.deepComponent.set(self.currentFont.deepComponentSet)
             self.prevGlyphName = ""
-            self.setGlyphNameToCansvas(self.w.deepComponent, self.prevGlyphName)
+            self.setGlyphNameToCanvas(self.w.deepComponent, self.prevGlyphName)
             self.w.lockerInfoTextBox.set("")
 
     def removeCharacterGlyphCallback(self, sender):
@@ -1525,7 +1525,7 @@ class RoboCJKView(BaseWindowController):
         self.w.characterGlyph.setSelection([])
         self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
         self.prevGlyphName = ""
-        self.setGlyphNameToCansvas(self.w.characterGlyph, self.prevGlyphName)
+        self.setGlyphNameToCanvas(self.w.characterGlyph, self.prevGlyphName)
         self.w.lockerInfoTextBox.set("")
 
     def dumpName(self, glyphType, sets):
