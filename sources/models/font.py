@@ -116,7 +116,10 @@ class Font():
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
-        self.getGlyphs(font = self._fullRFont)
+        # self.getGlyphs(font = self._fullRFont)
+        for glyphset in [self.atomicElementSet, self.deepComponentSet, self.characterGlyphSet]:
+            for name in glyphset:
+                self.getGlyph(name, font = self._fullRFont)
         self.createLayersFromVariationAxis()
 
     def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, mysqlPassword, fontpath = None):
@@ -211,10 +214,11 @@ class Font():
             self.loadMysqlDataBase()
 
     def get(self, name):
-        if self.mysqlFont:
-            return self._glyphs[self._fullRFont[name]]
-        else:
-            return self[x]
+        return self._glyphs[self._fullRFont[name]]
+        # if self.mysqlFont:
+        #     return self._glyphs[self._fullRFont[name]]
+        # else:
+        #     return self[name]
 
     def loadMysqlDataBase(self):
         self.dataBase = json.loads(self._BFont.database_data)
@@ -332,7 +336,6 @@ class Font():
         elif glyphname in self.deepComponentSet:
             return "dcomponents"
 
-
     def __iter__(self):
         for name in self._RFont.keys():
             yield self[name]
@@ -380,8 +383,6 @@ class Font():
 
     def shallowDocument(self):
         return self._RFont.shallowDocument()
-
-
 
     @property
     def _fontLayers(self):
@@ -493,13 +494,7 @@ class Font():
         elif name in self.characterGlyphSet:
             glyph = characterGlyph.CharacterGlyph(name)
             BGlyph = self._BFont.get_cglyph(name)
-            # if name == "uni3575":
-            # print("-)-)-)-)")
-            # print(name)
-            # print(BGlyph.xml)
-            # print("-)-)-)-)")
-        # else:
-        #     message(f'{name} not in font')
+
         if BGlyph is None: return
         xml = BGlyph.xml
         self.insertGlyph(glyph, xml, 'foreground', font)
@@ -519,7 +514,9 @@ class Font():
             font.newLayer(layerName)
             self.insertGlyph(glyph, xml, layerName, font)
 
-    def getGlyph(self, glyph):
+    def getGlyph(self, glyph, font = None):
+        if font is None:
+            font = self._RFont
         if isinstance(glyph, str):
             name = glyph
             if name in self.deepComponentSet:
@@ -537,75 +534,26 @@ class Font():
             self.addGlyph(
                 deepComponent.DeepComponent(name), 
                 fileName, 
-                "foreground"
+                "foreground",
+                font = font
                 )
         elif type == "characterGlyph":
             self.addGlyph(
                 characterGlyph.CharacterGlyph(name), 
                 fileName, 
-                "foreground"
+                "foreground",
+                font = font
                 )
         elif type == "atomicElement":
             self.addGlyph(
                 atomicElement.AtomicElement(name), 
                 fileName, 
-                "foreground"
+                "foreground",
+                font = font
                 )
 
         if type in ["atomicElement", "characterGlyph"]:
             path = os.path.join(self.fontPath, type)
-            for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
-                layerName = os.path.split(layerPath)[1]
-                if layerName not in self._fontLayers:
-                    self._RFont.newLayer(layerName)
-
-                for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
-                    layerfileName = glifFile.split('.glif')[0]
-                    if type == "atomicElement":
-                        self.addGlyph(
-                            atomicElement.AtomicElement(name), 
-                            layerfileName, 
-                            layerName
-                            )
-                    else:
-                        self.addGlyph(
-                            characterGlyph.CharacterGlyph(name), 
-                            layerfileName, 
-                            layerName
-                            )
-
-    def getGlyphs(self, font = None):
-        if font is None:
-            font = self._RFont
-        for glyphName in self.deepComponentSet:
-            fileName = files.userNameToFileName(glyphName)
-            self.addGlyph(
-                deepComponent.DeepComponent(glyphName), 
-                fileName, 
-                "foreground",
-                font = font
-                )
-
-        for glyphName in self.characterGlyphSet:
-            fileName = files.userNameToFileName(glyphName)
-            self.addGlyph(
-                characterGlyph.CharacterGlyph(glyphName), 
-                fileName, 
-                "foreground",
-                font = font
-                )
-
-        for glyphName in self.atomicElementSet:
-            fileName = files.userNameToFileName(glyphName)
-            self.addGlyph(
-                atomicElement.AtomicElement(glyphName), 
-                fileName, 
-                "foreground",
-                font = font
-                )
-        glyphtypes = ["atomicElement", "characterGlyph"]
-        for glyphtype in glyphtypes:
-            path = os.path.join(self.fontPath, glyphtype)
             for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
                 layerName = os.path.split(layerPath)[1]
                 if layerName not in font.layers:
@@ -613,20 +561,74 @@ class Font():
 
                 for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
                     layerfileName = glifFile.split('.glif')[0]
-                    if glyphtype == "atomicElement":
+                    if type == "atomicElement":
                         self.addGlyph(
-                            atomicElement.AtomicElement(glyphName), 
+                            atomicElement.AtomicElement(name), 
                             layerfileName, 
                             layerName,
                             font = font
                             )
                     else:
                         self.addGlyph(
-                            characterGlyph.CharacterGlyph(glyphName), 
+                            characterGlyph.CharacterGlyph(name), 
                             layerfileName, 
                             layerName,
                             font = font
                             )
+
+    # def getGlyphs(self, font = None):
+    #     if font is None:
+    #         font = self._RFont
+    #     for glyphName in self.deepComponentSet:
+    #         fileName = files.userNameToFileName(glyphName)
+    #         self.addGlyph(
+    #             deepComponent.DeepComponent(glyphName), 
+    #             fileName, 
+    #             "foreground",
+    #             font = font
+    #             )
+
+    #     for glyphName in self.characterGlyphSet:
+    #         fileName = files.userNameToFileName(glyphName)
+    #         self.addGlyph(
+    #             characterGlyph.CharacterGlyph(glyphName), 
+    #             fileName, 
+    #             "foreground",
+    #             font = font
+    #             )
+
+    #     for glyphName in self.atomicElementSet:
+    #         fileName = files.userNameToFileName(glyphName)
+    #         self.addGlyph(
+    #             atomicElement.AtomicElement(glyphName), 
+    #             fileName, 
+    #             "foreground",
+    #             font = font
+    #             )
+    #     glyphtypes = ["atomicElement", "characterGlyph"]
+    #     for glyphtype in glyphtypes:
+    #         path = os.path.join(self.fontPath, glyphtype)
+    #         for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
+    #             layerName = os.path.split(layerPath)[1]
+    #             if layerName not in font.layers:
+    #                 font.newLayer(layerName)
+
+    #             for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
+    #                 layerfileName = glifFile.split('.glif')[0]
+    #                 if glyphtype == "atomicElement":
+    #                     self.addGlyph(
+    #                         atomicElement.AtomicElement(glyphName), 
+    #                         layerfileName, 
+    #                         layerName,
+    #                         font = font
+    #                         )
+    #                 else:
+    #                     self.addGlyph(
+    #                         characterGlyph.CharacterGlyph(glyphName), 
+    #                         layerfileName, 
+    #                         layerName,
+    #                         font = font
+    #                         )
 
     def newGLIF(self, glyphType, glyphName):
         if glyphType == 'atomicElement':
@@ -665,9 +667,15 @@ class Font():
         root = tree.getroot()
         self.insertGlyph(glyph, ET.tostring(root), layerName, font = font)
         color = glyph.markColor
-        self[glyph.name].save()
-        self[glyph.name]._RGlyph.lib.clear()
-        self[glyph.name]._RGlyph.lib.update(self[glyph.name].lib)
+
+        name = glyph.name
+        if name not in font.keys(): return
+        glyph = self._glyphs.get(font[name])
+        if glyph is None: return
+
+        glyph.save()
+        glyph._RGlyph.lib.clear()
+        glyph._RGlyph.lib.update(glyph.lib)
 
     def insertGlyph(self, glyph, string, layerName, font = None):  
         if glyph is None: return
@@ -681,6 +689,9 @@ class Font():
         layer.insertGlyph(glyph)
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
+        print("------")
+        print(string)
+        print("------")
         glyph._initWithLib()
 
     @property
