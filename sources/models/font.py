@@ -556,25 +556,26 @@ class Font():
             path = os.path.join(self.fontPath, type)
             for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
                 layerName = os.path.split(layerPath)[1]
+                if "%s.glif"%files.userNameToFileName(name) not in os.listdir(layerPath): continue
                 if layerName not in font.layers:
                     font.newLayer(layerName)
 
-                for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
-                    layerfileName = glifFile.split('.glif')[0]
-                    if type == "atomicElement":
-                        self.addGlyph(
-                            atomicElement.AtomicElement(name), 
-                            layerfileName, 
-                            layerName,
-                            font = font
-                            )
-                    else:
-                        self.addGlyph(
-                            characterGlyph.CharacterGlyph(name), 
-                            layerfileName, 
-                            layerName,
-                            font = font
-                            )
+                # for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
+                layerfileName = files.userNameToFileName(name)#glifFile.split('.glif')[0]
+                if type == "atomicElement":
+                    self.addGlyph(
+                        atomicElement.AtomicElement(name), 
+                        layerfileName, 
+                        layerName,
+                        font = font
+                        )
+                else:
+                    self.addGlyph(
+                        characterGlyph.CharacterGlyph(name), 
+                        layerfileName, 
+                        layerName,
+                        font = font
+                        )
 
     # def getGlyphs(self, font = None):
     #     if font is None:
@@ -669,7 +670,7 @@ class Font():
         color = glyph.markColor
 
         name = glyph.name
-        if name not in font.keys(): return
+        if not set([name]) - set(font.keys()): return
         glyph = self._glyphs.get(font[name])
         if glyph is None: return
 
@@ -689,9 +690,9 @@ class Font():
         layer.insertGlyph(glyph)
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
-        print("------")
-        print(string)
-        print("------")
+        # print("------")
+        # print(string)
+        # print("------")
         glyph._initWithLib()
 
     @property

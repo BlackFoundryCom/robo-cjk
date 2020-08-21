@@ -1274,12 +1274,14 @@ class RoboCJKView(BaseWindowController):
         #     self.RCJKI.currentFont.loadCharacterGlyph(self.prevGlyphName)
         # else:
         self.prevGlyphName = prevGlyphName
+        user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[self.prevGlyphName])
+        
         self.setGlyphNameToCanvas(sender, self.prevGlyphName)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
         # else:
         #     user = self.RCJKI.mysql.who_locked_cglyph(self.currentrcjkFile, prevGlyphName)
-        user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[self.prevGlyphName])
+        # user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[self.prevGlyphName])
         if user: 
             self.w.lockerInfoTextBox.set('Locked by: ' + user)
         else:
