@@ -457,7 +457,12 @@ class VariationGlyphs(DictClass):
         """
         Return a list reprensentation on the class
         """
-        return {x: getattr(self, x)._toDict() for x in vars(self)}     
+        return {x: getattr(self, x)._toDict() for x in vars(self)}  
+
+    @property
+    def layerNames(self):
+        return [x.layerName for x in self.values()]
+      
 
     @property
     def axes(self):

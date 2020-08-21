@@ -209,13 +209,16 @@ class Font():
             # print("getglyph")
 
         if glyph.type in ["atomicElement", "characterGlyph"]:
+            layerNames = glyph._glyphVariations.layerNames
             path = os.path.join(self.fontPath, glyph.type)
-            for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
-                layerName = os.path.split(layerPath)[1]
+            for layerName in layerNames:
+                layerPath = os.path.join(path, layerName)
+
                 if layerName not in self._fontLayers:
                     self._RFont.newLayer(layerName)
 
-                for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
+                paths = os.listdir(layerPath)
+                for glifFile in filter(lambda x: x.endswith(".glif"), paths):
                     layerfileName = glifFile.split('.glif')[0]
                     if glyph.type == "atomicElement":
                         self.addGlyph(
