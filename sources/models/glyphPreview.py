@@ -142,12 +142,13 @@ class Preview:
             glyph.update()
 
         axisPreview = []
-
+        parentFont = self.glyph.getParent()
         for i, deepComponent in enumerate(glyph._deepComponents):
             try:
                 layersInfos = {}
-                deepComponentGlyph = self.glyph.getParent()[deepComponent.name].foreground
-                variationGlyph = self.glyph.getParent()[deepComponent.name]._glyphVariations
+                dc = parentFont[deepComponent.name]
+                deepComponentGlyph = dc.foreground
+                variationGlyph = dc._glyphVariations
                 
                 for axisName, layerName in deepComponent.coord.items():
                     if variationGlyph[axisName] is None: continue

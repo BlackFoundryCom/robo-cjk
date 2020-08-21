@@ -519,9 +519,9 @@ class Font():
             font = self._RFont
         if isinstance(glyph, str):
             name = glyph
-            if name in self.deepComponentSet:
+            if set([name]) & set(self.deepComponentSet):
                 type = "deepComponent"
-            elif name in self.atomicElementSet:
+            elif set([name]) & set(self.atomicElementSet):
                 type = "atomicElement"
             else:
                 type = "characterGlyph"
@@ -556,26 +556,29 @@ class Font():
             path = os.path.join(self.fontPath, type)
             for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
                 layerName = os.path.split(layerPath)[1]
-                if "%s.glif"%files.userNameToFileName(name) not in os.listdir(layerPath): continue
-                if layerName not in font.layers:
-                    font.newLayer(layerName)
+                # print(set(["%s.glif"%files.userNameToFileName(name)]))
+                # print(set(os.listdir(layerPath)))
+                if set(["%s.glif"%files.userNameToFileName(name)]) & set(os.listdir(layerPath)): 
+                # if "%s.glif"%files.userNameToFileName(name) not in os.listdir(layerPath): continue
+                    if layerName not in font.layers:
+                        font.newLayer(layerName)
 
-                # for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
-                layerfileName = files.userNameToFileName(name)#glifFile.split('.glif')[0]
-                if type == "atomicElement":
-                    self.addGlyph(
-                        atomicElement.AtomicElement(name), 
-                        layerfileName, 
-                        layerName,
-                        font = font
-                        )
-                else:
-                    self.addGlyph(
-                        characterGlyph.CharacterGlyph(name), 
-                        layerfileName, 
-                        layerName,
-                        font = font
-                        )
+                    # for glifFile in filter(lambda x: x.endswith(".glif"), os.listdir(layerPath)):
+                    layerfileName = files.userNameToFileName(name)#glifFile.split('.glif')[0]
+                    if type == "atomicElement":
+                        self.addGlyph(
+                            atomicElement.AtomicElement(name), 
+                            layerfileName, 
+                            layerName,
+                            font = font
+                            )
+                    else:
+                        self.addGlyph(
+                            characterGlyph.CharacterGlyph(name), 
+                            layerfileName, 
+                            layerName,
+                            font = font
+                            )
 
     # def getGlyphs(self, font = None):
     #     if font is None:
