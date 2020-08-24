@@ -80,7 +80,13 @@ class Font():
         self._RFont = {}
         self.dataBase = {}
 
+        self._atomicElementSet = []
+        self._deepComponentSet = []
+        self._characterGlyphSet = []
+
     def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
+        import time
+        start = time.time()
         self.fontPath = fontPath
         
         self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
@@ -117,10 +123,12 @@ class Font():
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
         # self.getGlyphs(font = self._fullRFont)
-        for glyphset in [self.atomicElementSet, self.deepComponentSet, self.characterGlyphSet]:
+        for glyphset in [self.staticAtomicElementSet(), self.staticDeepComponentSet(), self.staticCharacterGlyphSet()]:
             for name in glyphset:
                 self.getGlyph(name, font = self._fullRFont)
         self.createLayersFromVariationAxis()
+        stop = time.time()
+        print((stop - start)/60, "minutes to load the project")
 
     def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, mysqlPassword, fontpath = None):
         self.mysqlFont = True
@@ -519,9 +527,9 @@ class Font():
             font = self._RFont
         if isinstance(glyph, str):
             name = glyph
-            if set([name]) & set(self.deepComponentSet):
+            if set([name]) & self.staticDeepComponentSet():
                 type = "deepComponent"
-            elif set([name]) & set(self.atomicElementSet):
+            elif set([name]) & self.staticAtomicElementSet():
                 type = "atomicElement"
             else:
                 type = "characterGlyph"
@@ -553,9 +561,14 @@ class Font():
                 )
 
         if type in ["atomicElement", "characterGlyph"]:
+            if isinstance(glyph, str):
+                glyph = self[glyph]
+            layerNames = glyph._glyphVariations.layerNames
             path = os.path.join(self.fontPath, type)
-            for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
-                layerName = os.path.split(layerPath)[1]
+            # for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
+            #     layerName = os.path.split(layerPath)[1]
+            for layerName in layerNames:
+                layerPath = os.path.join(path, layerName)
                 # print(set(["%s.glif"%files.userNameToFileName(name)]))
                 # print(set(os.listdir(layerPath)))
                 if set(["%s.glif"%files.userNameToFileName(name)]) & set(os.listdir(layerPath)): 
@@ -697,6 +710,21 @@ class Font():
         # print(string)
         # print("------")
         glyph._initWithLib()
+
+    def staticAtomicElementSet(self, update = False):
+        if not self._atomicElementSet or update:
+            self._atomicElementSet = self.atomicElementSet
+        return set(self._atomicElementSet)
+
+    def staticDeepComponentSet(self, update = False):
+        if not self._deepComponentSet or update:
+            self._deepComponentSet = self.deepComponentSet
+        return set(self._deepComponentSet)
+
+    def staticCharacterGlyphSet(self, update = False):
+        if not self._characterGlyphSet or update:
+            self._characterGlyphSet = self.characterGlyphSet
+        return set(self._characterGlyphSet)
 
     @property
     def atomicElementSet(self):

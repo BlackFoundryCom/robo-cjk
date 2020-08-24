@@ -344,6 +344,10 @@ class VariationGlyphsInfos:
     def __setitem__(self, item, value):
         setattr(self, item, value)
 
+    def items(self):
+        for x in vars(self):
+            yield (x, getattr(self, x))
+
     def _toDict(self):
         """
         Return a dict representation 
@@ -461,6 +465,11 @@ class VariationGlyphs(DictClass):
         Return a list reprensentation on the class
         """
         return {x: getattr(self, x)._toDict() for x in vars(self)}     
+
+    @property
+    def layerNames(self):
+        return [x.layerName for x in self.values()]
+    
 
     @property
     def axes(self):

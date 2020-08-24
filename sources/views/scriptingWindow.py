@@ -21,6 +21,7 @@ from mojo.UI import CodeEditor
 import sys
 from io import StringIO
 import contextlib
+from utils import files
 
 @contextlib.contextmanager
 def stdoutIO(stdout=None):
@@ -71,6 +72,12 @@ class ScriptingWindow:
     def runCallback(self, sender):
         def CurrentRCJKFont():
             return self.RCJKI.currentFont
+
+        def CurrentRCJKGlyph():
+            return self.RCJKI.currentGlyph
+
+        RCJKI = self.RCJKI
+        makepath = files.makepath
 
         with stdoutIO() as s:
             exec(self.editorGroup.codeEditor.get())
