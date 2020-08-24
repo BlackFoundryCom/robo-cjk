@@ -344,6 +344,10 @@ class VariationGlyphsInfos:
     def __setitem__(self, item, value):
         setattr(self, item, value)
 
+    def items(self):
+        for x in vars(self):
+            yield (x, getattr(self, x))
+
     def _toDict(self):
         """
         Return a dict representation 
