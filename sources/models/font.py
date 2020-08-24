@@ -122,11 +122,28 @@ class Font():
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
-        # self.getGlyphs(font = self._fullRFont)
-        for glyphset in [self.staticAtomicElementSet(), self.staticDeepComponentSet(), self.staticCharacterGlyphSet()]:
+        getStart = time.time()
+        def getGlyphs(glyphset, type):
             for name in glyphset:
-                self.getGlyph(name, font = self._fullRFont)
+                # startGlyph = time.time()
+                self.getGlyph(name, type = type, font = self._fullRFont)
+                # stopGlyph = time.time()
+                # print(stopGlyph-startGlyph, "per glyph")
+        # self.getGlyphs(font = self._fullRFont)
+        getGlyphs(self.staticAtomicElementSet(), 'atomicElement')
+        getGlyphs(self.staticDeepComponentSet(), 'deepComponent')
+        getGlyphs(self.staticCharacterGlyphSet(), 'characterGlyph')
+        getStop = time.time()
+        print(getStop-getStart, 'get glyphs')
+        # for glyphset in [self.staticAtomicElementSet(), self.staticDeepComponentSet(), self.staticCharacterGlyphSet()]:
+            # for name in glyphset:
+            #     startGlyph = time.time()
+            #     self.getGlyph(name, font = self._fullRFont)
+            #     stopGlyph = time.time()
+            #     print(stopGlyph-startGlyph, "per glyph")
         self.createLayersFromVariationAxis()
+        createLayerStop = time.time()
+        print(createLayerStop-getStop, "createLayersFromVariationAxis")
         stop = time.time()
         print((stop - start)/60, "minutes to load the project")
 
@@ -522,17 +539,18 @@ class Font():
             font.newLayer(layerName)
             self.insertGlyph(glyph, xml, layerName, font)
 
-    def getGlyph(self, glyph, font = None):
+    def getGlyph(self, glyph, type = None, font = None):
         if font is None:
             font = self._RFont
         if isinstance(glyph, str):
             name = glyph
-            if set([name]) & self.staticDeepComponentSet():
-                type = "deepComponent"
-            elif set([name]) & self.staticAtomicElementSet():
-                type = "atomicElement"
-            else:
-                type = "characterGlyph"
+            if type is None:
+                if set([name]) & self.staticDeepComponentSet():
+                    type = "deepComponent"
+                elif set([name]) & self.staticAtomicElementSet():
+                    type = "atomicElement"
+                else:
+                    type = "characterGlyph"
         else:
             name = glyph.name
             type = glyph.type
@@ -562,13 +580,13 @@ class Font():
 
         if type in ["atomicElement", "characterGlyph"]:
             if isinstance(glyph, str):
-                glyph = self[glyph]
+                glyph = self.get(glyph)
             layerNames = glyph._glyphVariations.layerNames
-            path = os.path.join(self.fontPath, type)
+            # path = os.path.join(self.fontPath, type)
             # for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
             #     layerName = os.path.split(layerPath)[1]
             for layerName in layerNames:
-                layerPath = os.path.join(path, layerName)
+                layerPath = os.path.join(self.fontPath, type, layerName)
                 # print(set(["%s.glif"%files.userNameToFileName(name)]))
                 # print(set(os.listdir(layerPath)))
                 if set(["%s.glif"%files.userNameToFileName(name)]) & set(os.listdir(layerPath)): 
@@ -706,9 +724,6 @@ class Font():
         layer.insertGlyph(glyph)
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
-        # print("------")
-        # print(string)
-        # print("------")
         glyph._initWithLib()
 
     def staticAtomicElementSet(self, update = False):
