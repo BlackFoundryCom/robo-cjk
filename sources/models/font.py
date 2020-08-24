@@ -42,7 +42,6 @@ from rcjk2mysql import BF_rcjk2mysql
 
 
 from vanilla.dialogs import message
-from threading import Thread
 
 class glyphsTypes:
 
@@ -68,18 +67,6 @@ class glyphsTypes:
         for x in vars(cls):
             if getattr(cls, x) == type:
                 return x 
-
-class LoadGlyphs(Thread):
-
-    def __init__(self, font, RFont, glyphsList):
-        Thread.__init__(self)
-        self.font = font
-        self._RFont = RFont
-        self.glyphsList = glyphsList
-
-    def run(self):
-        for name, type in self.glyphsList.items():
-            self.font.getGlyph(name, type = type, font = self._RFont)
 
 class Font():
 
@@ -135,31 +122,28 @@ class Font():
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
-        glyphsList = {}
-        for name in self.staticAtomicElementSet():
-            glyphsList[name] = "atomicElement"
-        for name in self.staticDeepComponentSet():
-            glyphsList[name] = "deepComponent"
-        for name in self.staticCharacterGlyphSet():
-            glyphsList[name] = "characterGlyph"
-        thirdglyphsList = len(glyphsList)//3
-        lenglyphsList = len(glyphsList)
-
-        j = 0
-        threads = []
-        numberOfThreads = 10
-        for i in range(numberOfThreads):
-            glyphsList_1 = {key: value for i, (key, value) in enumerate(glyphsList.items()) if j < i < j + lenglyphsList//numberOfThreads}            
-            threads.append(LoadGlyphs(font = self, RFont = self._fullRFont, glyphsList = glyphsList_1))
-            j += lenglyphsList//numberOfThreads
-
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
-
+        getStart = time.time()
+        def getGlyphs(glyphset, type):
+            for name in glyphset:
+                # startGlyph = time.time()
+                self.getGlyph(name, type = type, font = self._fullRFont)
+                # stopGlyph = time.time()
+                # print(stopGlyph-startGlyph, "per glyph")
+        # self.getGlyphs(font = self._fullRFont)
+        getGlyphs(self.staticAtomicElementSet(), 'atomicElement')
+        getGlyphs(self.staticDeepComponentSet(), 'deepComponent')
+        getGlyphs(self.staticCharacterGlyphSet(), 'characterGlyph')
+        getStop = time.time()
+        print(getStop-getStart, 'get glyphs')
+        # for glyphset in [self.staticAtomicElementSet(), self.staticDeepComponentSet(), self.staticCharacterGlyphSet()]:
+            # for name in glyphset:
+            #     startGlyph = time.time()
+            #     self.getGlyph(name, font = self._fullRFont)
+            #     stopGlyph = time.time()
+            #     print(stopGlyph-startGlyph, "per glyph")
         self.createLayersFromVariationAxis()
         createLayerStop = time.time()
+        print(createLayerStop-getStop, "createLayersFromVariationAxis")
         stop = time.time()
         print((stop - start)/60, "minutes to load the project")
 
