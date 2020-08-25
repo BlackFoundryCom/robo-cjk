@@ -308,6 +308,8 @@ class RoboCJKController(object):
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
 
+        self.currentFont.clearRFont()
+
         # fontname = self.currentFont._RFont.familyName
         # del self.currentFont._RFont
         # shutil.rmtree(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))

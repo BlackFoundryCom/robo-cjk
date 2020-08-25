@@ -160,6 +160,7 @@ class Font():
             styleName='Regular', 
             showUI = False,
             )
+        self.fontPath = fontPath
         if fontpath is not None:
             files.makepath(os.path.join(fontpath, "%s.ufo"%fontName))
             self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
@@ -201,6 +202,19 @@ class Font():
         stop = time.time()
         print("full font need:", stop-start)
     #     self.insertFullRFont()
+
+    def clearRFont(self):
+        self._RFont = NewFont(
+                familyName=self.fontName, 
+                styleName='Regular', 
+                showUI = False,
+                )
+        if self.mysqlFont:
+            if self.fontpath is not None:
+                fontFilePath = files.makepath(os.path.join(self.fontpath, "%s.ufo"%fontName))
+        else:
+            fontFilePath = '{}.ufo'.format(os.path.join(self.fontPath, name))
+        self._RFont.save(fontFilePath)
 
     def loadTeam(self):
         return self.fontLib.get('teamManager', {})
@@ -587,6 +601,7 @@ class Font():
             #     layerName = os.path.split(layerPath)[1]
             for layerName in layerNames:
                 layerPath = os.path.join(self.fontPath, type, layerName)
+                if not os.path.exists(layerPath): return
                 # print(set(["%s.glif"%files.userNameToFileName(name)]))
                 # print(set(os.listdir(layerPath)))
                 if set(["%s.glif"%files.userNameToFileName(name)]) & set(os.listdir(layerPath)): 
