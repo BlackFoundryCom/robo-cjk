@@ -1110,8 +1110,9 @@ class RoboCJKView(BaseWindowController):
 
     @gitCoverage()
     def setrcjkFiles(self):
-        rcjkFiles = list(filter(lambda x: x.endswith(".rcjk"), 
-            os.listdir(self.RCJKI.projectRoot)))
+        rcjkFiles = ["Select a project"]
+        rcjkFiles.extend(list(filter(lambda x: x.endswith(".rcjk"), 
+            os.listdir(self.RCJKI.projectRoot))))
         self.w.rcjkFiles.setItems(rcjkFiles)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
@@ -1130,36 +1131,8 @@ class RoboCJKView(BaseWindowController):
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
     def rcjkFilesSelectionCallback(self, sender):
-        self.currentrcjkFile = sender.getItem()
-        self.w.saveProjectButton.enable(True)
-        self.w.newProjectButton.enable(True)
-        self.w.fontInfos.enable(True)
-        self.w.generateFontButton.enable(True)
-        self.w.teamManagerButton.enable(True)
         self.w.rcjkFiles.enable(True)
-        self.w.textCenterButton.enable(True)
-        self.w.codeEditorButton.enable(True)
-        self.w.lockControllerDCButton.enable(True)
-        self.w.pdfProoferButton.enable(True)
-        self.w.firstFilterAtomicElement.enable(True)
-        self.w.secondFilterAtomicElement.enable(True)
-        self.w.firstFilterDeepComponent.enable(True)
-        self.w.secondFilterDeepComponent.enable(True)
-        self.w.firstFilterCharacterGlyph.enable(True)
-        self.w.secondFilterCharacterGlyph.enable(True)
-        self.w.atomicElementSearchBox.enable(True)
-        self.w.characterGlyphSearchBox.enable(True)
-        self.w.deepComponentSearchBox.enable(True)
-        self.w.newAtomicElement.enable(True)
-        self.w.newDeepComponent.enable(True)
-        self.w.newCharacterGlyph.enable(True)
-        self.w.removeAtomicElement.enable(True)
-        self.w.duplicateAtomicElement.enable(True)
-        self.w.removeDeepComponent.enable(True)
-        self.w.duplicateDeepComponent.enable(True)
-        self.w.removeCharacterGlyph.enable(True)
-        self.w.duplicateCharacterGlyph.enable(True)
-
+        self.currentrcjkFile = sender.getItem()
         if self.currentrcjkFile is None: 
             return
 
@@ -1187,8 +1160,38 @@ class RoboCJKView(BaseWindowController):
             message("Load done")
 
             self.setmySQLRCJKFiles()
+        elif self.currentrcjkFile == "Select a project":
+            pass
         else:
             # self.RCJKI.dataBase = {}
+            self.w.saveProjectButton.enable(True)
+            self.w.newProjectButton.enable(True)
+            self.w.fontInfos.enable(True)
+            self.w.generateFontButton.enable(True)
+            self.w.teamManagerButton.enable(True)
+            
+            self.w.textCenterButton.enable(True)
+            self.w.codeEditorButton.enable(True)
+            self.w.lockControllerDCButton.enable(True)
+            self.w.pdfProoferButton.enable(True)
+            self.w.firstFilterAtomicElement.enable(True)
+            self.w.secondFilterAtomicElement.enable(True)
+            self.w.firstFilterDeepComponent.enable(True)
+            self.w.secondFilterDeepComponent.enable(True)
+            self.w.firstFilterCharacterGlyph.enable(True)
+            self.w.secondFilterCharacterGlyph.enable(True)
+            self.w.atomicElementSearchBox.enable(True)
+            self.w.characterGlyphSearchBox.enable(True)
+            self.w.deepComponentSearchBox.enable(True)
+            self.w.newAtomicElement.enable(True)
+            self.w.newDeepComponent.enable(True)
+            self.w.newCharacterGlyph.enable(True)
+            self.w.removeAtomicElement.enable(True)
+            self.w.duplicateAtomicElement.enable(True)
+            self.w.removeDeepComponent.enable(True)
+            self.w.duplicateDeepComponent.enable(True)
+            self.w.removeCharacterGlyph.enable(True)
+            self.w.duplicateCharacterGlyph.enable(True)
             
             self.RCJKI.currentFont = font.Font()
             if not self.RCJKI.mysql:
