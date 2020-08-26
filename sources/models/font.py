@@ -601,7 +601,7 @@ class Font():
             #     layerName = os.path.split(layerPath)[1]
             for layerName in layerNames:
                 layerPath = os.path.join(self.fontPath, type, layerName)
-                if not os.path.exists(layerPath): return
+                if not os.path.exists(layerPath): continue
                 # print(set(["%s.glif"%files.userNameToFileName(name)]))
                 # print(set(os.listdir(layerPath)))
                 if set(["%s.glif"%files.userNameToFileName(name)]) & set(os.listdir(layerPath)): 
