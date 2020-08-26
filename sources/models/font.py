@@ -389,6 +389,7 @@ class Font():
                 if self.mysqlFont:
                     self.getmySQLGlyph(name)
                 else:
+                    self.getGlyph(name, font = self._fullRFont)
                     self.getGlyph(name)
                 return self._glyphs[self._RFont[name]]
         except:
@@ -397,6 +398,7 @@ class Font():
             if self.mysqlFont:
                 self.getmySQLGlyph(name)
             else:
+                self.getGlyph(name, font = self._fullRFont)
                 self.getGlyph(name)
 
             return self._glyphs[self._RFont[name]]
@@ -709,6 +711,8 @@ class Font():
         tree.write(open(newGlyphNamePath, "w"), encoding = 'unicode')
 
     def addGlyph(self, glyph, fileName, layerName, font = None):
+        if font is None:
+            font = self._RFont
         if layerName == 'foreground':
             glifPath = os.path.join(self.fontPath, glyph.type, "%s.glif"%fileName)
         else:
@@ -792,7 +796,9 @@ class Font():
 
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
         if not self.mysqlFont:
-            self.addGlyph(*self.newGLIF(glyphType, glyphName), "foreground")
+            glif = self.newGLIF(glyphType, glyphName)
+            self.addGlyph(*glif, "foreground")
+            self.addGlyph(*glif, "foreground", font = self._fullRFont)
             self.batchLockGlyphs([self[glyphName]])
         else:
             self._RFont.newGlyph(glyphName)
@@ -821,6 +827,7 @@ class Font():
 
             self.duplicateGLIF(glyphName, glyphPath, newGlyphName, newGlyphPath)
             self.addGlyph(new_glyph, newFileName, "foreground")
+            self.addGlyph(new_glyph, newFileName, "foreground", font = self._fullRFont)
 
             for _, layers, _ in os.walk(os.path.join(self.fontPath, glyphType)):
                 for layer in layers:
@@ -831,8 +838,10 @@ class Font():
 
                         self.duplicateGLIF(glyphName, layerGlyphPath, newGlyphName, newLayerGlyphPath)
                         self.addGlyph(new_glyph, newFileName, layer)
+                        self.addGlyph(new_glyph, newFileName, layer, font = self._fullRFont)
 
             self.getGlyph(self[newGlyphName])
+            self.getGlyph(self[newGlyphName], font = self._fullRFont)
         else:
             # glyphType = self._findGlyphType(glyphName)
             # if glyphType == "cglyphs":
@@ -863,6 +872,7 @@ class Font():
                             os.remove(layerPath)
 
             self._RFont.removeGlyph(glyphName)
+            self._fullRFont.removeGlyph(glyphName)
             for layer in self._RFont.layers:
                 if glyphName in layer.keys():
                     layer.removeGlyph(glyphName) 

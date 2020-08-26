@@ -17,14 +17,14 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import sys, os
-import subprocess
+# import subprocess
 
-try:
-	paho = subprocess.run(['pip3','install','paho-mqtt'])
-	pymysql = subprocess.run(['pip3','install','pymysql'])
-except:
-	paho = subprocess.run(['pip','install','paho-mqtt'])
-	pymysql = subprocess.run(['pip','install','pymysql'])
+# try:
+# 	paho = subprocess.run(['pip3','install','paho-mqtt'])
+# 	pymysql = subprocess.run(['pip3','install','pymysql'])
+# except:
+# 	paho = subprocess.run(['pip','install','paho-mqtt'])
+# 	pymysql = subprocess.run(['pip','install','pymysql'])
 
 # APPNAME = "RoboFont"
 # import sys
