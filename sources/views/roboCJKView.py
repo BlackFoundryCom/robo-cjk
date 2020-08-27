@@ -53,6 +53,8 @@ import BF_rcjk2mysql
 gitCoverage = decorators.gitCoverage
 
 from mojo.roboFont import *
+import threading
+import queue
 
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
 removeGlyphImagePath = os.path.join(os.getcwd(), "resources", "removeButton.pdf")
@@ -118,11 +120,15 @@ class EditingSheet():
         self.c.w.componentList.set(components)
         self.w.close()
 
+queue = queue.Queue()
 def getRelatedGlyphs(font, glyphName, regenerated = []):
     if glyphName not in regenerated:
-        font.getGlyph(font[glyphName])
+        type = font.get(glyphName).type
+        threading.Thread(target=font.queueGetGlyphs, args = (queue, type), daemon=True).start()
+        queue.put([glyphName])
+        # font.getGlyph(font[glyphName])
         regenerated.append(glyphName)
-    g = font[glyphName]
+    g = font.get(glyphName)
     if not hasattr(g, "_deepComponents"): return
     for dc in g._deepComponents:
         getRelatedGlyphs(font, dc.name, regenerated)
@@ -677,7 +683,7 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterDeepComponent = PopUpButton(
             (290, 120, 120, 20),
-            ["that are in font", "that are not empty", "that are empty", "that have outlines"],
+            ["that are in font", "that are not empty", "that are empty", "that have outlines", "that are not locked"],
             callback = self.filterDeepComponentCallback,
             sizeStyle = "mini"
             )
@@ -730,7 +736,7 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterCharacterGlyph = PopUpButton(
             (490, 120, 120, 20),
-            ["that are in font", "that can be fully designed", "that are not empty", "that are empty", "that have outlines"],
+            ["that are in font", "that can be fully designed", "that are not empty", "that are empty", "that have outlines", "that are not locked"],
             callback = self.filterCharacterGlyphCallback,
             sizeStyle = "mini"
             )
@@ -939,6 +945,9 @@ class RoboCJKView(BaseWindowController):
             l = allGlyphs
             return getFilteredList(option1, l, lockedGlyphs)
 
+        elif option2 == "that are not locked":
+
+            pass
         else:
             return allGlyphs
         

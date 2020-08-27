@@ -39,7 +39,8 @@ from models import atomicElement, deepComponent, characterGlyph
 from rcjk2mysql import BF_mysql2rcjk as BF_mysql2rcjk
 from rcjk2mysql import BF_fontbook_struct as bfs
 from rcjk2mysql import BF_rcjk2mysql
-
+import threading
+import queue
 
 from vanilla.dialogs import message
 
@@ -85,8 +86,8 @@ class Font():
         self._characterGlyphSet = []
 
     def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
-        import time
-        start = time.time()
+        # import time
+        # start = time.time()
         self.fontPath = fontPath
         
         self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
@@ -122,19 +123,46 @@ class Font():
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
-        getStart = time.time()
-        def getGlyphs(glyphset, type):
-            for name in glyphset:
-                # startGlyph = time.time()
-                self.getGlyph(name, type = type, font = self._fullRFont)
-                # stopGlyph = time.time()
-                # print(stopGlyph-startGlyph, "per glyph")
-        # self.getGlyphs(font = self._fullRFont)
-        getGlyphs(self.staticAtomicElementSet(), 'atomicElement')
-        getGlyphs(self.staticDeepComponentSet(), 'deepComponent')
-        getGlyphs(self.staticCharacterGlyphSet(), 'characterGlyph')
-        getStop = time.time()
-        print(getStop-getStart, 'get glyphs')
+        # getStart = time.time()
+        # def getGlyphs(glyphset, type):
+        #     for name in glyphset:
+        #         self.getGlyph(name, type = type, font = self._fullRFont)
+
+        staticCharacterGlyphSet = list(self.staticCharacterGlyphSet())
+        thirdl = len(staticCharacterGlyphSet)//6
+        l1 = staticCharacterGlyphSet[0:thirdl]
+        l2 = staticCharacterGlyphSet[thirdl:thirdl*2]
+        l3 = staticCharacterGlyphSet[thirdl*2:thirdl*3]
+        l4 = staticCharacterGlyphSet[thirdl*3:thirdl*4]
+        l5 = staticCharacterGlyphSet[thirdl*4:thirdl*5]
+        l6 = staticCharacterGlyphSet[thirdl*5:]
+        self.queue = queue.Queue()
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "atomicElement"), daemon=True).start()
+        self.queue.put(self.staticAtomicElementSet())
+
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "deepComponent"), daemon=True).start()
+        self.queue.put(self.staticDeepComponentSet())
+
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
+        self.queue.put(l1)
+
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
+        self.queue.put(l2)
+
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
+        self.queue.put(l3)
+
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
+        self.queue.put(l4)
+
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
+        self.queue.put(l5)
+
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
+        self.queue.put(l6)
+        # getGlyphs(self.staticCharacterGlyphSet(), 'characterGlyph')
+        # getStop = time.time()
+        # print(getStop-getStart, 'get glyphs')
         # for glyphset in [self.staticAtomicElementSet(), self.staticDeepComponentSet(), self.staticCharacterGlyphSet()]:
             # for name in glyphset:
             #     startGlyph = time.time()
@@ -142,10 +170,16 @@ class Font():
             #     stopGlyph = time.time()
             #     print(stopGlyph-startGlyph, "per glyph")
         self.createLayersFromVariationAxis()
-        createLayerStop = time.time()
-        print(createLayerStop-getStop, "createLayersFromVariationAxis")
-        stop = time.time()
-        print((stop - start)/60, "minutes to load the project")
+        # createLayerStop = time.time()
+        # print(createLayerStop-getStop, "createLayersFromVariationAxis")
+        # stop = time.time()
+        # print((stop - start)/60, "minutes to load the project")
+
+    def queueGetGlyphs(self, queue, item_type):
+        glyphset = queue.get()
+        for name in glyphset:
+            self.getGlyph(name, type = item_type, font = self._fullRFont)
+        queue.task_done()
 
     def _init_for_mysql(self, bf_log, fontName, mysql, mysqlUserName, mysqlPassword, fontpath = None):
         self.mysqlFont = True

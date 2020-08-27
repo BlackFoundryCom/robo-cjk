@@ -231,9 +231,12 @@ class DeepComponentPreview(Preview):
             preview=True, update = False)
 
         previewGlyph = RGlyph()
+        pen = previewGlyph.getPen()
         for atomicInstance in variationPreview:
-            for c in atomicInstance.getTransformedGlyph():
-                previewGlyph.appendContour(c)
+            g = atomicInstance.getTransformedGlyph()
+            g.draw(pen)
+            # for c in atomicInstance.getTransformedGlyph():
+            #     previewGlyph.appendContour(c)
         return previewGlyph
 
     def _generateDeepComponentVariation(self, axis:str = "",  preview:bool = True):
@@ -284,10 +287,13 @@ class CharacterGlyphPreview(Preview):
 
     def _getDeepComponentInstance(self, previewGlyph, deepComponent):
         glyph = RGlyph()
+        pen = glyph.getPen() 
         axisPreview = self._generateDeepComponent(previewGlyph, preview=True, update = False)
         for atomicInstance in axisPreview:
-            for c in atomicInstance.getTransformedGlyph():
-                glyph.appendContour(c)
+            g = atomicInstance.getTransformedGlyph()
+            g.draw(pen)
+            # for c in atomicInstance.getTransformedGlyph():
+            #     glyph.appendContour(c)
         deepComponentInstance = DeepComponentInstance(
             axisPreview = axisPreview,
             # name = deepComponent.name,
@@ -363,13 +369,18 @@ class CharacterGlyphPreview(Preview):
                 )
 
         previewGlyph = RGlyph()
+        pen = previewGlyph.getPen()
         previewGlyph.name = self.glyph.name
         for atomicInstance in variationPreview:
-            for c in atomicInstance.getTransformedGlyph():
-                previewGlyph.appendContour(c)
+            g = atomicInstance.getTransformedGlyph()
+            g.draw(pen)
+            # for c in atomicInstance.getTransformedGlyph():
+            #     previewGlyph.appendContour(c)
 
         if outlinesPreview is not None:
-            for c in outlinesPreview:
-                previewGlyph.appendContour(c)
+            g = outlinesPreview
+            g.draw(pen)
+            # for c in outlinesPreview:
+            #     previewGlyph.appendContour(c)
         return previewGlyph
 

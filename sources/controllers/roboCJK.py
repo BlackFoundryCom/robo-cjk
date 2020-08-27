@@ -100,6 +100,9 @@ lockedProtect = decorators.lockedProtect
 from AppKit import NSSearchPathForDirectoriesInDomains
 APPNAME = 'RoboFont'
 
+import threading
+import queue
+
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
 class RoboCJKController(object):
@@ -156,6 +159,8 @@ class RoboCJKController(object):
         self.mysql_userName = ""
         self.mysql_password = ""
         self.bf_log = bf_log
+
+        self.updateDeepComponentQueue = queue.Queue()
 
     def connect2mysql(self):
         dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
@@ -257,9 +262,22 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = False):
-        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
+        threading.Thread(target=self.computeDeepComponentsPreview, daemon=True).start()
+        self.updateDeepComponentQueue.put(update)
         if self.isAtomic: return
-        self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
+        threading.Thread(target=self.computeDeepComponents, daemon=True).start()
+        self.updateDeepComponentQueue.put(self.currentGlyph.selectedSourceAxis)
+        # self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
+
+    def computeDeepComponentsPreview(self):
+        update = self.updateDeepComponentQueue.get()
+        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
+        self.updateDeepComponentQueue.task_done()
+
+    def computeDeepComponents(self):
+        axis = self.updateDeepComponentQueue.get()
+        self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
+        self.updateDeepComponentQueue.task_done()
 
     def decomposeGlyphToBackupLayer(self, glyph):
         def _decompose(glyph, axis, layername):
