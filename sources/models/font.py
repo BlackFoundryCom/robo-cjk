@@ -254,7 +254,7 @@ class Font():
             if self.fontpath is not None:
                 fontFilePath = files.makepath(os.path.join(self.fontpath, "%s.ufo"%fontName))
         else:
-            fontFilePath = '{}.ufo'.format(os.path.join(self.fontPath, name))
+            fontFilePath = '{}.ufo'.format(os.path.join(self.fontPath, self.fontName))
         self._RFont.save(fontFilePath)
 
     def loadTeam(self):
@@ -276,6 +276,7 @@ class Font():
     def _initFontLib(self, lib):
         for k, v in lib.items():
             self._RFont.lib[k] = v
+            self._fullRFont.lib[k] = v
 
     def selectDatabaseKey(self, key):
         if not self.mysqlFont:
@@ -293,8 +294,10 @@ class Font():
             self.mysql.update_font_database_key(self.fontName, key, data)
             self.loadMysqlDataBase()
 
-    def get(self, name):
-        return self._glyphs[self._fullRFont[name]]
+    def get(self, name, font = None):
+        if font is None:
+            font = self._fullRFont
+        return self._glyphs[font[name]]
         # if self.mysqlFont:
         #     return self._glyphs[self._fullRFont[name]]
         # else:
@@ -780,6 +783,7 @@ class Font():
         glyph.setParent(self)
         pen = glyph.naked().getPointPen()
         readGlyphFromString(string, glyph.naked(), pen)
+        font.newLayer(layerName)
         layer = font.getLayer(layerName)
         layer.insertGlyph(glyph)
         glyph._RFont = font
@@ -838,9 +842,11 @@ class Font():
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
         if not self.mysqlFont:
             glif = self.newGLIF(glyphType, glyphName)
-            self.addGlyph(*glif, "foreground")
             self.addGlyph(*glif, "foreground", font = self._fullRFont)
+            self.addGlyph(*glif, "foreground")
+            
             self.batchLockGlyphs([self[glyphName]])
+            self.updateStaticSet(glyphType)
         else:
             self._RFont.newGlyph(glyphName)
             glyphType = glyphsTypes.bfs(glyphType)
@@ -883,6 +889,7 @@ class Font():
 
             self.getGlyph(self[newGlyphName])
             self.getGlyph(self[newGlyphName], font = self._fullRFont)
+            self.updateStaticSet(glyphType)
         else:
             # glyphType = self._findGlyphType(glyphName)
             # if glyphType == "cglyphs":
@@ -917,7 +924,8 @@ class Font():
             for layer in self._RFont.layers:
                 if glyphName in layer.keys():
                     layer.removeGlyph(glyphName) 
-            self.locker.removeFiles([glyphName])   
+            self.locker.removeFiles([glyphName])  
+            self.updateStaticSet(glyphType) 
         else:
             bfitem = self._getBFItem(glyphName)
             BF_rcjk2mysql.remove_item_to_mysql(self.bf_log, bfitem, self.mysql)
@@ -1002,7 +1010,7 @@ class Font():
         
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, "w") as file:
-                lib = self._RFont.lib.asDict()
+                lib = self._fullRFont.lib.asDict()
                 del lib["public.glyphOrder"]
                 file.write(json.dumps(lib,
                     indent=4, separators=(',', ': ')))
@@ -1087,6 +1095,15 @@ class Font():
 
         font.save(os.path.join(self.fontPath, "hanziUFO.ufo"))
 
+    def updateStaticSet(self, glyphType = ""):
+        if glyphType == "atomicElement":
+            self.staticAtomicElementSet(update = True)
+        elif glyphType == "deepComponent":
+            self.staticDeepComponentSet(update = True)
+        elif glyphType == "characterGlyph":
+            self.staticCharacterGlyphSet(update = True)
+
+
     def renameGlyph(self, oldName, newName):
         if not set([newName]) - set(self.atomicElementSet + self.deepComponentSet + self.characterGlyphSet):
             return
@@ -1127,11 +1144,22 @@ class Font():
                 if oldName not in f: continue
                 f[oldName].name = newName
                 glyph = f[newName]
+                txt = glyph.dumpToGLIF()
                 newPath = os.path.join(self.fontPath, glyphType, layerName, fileName)
                 oldPath = os.path.join(self.fontPath, glyphType, layerName, oldFileName)
                 with open(newPath, "w", encoding = "utf-8") as file:
                     file.write(txt)
                 os.remove(oldPath)
+
+            self.getGlyph(newName, type = glyphType, font = self._fullRFont)
+            self.getGlyph(newName, type = glyphType, font = self._RFont)
+            self.updateStaticSet(glyphType)
+            # if glyphType == "atomicElement":
+            #     self.staticAtomicElementSet(update = True)
+            # elif glyphType == "deepComponent":
+            #     self.staticDeepComponentSet(update = True)
+            # elif glyphType == "characterGlyph":
+            #     self.staticCharacterGlyphSet(update = True)
 
             self.locker.changeLockName(oldName, newName)
             return True

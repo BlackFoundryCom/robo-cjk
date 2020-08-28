@@ -199,6 +199,8 @@ class SelectFontVariationSheet():
         self.view = view
         self.parent = CurrentGlyphWindow()
         self.parent.sheet = Sheet((300, 140), self.parent.w)
+        print(self.RCJKI.currentFont.fontVariations)
+        print(self.RCJKI.currentGlyph._glyphVariations.axes)
         l = [axis for axis in self.RCJKI.currentFont.fontVariations if axis not in self.RCJKI.currentGlyph._glyphVariations.axes]
         if not l: l=[""]
         popupbuttonlist = PopUpButtonListCell(l)

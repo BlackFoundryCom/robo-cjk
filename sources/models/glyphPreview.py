@@ -429,10 +429,10 @@ class CharacterGlyphPreview(Preview):
             #     previewGlyph.appendContour(c)
 
         if outlinesPreview is not None:
-            g = outlinesPreview
-            g.draw(pen)
-            # for c in outlinesPreview:
-            #     previewGlyph.appendContour(c)
+            # g = outlinesPreview
+            # g.draw(pen)
+            for c in outlinesPreview:
+                previewGlyph.appendContour(c)
         return previewGlyph
 
     # def _queue_generateCharacterGlyphPreview(self, cg_queue, variationPreview):

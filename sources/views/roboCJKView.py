@@ -124,9 +124,9 @@ class EditingSheet():
 def getRelatedGlyphs(font, glyphName, regenerated = []):
     if glyphName not in regenerated:
         type = font.get(glyphName).type
-        queue = queue.Queue()
-        threading.Thread(target=font.queueGetGlyphs, args = (queue, type), daemon=True).start()
-        queue.put([glyphName])
+        q = queue.Queue()
+        threading.Thread(target=font.queueGetGlyphs, args = (q, type), daemon=True).start()
+        q.put([glyphName])
         # font.getGlyph(font[glyphName])
         regenerated.append(glyphName)
     g = font.get(glyphName)
@@ -149,7 +149,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
             # font.getGlyphs()
             getRelatedGlyphs(font, glyphName)
             # font.getGlyph(font[glyphName])
-            g = font[glyphName]._RGlyph
+            g = font.get(glyphName, font._RFont)._RGlyph
     else:
         if not locked: return
     if not g.width:
@@ -157,11 +157,12 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     try:
         CurrentGlyphWindow().close()
     except: pass
-    font[glyphName].update()
-    g = font[glyphName]._RGlyph
+    font.get(glyphName, font._RFont).update()
+    g = font.get(glyphName, font._RFont)._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
-    RCJKI.currentView.setglyphState()
+    if font.get(glyphName, font._RFont).type != "atomicElement":
+        RCJKI.currentView.setglyphState()
 
 class CharacterWindow:
 
