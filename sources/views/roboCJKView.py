@@ -120,10 +120,11 @@ class EditingSheet():
         self.c.w.componentList.set(components)
         self.w.close()
 
-queue = queue.Queue()
+
 def getRelatedGlyphs(font, glyphName, regenerated = []):
     if glyphName not in regenerated:
         type = font.get(glyphName).type
+        queue = queue.Queue()
         threading.Thread(target=font.queueGetGlyphs, args = (queue, type), daemon=True).start()
         queue.put([glyphName])
         # font.getGlyph(font[glyphName])
@@ -854,13 +855,14 @@ class RoboCJKView(BaseWindowController):
             self.filterCharacterGlyphCallback(None)
 
     def filterAtomicElementCallback(self, sender):
+        aeList = self.currentFont.atomicElementSet
         filteredList = self.filterGlyphs(
             "atomicElement",
             self.w.firstFilterAtomicElement.getItem(),
             self.w.secondFilterAtomicElement.getItem(),
-            self.currentFont.atomicElementSet,
-            # list(set(self.currentFont.atomicElementSet) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            list(set(self.currentFont.atomicElementSet) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
+            aeList,
+            # list(set(aeList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+            list(set(aeList) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
             )
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
@@ -868,13 +870,14 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.set(sorted(filteredList))
 
     def filterDeepComponentCallback(self, sender):
+        dcList = self.currentFont.deepComponentSet
         filteredList = self.filterGlyphs(
             "deepComponent",
             self.w.firstFilterDeepComponent.getItem(),
             self.w.secondFilterDeepComponent.getItem(),
-            self.currentFont.deepComponentSet,
-            # list(set(self.currentFont.deepComponentSet) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            list(set(self.currentFont.deepComponentSet) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
+            dcList,
+            # list(set(dcList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+            list(set(dcList) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
             )
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
@@ -882,13 +885,14 @@ class RoboCJKView(BaseWindowController):
         self.w.deepComponent.set(sorted(filteredList))
 
     def filterCharacterGlyphCallback(self, sender):
+        cgList = self.currentFont.characterGlyphSet
         filteredList = self.filterGlyphs(
             "characterGlyph",
             self.w.firstFilterCharacterGlyph.getItem(),
             self.w.secondFilterCharacterGlyph.getItem(),
-            self.currentFont.characterGlyphSet,
-            # list(set(self.currentFont.characterGlyphSet) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            list(set(self.currentFont.characterGlyphSet) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
+            cgList,
+            # list(set(cgList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+            list(set(cgList) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
             )
 
         self.w.atomicElement.setSelection([])

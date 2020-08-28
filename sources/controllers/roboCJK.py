@@ -262,22 +262,24 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = False):
-        threading.Thread(target=self.computeDeepComponentsPreview, daemon=True).start()
-        self.updateDeepComponentQueue.put(update)
+        q = queue.Queue()
+        threading.Thread(target=self.computeDeepComponentsPreview, args = (q,), daemon=True).start()
+        q.put(update)
         if self.isAtomic: return
-        threading.Thread(target=self.computeDeepComponents, daemon=True).start()
-        self.updateDeepComponentQueue.put(self.currentGlyph.selectedSourceAxis)
+        q = queue.Queue()
+        threading.Thread(target=self.computeDeepComponents, args = (q,), daemon=True).start()
+        q.put(self.currentGlyph.selectedSourceAxis)
         # self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
 
-    def computeDeepComponentsPreview(self):
-        update = self.updateDeepComponentQueue.get()
+    def computeDeepComponentsPreview(self, q):
+        update = q.get()
         self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
-        self.updateDeepComponentQueue.task_done()
+        q.task_done()
 
-    def computeDeepComponents(self):
-        axis = self.updateDeepComponentQueue.get()
+    def computeDeepComponents(self, q):
+        axis = q.get()
         self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
-        self.updateDeepComponentQueue.task_done()
+        q.task_done()
 
     def decomposeGlyphToBackupLayer(self, glyph):
         def _decompose(glyph, axis, layername):

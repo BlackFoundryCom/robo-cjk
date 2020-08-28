@@ -129,37 +129,44 @@ class Font():
         #         self.getGlyph(name, type = type, font = self._fullRFont)
 
         staticCharacterGlyphSet = list(self.staticCharacterGlyphSet())
-        thirdl = len(staticCharacterGlyphSet)//6
+        thirdl = len(staticCharacterGlyphSet)//3
         l1 = staticCharacterGlyphSet[0:thirdl]
         l2 = staticCharacterGlyphSet[thirdl:thirdl*2]
         l3 = staticCharacterGlyphSet[thirdl*2:thirdl*3]
-        l4 = staticCharacterGlyphSet[thirdl*3:thirdl*4]
-        l5 = staticCharacterGlyphSet[thirdl*4:thirdl*5]
-        l6 = staticCharacterGlyphSet[thirdl*5:]
+        # l4 = staticCharacterGlyphSet[thirdl*3:thirdl*4]
+        # l5 = staticCharacterGlyphSet[thirdl*4:thirdl*5]
+        # l6 = staticCharacterGlyphSet[thirdl*5:]
         self.queue = queue.Queue()
         threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "atomicElement"), daemon=True).start()
         self.queue.put(self.staticAtomicElementSet())
 
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "deepComponent"), daemon=True).start()
-        self.queue.put(self.staticDeepComponentSet())
+        self.queue2 = queue.Queue()
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue2, "deepComponent"), daemon=True).start()
+        self.queue2.put(self.staticDeepComponentSet())
 
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
-        self.queue.put(l1)
+        self.queue3 = queue.Queue()
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue3, "characterGlyph"), daemon=True).start()
+        self.queue3.put(l1)
 
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
-        self.queue.put(l2)
+        self.queue4 = queue.Queue()
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue4, "characterGlyph"), daemon=True).start()
+        self.queue4.put(l2)
 
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
-        self.queue.put(l3)
+        self.queue5 = queue.Queue()
+        threading.Thread(target=self.queueGetGlyphs, args = (self.queue5, "characterGlyph"), daemon=True).start()
+        self.queue5.put(l3)
 
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
-        self.queue.put(l4)
+        # self.queue6 = queue.Queue()
+        # threading.Thread(target=self.queueGetGlyphs, args = (self.queue6, "characterGlyph"), daemon=True).start()
+        # self.queue6.put(l4)
 
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
-        self.queue.put(l5)
+        # self.queue7 = queue.Queue()
+        # threading.Thread(target=self.queueGetGlyphs, args = (self.queue7, "characterGlyph"), daemon=True).start()
+        # self.queue7.put(l5)
 
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "characterGlyph"), daemon=True).start()
-        self.queue.put(l6)
+        # self.queue8 = queue.Queue()
+        # threading.Thread(target=self.queueGetGlyphs, args = (self.queue8, "characterGlyph"), daemon=True).start()
+        # self.queue8.put(l6)
         # getGlyphs(self.staticCharacterGlyphSet(), 'characterGlyph')
         # getStop = time.time()
         # print(getStop-getStart, 'get glyphs')
