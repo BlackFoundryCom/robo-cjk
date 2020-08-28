@@ -666,7 +666,7 @@ class Login:
 
         self.w.segmentedButton = SegmentedButton(
             (10, 10, -10, 20),
-            [dict(title = "mySQL"), dict(title = "Git")],
+            [dict(title = "Git"), dict(title = "mySQL")],
             callback = self.segmentedButtonCallback
             )
         self.w.segmentedButton.set(0)
@@ -792,9 +792,9 @@ class Login:
             self.RCJKI.roboCJKView.setmySQLRCJKFiles()
 
     def segmentedButtonCallback(self, sender):
-        for i, x in enumerate([self.w.mysql, self.w.git]):
+        for i, x in enumerate([self.w.git, self.w.mysql]):
             x.show(i == sender.get())
-        self.RCJKI.mysql = not sender.get()
+        self.RCJKI.mysql = sender.get()
 
 class LockController:
 
