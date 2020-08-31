@@ -313,12 +313,16 @@ class RoboCJKController(object):
             self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
         except:pass
 
+
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
-        self.roboCJKView.w.atomicElementPreview.update()
-        self.roboCJKView.w.deepComponentPreview.update()
-        self.roboCJKView.w.characterGlyphPreview.update()
+        # self.roboCJKView.w.atomicElementPreview.update()
+        # self.roboCJKView.w.deepComponentPreview.update()
+        # self.roboCJKView.w.characterGlyphPreview.update()
+        gae = self.roboCJKView.w.atomicElementPreview.glyphName
+        gdc = self.roboCJKView.w.deepComponentPreview.glyphName
+        gcg =  self.roboCJKView.w.characterGlyphPreview.glyphName
         
         # self.currentFont.locker.unlock(self.currentGlyph)
         if not self.mysql:
@@ -329,6 +333,14 @@ class RoboCJKController(object):
             self.currentFont.saveGlyph(self.currentGlyph)
 
         self.currentFont.clearRFont()
+        # self.roboCJKView.w.atomicElementPreview.update()
+        # self.roboCJKView.w.deepComponentPreview.update()
+        # self.roboCJKView.w.characterGlyphPreview.update()
+
+
+        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.atomicElementPreview, gae)
+        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.deepComponentPreview, gdc)
+        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.characterGlyphPreview, gcg)
 
         # fontname = self.currentFont._RFont.familyName
         # del self.currentFont._RFont

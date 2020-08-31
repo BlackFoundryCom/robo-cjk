@@ -256,6 +256,7 @@ class Font():
         else:
             fontFilePath = '{}.ufo'.format(os.path.join(self.fontPath, self.fontName))
         self._RFont.save(fontFilePath)
+        self._initFontLib(self.fontLib, self._RFont)
 
     def loadTeam(self):
         return self.fontLib.get('teamManager', {})
@@ -273,10 +274,13 @@ class Font():
     #     print(self.deepComponentSet[1])
     #     print(self.characterGlyphSet[1])
 
-    def _initFontLib(self, lib):
+    def _initFontLib(self, lib, font = None):
         for k, v in lib.items():
-            self._RFont.lib[k] = v
-            self._fullRFont.lib[k] = v
+            if font is None:
+                self._RFont.lib[k] = v
+                self._fullRFont.lib[k] = v
+            else:
+                font.lib[k] = v
 
     def selectDatabaseKey(self, key):
         if not self.mysqlFont:
