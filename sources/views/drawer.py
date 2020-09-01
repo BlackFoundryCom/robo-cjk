@@ -32,6 +32,9 @@ class Drawer():
         self.refGlyph = None
         self.refGlyphPos = [0, 0]
         self.refGlyphScale = [1, 1]
+        self.instanceGlyph = None
+        self.instanceGlyphPos = [0, 0]
+        self.instanceGlyphScale = [1, 1]
 
     def drawIndexOfElements(self, d, glyph, view):
         x, y = glyph[0].points[0].x, glyph[0].points[0].y
@@ -92,6 +95,15 @@ class Drawer():
             mjdt.translate(*self.refGlyphPos)
             mjdt.scale(*self.refGlyphScale)
             mjdt.drawGlyph(self.roundGlyph(self.refGlyph))
+            mjdt.restore()
+
+        if self.instanceGlyph is not None:
+            print("here")
+            mjdt.save()
+            mjdt.fill(0, 0, 1, .2)
+            mjdt.translate(*self.instanceGlyphPos)
+            mjdt.scale(*self.instanceGlyphScale)
+            mjdt.drawGlyph(self.roundGlyph(self.instanceGlyph))
             mjdt.restore()
 
         if onlyPreview: return

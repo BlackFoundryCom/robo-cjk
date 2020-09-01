@@ -69,6 +69,14 @@ class glyphsTypes:
             if getattr(cls, x) == type:
                 return x 
 
+def emptyGLIF(name):
+    return """<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="%s" format="2">
+  <advance width="500"/>
+  <outline>
+  </outline>
+</glyph>"""%name
+
 class Font():
 
 
@@ -793,6 +801,13 @@ class Font():
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
         glyph._initWithLib()
+
+    def createTempGlyph(self):
+        name = "temp"
+        glyph = characterGlyph.CharacterGlyph(name)
+        string = emptyGLIF(name)
+        self.insertGlyph(glyph, string, "foreground")
+        return self._glyphs[self._RFont[name]]
 
     def staticAtomicElementSet(self, update = False):
         if not self._atomicElementSet or update:
