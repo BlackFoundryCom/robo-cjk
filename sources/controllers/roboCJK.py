@@ -262,14 +262,10 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = False):
-        q = queue.Queue()
-        threading.Thread(target=self.computeDeepComponentsPreview, args = (q,), daemon=True).start()
-        q.put(update)
+        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
-        q = queue.Queue()
-        threading.Thread(target=self.computeDeepComponents, args = (q,), daemon=True).start()
-        q.put(self.currentGlyph.selectedSourceAxis)
-        # self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
+        axis = self.currentGlyph.selectedSourceAxis
+        self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
 
     def computeDeepComponentsPreview(self, q):
         update = q.get()
