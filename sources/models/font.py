@@ -302,7 +302,11 @@ class Font():
     def get(self, name, font = None):
         if font is None:
             font = self._fullRFont
-        return self._glyphs[font[name]]
+        try:
+            return self._glyphs[font[name]]
+        except:
+            self.getGlyph(name, font = font)
+            return self._glyphs[font[name]]
         # if self.mysqlFont:
         #     return self._glyphs[self._fullRFont[name]]
         # else:

@@ -1420,19 +1420,20 @@ class RoboCJKView(BaseWindowController):
         if not sel: return False
         glyphName = UIList[sel[0]]
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
-        user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[glyphName])
+        glyph = self.currentFont[glyphName]
+        user = self.RCJKI.currentFont.glyphLockedBy(glyph)
         # if user != self.RCJKI.currentFont.locker._username:
         if user != self.RCJKI.currentFont.lockerUserName:
             PostBannerNotification(
                 'Impossible', "You must lock the glyph before"
                 )
             return False
-        glyphType = self.RCJKI.currentFont[glyphName].type
+        glyphType = glyph.type
         GlyphsthatUse = set()
         if not self.RCJKI.currentFont.mysqlFont:
             if glyphType != 'characterGlyph':
                 for name in glyphset:
-                    glyph = self.RCJKI.currentFont[name]
+                    glyph = self.RCJKI.currentFont.get(name)
                     if glyphType == 'atomicElement':
                         d =  glyph._deepComponents
                     elif glyphType == 'deepComponent':
