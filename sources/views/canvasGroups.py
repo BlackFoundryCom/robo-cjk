@@ -321,7 +321,7 @@ class DCCG_View(CanvasGroup):
         self.selectedSourceAxis = None
 
     def setglyphState(self):
-        color = self.RCJKI.currentGlyph.stateColor
+        color = self.RCJKI.currentGlyph.markColor
         state = self.glyphState
         if color is None:
             state.set(0)
@@ -342,7 +342,8 @@ class DCCG_View(CanvasGroup):
     def glyphStateCallback(self, sender):
         # return
         state = sender.get()
-        self.RCJKI.currentGlyph.stateColor = STATE_COLORS[state]
+        self.RCJKI.currentGlyph.markColor = STATE_COLORS[state]
+        print("stateColor", self.RCJKI.currentGlyph.markColor)
         if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
             self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
@@ -614,8 +615,8 @@ class GlyphPreviewCanvas(CanvasGroup):
                 {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
                 ]
 
-        if self.glyph.stateColor is not None:
-            mjdt.fill(*self.glyph.stateColor)
+        if self.glyph.markColor is not None:
+            mjdt.fill(*self.glyph.markColor)
             mjdt.rect(0, 0, 200, 20)
 
         scale = .15

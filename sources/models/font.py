@@ -460,6 +460,20 @@ class Font():
             return self._glyphs[self._RFont[name]]
         return self._glyphs[self._RFont[name]]
 
+    def __getitem2__(self, name):
+        if isinstance(name, dict):
+            name = name["name"]
+        try:
+            # if set([name]) & set(self._RFont.keys()):
+            return self._glyphs[self._RFont[name]]
+        except:
+            if self.mysqlFont:
+                self.getmySQLGlyph(name)
+            else:
+                self.getGlyph(name, font = self._fullRFont)
+                self.getGlyph(name)
+            return self._glyphs[self._RFont[name]]
+
     def __len__(self):
         return len(self._RFont.keys())
 

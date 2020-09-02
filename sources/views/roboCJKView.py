@@ -44,7 +44,6 @@ from views import scriptingWindow
 # reload(scriptingWindow)
 from views import textCenter
 # reload(textCenter)
-from models import characterGlyph
 
 import os, json, copy
 
@@ -56,7 +55,6 @@ gitCoverage = decorators.gitCoverage
 from mojo.roboFont import *
 import threading
 import queue
-from collections import defaultdict
 
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
 removeGlyphImagePath = os.path.join(os.getcwd(), "resources", "removeButton.pdf")
@@ -470,9 +468,19 @@ class ComponentWindow():
                 print('this glyph has no Unicode')
                 return
         char = chr(self.RCJKI.currentGlyph.unicode)
+        # if not self.RCJKI.currentFont.mysqlFont:
+            
+        #     if char in self.RCJKI.currentFont.dataBase:
+        #         self.w.componentList.set(self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:]))
+        # else:
+        #     d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
+        #     # d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, "53E3")
+        #     print(d)
+        # d = self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:])
         d = self.RCJKI.currentFont.dataBase.get(char, [])
         if d is None:
             d = []
+        # print( )
         self.w.componentList.set(d)
         self.w.char.set(char)
 
@@ -892,7 +900,7 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.set(sorted(filteredList))
 
     def filterDeepComponentCallback(self, sender):
-        dcList = self.currentFont.deepComponentSet
+        dcList = self.currentFont.staticDeepComponentSet()
         filteredList = self.filterGlyphs(
             "deepComponent",
             self.w.firstFilterDeepComponent.getItem(),
@@ -907,7 +915,7 @@ class RoboCJKView(BaseWindowController):
         self.w.deepComponent.set(sorted(filteredList))
 
     def filterCharacterGlyphCallback(self, sender):
-        cgList = self.currentFont.characterGlyphSet
+        cgList = self.currentFont.staticCharacterGlyphSet()
         filteredList = self.filterGlyphs(
             "characterGlyph",
             self.w.firstFilterCharacterGlyph.getItem(),

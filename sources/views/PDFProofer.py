@@ -920,7 +920,7 @@ class NewPDF:
             for i, name in enumerate(page):
                 try:
                     for variation in self.RCJKI.currentFont.fontVariations:
-                        glyph1 = self.RCJKI.currentFont[name]
+                        glyph1 = self.RCJKI.currentFont.get(name)
                         glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
                         glyph1.preview.variationPreview.removeOverlap()
                         if variation not in glyphsVariations.keys():
@@ -957,6 +957,7 @@ class NewPDF:
             outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s-%s.pdf'%(date, str(pageIndex).zfill(2), self.RCJKI.currentFont.fontName, "Overlay"))
             files.makepath(outputPath)
             db.saveImage(outputPath)
+            os.rename(outputPath, outputPath[:-3]+"ai")
 
             def drawWeight(weight, text):
 
@@ -990,8 +991,10 @@ class NewPDF:
                 pdfData = db.pdfImage()
                 now = datetime.datetime.now()
                 outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s.pdf'%(date, str(pageIndex).zfill(2), text))
+                # os.rename(outputPath, outputPath[:-3]+'ai')
                 files.makepath(outputPath)
                 db.saveImage(outputPath)
+                os.rename(outputPath, outputPath[:-3]+"ai")
 
             for variations, weights in glyphsVariations.items():
                 drawWeight(weights, '%s-%s'%(self.RCJKI.currentFont.fontName, variations))

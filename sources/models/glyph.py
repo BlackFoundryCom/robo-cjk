@@ -80,25 +80,25 @@ class Glyph(RGlyph):
         else:
             return bool(self._deepComponents)
 
-    @property
-    def designState(self):
-        self.designState = STATE_COLORS.get(self.stateColor, "")
-        return self._designState
+    # @property
+    # def designState(self):
+    #     self.designState = STATE_COLORS.get(self.stateColor, "")
+    #     return self._designState
 
-    @designState.setter
-    def designState(self, value):
-        self._designState = value    
+    # @designState.setter
+    # def designState(self, value):
+    #     self._designState = value    
 
-    @property
-    def stateColor(self):
-        mark = self._RGlyph.markColor
-        if mark is None:
-            mark = (1, 1, 1, 1)
-        return mark
+    # @property
+    # def stateColor(self):
+    #     mark = self._RGlyph.markColor
+    #     if mark is None:
+    #         mark = (1, 1, 1, 1)
+    #     return mark
 
-    @stateColor.setter
-    def stateColor(self, value:tuple):
-        self._RGlyph.markColor = value
+    # @stateColor.setter
+    # def stateColor(self, value:tuple):
+    #     self._RGlyph.markColor = value
 
     def save(self):
         # print("glyohsave", self.name, self.stateColor)

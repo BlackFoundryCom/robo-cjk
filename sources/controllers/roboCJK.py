@@ -302,6 +302,7 @@ class RoboCJKController(object):
         _decompose(glyph, '', masterLayerName)
 
     def glyphWindowWillClose(self, notification):
+        # print("close stateColor",self.currentGlyph.stateColor)
         # self.closeimportDCFromCG()
         self.closeComponentWindow()
         self.closeCharacterWindow()
@@ -326,7 +327,9 @@ class RoboCJKController(object):
         
         # self.currentFont.locker.unlock(self.currentGlyph)
         if not self.mysql:
+            # print(self.currentGlyph.name,self.currentGlyph.markColor)
             self.currentFont.save()
+            # self.currentFont.getGlyph(self.currentGlyph, font = self.currentFont._fullRFont)
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
         else:
