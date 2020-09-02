@@ -23,7 +23,7 @@ import datetime
 import logging
 
 # import redis
-import paho.mqtt.client as mqtt
+# import paho.mqtt.client as mqtt
 
 from typing import Callable, Tuple, Any, Dict
 

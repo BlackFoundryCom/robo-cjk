@@ -141,6 +141,7 @@ class Font():
         l1 = staticCharacterGlyphSet[0:thirdl]
         l2 = staticCharacterGlyphSet[thirdl:thirdl*2]
         l3 = staticCharacterGlyphSet[thirdl*2:thirdl*3]
+        print(len(staticCharacterGlyphSet), len(l1), len(l2), len(l3), len(l1)+len(l2)+len(l3))
         # l4 = staticCharacterGlyphSet[thirdl*3:thirdl*4]
         # l5 = staticCharacterGlyphSet[thirdl*4:thirdl*5]
         # l6 = staticCharacterGlyphSet[thirdl*5:]
