@@ -25,14 +25,14 @@ from contextlib import contextmanager
 
 from typing import Tuple, List, Dict
 # from CollabEExml import cee_persit_sys
-import pymysql
+# import pymysql
 
 import BF_author
 import BF_init
 
 import BF_topic_msg as bftop 
-import pymysql
-import pymysql.err
+# import pymysql
+# import pymysql.err
 
 MY_IP = BF_init._MY_IP
 MAX_CHARS = 512

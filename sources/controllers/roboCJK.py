@@ -73,8 +73,8 @@ import copy
 
 # import mySQLCollabEngine
 
-from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
-from rcjk2mysql import BF_rcjk2mysql
+# from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
+# from rcjk2mysql import BF_rcjk2mysql
 from rcjk2mysql import BF_init as BF_init
 
 import shutil
@@ -84,13 +84,13 @@ import shutil
 # curpath = mySQLCollabEngine.__path__._path[0]
 # bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
 import sys
-print(os.path.join(os.getcwd(), 'rcjk2mysql'))
-print('sys path', sys.path)
+# print(os.path.join(os.getcwd(), 'rcjk2mysql'))
+# print('sys path', sys.path)
 bf_log = BF_init.init_log(os.path.join(os.getcwd(), 'rcjk2mysql'))
-try:
-    dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
-except:
-    pass
+# try:
+#     dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
+# except:
+#     pass
 
 from utils import decorators
 # reload(decorators)

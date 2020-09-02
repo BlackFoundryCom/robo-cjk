@@ -47,8 +47,8 @@ from views import textCenter
 
 import os, json, copy
 
-import BF_fontbook_struct as bfs
-import BF_rcjk2mysql
+# import BF_fontbook_struct as bfs
+# import BF_rcjk2mysql
 
 gitCoverage = decorators.gitCoverage
 
