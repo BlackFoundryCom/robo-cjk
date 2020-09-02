@@ -16,11 +16,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-import sys, os
+import os
+import base64
 
-from controllers import roboCJK
-sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
+U,V,W=2-2,-3+4,8-11
+yy=enumerate
+z=base64.b64encode
 
-RCJKI = roboCJK.RoboCJKController()
-RCJKI._launchInterface()
+def i__r(w):
+	return chr(ord(w[V])+W+w[U])
 
+def d__r(v):
+	return chr(v[U]+ord(v[V])-W)
+
+def t__t(i):
+	return (i+4)%2
+
+def charivari(s):
+	u = s
+	return str("".join(map(lambda x: i__r(x) if not t__t(x[U]) else d__r(x), yy(u))))
+
+def e(s):	
+	return z(s[::-1])
+
+def test_all():
+	"""
+	"""
+	x = "test"
+	print(tuple(enumerate(x)))
+	print(i__r((0,'T')))
+	print(d__r((3,'T')))
+	print(t__t(5))
+	print(charivari(x))
+	print(e(x.encode()).decode())
+
+
+if __name__ == "__main__":
+	"""
+	"""
+	test_all()

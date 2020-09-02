@@ -424,6 +424,9 @@ class VariationGlyphs(DictClass):
             else:
                 setattr(self, k, VariationGlyphsInfos(v)) # fallback for backward compatibility
 
+    def __bool__(self):
+        return bool(vars(self))
+
     def addAxis(self, axisName: str, deepComponents:list = [], layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0):
         """
         Add new axis with no named deep components
@@ -461,12 +464,12 @@ class VariationGlyphs(DictClass):
         """
         Return a list reprensentation on the class
         """
-        return {x: getattr(self, x)._toDict() for x in vars(self)}  
+        return {x: getattr(self, x)._toDict() for x in vars(self)}     
 
     @property
     def layerNames(self):
         return [x.layerName for x in self.values()]
-      
+    
 
     @property
     def axes(self):

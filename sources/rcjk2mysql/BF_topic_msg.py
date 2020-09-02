@@ -16,11 +16,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-import sys, os
+import BF_author
 
-from controllers import roboCJK
-sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
+_COMPAGNY = "B[F]"
+_TSEP = "/"
+_APP = "RCJK"
+_CHAT = "CHAT"
+_CHAT_ALL = "#"
+_TOPIC_BASE = f"{_COMPAGNY}{_TSEP}{_APP}{_TSEP}"
+_TOPIC_MYSQL = f"{_TOPIC_BASE}MYSQL" 
+_TOPIC_APPLICATION =  _TOPIC_BASE + "MESSAGE"
 
-RCJKI = roboCJK.RoboCJKController()
-RCJKI._launchInterface()
-
+TOPIC_MYSQL_ALL = _TOPIC_MYSQL + _TSEP + "TRACE"
+TOPIC_APPLICATION_TODO = _TOPIC_APPLICATION + _TSEP + "TODO"
+TOPIC_APPLICATION_LISTEN = _TOPIC_APPLICATION + _TSEP + "LISTEN"
+TOPIC_CHAT =  f"{_COMPAGNY}{_TSEP}{_CHAT}{_TSEP}{_CHAT_ALL}"

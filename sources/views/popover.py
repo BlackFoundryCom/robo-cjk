@@ -75,7 +75,7 @@ def tryfunc(func):
     def wrapper(self, *args, **kwargs):
         try:
             func(self, *args, **kwargs)
-            self.RCJKI.updateDeepComponent()
+            self.RCJKI.updateDeepComponent(update = False)
         except:
             pass
     return wrapper

@@ -69,6 +69,7 @@ class DeepComponent(Glyph):
         return self._glyphVariations
     
     def _initWithLib(self, lib=None):
+        # print("_initWithLib", self.name, lib)
         try:
             if lib:
                 if variationGlyphsKey not in lib.keys():
@@ -141,17 +142,15 @@ class DeepComponent(Glyph):
         self._glyphVariations.removeAxis(name)
 
     def save(self):
+        color = self.markColor
         self.lib.clear()
         lib = RLib()
-        # lib[atomicElementsKey] = self._deepComponents.getList()
-        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
         for variations in self._glyphVariations.values():
             variations.setAxisWidth(self.currentFont.defaultGlyphWidth)
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
-        # print('))))))')
-        # print(lib.__dict__)
-        # print('))))))')
+
         self.lib.update(lib)
+        self.markColor = color

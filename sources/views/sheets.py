@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
-from vanilla.dialogs import getFile
+from vanilla.dialogs import getFile, getFolder
 from mojo.canvas import Canvas
 import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
@@ -30,6 +30,13 @@ import json, os
 blackrobocjk_locker = "com.black-foundry.blackrobocjk_locker"
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
+
+cwd = os.getcwd()
+connectorPath = os.path.join(cwd, "rcjk2mysql", "Config", "connectors.cfg")
+# head, tail = os.path.split(cwd)
+# print("cwd", cwd)
+# print("head", head)
+# print("tail", tail)
 
 class SelectLayerSheet():
     def __init__(self, RCJKI, availableLayers):
@@ -166,6 +173,7 @@ class SelectAtomicElementSheet():
         sel = sender.getSelection()
         if not sel: return
         self.atomicElementName = sender.get()[sel[0]]
+        self.RCJKI.currentFont[self.atomicElementName]
         self.previewGlyph = self.RCJKI.currentFont._RFont[self.atomicElementName]
         self.parent.sheet.canvasPreview.update()
     
@@ -190,8 +198,10 @@ class SelectFontVariationSheet():
         self.RCJKI = RCJKI
         self.view = view
         self.parent = CurrentGlyphWindow()
-        self.parent.sheet = Sheet((300, 40), self.parent.w)
-        l = [axis for axis in self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', []) if axis not in self.RCJKI.currentGlyph._glyphVariations.axes]
+        self.parent.sheet = Sheet((300, 140), self.parent.w)
+        print(self.RCJKI.currentFont.fontVariations)
+        print(self.RCJKI.currentGlyph._glyphVariations.axes)
+        l = [axis for axis in self.RCJKI.currentFont.fontVariations if axis not in self.RCJKI.currentGlyph._glyphVariations.axes]
         if not l: l=[""]
         popupbuttonlist = PopUpButtonListCell(l)
         self.parent.sheet.fontVariationsList = List((0, 0, -0, 20), 
@@ -313,7 +323,7 @@ class FontInfosSheet():
     def __init__(self, RCJKI, parentWindow, posSize):
         self.RCJKI = RCJKI
         if not self.RCJKI.get("currentFont"): return
-        fontvariations = self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', [])
+        fontvariations = self.RCJKI.currentFont.fontVariations
         if 'robocjk.defaultGlyphWidth' not in self.RCJKI.currentFont._RFont.lib:
             self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth'] = 1000
         defaultGlyphWidth = self.RCJKI.currentFont._RFont.lib['robocjk.defaultGlyphWidth']
@@ -375,6 +385,7 @@ class FontInfosSheet():
 
     def fontVariationAxisListEditCallback(self, sender):
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'] = sender.get()
+        self.RCJKI.currentFont.fontVariations = sender.get()
 
     def addVariationCallback(self, sender):
         l = 0
@@ -384,6 +395,7 @@ class FontInfosSheet():
             name = files.normalizeCode(files.int_to_column_id(l), 4)
         self.s.fontVariationAxisList.append(name)
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'].append(name)
+        self.RCJKI.currentFont.fontVariations.append(name)
 
     def defaultGlyphWidthCallback(self, sender):
         try:
@@ -398,19 +410,21 @@ class FontInfosSheet():
         l.pop(sel[0])
         self.s.fontVariationAxisList.set(l)
         self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations'] = self.s.fontVariationAxisList.get()
+        self.RCJKI.currentFont.fontVariations = self.s.fontVariationAxisList.get()
 
     def loadDataBaseCallback(self, sender):
         path = getFile()[0]
         if path.endswith("txt"):
             with open(path, 'r', encoding = 'utf-8') as file:
                 txt = file.readlines()
-            self.RCJKI.dataBase = {}
+            self.RCJKI.currentFont.dataBase = {}
             for line in txt:
                 k, v = line.strip('\n').split(':')
-                self.RCJKI.dataBase[k] = v
+                self.RCJKI.currentFont.dataBase[k] = v
         elif path.endswith("json"):
             with open(path, 'r', encoding = 'utf-8') as file:
-                self.RCJKI.dataBase = json.load(file)
+                self.RCJKI.currentFont.dataBase = json.load(file)
+                
         self.RCJKI.exportDataBase()
 
     # def exportDataBaseCallback(self, sender):
@@ -479,6 +493,7 @@ class NewCharacterGlyph:
         self.deepComponentList = []
         for n in self.RCJKI.currentFont.deepComponentSet:
             if not n.startswith("DC"): continue
+            if not int(n.split('_')[1], 16) in range(0x110000): continue
             cell = dict(sel = 0, char = chr(int(n.split('_')[1], 16)))
             if cell not in self.deepComponentList:
                 self.deepComponentList.append(cell)
@@ -545,8 +560,8 @@ class NewCharacterGlyph:
         except:
             self.RCJKI.currentFont.newGlyph("characterGlyph", name)
             added.add(name)
-            if addRelatedDC and self.RCJKI.dataBase:
-                dcChars = self.RCJKI.dataBase[chr(int(name[3:], 16))]
+            if addRelatedDC and self.RCJKI.currentFont.dataBase:
+                dcChars = self.RCJKI.currentFont.selectDatabaseKey(name[3:])
                 DC = set(["DC_%s_00"%hex(ord(c))[2:].upper() for c in dcChars])
                 # for name in DC:
                 #     added.add(name)
@@ -571,15 +586,17 @@ class NewCharacterGlyph:
                     name = files.unicodeName(c)
                     for dcname in self.addGlyph(name, addRelatedDC):
                         glyphs.append(self.RCJKI.currentFont[dcname])
-        self.lockGlyphs(glyphs)
+        # self.lockGlyphs(glyphs)
         self.window.deepComponent.set(self.RCJKI.currentFont.deepComponentSet)
         charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.RCJKI.currentFont.characterGlyphSet]
+        self.window.characterGlyph.setSelection([])
         self.window.characterGlyph.set(charSet)
         self.w.close()
 
     def lockGlyphs(self, glyphs):
         if self.lockNewGlyph:
-            lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+            # lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+            lock = self.RCJKI.currentFont.batchLockGlyphs(glyphs)
             PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
 
     def relatedDCSearchBox(self, sender):
@@ -604,7 +621,7 @@ class NewCharacterGlyph:
             name = files.unicodeName(character)
             for dcname in self.addGlyph(name):
                 glyphs.append(self.RCJKI.currentFont[dcname])
-        self.lockGlyphs(glyphs)
+        # self.lockGlyphs(glyphs)
         print("-----------------")
         print("ADDED CHARACTERS: \n%s"%characters)
         print("-----------------")
@@ -618,7 +635,7 @@ class NewCharacterGlyph:
             name = files.unicodeName(character)
             for dcname in self.addGlyph(name):
                 glyphs.append(self.RCJKI.currentFont[dcname])
-        self.lockGlyphs(glyphs)
+        # self.lockGlyphs(glyphs)
         print("-----------------")
         print("ADDED CHARACTERS: \n%s"%characters)
         print("-----------------")
@@ -627,7 +644,7 @@ class NewCharacterGlyph:
     def getRelatedCharacterToSelected(self, deepComponents):
         relatedChars = set()
         deepComponentsSet = set(deepComponents)
-        for k, v in self.RCJKI.dataBase.items():
+        for k, v in self.RCJKI.currentFont.dataBase.items():
             setv = set(v)
             if setv & deepComponentsSet:
                 if not setv - deepComponentsSet:
@@ -641,40 +658,52 @@ class NewCharacterGlyph:
         for i, g in enumerate(self.groups):
             g.show(i == sender.get())
 
-class UsersInfos:
+class Login:
 
     def __init__(self, RCJKI, parentWindow):
         self.RCJKI = RCJKI
-        self.w = Sheet((400, 160), parentWindow)
-        self.w.userNameTitle = TextBox(
+        self.w = Sheet((400, 200), parentWindow)
+
+        self.w.segmentedButton = SegmentedButton(
+            (10, 10, -10, 20),
+            [dict(title = "Git"), dict(title = "mySQL")],
+            callback = self.segmentedButtonCallback
+            )
+        self.w.segmentedButton.set(0)
+        self.w.git = Group((0, 30, -0, -0))
+        self.w.git.show(not self.RCJKI.mysql)
+        self.w.mysql = Group((0, 30, -0, -0))
+        self.w.mysql.show(self.RCJKI.mysql)
+
+        self.w.git.userNameTitle = TextBox(
             (10, 10, 100, 20),
             "UserName"
             )
-        self.w.userName = EditText(
+        self.w.git.userName = EditText(
             (90, 10, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"username", "")
             )
-        self.w.passwordTitle = TextBox(
+        self.w.git.passwordTitle = TextBox(
             (10, 40, 100, 20),
             "Password"
             )
-        self.w.password = SecureEditText(
+        self.w.git.password = SecureEditText(
             (90, 40, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"password", "")
             )
-        self.w.hostlockerTitle = TextBox(
+        self.w.git.hostlockerTitle = TextBox(
             (10, 70, 100, 20),
             "HostLocker"
             )
-        self.w.hostlocker = EditText(
+        self.w.git.hostlocker = EditText(
             (90, 70, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"hostlocker", "")
             )
-        self.w.hostLockerPasswordTitle = TextBox(
+        self.w.git.hostLockerPasswordTitle = TextBox(
             (10, 100, 200, 20),
             "HostLocker password optional"
             )
-        self.w.hostLockerPassword = SecureEditText(
+        self.w.git.hostLockerPassword = SecureEditText(
             (200, 100, -10, 20),
             getExtensionDefault(blackrobocjk_locker+"hostlockerpassword", "")
             )
@@ -688,28 +717,84 @@ class UsersInfos:
             "Login",
             callback = self.closeCallback
             )
+
+        self.w.mysql.userNameTitle = TextBox(
+            (10, 10, 100, 20),
+            "UserName"
+            )
+        self.w.mysql.userName = EditText(
+            (90, 10, -10, 20),
+            getExtensionDefault(blackrobocjk_locker+"mysql_username", "")
+            )
+        self.w.mysql.passwordTitle = TextBox(
+            (10, 40, 100, 20),
+            "Password"
+            )
+        self.w.mysql.password = SecureEditText(
+            (90, 40, -10, 20),
+            getExtensionDefault(blackrobocjk_locker+"mysql_password", "")
+            )
+        # self.w.mysql.loadConnectorTitle = TextBox(
+        #     (10, 70, 100, 20),
+        #     "Load Connector"
+        #     )
+        self.w.mysql.loadConnector = Button(
+            (90, 70, -10, 20),
+            "Load Connector",
+            callback = self.loadConnectorCallback
+            # getExtensionDefault(blackrobocjk_locker+"mysql_password", "")
+            )
+
         self.w.setDefaultButton(self.w.closeButton)
         self.w.open()
+
+    def loadConnectorCallback(self, sender):
+        paths = getFile()
+        path = paths[0]
+        with open(path, 'r', encoding = 'utf-8') as file:
+            connector = file.read()
+        with open(connectorPath, 'w', encoding = 'utf-8') as file:
+            file.write(connector)
+        # print(connector)
+        # print(self.__file__.__path__)
 
     def cancelCallback(self, sender):
         self.w.close()
 
     def closeCallback(self, sender):
-        if not self.w.userName.get() or not self.w.password.get() or not self.w.hostlocker.get(): return
+        if not self.w.git.userName.get() or not self.w.git.password.get() or not self.w.git.hostlocker.get(): return
 
-        self.RCJKI.gitUserName = self.w.userName.get()
-        self.RCJKI.gitPassword = self.w.password.get()
-        self.RCJKI.gitHostLocker = self.w.hostlocker.get()
-        self.RCJKI.gitHostLockerPassword = self.w.hostLockerPassword.get()
+        self.RCJKI.gitUserName = self.w.git.userName.get()
+        self.RCJKI.gitPassword = self.w.git.password.get()
+        self.RCJKI.gitHostLocker = self.w.git.hostlocker.get()
+        self.RCJKI.gitHostLockerPassword = self.w.git.hostLockerPassword.get()
 
         setExtensionDefault(blackrobocjk_locker+"username", self.RCJKI.gitUserName)
         setExtensionDefault(blackrobocjk_locker+"password", self.RCJKI.gitPassword)
         setExtensionDefault(blackrobocjk_locker+"hostlocker", self.RCJKI.gitHostLocker)
         setExtensionDefault(blackrobocjk_locker+"hostlockerpassword", self.RCJKI.gitHostLockerPassword)
-        self.w.close()
-        self.RCJKI.setGitEngine()
-        self.RCJKI.roboCJKView.setrcjkFiles()
 
+        
+        self.w.close()
+        if not self.RCJKI.mysql:
+            folder = getFolder()
+            if not folder: return
+            self.RCJKI.projectRoot = folder[0]
+            self.RCJKI.setGitEngine()
+            self.RCJKI.roboCJKView.setrcjkFiles()
+        else:
+            self.RCJKI.mysql_userName = self.w.mysql.userName.get()
+            self.RCJKI.mysql_password = self.w.mysql.password.get()
+            setExtensionDefault(blackrobocjk_locker+"mysql_username", self.RCJKI.mysql_userName)
+            setExtensionDefault(blackrobocjk_locker+"mysql_password", self.RCJKI.mysql_password)
+            self.RCJKI.getmySQLParams()
+            self.RCJKI.connect2mysql()
+            self.RCJKI.roboCJKView.setmySQLRCJKFiles()
+
+    def segmentedButtonCallback(self, sender):
+        for i, x in enumerate([self.w.git, self.w.mysql]):
+            x.show(i == sender.get())
+        self.RCJKI.mysql = sender.get()
 
 class LockController:
 
@@ -745,7 +830,9 @@ class LockController:
             callback = self.filterListCallback
             )
         self.currentGlyphName = None
-        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        # self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.currentUserLockedGlyphs()]
+        self.lockedList = []
         self.w.unlock.lockedGlyphsList = List(
             (10, 30, 150, -40),
             self.lockedList,
@@ -787,7 +874,8 @@ class LockController:
     def segmentedButtonCallback(self, sender):
         for i, group in enumerate(self.locksGroup):
             group.show(i == sender.get())
-        self.resetList()
+        if sender.get():
+            self.resetList()
 
     def lockedGlyphsListSelectionCallback(self, sender):
         sel = sender.getSelection()
@@ -798,7 +886,8 @@ class LockController:
         self.w.unlock.canvas.update()
 
     def lockGlyphs(self, glyphs):
-        lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+        # lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
+        lock = self.RCJKI.currentFont.batchLockGlyphs(glyphs)
         PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
 
     def lockButtonCallback(self, sender):
@@ -823,20 +912,23 @@ class LockController:
                     glyphs.append(f[x["name"]])
                 except:
                     filesToRemove.append(x["name"])
-        self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        # self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        self.RCJKI.currentFont.removeLockerFiles(filesToRemove)
         if glyphs:
             self.unlockGlyphs(glyphs)
         self.resetList()
 
     def resetList(self):
-        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        # self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.locker.myLockedGlyphs]
+        self.lockedList = [dict(sel = 0, name = x) for x in self.RCJKI.currentFont.currentUserLockedGlyphs()]
         self.w.unlock.lockedGlyphsList.set(self.lockedList)
         self.w.unlock.lockedGlyphsList.setSelection([])
         self.currentGlyphName = None
         self.w.unlock.canvas.update()
 
     def unlockGlyphs(self, glyphs):
-        unlock = self.RCJKI.currentFont.locker.batchUnlock(glyphs)
+        # unlock = self.RCJKI.currentFont.locker.batchUnlock(glyphs)
+        unlock = self.RCJKI.currentFont.batchUnlockGlyphs(glyphs)
         PostBannerNotification("Unlock %s"%["failed", "succeeded"][unlock], "")
 
     def unlockAllButtonCallback(self, sender):
@@ -847,7 +939,8 @@ class LockController:
             try: glyphs.append(f[x["name"]])
             except: 
                 filesToRemove.append(x["name"])
-        self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        # self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+        self.RCJKI.currentFont.removeLockerFiles(filesToRemove)
         self.unlockGlyphs(glyphs)
         self.resetList()        
 

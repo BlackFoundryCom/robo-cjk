@@ -67,7 +67,7 @@ class CharacterGlyph(Glyph):
 
     @property
     def foreground(self):
-        return self.currentFont._RFont[self.name].getLayer('foreground')
+        return self._RFont[self.name].getLayer('foreground')
 
     @property
     def deepComponents(self):
@@ -143,13 +143,14 @@ class CharacterGlyph(Glyph):
         self.selectedElement = []
 
     def save(self):
+        color = self.markColor
         self.lib.clear()
         lib = RLib()
 
         for axis, variations in self._glyphVariations.items():
             variations.layerName = axis
             try:
-                axisGlyph = self.currentFont._RFont.getLayer(variations.layerName)[self.name]
+                axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
                 variations.writeOutlines(axisGlyph)
                 variations.setAxisWidth(axisGlyph.width)
             except:
@@ -161,3 +162,4 @@ class CharacterGlyph(Glyph):
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)
+        self.markColor = color

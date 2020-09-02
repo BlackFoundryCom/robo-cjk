@@ -34,6 +34,8 @@ charsets = characterSets.characterSets
 CG2DC = chars2deepCompo.Chars2DC
 
 from utils import files
+
+from controllers import teamManager
 # reload(files)
 
 from views import movie
@@ -69,14 +71,45 @@ import math
 import json
 import copy 
 
+# import mySQLCollabEngine
+
+from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
+from rcjk2mysql import BF_rcjk2mysql
+from rcjk2mysql import BF_init as BF_init
+
+import shutil
+
+# curpath = os.path.dirname(__file__)
+# print(curpath)
+# curpath = mySQLCollabEngine.__path__._path[0]
+# bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
+import sys
+print(os.path.join(os.getcwd(), 'rcjk2mysql'))
+print('sys path', sys.path)
+bf_log = BF_init.init_log(os.path.join(os.getcwd(), 'rcjk2mysql'))
+try:
+    dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
+except:
+    pass
+
 from utils import decorators
 # reload(decorators)
 refresh = decorators.refresh
 lockedProtect = decorators.lockedProtect
 
+from AppKit import NSSearchPathForDirectoriesInDomains
+APPNAME = 'RoboFont'
+
+import threading
+import queue
+
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
 class RoboCJKController(object):
+
+
+    hiddenSavePath = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'mySQLSave')
+    files.makepath(hiddenSavePath)
 
     def __init__(self):
         self.observers = False
@@ -91,6 +124,7 @@ class RoboCJKController(object):
         self.privateLocker = True
         self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition, (0, 180, 1000, 600))
         self.drawOnlyDeepolation = False
+        # self.teamManager = teamManager.TeamManagerController(self)
         # installTool(self.transformationTool)
 
         self.locked = False
@@ -117,9 +151,36 @@ class RoboCJKController(object):
         self.importDCFromCG = None
         self.sliderValue = None
         self.sliderName = None
-        self.dataBase = {}
+        # self.dataBase = {}
         self.copy = []
         self.px, self.py = 0,0
+
+        self.mysql = False
+        self.mysql_userName = ""
+        self.mysql_password = ""
+        self.bf_log = bf_log
+
+        self.updateDeepComponentQueue = queue.Queue()
+
+    def connect2mysql(self):
+        dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
+        bf_log.info("will connect to mysql")
+        self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
+        self.mysql.logout(self.mysql_userName, self.mysql_password)
+        self.mysql.login(self.mysql_userName, self.mysql_password)
+        bf_log.info("did connect to mysql")
+        bf_log.info(self.mysql.login(self.mysql_userName, self.mysql_password))
+
+    def loadProject(self, folderpath, fontname):
+        bfont = BF_rcjk2mysql.read_font_from_disk(bf_log, folderpath, fontname)
+        BF_rcjk2mysql.delete_font_from_mysql(bf_log, fontname, self.mysql)
+        BF_rcjk2mysql.insert_newfont_to_mysql(bf_log, bfont, self.mysql)
+
+    def getmySQLParams(self):
+        pass
+        # curpath = mySQLCollabEngine.__path__._path[0]
+        # self.bf_log = BF_init.__init_log(curpath)
+        # self.dict_persist_params, _  = BF_init.__init_params(self.bf_log, curpath, BF_init._REMOTE)
 
     def get(self, item):
         if hasattr(self, item):
@@ -149,6 +210,10 @@ class RoboCJKController(object):
         
     def _launchInterface(self):
         self.roboCJKView = roboCJKView.RoboCJKView(self)
+
+    # def connect2mysql(self):
+    #     self.mysql = BF_engine_mysql.Rcjk2MysqlObject(dict_persist_params)
+    #     self.mysql.login(self.mysql_userName, self.mysql_password)
 
     def setGitEngine(self):
         global gitEngine
@@ -185,7 +250,10 @@ class RoboCJKController(object):
 
     def fontDidSave(self, info):
         if self.currentFont and self.currentFont._RFont == CurrentFont():
-            self.currentFont.save()
+            if self.currentGlyph:
+                self.currentFont.saveGlyph(self.currentGlyph)
+            else:
+                self.currentFont.save()
         else:
             print('no font object')
 
@@ -194,11 +262,47 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = False):
-        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
+        q = queue.Queue()
+        threading.Thread(target=self.computeDeepComponentsPreview, args = (q,), daemon=True).start()
+        q.put(update)
         if self.isAtomic: return
-        self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
+        q = queue.Queue()
+        threading.Thread(target=self.computeDeepComponents, args = (q,), daemon=True).start()
+        q.put(self.currentGlyph.selectedSourceAxis)
+        # self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
+
+    def computeDeepComponentsPreview(self, q):
+        update = q.get()
+        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
+        q.task_done()
+
+    def computeDeepComponents(self, q):
+        axis = q.get()
+        self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
+        q.task_done()
+
+    def decomposeGlyphToBackupLayer(self, glyph):
+        def _decompose(glyph, axis, layername):
+            if layername not in self.currentFont._RFont.layers:
+                self.currentFont._RFont.newLayer(layername)
+                glyph.preview.computeDeepComponents(axis)
+                ais = glyph.preview.axisPreview
+                f = self.currentFont._RFont.getLayer(layername)
+                f.newGlyph(glyph.name)
+                g1 = f[glyph.name]
+                g1.clear()
+                for ai in ais:
+                    for c in ai.transformedGlyph:
+                        g1.appendContour(c)
+
+        for axis in self.currentFont.fontVariations:
+            axisLayerName = "backup_%s"%axis
+            _decompose(glyph, axis, axisLayerName)
+        masterLayerName = "backup_master"
+        _decompose(glyph, '', masterLayerName)
 
     def glyphWindowWillClose(self, notification):
+        # print("close stateColor",self.currentGlyph.stateColor)
         # self.closeimportDCFromCG()
         self.closeComponentWindow()
         self.closeCharacterWindow()
@@ -210,17 +314,49 @@ class RoboCJKController(object):
             self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
         except:pass
 
+
         self.window.removeGlyphEditorSubview(self.atomicView)
         self.window.removeGlyphEditorSubview(self.deepComponentView)
         self.window.removeGlyphEditorSubview(self.characterGlyphView)
-        self.roboCJKView.w.atomicElementPreview.update()
-        self.roboCJKView.w.deepComponentPreview.update()
-        self.roboCJKView.w.characterGlyphPreview.update()
+        # self.roboCJKView.w.atomicElementPreview.update()
+        # self.roboCJKView.w.deepComponentPreview.update()
+        # self.roboCJKView.w.characterGlyphPreview.update()
+        gae = self.roboCJKView.w.atomicElementPreview.glyphName
+        gdc = self.roboCJKView.w.deepComponentPreview.glyphName
+        gcg =  self.roboCJKView.w.characterGlyphPreview.glyphName
         
         # self.currentFont.locker.unlock(self.currentGlyph)
-        self.currentFont.save()
-        if self.currentGlyph is not None:
-            self.currentFont.getGlyph(self.currentGlyph)
+        if not self.mysql:
+            # print(self.currentGlyph.name,self.currentGlyph.markColor)
+            self.currentFont.save()
+            # self.currentFont.getGlyph(self.currentGlyph, font = self.currentFont._fullRFont)
+            if self.currentGlyph is not None:
+                self.currentFont.getGlyph(self.currentGlyph)
+        else:
+            self.currentFont.saveGlyph(self.currentGlyph)
+
+        self.currentFont.clearRFont()
+        # self.roboCJKView.w.atomicElementPreview.update()
+        # self.roboCJKView.w.deepComponentPreview.update()
+        # self.roboCJKView.w.characterGlyphPreview.update()
+
+
+        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.atomicElementPreview, gae)
+        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.deepComponentPreview, gdc)
+        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.characterGlyphPreview, gcg)
+
+        # fontname = self.currentFont._RFont.familyName
+        # del self.currentFont._RFont
+        # shutil.rmtree(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # self.currentFont._RFont = NewFont(
+        #     familyName=self.currentFont.fontName, 
+        #     styleName='Regular', 
+        #     showUI = False
+        #     )
+        # print("fontpath")
+        # print(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # files.makepath(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
+        # self.currentFont._RFont.save(os.path.join(self.hiddenSavePath, "%s.ufo"%self.currentFont.fontName))
         
 
     def closeimportDCFromCG(self):
@@ -252,7 +388,7 @@ class RoboCJKController(object):
             self.closeComponentWindow()
         else:
             installTool(self.transformationTool)
-            if self.dataBase:
+            if self.currentFont.dataBase:
                 if self.currentGlyph.type =='characterGlyph':
                     self.closeCharacterWindow()
                     if self.currentGlyph.name.startswith("uni"):
@@ -277,8 +413,12 @@ class RoboCJKController(object):
         self.updateDeepComponent()
 
     def exportDataBase(self):
-        with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
-            file.write(json.dumps(self.dataBase))
+        self.currentFont.exportDataBase()
+        # if not self.currentFont.mysqlFont:
+        #     with open(os.path.join(self.currentFont.fontPath, "database.json"), 'w', encoding="utf-8") as file:
+        #         file.write(json.dumps(self.currentFont.dataBase))
+        # else:
+        #     self.currentFont._BFont.database_data = str(self.currentFont.dataBase)
 
     def closeCharacterWindow(self):
         if self.characterWindow is not None:
@@ -289,6 +429,15 @@ class RoboCJKController(object):
         if self.componentWindow is not None:
             self.componentWindow.close()
             self.componentWindow = None
+
+    @property 
+    def currentView(self):
+        if self.isAtomic:
+            return self.atomicView
+        elif self.isDeepComponent:
+            return self.deepComponentView
+        elif self.isCharacterGlyph:
+            return self.characterGlyphView
 
     @property 
     def currentViewSourceList(self):
@@ -408,7 +557,10 @@ class RoboCJKController(object):
             addObserver(self, 'mouseDragged', 'mouseDragged')
 
     def mouseDragged(self, point):
-        self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
+        try:
+            self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
+        except:
+            pass
 
     def setListWithSelectedElement(self):
         if self.isDeepComponent:
@@ -560,6 +712,7 @@ class RoboCJKController(object):
         # if self.isAtomic:
         #     item = ('Attach Layer to Atomic Element', self.addLayerToAtomicElement)
         #     menuItems.append(item)
+        # print("type is ", self.isCharacterGlyph)
         if self.isDeepComponent:
             item = ('Add Atomic Element', self.addAtomicElement)
             menuItems.append(item)
@@ -573,15 +726,18 @@ class RoboCJKController(object):
             menuItems.append(item)
             item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
             menuItems.append(item)
+
             # item = ('Animate this variable glyph', self.animateThisVariableGlyph)
             # menuItems.append(item)
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
             variationsAxes = self.currentGlyph.glyphVariations.axes
-            if all([len(self.currentGlyph), *(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
-                item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
-                menuItems.append(item)
+            # self.currentFont[self.currentGlyph.name]
+            if len(self.currentGlyph):
+                if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
+                    item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
+                    menuItems.append(item)
         notification["additionContextualMenuItems"].extend(menuItems)
 
     def animateThisVariableGlyph(self, sender):

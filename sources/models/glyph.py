@@ -29,6 +29,18 @@ import copy
 # reload(deepComponent)
 DeepComponents = component.DeepComponents
 
+INPROGRESS = (1, 0, 0, 1)
+CHECKING1 = (1, .5, 0, 1)
+CHECKING2 = (1, 1, 0, 1)
+CHECKING3 = (0, .5, 1, 1)
+DONE = (0, 1, .5, 1)
+STATE_COLORS = {
+    INPROGRESS:"INPROGRESS", 
+    CHECKING1:"CHECKING1", 
+    CHECKING2:"CHECKING2", 
+    CHECKING3:"CHECKING3", 
+    DONE:"DONE"}
+
 def compute(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
@@ -47,8 +59,10 @@ class Glyph(RGlyph):
     def __init__(self):
         super().__init__()
         self.type = None
+        self._RFont = None
         # self.preview = None
         self.sourcesList = []
+        self._designState = ""
 
     def _setStackUndo(self):
         # if self.type != 'atomicElement':
@@ -60,8 +74,38 @@ class Glyph(RGlyph):
         self.indexStackUndo_lib = 0
         # self.transformationWithMouse = False
 
+    def __bool__(self):
+        if bool(self._glyphVariations):
+            return True
+        else:
+            return bool(self._deepComponents)
+
+    # @property
+    # def designState(self):
+    #     self.designState = STATE_COLORS.get(self.stateColor, "")
+    #     return self._designState
+
+    # @designState.setter
+    # def designState(self, value):
+    #     self._designState = value    
+
+    # @property
+    # def stateColor(self):
+    #     mark = self._RGlyph.markColor
+    #     if mark is None:
+    #         mark = (1, 1, 1, 1)
+    #     return mark
+
+    # @stateColor.setter
+    # def stateColor(self, value:tuple):
+    #     self._RGlyph.markColor = value
+
     def save(self):
+        # print("glyohsave", self.name, self.stateColor)
+        color = self.markColor
         self.lib.clear()
+        self.markColor = color
+        # print("glyohsave", self.name, self.stateColor)
 
     def getParent(self):
         return self.currentFont
@@ -71,7 +115,7 @@ class Glyph(RGlyph):
 
     @property
     def _RGlyph(self):
-        return self.currentFont._RFont[self.name]
+        return self._RFont[self.name]
 
     @property
     def flatComponents(self):

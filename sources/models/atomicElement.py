@@ -50,7 +50,7 @@ class AtomicElement(Glyph):
 
     @property
     def foreground(self):
-        return self.currentFont._RFont[self.name].getLayer('foreground')
+        return self._RFont[self.name].getLayer('foreground')
     
     @property
     def glyphVariations(self):
@@ -66,21 +66,22 @@ class AtomicElement(Glyph):
         self._glyphVariations.addAxis(newAxisName, layerName = newLayerName)
 
         glyph = AtomicElement(self.name)
-        txt = self.currentFont._RFont.getLayer(newLayerName)[self.name].dumpToGLIF()
+        txt = self._RFont.getLayer(newLayerName)[self.name].dumpToGLIF()
         self.currentFont.insertGlyph(glyph, txt, newLayerName)
 
     def removeGlyphVariation(self, axisName):
         self._glyphVariations.removeAxis(axisName)
 
     def save(self):
+        color = self.markColor
         self.lib.clear()
         lib = RLib()
         
         for variations in self._glyphVariations.values():
-            layersNames = [x.name for x in self.getParent()._RFont.layers]
+            layersNames = [x.name for x in self._RFont.layers]
             if variations.layerName not in layersNames:
                 continue
-            axisGlyph = self.currentFont._RFont.getLayer(variations.layerName)[self.name]
+            axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
             variations.writeOutlines(axisGlyph)
             variations.setAxisWidth(axisGlyph.width)
     
@@ -88,3 +89,4 @@ class AtomicElement(Glyph):
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
 
         self.lib.update(lib)
+        self.markColor = color

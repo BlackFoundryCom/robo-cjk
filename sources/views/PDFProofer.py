@@ -483,8 +483,8 @@ class Interface:
         self.w.customPages.text.ufo = Group((10, 60, 190, 110))
 
         self.fontAxis = []
-        if self.pdf.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
-            self.fontAxis = [dict(Axis = x, PreviewValue = 0) for x in self.pdf.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']]
+        if self.pdf.RCJKI.currentFont.fontVariations:
+            self.fontAxis = [dict(Axis = x, PreviewValue = 0) for x in self.pdf.RCJKI.currentFont.fontVariations]
         slider = SliderListCell(minValue = 0, maxValue = 1)
         self.w.customPages.text.ufo.axis = List(
             (0, 0, -0,  -0),
@@ -873,6 +873,8 @@ class HanDesignFrame(DesignFrame):
         self.verticalLine = 15
         self.type = 'han'
 
+FRAMEX, FRAMEY = 595, 841
+
 class NewPDF:
 
     def __init__(self, RCJKI, controller, text):
@@ -880,14 +882,13 @@ class NewPDF:
         self.controller = controller
         self.designFrame = HanDesignFrame()
         self.designFrameViewer = DesignFrameDrawer(self)
-        # text = "的一了是不我这在人有他来个道你大到就上着们那也说么下出地然中看时要没天过可自子能还之以去好后为都会心得里对身手起小想只而和头她无力面己如什现多样已知些声经前神笑事开点方眼发所但气法意情生两家间将很真话成让老被动当用于见回又军把此才几正战明却龙从十三长女光再向实最行高本打风进定魔给问色国同走其种年口边毫疖尽虱周卡卷觉慕冒散黎北睾丝善妻荣雷七万丈丌与丐丑专且世丘业东严丫丰串丸丹主丽乃久义乌乍乎乐乔乘九乡予争亏互五亟亦产今介令佥兆免兔兜公兰共关兴具典兼内册农凡凹击刃办午半卑南叉及叟史吏唐商啬囊坐垂堇壬夜太夫央失夷夹奂奥孑存少尹尺局展屯川州巨巫差巳平并廿弗弟弱必戋户放斥曲曳更曾未末术朱束柬死母氐民永求爰犀狂率王甚甫甬由甲电畏百直禹羌羲聿肃臧臾良带襄西詹象贝质酋重釜错韦饭马齐齿匆乙入次凶句区外原处尢尸山巛工巾干幺广建异武弓修斗曰欠歹毛氏水火爪爿片牙牛瓜瓦甘田疋痛皿矛立米缶耒耳肉臣臼舟虎虫衣言谷豆貌赤辰酉金隶隹非革骨鬲鹿黑鼎鼠龠"
         self.pages = [ ["uni%s"%hex(ord(x))[2:].upper() for x in text[i:i+20]] for i in range(0, len(text), 20) ]
-        # self.pages = [["uni%s"%hex(ord(c))[2:].upper() for c in text]]
         self.draw()
 
     def draw(self):
-        db.newDrawing()
-        self.designFrameViewer.draw()
+        user = self.RCJKI.gitUserName
+        now = datetime.datetime.now()
+        date = "%s%s%s_%s%s%s"%(now.year, str(now.month).zfill(2), str(now.day).zfill(2), str(now.hour).zfill(2), str(now.minute).zfill(2), str(now.second).zfill(2))
 
         def drawDesignFrame():
             for e in self.designFrameViewer.elements:
@@ -900,64 +901,79 @@ class NewPDF:
                     db.fill(*color)
                 db.drawGlyph(glyph)
 
-        for page in self.pages:
-            bold = []
-            light = []
-            db.newPage(841, 595)
 
-            db.textBox('GS-Overlay', (0, 530, 841, 55), align = 'center')
+        for pageIndex, page in enumerate(self.pages):
+            db.newDrawing()
+            self.designFrameViewer.draw()
+
+            glyphsVariations = {}
+            # light = []
+            db.newPage(FRAMEX, FRAMEY)
+
+            db.textBox('%s-Overlay'%self.RCJKI.currentFont.fontName, (0, FRAMEY-105, FRAMEX, 55), align = 'center')
             s = .11
-            tx, ty = (841/s-1000*5)*.5, 4000
+            tx, ty = (FRAMEX/s-1000*4)*.5, 1000 * 5.8
             db.save()
             db.scale(s, s)
             db.translate(tx, ty)
             db.fontSize(60)
             for i, name in enumerate(page):
                 try:
-                    glyph1 = self.RCJKI.currentFont[name]
-                    glyph1.preview.computeDeepComponentsPreview([dict(Axis = "wght", PreviewValue = 1)])
-                    glyph1.preview.variationPreview.removeOverlap()
-                    bold.append(glyph1.preview.variationPreview)
+                    for variation in self.RCJKI.currentFont.fontVariations:
+                        glyph1 = self.RCJKI.currentFont.get(name)
+                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
+                        glyph1.preview.variationPreview.removeOverlap()
+                        if variation not in glyphsVariations.keys():
+                            glyphsVariations[variation] = []
+                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
 
-                    drawDesignFrame()
+                        drawDesignFrame()
+                        db.fill(0, 0, 0, 1)
+                        db.stroke(None)                    
+                        db.textBox(name, (0, 900, 1000, 100), align = "center")
 
-                    # self.designFrameViewer.draw(glyph1.preview.variationPreview)
-                    db.fill(0, 0, 0, 1)
-                    db.stroke(None)                    
-                    db.textBox(name, (0, 900, 1000, 100), align = "center")
+                        db.fill(1, 1, 1, 1)
+                        db.stroke(0, 0, 0, 1)
+                        db.strokeWidth(1)
+                        
+                        db.drawGlyph(glyph1.preview.variationPreview)
+                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 0)])
+                        glyph1.preview.variationPreview.removeOverlap()
+                        variation = "normal"
+                        if variation not in glyphsVariations.keys():
+                            glyphsVariations[variation] = []
+                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
+                        db.drawGlyph(glyph1.preview.variationPreview)
 
-                    db.fill(1, 1, 1, 1)
-                    db.stroke(0, 0, 0, 1)
-                    db.strokeWidth(1)
-                    
-                    db.drawGlyph(glyph1.preview.variationPreview)
-                    glyph1.preview.computeDeepComponentsPreview([dict(Axis = "wght", PreviewValue = 0)])
-                    glyph1.preview.variationPreview.removeOverlap()
-                    light.append(glyph1.preview.variationPreview)
-                    db.drawGlyph(glyph1.preview.variationPreview)
-
-                    if (i+1)%5:
-                        db.translate(1000, 0)
-                    else:
-                        db.translate(-1000*4, -1200)
-                except:pass
-  
+                        if (i+1)%4:
+                            db.translate(1000, 0)
+                        else:
+                            db.translate(-1000*3, -1200)
+                except Exception as e:
+                    raise e
             db.restore()
+
+            pdfData = db.pdfImage()            
+            outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s-%s.pdf'%(date, str(pageIndex).zfill(2), self.RCJKI.currentFont.fontName, "Overlay"))
+            files.makepath(outputPath)
+            db.saveImage(outputPath)
+            os.rename(outputPath, outputPath[:-3]+"ai")
 
             def drawWeight(weight, text):
 
-                db.newPage(841, 595)
-                db.textBox(text, (0, 530, 841, 55), align = 'center')
+                db.newDrawing()
+                self.designFrameViewer.draw()
+
+                db.newPage(FRAMEX, FRAMEY)
+                db.textBox(text, (0, FRAMEY-105, FRAMEX, 55), align = 'center')
                 s = .11
-                tx, ty = (841/s-1000*5)*.5, 4000
+                tx, ty = (FRAMEX/s-1000*4)*.5, 1000 * 5.8
                 db.save()
                 db.scale(s, s)
                 db.translate(tx, ty)
                 db.fontSize(60)
 
                 for i, glyph in enumerate(weight):
-                    # self.designFrameViewer.draw(glyph)
-
                     drawDesignFrame()
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)                    
@@ -966,25 +982,27 @@ class NewPDF:
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)
                     db.drawGlyph(glyph)
-                    if (i+1)%5 :
+                    if (i+1)%4 :
                         db.translate(1000, 0)
                     else:
-                        db.translate(-1000*4, -1200)
+                        db.translate(-1000*3, -1200)
 
                 db.restore()
+                pdfData = db.pdfImage()
+                now = datetime.datetime.now()
+                outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s.pdf'%(date, str(pageIndex).zfill(2), text))
+                # os.rename(outputPath, outputPath[:-3]+'ai')
+                files.makepath(outputPath)
+                db.saveImage(outputPath)
+                os.rename(outputPath, outputPath[:-3]+"ai")
 
-            drawWeight(bold, 'GS-Bold')
-            drawWeight(light, 'GS-Regular')
+            for variations, weights in glyphsVariations.items():
+                drawWeight(weights, '%s-%s'%(self.RCJKI.currentFont.fontName, variations))
 
-
-        pdfData = db.pdfImage()
-        now = datetime.datetime.now()
-        name = "%s%s%s_%s"%(now.year, now.month, now.day, self.RCJKI.gitUserName)
-        outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", '%s.pdf'%name)
-        # outputPath = "/Users/gaetanbaehr/Desktop/feedbackGS414.pdf"
-        db.saveImage(outputPath)
-
-        # self.w.canvas.setPDFDocument(pdfData)
+            textPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_text.txt'%(date, str(pageIndex).zfill(2)))
+            files.makepath(textPath)
+            with open(textPath, 'w', encoding = 'utf-8') as file:
+                file.write("".join([chr(int(x[3:], 16)) for x in page]))
 
 class DesignFrameDrawer:
 
@@ -1109,6 +1127,7 @@ class DesignFrameDrawer:
                     y: int, 
                     w: int,
                     h: int,
+                    ty: int,
                     step: int):
         pen = glyph.getPen()
         dist = y + h / step
@@ -1117,7 +1136,9 @@ class DesignFrameDrawer:
             pen.lineTo((x+w, dist))
             pen.closePath()
             dist += h / step
-        db.drawGlyph(glyph)
+        # db.drawGlyph(glyph)
+        glyph.moveBy((0, ty))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
 
     def _makeVerGrid(self,
                     glyph: RGlyph, 
@@ -1125,6 +1146,7 @@ class DesignFrameDrawer:
                     y: int, 
                     w: int,
                     h: int,
+                    ty: int,
                     step: int):
         pen = glyph.getPen()
         dist = x + w / step
@@ -1133,7 +1155,9 @@ class DesignFrameDrawer:
             pen.lineTo((dist, y+h))
             pen.closePath()
             dist += w / step
-        db.drawGlyph(glyph)
+        # db.drawGlyph(glyph)
+        glyph.moveBy((0, ty))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
 
 
     def _findProximity(self, 
@@ -1169,20 +1193,23 @@ class DesignFrameDrawer:
             outside, inside = self.controller.designFrame.overshoot
             self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
 
-        if self.secondLines:
-            if self.controller.designFrame.type == "han":
-                ratio = (h * .5 * (self.controller.designFrame.horizontalLine / 50))
-                y = h * .5 - ratio
-                height = h * .5 + ratio
-                self._makeHorSecLine(RGlyph(), 0, y + translate_secondLine_Y, w, height + translate_secondLine_Y, translateY)
+        self._makeHorGrid(RGlyph(), *frame, translateY, step = 24)
+        self._makeVerGrid(RGlyph(), *frame, translateY, step = 24)
 
-                ratio = (w * .5 * (self.controller.designFrame.verticalLine / 50))
-                x = w * .5 - ratio
-                width = w * .5 + ratio
-                self._makeVerSecLine(RGlyph(), x + translate_secondLine_X, 0, width + translate_secondLine_X, h, translateY)
-            else:
-                self._makeHorGrid(RGlyph(), *frame, step = int(self.controller.designFrame.horizontalLine))
-                self._makeVerGrid(RGlyph(), *frame, step = int(self.controller.designFrame.verticalLine))
+        # if self.secondLines:
+        #     if self.controller.designFrame.type == "han":
+        #         ratio = (h * .5 * (self.controller.designFrame.horizontalLine / 50))
+        #         y = h * .5 - ratio
+        #         height = h * .5 + ratio
+        #         self._makeHorSecLine(RGlyph(), 0, y + translate_secondLine_Y, w, height + translate_secondLine_Y, translateY)
+
+        #         ratio = (w * .5 * (self.controller.designFrame.verticalLine / 50))
+        #         x = w * .5 - ratio
+        #         width = w * .5 + ratio
+        #         self._makeVerSecLine(RGlyph(), x + translate_secondLine_X, 0, width + translate_secondLine_X, h, translateY)
+        #     else:
+        #         self._makeHorGrid(RGlyph(), *frame, step = int(self.controller.designFrame.horizontalLine))
+        #         self._makeVerGrid(RGlyph(), *frame, step = int(self.controller.designFrame.verticalLine))
         
         if self.customsFrames:
             for frame in self.controller.designFrame.customsFrames:
