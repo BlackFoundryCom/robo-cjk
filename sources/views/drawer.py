@@ -104,6 +104,7 @@ class Drawer():
             mjdt.translate(*self.instanceGlyphPos)
             mjdt.scale(*self.instanceGlyphScale)
             mjdt.drawGlyph(self.roundGlyph(self.instanceGlyph))
+            print(self.instanceGlyph)
             mjdt.restore()
 
         if onlyPreview: return

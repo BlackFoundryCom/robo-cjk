@@ -329,7 +329,7 @@ class RoboCJKController(object):
         if not self.mysql:
             # print(self.currentGlyph.name,self.currentGlyph.markColor)
             self.currentFont.save()
-            # self.currentFont.getGlyph(self.currentGlyph, font = self.currentFont._fullRFont)
+            # self.currentFont.getGlyph(self.currentGlyph, font = [self.currentFont._fullRFont])
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
         else:
