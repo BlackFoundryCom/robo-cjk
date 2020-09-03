@@ -876,6 +876,7 @@ class Font():
             BF_rcjk2mysql.new_item_to_mysql(self.bf_log, item_type = glyphType, bfont = self._BFont, new_name = glyphName, my_sql = self.mysql)
             self.getmySQLGlyph(glyphName)
             self.saveGlyph(self[glyphName])
+        # self.save()
 
     @gitCoverage(msg = 'duplicate Glyph')
     def duplicateGlyph(self, glyphName:str, newGlyphName:str):
@@ -1026,6 +1027,30 @@ class Font():
         self.getmySQLGlyph(glyph.name, font = self._fullRFont)
         self.getmySQLGlyph(glyph.name)
 
+    def writeGlif(self, glyph):
+        glyph.save()
+        glyphType = glyph.type
+        rglyph = glyph._RGlyph
+        rglyph.lib.update(glyph.lib)
+        txt = rglyph.dumpToGLIF()
+        fileName = "%s.glif"%files.userNameToFileName(glyph.name)
+        path = os.path.join(self.fontPath, glyphType, fileName)
+
+        with open(path, "w", encoding = "utf-8") as file:
+            file.write(txt)
+
+        for layerName in self._fontLayers:
+            f = self._RFont.getLayer(layerName)
+            if glyph.name in f:
+                layerglyph = f[glyph.name]
+                txt = layerglyph.dumpToGLIF()
+                fileName = "%s.glif"%files.userNameToFileName(layerglyph.name)
+                path = os.path.join(self.fontPath, glyphType, layerName, fileName)
+                files.makepath(path)
+                with open(path, "w", encoding = "utf-8") as file:
+                    file.write(txt)
+
+
     @gitCoverage(msg = 'font save')
     def save(self):
         if not self.mysql:
@@ -1041,27 +1066,27 @@ class Font():
             for rglyph in self._RFont.getLayer('foreground'):
                 if not self.locker.userHasLock(rglyph): continue
                 glyph = self[rglyph.name]
-                glyph.save()
-                glyphType = glyph.type
-                rglyph = glyph._RGlyph
-                rglyph.lib.update(glyph.lib)
-                txt = rglyph.dumpToGLIF()
-                fileName = "%s.glif"%files.userNameToFileName(glyph.name)
-                path = os.path.join(self.fontPath, glyphType, fileName)
+                
+                self.writeGlif(glyph)
+                # rglyph = glyph._RGlyph
+                # rglyph.lib.update(glyph.lib)
+                # txt = rglyph.dumpToGLIF()
+                # fileName = "%s.glif"%files.userNameToFileName(glyph.name)
+                # path = os.path.join(self.fontPath, glyphType, fileName)
 
-                with open(path, "w", encoding = "utf-8") as file:
-                    file.write(txt)
+                # with open(path, "w", encoding = "utf-8") as file:
+                #     file.write(txt)
 
-                for layerName in self._fontLayers:
-                    f = self._RFont.getLayer(layerName)
-                    if glyph.name in f:
-                        layerglyph = f[glyph.name]
-                        txt = layerglyph.dumpToGLIF()
-                        fileName = "%s.glif"%files.userNameToFileName(layerglyph.name)
-                        path = os.path.join(self.fontPath, glyphType, layerName, fileName)
-                        files.makepath(path)
-                        with open(path, "w", encoding = "utf-8") as file:
-                            file.write(txt)
+                # for layerName in self._fontLayers:
+                #     f = self._RFont.getLayer(layerName)
+                #     if glyph.name in f:
+                #         layerglyph = f[glyph.name]
+                #         txt = layerglyph.dumpToGLIF()
+                #         fileName = "%s.glif"%files.userNameToFileName(layerglyph.name)
+                #         path = os.path.join(self.fontPath, glyphType, layerName, fileName)
+                #         files.makepath(path)
+                #         with open(path, "w", encoding = "utf-8") as file:
+                #             file.write(txt)
 
             self._hanziExportUFO()
         else:

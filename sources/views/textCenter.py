@@ -71,7 +71,7 @@ class GlyphUsingDC(Group):
         self.char = ""
         self.charactersNamesList = []
         self.deepComponent = set()
-        for dcname in self.c.RCJKI.currentFont.deepComponentSet:
+        for dcname in self.c.RCJKI.currentFont.staticDeepComponentSet():
             if len(dcname.split('_')) > 1:
                 self.deepComponent.add(chr(int(dcname.split("_")[1], 16)))
 
@@ -104,7 +104,7 @@ class GlyphUsingDC(Group):
         if not char: return []
         var = []
         code = files.normalizeUnicode(hex(ord(char))[2:].upper())
-        for name in self.c.RCJKI.currentFont.deepComponentSet:
+        for name in self.c.RCJKI.currentFont.staticDeepComponentSet():
             if code in name.split("_"):
                 var.append(name.split("_")[2])
         return var
@@ -134,7 +134,7 @@ class GlyphUsingDC(Group):
 
     def characterGlyphUsing(self, code):
         characters = []
-        for name in self.c.RCJKI.currentFont.characterGlyphSet:
+        for name in self.c.RCJKI.currentFont.staticCharacterGlyphSet():
             glyph = self.c.RCJKI.currentFont.get(name)
             for dc in glyph._deepComponents:
                 if code in dc.name:
@@ -151,7 +151,7 @@ class DCUsingAE(Group):
         self.search = SearchBox((0, 5, 100, 20),
             callback = self.searchCallback)
 
-        self.atomicElement = self.c.RCJKI.currentFont.atomicElementSet
+        self.atomicElement = self.c.RCJKI.currentFont.staticAtomicElementSet()
         self.atomicElementList = List(
             (0, 25, 100, -0),
             self.atomicElement,
@@ -179,7 +179,7 @@ class DCUsingAE(Group):
 
     def deepComponentGlyphUsing(self, aename):
         deepComponents = []
-        for name in self.c.RCJKI.currentFont.deepComponentSet:
+        for name in self.c.RCJKI.currentFont.staticDeepComponentSet():
             glyph = self.c.RCJKI.currentFont.get(name)
             for dc in glyph._deepComponents:
                 if aename == dc.name:
@@ -307,17 +307,18 @@ class TextCenter:
         t = t.replace("/", " ")
         txt = t.split()
         glyphs = []
+        rfont = self.RCJKI.currentFont._RFont
         for e in txt:
             try:
                 for c in l:
-                    glyphs.append(self.RCJKI.currentFont[c])    
-                glyphs.append(self.RCJKI.currentFont[e])
+                    glyphs.append(self.RCJKI.currentFont.get(c, rfont))    
+                glyphs.append(self.RCJKI.currentFont.get(e, rfont))
             except:
                 for c in e:
                     try:
                         for x in l: 
-                            glyphs.append(self.RCJKI.currentFont[files.unicodeName(x)])
-                        glyphs.append(self.RCJKI.currentFont[files.unicodeName(c)])
+                            glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(x), rfont))
+                        glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(c), rfont))
                     except: continue
         self.w.multiLineView.set(glyphs)
 
@@ -329,7 +330,7 @@ class TextCenter:
 
     def draw(self, info):
         self.w.pointSize.set(self.w.multiLineView.getPointSize())
-        glyph = self.RCJKI.currentFont[info["glyph"].name]
+        glyph = self.RCJKI.currentFont.get(info["glyph"].name, self.RCJKI.currentFont._RFont)
         scale = info["scale"]
 
         def drawVariation(glyph, sourcelist, drawer):
@@ -375,5 +376,4 @@ class TextCenter:
 
     def windowWillClose(self, sender):
         self.RCJKI.textCenterWindows.pop(self.RCJKI.textCenterWindows.index(self))
-        print(self.RCJKI.textCenterWindows)
         self.observer(remove = True)

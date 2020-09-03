@@ -124,6 +124,7 @@ class RoboCJKController(object):
         self.privateLocker = True
         self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition, (0, 180, 1000, 600))
         self.drawOnlyDeepolation = False
+        self.textCenterWindows = []
         # self.teamManager = teamManager.TeamManagerController(self)
         # installTool(self.transformationTool)
 
