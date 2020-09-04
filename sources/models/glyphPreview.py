@@ -131,7 +131,7 @@ class Preview:
                 layersInfos[layer] = value
             else:
                 if axis['Axis'] in filtered:
-                    if len(self.glyph._RGlyph.getLayer(axis['Axis'])):
+                    if len(self.glyph._RGlyph.getLayer(axis['Axis'])) == len(self.glyph.foreground):
                         layersInfos[axis['Axis']] = value
 
         return interpolation.deepolation(
