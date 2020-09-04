@@ -120,7 +120,7 @@ class Preview:
 
     def _generateOutlinesPreview(self, sourceList:list = [], filtered:list = [], update:bool = True):
         layersInfos = {}
-
+        if not len(self.glyph.foreground): return
         if not sourceList:
             sourceList = self.glyph.sourcesList
 
