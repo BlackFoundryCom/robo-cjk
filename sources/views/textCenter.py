@@ -238,7 +238,7 @@ class TextCenter:
             pointSize=72,
             displayOptions = self.displayOptions
             )
-        self.w.multiLineView.setFont(self.RCJKI.currentFont._RFont)
+        self.w.multiLineView.setFont(self.RCJKI.currentFont._fullRFont)
         self.w.multiLineView.setLineHeight(200)
 
         self.sourcesList = []
