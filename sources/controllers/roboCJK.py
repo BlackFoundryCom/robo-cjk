@@ -405,6 +405,7 @@ class RoboCJKController(object):
                     else:
                         self.closeCharacterWindow()
 
+        self.openGlyphInspector()
         self.showCanvasGroups()
         self.addSubView()
         self.updateDeepComponent()
@@ -485,6 +486,28 @@ class RoboCJKController(object):
         self.atomicView.show(self.isAtomic)
         self.deepComponentView.show(self.isDeepComponent)
         self.characterGlyphView.show(self.isCharacterGlyph)
+
+    def openGlyphInspector(self):
+        glyphVariationsAxes = []
+        if self.isAtomic: 
+            for axisName, layer in self.currentGlyph._glyphVariations.items():
+                glyphVariationsAxes.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
+            self.RCJKI.glyphInspectorWindow = accordionViews.AtomicElementInspector(self.RCJKI, glyphVariationsAxes)
+        elif self.isDeepComponent:
+            if self.currentGlyph._glyphVariations:
+                glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+            self.RCJKI.glyphInspectorWindow = accordionViews.DeepComponentInspector(self.RCJKI, glyphVariationsAxes)
+
+            self.window.addGlyphEditorSubview(self.deepComponentView)
+            self.deepComponentView.setUI()
+            self.updateListInterface()
+            return
+        elif self.isCharacterGlyph:
+            self.window.addGlyphEditorSubview(self.characterGlyphView)
+            self.characterGlyphView.setUI()
+            self.updateListInterface()
+            return
+
 
     def draw(self):
         mjdt.save()
