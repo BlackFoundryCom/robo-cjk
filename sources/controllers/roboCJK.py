@@ -61,6 +61,8 @@ from tools import transformationTool
 from views import PDFProofer
 # reload(PDFProofer)
 
+from views import accordionViews
+
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
 import mojo.drawingTools as mjdt
@@ -161,6 +163,8 @@ class RoboCJKController(object):
         self.mysql_password = ""
         self.bf_log = bf_log
 
+        self.glyphInspectorWindow = None
+
         self.updateDeepComponentQueue = queue.Queue()
 
     def connect2mysql(self):
@@ -230,6 +234,7 @@ class RoboCJKController(object):
             removeObserver(self, "glyphWindowWillClose")
             removeObserver(self, "draw")
             removeObserver(self, "drawPreview")
+            removeObserver(self, "drawInactive")
             removeObserver(self, "currentGlyphChanged")
             removeObserver(self, "mouseDown")
             removeObserver(self, "mouseUp")
@@ -242,6 +247,7 @@ class RoboCJKController(object):
             addObserver(self, "glyphWindowWillClose", "glyphWindowWillClose")
             addObserver(self, "observerDraw", "draw")
             addObserver(self, "observerDrawPreview", "drawPreview")
+            addObserver(self, "observerDraw", "drawInactive")
             addObserver(self, "currentGlyphChanged", "currentGlyphChanged")
             addObserver(self, "mouseDown", "mouseDown")
             addObserver(self, "mouseUp", "mouseUp")
@@ -303,7 +309,9 @@ class RoboCJKController(object):
         # self.closeimportDCFromCG()
         self.closeComponentWindow()
         self.closeCharacterWindow()
-
+        if self.glyphInspectorWindow is not None:
+            self.glyphInspectorWindow.w.close()
+            self.glyphInspectorWindow = None
         try:
         # if CurrentGlyphWindow() is not None:
             posSize = CurrentGlyphWindow().window().getPosSize()
@@ -489,24 +497,29 @@ class RoboCJKController(object):
 
     def openGlyphInspector(self):
         glyphVariationsAxes = []
+        if self.glyphInspectorWindow is not None:
+            return
         if self.isAtomic: 
             for axisName, layer in self.currentGlyph._glyphVariations.items():
                 glyphVariationsAxes.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
-            self.RCJKI.glyphInspectorWindow = accordionViews.AtomicElementInspector(self.RCJKI, glyphVariationsAxes)
+            self.glyphInspectorWindow = accordionViews.AtomicElementInspector(self, glyphVariationsAxes)
         elif self.isDeepComponent:
             if self.currentGlyph._glyphVariations:
                 glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
-            self.RCJKI.glyphInspectorWindow = accordionViews.DeepComponentInspector(self.RCJKI, glyphVariationsAxes)
+            self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)
 
-            self.window.addGlyphEditorSubview(self.deepComponentView)
-            self.deepComponentView.setUI()
-            self.updateListInterface()
-            return
+            # self.window.addGlyphEditorSubview(self.deepComponentView)
+            # self.deepComponentView.setUI()
+            # self.updateListInterface()
+            # return
         elif self.isCharacterGlyph:
-            self.window.addGlyphEditorSubview(self.characterGlyphView)
-            self.characterGlyphView.setUI()
-            self.updateListInterface()
-            return
+            if self.currentGlyph._glyphVariations:
+                glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+            self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
+            # self.window.addGlyphEditorSubview(self.characterGlyphView)
+            # self.characterGlyphView.setUI()
+            # self.updateListInterface()
+            # return
 
 
     def draw(self):

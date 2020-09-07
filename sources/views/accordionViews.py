@@ -307,7 +307,7 @@ class PropertiesGroup(Group):
 
 class CharacterGlyphInspector:
 
-    def __init__(self, RCJKI, glyphVariationsAxes, deepComponentAxes):
+    def __init__(self, RCJKI, glyphVariationsAxes = [], deepComponentAxes = []):
         self.RCJKI = RCJKI
         self.glyphVariationsAxes = glyphVariationsAxes
         self.deepComponentAxes = deepComponentAxes
@@ -333,7 +333,7 @@ class CharacterGlyphInspector:
         
 class DeepComponentInspector:
 
-    def __init__(self, RCJKI, glyphVariationsAxes, atomicElementAxes):
+    def __init__(self, RCJKI, glyphVariationsAxes = [], atomicElementAxes = []):
         self.RCJKI = RCJKI
         self.w = Window((300, 870), "Deep Component", minSize = (100, 200))
         
@@ -356,7 +356,7 @@ class DeepComponentInspector:
         
 class AtomicElementInspector:
 
-    def __init__(self, RCJKI, glyphVariationsAxes):
+    def __init__(self, RCJKI, glyphVariationsAxes = []):
         self.RCJKI = RCJKI
         self.w = Window((300, 600), "Atomic element", minSize = (100, 200))
         
@@ -373,6 +373,6 @@ class AtomicElementInspector:
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
         self.w.open()
 
-CharacterGlyphInspector("RCJKI", glyphVariationsAxes = [], deepComponentAxes = [])
-DeepComponentInspector("RCJKI", glyphVariationsAxes = [], atomicElementAxes = [])
-AtomicElementInspector("RCJKI", glyphVariationsAxes = [])
+# CharacterGlyphInspector("RCJKI", glyphVariationsAxes = [], deepComponentAxes = [])
+# DeepComponentInspector("RCJKI", glyphVariationsAxes = [], atomicElementAxes = [])
+# AtomicElementInspector("RCJKI", glyphVariationsAxes = [])
