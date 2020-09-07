@@ -23,7 +23,9 @@ from mojo.canvas import Canvas
 import mojo.drawingTools as mjdt
 from AppKit import NSColor
 from utils import decorators
+
 lockedProtect = decorators.lockedProtect
+refresh = decorators.refresh
 
 class CompositionRulesGroup(Group):
     
@@ -133,27 +135,27 @@ class PreviewGroup(Group):
         self.RCJKI = RCJKI
         
         self.canvas = Canvas((0, 0, -0, -25), delegate = self)
-        self.roundToGrid = 0
         self.roundToGridCheckBox = CheckBox(
             (5, -20, 120, 20), 
             "Round to grid", 
-            value = self.roundToGrid, 
+            value = self.RCJKI.roundToGrid, 
             sizeStyle = "small",
             callback = self.roundToGridCheckBoxCallback
             )
-        self.drawOnlyDeepolation = 0
         self.drawOnlyDeepolationCheckBox = CheckBox(
             (125, -20, 140, 20), 
             "Draw only deepolation", 
-            value = self.drawOnlyDeepolation, 
+            value = self.RCJKI.drawOnlyDeepolation, 
             sizeStyle = "small",
             callback = self.drawOnlyDeepolationCheckBoxCallback)
         
     def roundToGridCheckBoxCallback(self, sender):
-        pass
-        
+        self.RCJKI.roundToGrid = sender.get()
+        self.RCJKI.updateDeepComponent(update = False)
+    
+    @refresh    
     def drawOnlyDeepolationCheckBoxCallback(self, sender):
-        pass
+        self.RCJKI.drawOnlyDeepolation = sender.get()
         
     def draw(self):
         mjdt.save()
@@ -185,9 +187,10 @@ class PreviewGroup(Group):
         
 class GlyphVariationAxesGroup(Group):
     
-    def __init__(self, posSize, RCJKI, glyphtype, glyphVariationsAxes):
+    def __init__(self, posSize, RCJKI, controller, glyphtype, glyphVariationsAxes):
         super().__init__(posSize)
         self.RCJKI = RCJKI
+        self.controller = controller
         self.glyphVariationsAxes = glyphVariationsAxes
         
         slider = SliderListCell(minValue = 0, maxValue = 1)
@@ -199,6 +202,7 @@ class GlyphVariationAxesGroup(Group):
         if glyphtype in ["deepComponent", "atomicElement"]:
             y = -40
         
+        self.selectedSourceAxis = None
         self.glyphVariationAxesList = List(
             (0, 25, -0, y), 
             self.glyphVariationsAxes, 
@@ -240,19 +244,98 @@ class GlyphVariationAxesGroup(Group):
         
     @lockedProtect
     def sliderValueEditTextCallback(self, sender):
-        pass
+        sel = self.glyphVariationAxesList.getSelection()
+        if not sel:
+            sender.set("")
+            return
+        value = sender.get()
+        try: 
+            value = float(value.replace(",", "."))
+        except:
+            return
+        newList = []
+        for i, e in enumerate(self.glyphVariationAxesList.get()):
+            if i != sel[0]:
+                newList.append(e)
+            else:
+                minValue = float(e["MinValue"])
+                maxValue = float(e["MaxValue"])
+                newList.append({
+                    "Axis":e["Axis"],
+                    "MinValue":e["MinValue"],
+                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
+                    "MaxValue":e["MaxValue"],
+                    })
+            self.glyphVariationAxesList.set(newList)
+
+        self.RCJKI.currentGlyph.sourcesList = self.glyphVariationAxesList.get()
+        self.RCJKI.updateDeepComponent(update = False)
+        self.glyphVariationAxesList.setSelection(sel)
         
     @lockedProtect
     def glyphVariationAxesListSelectionCallback(self, sender):
-        pass
+        sel = sender.getSelection()
+        if not sel:
+            self.selectedSourceAxis = None
+            self.sliderValueEditText.set('')
+        else:
+            self.selectedSourceAxis = sender.get()[sel[0]]["Axis"]
+            self.sliderValueEditText.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+        self.RCJKI.updateDeepComponent(update = False)
         
     @lockedProtect
     def glyphVariationAxesListEditCallback(self, sender):
-        pass
+        sel = sender.getSelection()
+        if not sel: 
+            return
+        edited = sender.getEditedColumnAndRow()
+        values = sender.get()[sel[0]]
+        axis = values["Axis"]
+        minValue = float(values["MinValue"])
+        maxValue = float(values["MaxValue"])
+        sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
+
+        if edited[0] == 0:
+            name =  sender.get()[edited[1]]['Axis']
+            if len([x for x in sender.get() if x['Axis'] == name]) > 1:
+                i = 0
+                while True:
+                    name = sender.get()[edited[1]]['Axis'] + "_" + str(i).zfill(2)
+                    if name not in [x["Axis"] for x in sender.get()]:
+                        print(name)
+                        break
+                    i += 1
+
+            if name != self.selectedSourceAxis:
+                if self.RCJKI.currentGlyph.type != 'characterGlyph':
+                    
+                    self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
+                    self.RCJKI.currentGlyph.selectedSourceAxis = name
+            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
+            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+            sender.set(l)
+            sender.setSelection(sel)
+        elif edited[0] in [1, 3]:
+            self.RCJKI.currentGlyph._glyphVariations[axis].minValue = minValue
+            self.RCJKI.currentGlyph._glyphVariations[axis].maxValue = maxValue
+        self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
+
+        self.RCJKI.currentGlyph.sourcesList = sender.get()
+        self.RCJKI.updateDeepComponent(update = False)
         
     @lockedProtect
     def glyphVariationAxesListDoubleClickCallback(self, sender):
-        pass
+        if not sender.getSelection(): 
+            self.RCJKI.currentGlyph.selectedSourceAxis = None
+        else:
+            isel = sender.getSelection()[0]
+            self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['Axis']
+
+        self.RCJKI.currentGlyph.selectedElement = []
+        self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+        self.RCJKI.sliderValue = None
+        self.RCJKI.sliderName = None
+        self.RCJKI.updateDeepComponent(update = False)
         
     @lockedProtect
     def addGlyphVariationButtonCallback(self, sender):
@@ -388,14 +471,14 @@ class CharacterGlyphInspector(Inspector):
         
         self.compositionRulesItem = CompositionRulesGroup((0, 0, -0, -0), self.RCJKI)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
-        self.fontVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, "characterGlyph", glyphVariationsAxes)
+        self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, deepComponentAxes)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Composition Rules", view=self.compositionRulesItem, size=100, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
-                       dict(label="Font variation axes", view=self.fontVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]
@@ -415,15 +498,15 @@ class DeepComponentInspector(Inspector):
         
         self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -0, -0), self.RCJKI)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
-        self.deepComponentAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, "deepComponent", glyphVariationsAxes)
-        self.atomicElementAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
+        self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
+        self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Related glyphs", view=self.relatedGlyphsItem, size=100, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
-                       dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
-                       dict(label="Atomic element axes", view=self.atomicElementAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
+                       dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
+                       dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]
 
@@ -441,12 +524,12 @@ class AtomicElementInspector(Inspector):
         self.type = "atomicElement"
         
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
-        self.atomicElementAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, "atomicElement", glyphVariationsAxes)
+        self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "atomicElement", glyphVariationsAxes)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
-                       dict(label="Atomic element axes", view=self.atomicElementAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
+                       dict(label="Atomic element axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]
 
