@@ -73,8 +73,8 @@ import copy
 
 # import mySQLCollabEngine
 
-from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
-from rcjk2mysql import BF_rcjk2mysql
+# from rcjk2mysql import BF_engine_mysql as BF_engine_mysql
+# from rcjk2mysql import BF_rcjk2mysql
 from rcjk2mysql import BF_init as BF_init
 
 import shutil
@@ -84,13 +84,13 @@ import shutil
 # curpath = mySQLCollabEngine.__path__._path[0]
 # bf_log = BF_init.init_log('/Users/gaetanbaehr/Desktop/test')
 import sys
-print(os.path.join(os.getcwd(), 'rcjk2mysql'))
-print('sys path', sys.path)
+# print(os.path.join(os.getcwd(), 'rcjk2mysql'))
+# print('sys path', sys.path)
 bf_log = BF_init.init_log(os.path.join(os.getcwd(), 'rcjk2mysql'))
-try:
-    dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
-except:
-    pass
+# try:
+#     dict_persist_params, _  = BF_init.init_params(bf_log, None, BF_init._REMOTE, None)
+# except:
+#     pass
 
 from utils import decorators
 # reload(decorators)
@@ -124,6 +124,7 @@ class RoboCJKController(object):
         self.privateLocker = True
         self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition, (0, 180, 1000, 600))
         self.drawOnlyDeepolation = False
+        self.textCenterWindows = []
         # self.teamManager = teamManager.TeamManagerController(self)
         # installTool(self.transformationTool)
 
@@ -262,14 +263,10 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = False):
-        q = queue.Queue()
-        threading.Thread(target=self.computeDeepComponentsPreview, args = (q,), daemon=True).start()
-        q.put(update)
+        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
         if self.isAtomic: return
-        q = queue.Queue()
-        threading.Thread(target=self.computeDeepComponents, args = (q,), daemon=True).start()
-        q.put(self.currentGlyph.selectedSourceAxis)
-        # self.currentGlyph.preview.computeDeepComponents(axis = self.currentGlyph.selectedSourceAxis, update = False)
+        axis = self.currentGlyph.selectedSourceAxis
+        self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
 
     def computeDeepComponentsPreview(self, q):
         update = q.get()
@@ -329,7 +326,7 @@ class RoboCJKController(object):
         if not self.mysql:
             # print(self.currentGlyph.name,self.currentGlyph.markColor)
             self.currentFont.save()
-            # self.currentFont.getGlyph(self.currentGlyph, font = [self.currentFont._fullRFont])
+            # self.currentFont.getGlyph(self.currentGlyph, font = self.currentFont._fullRFont)
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
         else:

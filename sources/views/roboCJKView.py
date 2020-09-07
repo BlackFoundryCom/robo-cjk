@@ -47,8 +47,8 @@ from views import textCenter
 
 import os, json, copy
 
-import BF_fontbook_struct as bfs
-import BF_rcjk2mysql
+# import BF_fontbook_struct as bfs
+# import BF_rcjk2mysql
 
 gitCoverage = decorators.gitCoverage
 
@@ -122,14 +122,12 @@ class EditingSheet():
 
 
 def getRelatedGlyphs(font, glyphName, regenerated = []):
-    if glyphName not in regenerated:
-        type = font.get(glyphName).type
-        q = queue.Queue()
-        threading.Thread(target=font.queueGetGlyphs, args = (q, type), daemon=True).start()
-        q.put([glyphName])
-        # font.getGlyph(font[glyphName])
-        regenerated.append(glyphName)
     g = font.get(glyphName)
+    if glyphName not in regenerated:
+        q = queue.Queue()
+        threading.Thread(target=font.queueGetGlyphs, args = (q, g.type), daemon=True).start()
+        q.put([glyphName])
+        regenerated.append(glyphName)
     if not hasattr(g, "_deepComponents"): return
     for dc in g._deepComponents:
         getRelatedGlyphs(font, dc.name, regenerated)
@@ -149,7 +147,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
             # font.getGlyphs()
             getRelatedGlyphs(font, glyphName)
             # font.getGlyph(font[glyphName])
-            g = font.get(glyphName, font._RFont)._RGlyph
+            # g = font.get(glyphName, font._RFont)._RGlyph
     else:
         if not locked: return
     if not g.width:
@@ -157,12 +155,22 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     try:
         CurrentGlyphWindow().close()
     except: pass
-    font.get(glyphName, font._RFont).update()
-    g = font.get(glyphName, font._RFont)._RGlyph
+    # font.get(glyphName, font._RFont).update()
+    glyph = font.get(glyphName, font._RFont)
+    glyph.update()
+    g = glyph._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
-    if font.get(glyphName, font._RFont).type != "atomicElement":
+    if glyph.type != "atomicElement":
         RCJKI.currentView.setglyphState()
+    
+
+    # glyph.save()
+    # font[glyphName]
+    # # glyphType = glyph.type
+    # # rglyph = glyph._RGlyph
+    # g.lib.update(glyph.lib)
+    # # font.getGlyph(glyph.name)
 
 class CharacterWindow:
 
@@ -414,7 +422,7 @@ class ComponentWindow():
         self.RCJKI = RCJKI
         self.glyph = None
         self.w = FloatingWindow(
-            (0, 0, 280, 80),
+            (0, 0, 240, 80),
             "Composition Rules",
             closable = False,
             textured = True,
@@ -442,17 +450,10 @@ class ComponentWindow():
             selectionCallback = self.variantComponentListCallback,
             doubleClickCallback = self.variantComponentListdoubleClickCallback
             )
-        self.w.existingComponentInstancesList = List(
-            (240, 0, 40, -0), 
-            [],
-            selectionCallback = self.existingComponentInstancesListCallback,
-            # doubleClickCallback = self.existingComponentInstancesListdoubleClickCallback
-            )
         self.w.canvas2 = CanvasGroup(
-            (160, 0, 80, -0), 
+            (160, 0, -0, -0), 
             delegate = self
             )
-        self.RCJKI.drawer.instanceGlyph = None
 
     def open(self):
         self.w.open()
@@ -503,15 +504,15 @@ class ComponentWindow():
         char = sender.get()[sel[0]]
         self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())
         dcName = "DC_%s_00"%self.code
-        if dcName not in self.RCJKI.currentFont.staticDeepComponentSet(): 
+        if dcName not in self.RCJKI.currentFont.deepComponentSet: 
             self.w.variantComponentList.set([])
             return
-        # index = self.RCJKI.currentFont.staticDeepComponentSet().index(dcName)
+        index = self.RCJKI.currentFont.deepComponentSet.index(dcName)
         l = ["00"]
         i = 1
         while True:
             name = "DC_%s_%s"%(self.code, str(i).zfill(2))
-            if not name in self.RCJKI.currentFont.staticDeepComponentSet():
+            if not name in self.RCJKI.currentFont.deepComponentSet:
                 break
             l.append(str(i).zfill(2))
             i += 1
@@ -522,20 +523,7 @@ class ComponentWindow():
         if not sel: return
         index = sender.get()[sel[0]]
         self.deepComponentName = "DC_%s_%s"%(self.code, index)
-        self.glyph = self.RCJKI.currentFont.get(self.deepComponentName)
-        dcs = set()
-        # variants = defaultdict(int)
-        for n in self.RCJKI.currentFont.staticCharacterGlyphSet():
-            g = self.RCJKI.currentFont.get(n)
-            for x in g._deepComponents:
-                # l += 1
-                if self.deepComponentName == x.name:
-                    dcs.add(x)
-        dcs = list(dcs)
-        self.dcidict = {i:dcs[i] for i in range(len(dcs))}
-        #             variants[x] += 1
-        # print(dcidict)
-        self.w.existingComponentInstancesList.set(list(self.dcidict.keys()))
+        self.glyph = self.RCJKI.currentFont[self.deepComponentName]
         self.glyph.preview.computeDeepComponents(update = False)
         self.w.canvas2.update()
 
@@ -543,15 +531,6 @@ class ComponentWindow():
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
         self.RCJKI.updateDeepComponent(update = False)
 
-    def existingComponentInstancesListCallback(self, sender):
-        sel = sender.getSelection()
-        if not sel:
-            self.RCJKI.drawer.instanceGlyph = None
-            return
-        instance = self.dcidict[sel[0]]
-        self.RCJKI.drawer.instanceGlyph = self.RCJKI.currentFont.createTempGlyph()
-        self.RCJKI.drawer.instanceGlyph.addDeepComponentNamed(self.deepComponentName, instance)
-        UpdateCurrentGlyphView()
 
 class RoboCJKView(BaseWindowController):
     
@@ -885,7 +864,7 @@ class RoboCJKView(BaseWindowController):
             self.filterCharacterGlyphCallback(None)
 
     def filterAtomicElementCallback(self, sender):
-        aeList = self.currentFont.atomicElementSet
+        aeList = self.currentFont.staticAtomicElementSet()
         filteredList = self.filterGlyphs(
             "atomicElement",
             self.w.firstFilterAtomicElement.getItem(),
@@ -1449,19 +1428,20 @@ class RoboCJKView(BaseWindowController):
         if not sel: return False
         glyphName = UIList[sel[0]]
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
-        user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[glyphName])
+        glyph = self.currentFont[glyphName]
+        user = self.RCJKI.currentFont.glyphLockedBy(glyph)
         # if user != self.RCJKI.currentFont.locker._username:
         if user != self.RCJKI.currentFont.lockerUserName:
             PostBannerNotification(
                 'Impossible', "You must lock the glyph before"
                 )
             return False
-        glyphType = self.RCJKI.currentFont[glyphName].type
+        glyphType = glyph.type
         GlyphsthatUse = set()
         if not self.RCJKI.currentFont.mysqlFont:
             if glyphType != 'characterGlyph':
                 for name in glyphset:
-                    glyph = self.RCJKI.currentFont[name]
+                    glyph = self.RCJKI.currentFont.get(name)
                     if glyphType == 'atomicElement':
                         d =  glyph._deepComponents
                     elif glyphType == 'deepComponent':
@@ -1525,7 +1505,7 @@ class RoboCJKView(BaseWindowController):
         if not sel: return
         glyphName = self.w.characterGlyph[sel[0]]["name"]
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
-        user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont.get(glyphName))
+        user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[glyphName])
         # if user != self.RCJKI.currentFont.locker._username:
         if user != self.RCJKI.currentFont.lockerUserName:
             PostBannerNotification(
@@ -1535,7 +1515,7 @@ class RoboCJKView(BaseWindowController):
         glyphType = self.RCJKI.currentFont[glyphName].type
         GlyphsthatUse = set()
         for name in self.RCJKI.currentFont.characterGlyphSet:
-            glyph = self.RCJKI.currentFont.get(name)
+            glyph = self.RCJKI.currentFont[name]
             for compo in glyph.components:
                 if glyphName == compo.baseGlyph :
                     GlyphsthatUse.add(name)

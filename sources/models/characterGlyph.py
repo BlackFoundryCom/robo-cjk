@@ -132,6 +132,11 @@ class CharacterGlyph(Glyph):
         self.preview.computeDeepComponentsPreview(update = False)
         self.preview.computeDeepComponents(update = False)
 
+        # font = self.getParent()
+        # glyph = font[self.name]
+        # font.writeGlif(glyph)
+
+
     def addCharacterGlyphNamedVariationToGlyph(self, name):
         if name in self._glyphVariations.axes: return
         self._glyphVariations.addAxis(name, self._deepComponents)

@@ -190,17 +190,18 @@ def interpol_glyph_glyph_ratioX_ratioY_scaleX_scaleY(g1, g2, ratio_x, ratio_y, s
     g.unicode = g1.unicode
     g.width = (g1.width + ((g2.width - g1.width) * ratio_x)) * scale_x
     
-    for c1, c, c2 in zip(g1, g, g2):
-        box1x = ((c1.box[0] + ((c1.box[2] - c1.box[0])) ))
-        box1y = ((c1.box[1] + ((c1.box[3] - c1.box[1])) ))
-        boxx = (c.box[0] + ((c.box[2] - c.box[0])))
-        boxy = (c.box[1] + ((c.box[3] - c.box[1])))
-        box2x = ((c2.box[0] + ((c2.box[2] - c2.box[0])) ))
-        box2y = ((c2.box[1] + ((c2.box[3] - c2.box[1])) ))
-        middlex = (box1x+(box2x-box1x)* ratio_x)*scale_x
-        middley = (box1y+(box2y-box1y)* ratio_y)*scale_y
-        if not middlex-1 < boxx < middlex+1 or not middley-1 < boxy < middley+1:
-            return 0
+    # for c1, c, c2 in zip(g1, g, g2):
+    #     box1x = ((c1.box[0] + ((c1.box[2] - c1.box[0])) ))
+    #     box1y = ((c1.box[1] + ((c1.box[3] - c1.box[1])) ))
+    #     boxx = (c.box[0] + ((c.box[2] - c.box[0])))
+    #     boxy = (c.box[1] + ((c.box[3] - c.box[1])))
+    #     box2x = ((c2.box[0] + ((c2.box[2] - c2.box[0])) ))
+    #     box2y = ((c2.box[1] + ((c2.box[3] - c2.box[1])) ))
+    #     middlex = (box1x+(box2x-box1x)* ratio_x)*scale_x
+    #     middley = (box1y+(box2y-box1y)* ratio_y)*scale_y
+    #     if not middlex-1 < boxx < middlex+1 or not middley-1 < boxy < middley+1:
+    #         print('fail 4')
+    #         return 0
 
     if not len(g1.components) == len(g2.components):
         return g

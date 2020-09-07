@@ -120,7 +120,7 @@ class Preview:
 
     def _generateOutlinesPreview(self, sourceList:list = [], filtered:list = [], update:bool = True):
         layersInfos = {}
-
+        if not len(self.glyph.foreground): return
         if not sourceList:
             sourceList = self.glyph.sourcesList
 
@@ -131,7 +131,7 @@ class Preview:
                 layersInfos[layer] = value
             else:
                 if axis['Axis'] in filtered:
-                    if len(self.glyph._RGlyph.getLayer(axis['Axis'])):
+                    if len(self.glyph._RGlyph.getLayer(axis['Axis'])) == len(self.glyph.foreground):
                         layersInfos[axis['Axis']] = value
 
         return interpolation.deepolation(
