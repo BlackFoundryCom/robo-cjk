@@ -19,20 +19,87 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 
 from mojo.UI import AccordionView
 from vanilla import *
-from mojo.canvas import Canvas
+from mojo.canvas import Canvas, CanvasGroup
 import mojo.drawingTools as mjdt
-from AppKit import NSColor
-from utils import decorators
+from AppKit import NSColor, NSFont
+from utils import decorators, files
+import os
 
 lockedProtect = decorators.lockedProtect
 refresh = decorators.refresh
+EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
+
+class SmartTextBox(TextBox):
+    def __init__(self, posSize, text="", alignment="natural", 
+        selectable=False, callback=None, sizeStyle=40.0,
+        red=0,green=0,blue=0, alpha=1.0):
+        super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, 
+            selectable=selectable, sizeStyle=sizeStyle)
+        
+    def _setSizeStyle(self, sizeStyle):
+        value = sizeStyle
+        self._nsObject.cell().setControlSize_(value)
+        font = NSFont.systemFontOfSize_(value)
+        self._nsObject.setFont_(font)
+
+class EditingSheet():
+
+    def __init__(self, controller, RCJKI):
+        self.RCJKI = RCJKI
+        self.c = controller
+        self.w = Sheet((240, 80), self.c.controller.w)
+        self.char =  self.c.w.char.get()
+        self.w.char = SmartTextBox(
+            (0, 0, 80, -0),
+            self.char,
+            sizeStyle = 65,
+            alignment = "center"
+            )
+        self.w.editField = TextEditor(
+            (80, 0, -0, -20),
+            ""
+            )
+        self.w.closeButton = Button(
+            (80, -20, -0, -0),
+            "Close",
+            sizeStyle = "small",
+            callback = self.closeCallback
+            )
+
+        self.setUI()
+        self.w.open()
+
+    def setUI(self):
+        unicode = str(hex(self.RCJKI.currentGlyph.unicode)[2:])
+        self.w.editField.set(self.RCJKI.currentFont.selectDatabaseKey(unicode))
+
+    def closeCallback(self, sender):
+        components = list(self.w.editField.get())
+        self.RCJKI.currentFont.updateDatabaseKey(str(hex(self.RCJKI.currentGlyph.unicode)[2:]), components)
+        if not self.RCJKI.currentFont.mysqlFont:
+            self.RCJKI.exportDataBase()
+        self.c.componentsList.set(components)
+        self.w.close()
 
 class CompositionRulesGroup(Group):
     
-    def __init__(self, posSize, RCJKI):
+    def __init__(self, posSize, RCJKI, controller):
         super().__init__(posSize)
         self.RCJKI = RCJKI
-        
+        self.controller = controller
+        self.glyph = None
+        self.char = SmartTextBox(
+            (0, 0, 80, -0),
+            "",
+            sizeStyle = 65,
+            alignment = "center"
+            )
+        self.editButton = ImageButton(
+            (0, -15, 15, -0),
+            EditButtonImagePath,
+            bordered = False,
+            callback = self.editButtonCallback
+            )
         self.componentsList = List(
             (80, 0, 40, -0), [], 
             drawFocusRing = False,
@@ -40,32 +107,89 @@ class CompositionRulesGroup(Group):
         self.variantList = List(
             (120, 0, 40, -0), [], 
             drawFocusRing = False,
-            selectionCallback = self.variantListSelectionCallback)
-        self.canvas = Canvas((160, 0, -40, -0), delegate = self)
+            selectionCallback = self.variantListSelectionCallback,
+            doubleClickCallback = self.variantListDoubleClickCallback)
+        self.canvas = CanvasGroup((160, 0, -40, -0), delegate = self)
         self.existingInstancesList = List(
             (-40, 0, 40, -0), [], 
             drawFocusRing = False,
             selectionCallback = self.existingInstancesListSelectionCallback
             )
+        self.setUI()
+
+    def setUI(self):
+        if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni'):
+            try:
+                self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
+            except:
+                print('this glyph has no Unicode')
+                return
+        char = chr(self.RCJKI.currentGlyph.unicode)
+        d = self.RCJKI.currentFont.dataBase.get(char, [])
+        if d is None:
+            d = []
+        self.componentsList.set(d)
+        self.char.set(char)
+
+    def editButtonCallback(self, sender):
+        EditingSheet(self, self.RCJKI)
         
     def draw(self):
-        pass
+        if self.glyph is None: return
+        mjdt.save()
+        mjdt.translate(20, 25)
+        mjdt.scale(.04)
+        mjdt.fill(0, 0, 0, 1)
+        for atomicInstance in self.glyph.preview.axisPreview:
+            mjdt.drawGlyph(atomicInstance.getTransformedGlyph()) 
+        mjdt.restore()
 
     def componentsListSelectionCallback(self, sender):
-        pass
+        sel = sender.getSelection()
+        if not sel: 
+            self.variantList.set([])
+            return
+        char = sender.get()[sel[0]]
+        self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())
+        dcName = "DC_%s_00"%self.code
+        deepComponentSet = self.RCJKI.currentFont.deepComponentSet
+        if dcName not in deepComponentSet: 
+            self.variantList.set([])
+            return
+        index = deepComponentSet.index(dcName)
+        l = ["00"]
+        i = 1
+        while True:
+            name = "DC_%s_%s"%(self.code, str(i).zfill(2))
+            if not name in deepComponentSet:
+                break
+            l.append(str(i).zfill(2))
+            i += 1
+        self.variantList.set(l)
 
     def variantListSelectionCallback(self, sender):
-        pass
+        sel = sender.getSelection()
+        if not sel: return
+        index = sender.get()[sel[0]]
+        self.deepComponentName = "DC_%s_%s"%(self.code, index)
+        self.glyph = self.RCJKI.currentFont.get(self.deepComponentName)
+        self.glyph.preview.computeDeepComponents(update = False)
+        self.canvas.update()
+
+    def variantListDoubleClickCallback(self, sender):
+        self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
+        self.RCJKI.updateDeepComponent(update = False)
 
     def existingInstancesListSelectionCallback(self, sender):
         pass
         
 class RelatedGlyphsGroup(Group):
     
-    def __init__(self, posSize, RCJKI):
+    def __init__(self, posSize, RCJKI, controller):
         super().__init__(posSize)
         self.RCJKI = RCJKI
-        
+        self.controller = controller
+
         self.optionPopUpButton = PopUpButton(
             (0, 0, -0, 20), [], 
             sizeStyle = "mini",
@@ -134,7 +258,7 @@ class PreviewGroup(Group):
         super().__init__(posSize)
         self.RCJKI = RCJKI
         
-        self.canvas = Canvas((0, 0, -0, -25), delegate = self)
+        self.canvas = CanvasGroup((0, 0, -0, -25), delegate = self)
         self.roundToGridCheckBox = CheckBox(
             (5, -20, 120, 20), 
             "Round to grid", 
@@ -163,7 +287,7 @@ class PreviewGroup(Group):
         mjdt.roundedRect(0, 0, 300, [525, 425][self.RCJKI.currentGlyph.type == "atomicElement"], 10)
         scale = .15
         glyphwidth = self.RCJKI.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
-        mjdt.translate((glyphwidth*scale/2), [300, 200][self.RCJKI.currentGlyph.type == "atomicElement"])
+        # mjdt.translate((glyphwidth*scale/2), [300, 200][self.RCJKI.currentGlyph.type == "atomicElement"])
         mjdt.fill(.15)
 
         
@@ -178,9 +302,6 @@ class PreviewGroup(Group):
             drawSelectedElements = False
             )
         mjdt.restore()
-
-        mjdt.fill(1, 0, 0, 1)
-        mjdt.oval(0, 0, 100, 100)
 
     def update(self):
         self.canvas.update()
@@ -271,6 +392,7 @@ class GlyphVariationAxesGroup(Group):
         self.RCJKI.currentGlyph.sourcesList = self.glyphVariationAxesList.get()
         self.RCJKI.updateDeepComponent(update = False)
         self.glyphVariationAxesList.setSelection(sel)
+        self.controller.updatePreview()
         
     @lockedProtect
     def glyphVariationAxesListSelectionCallback(self, sender):
@@ -282,6 +404,7 @@ class GlyphVariationAxesGroup(Group):
             self.selectedSourceAxis = sender.get()[sel[0]]["Axis"]
             self.sliderValueEditText.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
         self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
         
     @lockedProtect
     def glyphVariationAxesListEditCallback(self, sender):
@@ -294,7 +417,6 @@ class GlyphVariationAxesGroup(Group):
         minValue = float(values["MinValue"])
         maxValue = float(values["MaxValue"])
         sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
-
         if edited[0] == 0:
             name =  sender.get()[edited[1]]['Axis']
             if len([x for x in sender.get() if x['Axis'] == name]) > 1:
@@ -305,7 +427,6 @@ class GlyphVariationAxesGroup(Group):
                         print(name)
                         break
                     i += 1
-
             if name != self.selectedSourceAxis:
                 if self.RCJKI.currentGlyph.type != 'characterGlyph':
                     
@@ -319,9 +440,9 @@ class GlyphVariationAxesGroup(Group):
             self.RCJKI.currentGlyph._glyphVariations[axis].minValue = minValue
             self.RCJKI.currentGlyph._glyphVariations[axis].maxValue = maxValue
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
-
         self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
         
     @lockedProtect
     def glyphVariationAxesListDoubleClickCallback(self, sender):
@@ -336,14 +457,48 @@ class GlyphVariationAxesGroup(Group):
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
         self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
         
     @lockedProtect
     def addGlyphVariationButtonCallback(self, sender):
-        pass
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            l = 0
+            name = files.normalizeCode(files.int_to_column_id(l), 4)
+            while name in self.RCJKI.currentGlyph._glyphVariations.axes:
+                l += 1
+                name = files.normalizeCode(files.int_to_column_id(l), 4)
+            self.RCJKI.currentGlyph.addVariationToGlyph(name)
+            if self.RCJKI.currentGlyph._glyphVariations:
+                source = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+            self.glyphVariationAxesList.set(source)
+            self.RCJKI.currentGlyph.sourcesList = source
+            isel = len(source)
+            self.glyphVariationAxesList.setSelection([isel-1])
+            self.selectedSourceAxis = source[isel-1]['Axis']
+            self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
+            self.RCJKI.updateDeepComponent(update = False)   
+            self.controller.updatePreview()    
+            
+        elif self.RCJKI.currentGlyph.type == "characterGlyph":
+            sheets.SelectFontVariationSheet(self.RCJKI, self)
         
     @lockedProtect
     def removeGlyphVariationButtonCallback(self, sender):
-        pass
+        if self.glyphVariationAxesList.getSelection():
+            name = self.glyphVariationAxesList.get()[self.glyphVariationAxesList.getSelection()[0]]["Axis"]
+            self.RCJKI.currentGlyph.removeVariationAxis(name)
+            self.RCJKI.currentGlyph.selectedElement = []
+            self.RCJKI.currentGlyph.selectedSourceAxis = None
+            self.glyphVariationAxesList.setSelection([0])
+            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
+            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+            self.RCJKI.currentGlyph.sourcesList = l
+            self.glyphVariationAxesList.set(l)
+            self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+            self.RCJKI.sliderValue = None
+            self.RCJKI.sliderName = None
+            self.RCJKI.updateDeepComponent(update = False)
+            self.controller.updatePreview()
         
     def editSelectedAxisExtremeValueButtonCallback(self, sender):
         pass
@@ -446,7 +601,7 @@ class PropertiesGroup(Group):
     def glyphStateCallback(self, sender):
         state = sender.get()
         self.RCJKI.currentGlyph.markColor = STATE_COLORS[state]
-        if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == self.controller.type:
+        if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
             self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
 
@@ -469,7 +624,7 @@ class CharacterGlyphInspector(Inspector):
 
         self.type = "characterGlyph"
         
-        self.compositionRulesItem = CompositionRulesGroup((0, 0, -0, -0), self.RCJKI)
+        self.compositionRulesItem = CompositionRulesGroup((0, 0, -0, -0), self.RCJKI, self)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, deepComponentAxes)
@@ -496,7 +651,7 @@ class DeepComponentInspector(Inspector):
 
         self.type = "deepComponent"
         
-        self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -0, -0), self.RCJKI)
+        self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -0, -0), self.RCJKI, self)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)

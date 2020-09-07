@@ -457,6 +457,7 @@ class RoboCJKController(object):
             return self.characterGlyphView.sourcesList
     @property 
     def currentViewSliderList(self):
+        return self.glyphInspectorWindow.deepComponentAxesItem.deepComponentAxesList
         if self.isDeepComponent:
             return self.deepComponentView.slidersList
         elif self.isCharacterGlyph:
@@ -588,10 +589,11 @@ class RoboCJKController(object):
             pass
 
     def setListWithSelectedElement(self):
-        if self.isDeepComponent:
-            element = self.deepComponentView
-        elif self.isCharacterGlyph:
-            element = self.characterGlyphView
+        element = self.currentViewSliderList
+        # if self.isDeepComponent:
+        #     element = self.deepComponentView
+        # elif self.isCharacterGlyph:
+        #     element = self.characterGlyphView
 
         if not self.currentGlyph.selectedSourceAxis:
             data = self.currentGlyph._deepComponents
@@ -603,7 +605,7 @@ class RoboCJKController(object):
             for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
                 minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
                 l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
-        element.slidersList.set(l)
+        element.deepComponentAxesList.set(l)
         self.sliderValue = None
 
     @refresh
