@@ -20,7 +20,8 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from mojo.UI import AccordionView
 from vanilla import *
 from mojo.canvas import Canvas
-
+import mojo.drawingTools as mjdt
+from AppKit import NSColor
 from utils import decorators
 lockedProtect = decorators.lockedProtect
 
@@ -155,7 +156,32 @@ class PreviewGroup(Group):
         pass
         
     def draw(self):
-        pass
+        mjdt.save()
+        mjdt.fill(1, 1, 1, .7)
+        mjdt.roundedRect(0, 0, 300, [525, 425][self.RCJKI.currentGlyph.type == "atomicElement"], 10)
+        scale = .15
+        glyphwidth = self.RCJKI.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+        mjdt.translate((glyphwidth*scale/2), [300, 200][self.RCJKI.currentGlyph.type == "atomicElement"])
+        mjdt.fill(.15)
+
+        
+        mjdt.scale(scale, scale)
+        mjdt.translate(0, abs(self.RCJKI.currentFont._RFont.info.descender))
+        self.RCJKI.drawer.drawGlyph(
+            self.RCJKI.currentGlyph,
+            scale,
+            (0, 0, 0, 1),
+            (0, 0, 0, 0),
+            (0, 0, 0, 1),
+            drawSelectedElements = False
+            )
+        mjdt.restore()
+
+        mjdt.fill(1, 0, 0, 1)
+        mjdt.oval(0, 0, 100, 100)
+
+    def update(self):
+        self.canvas.update()
         
 class GlyphVariationAxesGroup(Group):
     
@@ -284,16 +310,29 @@ class DeepComponentAxesGroup(Group):
     @lockedProtect
     def deepComponentAxesListDoubleClickCallback(self, sender):
         pass
+
+INPROGRESS = (1., 0., 0., 1.)
+CHECKING1 = (1., .5, 0., 1.)
+CHECKING2 = (1., 1., 0., 1.)
+CHECKING3 = (0., .5, 1., 1.)
+DONE = (0., 1., .5, 1.)
+STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
         
 class PropertiesGroup(Group):
     
-    def __init__(self, posSize, RCJKI):
+    def __init__(self, posSize, RCJKI, controller):
         super().__init__(posSize)
         self.RCJKI = RCJKI
-        
+        self.controller = controller
         self.glyphState = PopUpButton(
             (5, 5, -100, 20),
-            ["In Progress", "Checking round 1", "Checking round 2", "Checking round 3", "Done"],
+            [
+            "In Progress", 
+            "Checking round 1", 
+            "Checking round 2", 
+            "Checking round 3", 
+            "Done"
+            ],
             callback = self.glyphStateCallback
             )
 
@@ -302,23 +341,56 @@ class PropertiesGroup(Group):
             )
         self.glyphStateColor.getNSColorWell().setBordered_(False)
 
-    def glyphStateCallback(self, sender):
-        pass
+    def setglyphState(self):
+        color = self.RCJKI.currentGlyph.markColor
+        state = self.glyphState
+        if color is None:
+            state.set(0)
+        elif color == INPROGRESS:
+            state.set(0)
+        elif color == CHECKING1:
+            state.set(1)
+        elif color == CHECKING2:
+            state.set(2)
+        elif color == CHECKING3:
+            state.set(3)
+        elif color == DONE:
+            state.set(4)
+        else:
+            state.set(0)
+        self.glyphStateCallback(state)
 
-class CharacterGlyphInspector:
+    def glyphStateCallback(self, sender):
+        state = sender.get()
+        self.RCJKI.currentGlyph.markColor = STATE_COLORS[state]
+        if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == self.controller.type:
+            self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
+        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
+
+class Inspector:
+
+    def closeWindow(self):
+        self.w.close()
+
+    def updatePreview(self):
+        self.previewItem.update()
+
+class CharacterGlyphInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = [], deepComponentAxes = []):
         self.RCJKI = RCJKI
         self.glyphVariationsAxes = glyphVariationsAxes
         self.deepComponentAxes = deepComponentAxes
         
-        self.w = Window((300, 850), "Character glyph", minSize = (100, 200))
+        self.w = Window((300, 850), "Character glyph", minSize = (100, 200), closable = False)
+
+        self.type = "characterGlyph"
         
         self.compositionRulesItem = CompositionRulesGroup((0, 0, -0, -0), self.RCJKI)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
         self.fontVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, "characterGlyph", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, deepComponentAxes)
-        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI)
+        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Composition Rules", view=self.compositionRulesItem, size=100, collapsed=False, canResize=True),
@@ -329,19 +401,23 @@ class CharacterGlyphInspector:
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
+        self.previewItem.update()
+        self.propertiesItem.setglyphState()
         self.w.open()
         
-class DeepComponentInspector:
+class DeepComponentInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = [], atomicElementAxes = []):
         self.RCJKI = RCJKI
-        self.w = Window((300, 870), "Deep Component", minSize = (100, 200))
+        self.w = Window((300, 870), "Deep Component", minSize = (100, 200), closable = False)
+
+        self.type = "deepComponent"
         
         self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -0, -0), self.RCJKI)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
         self.deepComponentAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, "deepComponent", glyphVariationsAxes)
         self.atomicElementAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
-        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI)
+        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Related glyphs", view=self.relatedGlyphsItem, size=100, collapsed=False, canResize=True),
@@ -352,17 +428,21 @@ class DeepComponentInspector:
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
+        self.previewItem.update()
+        self.propertiesItem.setglyphState()
         self.w.open()
         
-class AtomicElementInspector:
+class AtomicElementInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = []):
         self.RCJKI = RCJKI
-        self.w = Window((300, 600), "Atomic element", minSize = (100, 200))
+        self.w = Window((300, 600), "Atomic element", minSize = (100, 200), closable = False)
+
+        self.type = "atomicElement"
         
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
         self.atomicElementAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, "atomicElement", glyphVariationsAxes)
-        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI)
+        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
@@ -371,6 +451,8 @@ class AtomicElementInspector:
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
+        self.previewItem.update()
+        self.propertiesItem.setglyphState()
         self.w.open()
 
 # CharacterGlyphInspector("RCJKI", glyphVariationsAxes = [], deepComponentAxes = [])

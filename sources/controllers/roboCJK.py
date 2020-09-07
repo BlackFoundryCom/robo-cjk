@@ -310,7 +310,7 @@ class RoboCJKController(object):
         self.closeComponentWindow()
         self.closeCharacterWindow()
         if self.glyphInspectorWindow is not None:
-            self.glyphInspectorWindow.w.close()
+            self.glyphInspectorWindow.closeWindow()
             self.glyphInspectorWindow = None
         try:
         # if CurrentGlyphWindow() is not None:
@@ -418,6 +418,8 @@ class RoboCJKController(object):
         self.addSubView()
         self.updateDeepComponent()
 
+        self.glyphInspectorWindow.updatePreview()
+
     def exportDataBase(self):
         self.currentFont.exportDataBase()
         # if not self.currentFont.mysqlFont:
@@ -507,20 +509,10 @@ class RoboCJKController(object):
             if self.currentGlyph._glyphVariations:
                 glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
             self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)
-
-            # self.window.addGlyphEditorSubview(self.deepComponentView)
-            # self.deepComponentView.setUI()
-            # self.updateListInterface()
-            # return
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
                 glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
             self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
-            # self.window.addGlyphEditorSubview(self.characterGlyphView)
-            # self.characterGlyphView.setUI()
-            # self.updateListInterface()
-            # return
-
 
     def draw(self):
         mjdt.save()

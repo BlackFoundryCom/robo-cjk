@@ -107,7 +107,9 @@ class DeepComponent(DictClass):
             x: int = 0, 
             y: int = 0,
             rcenterx: int = 0,
-            rcentery: int = 0):
+            rcentery: int = 0,
+            axisMinValue: float = 0.,
+            axisMaxValue: float = 1.):
         super().__init__()
         self.coord = Coord(**dict(coord))
         self.rotation = rotation
@@ -117,6 +119,8 @@ class DeepComponent(DictClass):
         self.y = y
         self.rcenterx = rcenterx
         self.rcentery = rcentery
+        self.axisMinValue = axisMinValue
+        self.axisMaxValue = axisMaxValue
 
     def set(self, items: dict):
         """
