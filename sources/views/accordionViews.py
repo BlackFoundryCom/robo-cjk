@@ -242,7 +242,7 @@ class CompositionRulesGroup(Group):
             if variation in self.deepComponentVariationSettings:
                 dc = copy.deepcopy(self.deepComponentVariationSettings[variation])
                 self.RCJKI.currentGlyph._glyphVariations[variation][-1].set(dc._toDict())
-                
+
         self.deselectButtonCallback(None)
 
     @refresh
@@ -490,6 +490,7 @@ class GlyphVariationAxesGroup(Group):
                 "Set location to 1", 
                 sizeStyle = "small",
                 callback = self.setLocationTo1ButtonCallback)
+            self.setLocationTo1Button.show(False)
         
     @lockedProtect
     def sliderValueEditTextCallback(self, sender):
@@ -629,10 +630,15 @@ class GlyphVariationAxesGroup(Group):
             self.controller.updatePreview()
         
     def editSelectedAxisExtremeValueButtonCallback(self, sender):
-        pass
+        sel = self.glyphVariationAxesList.getSelection()
+        if not sel:
+            return
+        f = self.RCJKI.currentFont
+        f._RFont.newLayer("backup_axis")
+        self.setLocationTo1Button.show(True)
         
     def setLocationTo1ButtonCallback(self, sender):
-        pass
+        self.setLocationTo1Button.show(False)
         
 class DeepComponentAxesGroup(Group):
     
