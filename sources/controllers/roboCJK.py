@@ -373,21 +373,24 @@ class RoboCJKController(object):
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
         if glyph is None: return
+        changed = False
         if glyph.name != self.currentGlyph.name:
             # self.currentFont.locker.unlock(self.currentGlyph)
+            changed = True
             self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
-        if self.currentGlyph.type == "atomicElement":
-            self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
-                ]
-        else:
-            self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
-                ]
-        self.currentViewSourceList.set(self.currentGlyph.sourcesList)
-        self.currentViewSourceValue.set("")
+        if changed:
+            if self.currentGlyph.type == "atomicElement":
+                self.currentGlyph.sourcesList = [
+                    {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
+                    ]
+            else:
+                self.currentGlyph.sourcesList = [
+                    {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
+                    ]
+            self.currentViewSourceList.set(self.currentGlyph.sourcesList)
+            self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
             self.closeComponentWindow()
@@ -414,8 +417,8 @@ class RoboCJKController(object):
                         self.closeCharacterWindow()
 
         self.openGlyphInspector()
-        self.showCanvasGroups()
-        self.addSubView()
+        # self.showCanvasGroups()
+        # self.addSubView()
         self.updateDeepComponent()
 
         self.glyphInspectorWindow.updatePreview()
@@ -457,7 +460,7 @@ class RoboCJKController(object):
             return self.characterGlyphView.sourcesList
     @property 
     def currentViewSliderList(self):
-        return self.glyphInspectorWindow.deepComponentAxesItem.deepComponentAxesList
+        return self.glyphInspectorWindow.deepComponentAxesItem
         if self.isDeepComponent:
             return self.deepComponentView.slidersList
         elif self.isCharacterGlyph:
@@ -568,7 +571,8 @@ class RoboCJKController(object):
             except: return
             
             self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
-            self.currentViewSliderList.set([])
+            self.currentViewSliderList.deepComponentAxesList.set([])
+            self.currentViewSliderList.deepComponentName.set("")
             if self.currentGlyph.selectedElement: 
                 self.setListWithSelectedElement()
 
@@ -605,7 +609,10 @@ class RoboCJKController(object):
             for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
                 minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
                 l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
+
         element.deepComponentAxesList.set(l)
+        if hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):
+                element.deepComponentName.set(data[self.currentGlyph.selectedElement[0]].name)
         self.sliderValue = None
 
     @refresh
@@ -616,7 +623,7 @@ class RoboCJKController(object):
         if self.transformationToolIsActiv and self.currentGlyph.selectedElement: return
         try: x, y = info['point'].x, info['point'].y
         except: return
-        self.currentViewSliderList.set([])
+        self.currentViewSliderList.deepComponentAxesList.set([])
         self.currentGlyph.selectionRectTouch(
             *sorted([x, self.px]), 
             *sorted([y, self.py])
@@ -781,12 +788,12 @@ class RoboCJKController(object):
 
     def removeAtomicElement(self, sender):
         self.currentGlyph.removeAtomicElementAtIndex()
-        self.currentViewSliderList.set([])
+        self.currentViewSliderList.deepComponentAxesList.set([])
         self.updateDeepComponent()
 
     def removeDeepComponent(self, sender):
         self.currentGlyph.removeDeepComponentAtIndexToGlyph()
-        self.currentViewSliderList.set([])
+        self.currentViewSliderList.deepComponentAxesList.set([])
         self.updateDeepComponent()
 
     def importDeepComponentFromAnotherCharacterGlyph(self, sender):

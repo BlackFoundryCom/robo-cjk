@@ -233,6 +233,7 @@ class DeepComponentPreview(Preview):
             self.axisPreview = self._generateDeepComponentVariation(axis = axis, preview=False)
         else:
             self.axisPreview = self._generateDeepComponent(glyph = self.glyph, preview = False, update = False)
+
     def computeDeepComponentsPreview(self, axes:list = [], update:bool = True):
         if not axes:
             axes = self.glyph.sourcesList

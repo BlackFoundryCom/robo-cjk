@@ -137,4 +137,8 @@ def refresh(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
         UpdateCurrentGlyphView()
+        e = self
+        if hasattr(self, 'RCJKI'):
+            e = self.RCJKI
+        e.glyphInspectorWindow.updatePreview()
     return wrapper
