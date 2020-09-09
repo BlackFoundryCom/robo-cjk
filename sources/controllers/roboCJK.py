@@ -320,9 +320,9 @@ class RoboCJKController(object):
         except:pass
 
 
-        self.window.removeGlyphEditorSubview(self.atomicView)
-        self.window.removeGlyphEditorSubview(self.deepComponentView)
-        self.window.removeGlyphEditorSubview(self.characterGlyphView)
+        # self.window.removeGlyphEditorSubview(self.atomicView)
+        # self.window.removeGlyphEditorSubview(self.deepComponentView)
+        # self.window.removeGlyphEditorSubview(self.characterGlyphView)
         # self.roboCJKView.w.atomicElementPreview.update()
         # self.roboCJKView.w.deepComponentPreview.update()
         # self.roboCJKView.w.characterGlyphPreview.update()
