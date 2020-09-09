@@ -909,7 +909,7 @@ class NewPDF:
             glyphsVariations = {}
             # light = []
             db.newPage(FRAMEX, FRAMEY)
-
+            db.textBox(user, (0, FRAMEY-85, FRAMEX, 55), align = 'center')
             db.textBox('%s-Overlay'%self.RCJKI.currentFont.fontName, (0, FRAMEY-105, FRAMEX, 55), align = 'center')
             s = .11
             tx, ty = (FRAMEX/s-1000*4)*.5, 1000 * 5.8
@@ -965,6 +965,7 @@ class NewPDF:
                 self.designFrameViewer.draw()
 
                 db.newPage(FRAMEX, FRAMEY)
+                db.textBox(user, (0, FRAMEY-85, FRAMEX, 55), align = 'center')
                 db.textBox(text, (0, FRAMEY-105, FRAMEX, 55), align = 'center')
                 s = .11
                 tx, ty = (FRAMEX/s-1000*4)*.5, 1000 * 5.8
