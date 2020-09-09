@@ -155,6 +155,8 @@ class Preview:
                 dc = parentFont.get(deepComponent.name)
                 deepComponentGlyph = dc.foreground
                 variationGlyph = dc._glyphVariations
+
+                # print(">>>>>>>", glyph._glyphVariations)
                 
                 for axisName, layerName in deepComponent.coord.items():
                     if variationGlyph[axisName] is None: continue
@@ -198,8 +200,10 @@ class Preview:
         return previewGlyph
 
     def _getAtomicInstance(self, deepComponentGlyph, layersInfos, deepComponent, coord):
+        axisMinValue = deepComponent.get("axisMinValue", 0.)
+        axisMaxValue = deepComponent.get("axisMaxValue", 1.)
         atomicInstance = AtomicInstance(
-            glyph = interpolation.deepolation(RGlyph(), deepComponentGlyph, layersInfos),
+            glyph = interpolation.deepolation(RGlyph(), deepComponentGlyph, layersInfos, axisMinValue, axisMaxValue),
             # name = deepComponent.name,
             scalex = deepComponent.scalex,
             scaley = deepComponent.scaley,
@@ -410,6 +414,7 @@ class CharacterGlyphPreview(Preview):
                 # deepComponentInstance["y"] = self.glyph._deepComponents[j].y
                 deepComponentInstance["rcenterx"] = self.glyph._deepComponents[j].rcenterx
                 deepComponentInstance["rcentery"] = self.glyph._deepComponents[j].rcentery
+                # print("self.glyph._glyphVariations[j].axisMaxValue", glyph._glyphVariations)
                 variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), deepComponentInstance))                
             except Exception as e:
                 raise e

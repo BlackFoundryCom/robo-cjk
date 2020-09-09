@@ -60,21 +60,30 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
                 'scalex'   : 1, #masterAtomicElement['scalex']
                 'scaley'   : 1, #masterAtomicElement['scaley']
                 'rotation' : 0, #masterAtomicElement['rotation']
-                'coord'    : coord
+                'coord'    : coord,
+                # "axisMaxValue": 1.,
+                # "axisMinValue": 0.
                 }
 
         deltaDC.append(deltaAE)
 
     for deepComponentAxisName, sourceDeepComponent in sourceDeepComponents.items():
         ratio = deepComponentAxisInfos.get(deepComponentAxisName, 0)
+        # print(">>", sourceDeepComponent[0]['axisMaxValue'])
         for i, sourceAtomicElement in enumerate(sourceDeepComponent):
-
+            # print(">>", sourceAtomicElement["axisMaxValue"])
             for e in ['x', 'y', 'rotation', 'scalex', 'scaley']:
                 deltaDC[i][e] += (masterDeepComponent[i][e] - sourceAtomicElement[e]) * ratio
         
             for sourceAtomicElementAxisName, sourceAtomicElementAxisRatio in sourceAtomicElement['coord'].items():
                 if sourceAtomicElementAxisName in deltaDC[i]['coord']:
-                    deltaDC[i]['coord'][sourceAtomicElementAxisName] += ratio * (masterDeepComponent[i]['coord'][sourceAtomicElementAxisName] - sourceAtomicElementAxisRatio)
+                    # print(sourceAtomicElementAxisName, sourceAtomicElement["axisMaxValue"])
+                    print("ratio", ratio, '; masterDeepComponent[i]["coord"][sourceAtomicElementAxisName]', masterDeepComponent[i]['coord'][sourceAtomicElementAxisName], "; sourceAtomicElementAxisRatio", sourceAtomicElementAxisRatio, "; sourceAtomicElement['axisMaxValue']", sourceAtomicElement["axisMaxValue"])
+                    deltaDC[i]['coord'][sourceAtomicElementAxisName] += (ratio * (masterDeepComponent[i]['coord'][sourceAtomicElementAxisName] - sourceAtomicElementAxisRatio/sourceAtomicElement["axisMaxValue"]))
+                    print(deltaDC[i]['coord'][sourceAtomicElementAxisName], sourceAtomicElement["axisMaxValue"])
+
+            # deltaDC[i]["axisMaxValue"] *= sourceAtomicElement["axisMaxValue"]
+            # deltaDC[i]["axisMinValue"] *= sourceAtomicElement["axisMinValue"]
                
     outputDC = []
     for i, masterAtomicElement in enumerate(masterDeepComponent):
@@ -88,14 +97,20 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
 
         outputAE['coord'] = {}
         for axisName, value in masterAtomicElement['coord'].items():
-            outputAE['coord'][axisName] = value - deltaDC[i]['coord'][axisName]
+            outputAE['coord'][axisName] = (value - deltaDC[i]['coord'][axisName])#/deltaDC[i]["axisMaxValue"]
+        
+        # print(">>>", sourceDeepComponents)
+        # outputAE["axisMinValue"] = deltaDC[i]["axisMinValue"]
+        # outputAE["axisMaxValue"] = deltaDC[i]["axisMaxValue"]
+
+        # print(outputAE["axisMinValue"], outputAE["axisMaxValue"])
         outputDC.append(outputAE)
     return(outputDC)
 
         
 from fontTools.ufoLib.pointPen import PointToSegmentPen
 
-def deepolation(newGlyph, masterGlyph, layersInfo = {}):
+def deepolation(newGlyph, masterGlyph, layersInfo = {}, axisMinValue = 0., axisMaxValue = 1.):
     if not deepCompatible(masterGlyph, list(layersInfo.keys())):
         return None
     pen = PointToSegmentPen(newGlyph.getPen())
@@ -107,7 +122,7 @@ def deepolation(newGlyph, masterGlyph, layersInfo = {}):
             ptype = point.type if point.type != 'offcurve' else None
             deltaX, deltaY = 0.0, 0.0
             for layerName, value in layersInfo.items():
-                ratio = value
+                ratio = value# / axisMaxValue
                 layerGlyph = masterGlyph.getLayer(layerName)
                 pI = layerGlyph[contourIndex].points[pointIndex]
                 deltaX += ratio * (px - pI.x)

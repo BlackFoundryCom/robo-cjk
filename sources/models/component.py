@@ -109,7 +109,8 @@ class DeepComponent(DictClass):
             rcenterx: int = 0,
             rcentery: int = 0,
             axisMinValue: float = 0.,
-            axisMaxValue: float = 1.):
+            axisMaxValue: float = 1.
+            ):
         super().__init__()
         self.coord = Coord(**dict(coord))
         self.rotation = rotation
@@ -299,9 +300,11 @@ class Content(DictClass):
 
 class VariationGlyphsInfos:
 
-    def __init__(self, layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0, content:dict = {}):
+    def __init__(self, layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0, content:dict = {}, axisMinValue:float=0., axisMaxValue:float=1.):
         self.minValue = minValue
         self.maxValue = maxValue
+        self.axisMinValue = axisMinValue
+        self.axisMaxValue = axisMaxValue
         self.layerName = layerName
         self.content = Content(**content)
 
@@ -359,6 +362,8 @@ class VariationGlyphsInfos:
         return {
                 "minValue": self.minValue, 
                 "maxValue": self.maxValue, 
+                "axisMinValue": self.axisMinValue, 
+                "axisMaxValue": self.axisMaxValue, 
                 "layerName": self.layerName,
                 "content": self.content._toDict()
                 }

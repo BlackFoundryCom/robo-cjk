@@ -633,13 +633,39 @@ class GlyphVariationAxesGroup(Group):
         sel = self.glyphVariationAxesList.getSelection()
         if not sel:
             return
+        selectedAxisName = self.glyphVariationAxesList.get()[sel[0]]["Axis"]
         f = self.RCJKI.currentFont
-        f._RFont.newLayer("backup_axis")
+        f._RFont.newLayer("backup_axis", color = (.2, 0, .2, 1))
+        backuplayer = f._RFont.getLayer("backup_axis")
+        backuplayer.newGlyph(self.RCJKI.currentGlyph.name)
+        backupGlyph = backuplayer[self.RCJKI.currentGlyph.name]
+        pen = backupGlyph.getPen()
         self.setLocationTo1Button.show(True)
-        
+
+        for atomicInstance in self.RCJKI.currentGlyph.preview.axisPreview:
+            g = atomicInstance.getTransformedGlyph()
+            g.draw(pen)
+
     def setLocationTo1ButtonCallback(self, sender):
         self.setLocationTo1Button.show(False)
-        
+        sel = self.glyphVariationAxesList.getSelection()
+        if not sel:
+            return
+        selectedAxisName = self.glyphVariationAxesList.get()[sel[0]]["Axis"]
+        location1value = self.glyphVariationAxesList.get()[sel[0]]["PreviewValue"]
+        for deepComponent in self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].content.deepComponents:
+            axisMinValue = deepComponent.axisMinValue
+            axisMaxValue = deepComponent.axisMaxValue
+            
+        axisMinValue = self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMinValue
+        axisMaxValue = self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMaxValue
+
+        self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMaxValue = axisMaxValue / location1value
+
+        print(self.RCJKI.currentGlyph._glyphVariations[selectedAxisName])
+        # f = self.RCJKI.currentFont
+        # f._RFont.removeLayer("backup_axis")
+
 class DeepComponentAxesGroup(Group):
     
     def __init__(self, posSize, RCJKI, deepComponentAxes):
