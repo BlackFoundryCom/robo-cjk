@@ -72,15 +72,19 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
         # print(">>", sourceDeepComponent[0]['axisMaxValue'])
         for i, sourceAtomicElement in enumerate(sourceDeepComponent):
             # print(">>", sourceAtomicElement["axisMaxValue"])
-            for e in ['x', 'y', 'rotation', 'scalex', 'scaley']:
+            for e in ['x', 'y', 'rotation']:
                 deltaDC[i][e] += (masterDeepComponent[i][e] - sourceAtomicElement[e]) * ratio
+
+            for e in ['scalex', 'scaley']:
+                deltaDC[i][e] += ((masterDeepComponent[i][e] - sourceAtomicElement[e]) * ratio)
+                # print(">>>", e, sourceAtomicElement[e], sourceAtomicElement["axisMaxValue"])              
         
             for sourceAtomicElementAxisName, sourceAtomicElementAxisRatio in sourceAtomicElement['coord'].items():
                 if sourceAtomicElementAxisName in deltaDC[i]['coord']:
                     # print(sourceAtomicElementAxisName, sourceAtomicElement["axisMaxValue"])
-                    print("ratio", ratio, '; masterDeepComponent[i]["coord"][sourceAtomicElementAxisName]', masterDeepComponent[i]['coord'][sourceAtomicElementAxisName], "; sourceAtomicElementAxisRatio", sourceAtomicElementAxisRatio, "; sourceAtomicElement['axisMaxValue']", sourceAtomicElement["axisMaxValue"])
-                    deltaDC[i]['coord'][sourceAtomicElementAxisName] += (ratio * (masterDeepComponent[i]['coord'][sourceAtomicElementAxisName] - sourceAtomicElementAxisRatio/sourceAtomicElement["axisMaxValue"]))
-                    print(deltaDC[i]['coord'][sourceAtomicElementAxisName], sourceAtomicElement["axisMaxValue"])
+                    # print("ratio", ratio, '; masterDeepComponent[i]["coord"][sourceAtomicElementAxisName]', masterDeepComponent[i]['coord'][sourceAtomicElementAxisName], "; sourceAtomicElementAxisRatio", sourceAtomicElementAxisRatio, "; sourceAtomicElement['axisMaxValue']", sourceAtomicElement["axisMaxValue"])
+                    deltaDC[i]['coord'][sourceAtomicElementAxisName] += (ratio * (masterDeepComponent[i]['coord'][sourceAtomicElementAxisName] - sourceAtomicElementAxisRatio))
+                    # print(deltaDC[i]['coord'][sourceAtomicElementAxisName], sourceAtomicElement["axisMaxValue"])
 
             # deltaDC[i]["axisMaxValue"] *= sourceAtomicElement["axisMaxValue"]
             # deltaDC[i]["axisMinValue"] *= sourceAtomicElement["axisMinValue"]
@@ -98,6 +102,7 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
         outputAE['coord'] = {}
         for axisName, value in masterAtomicElement['coord'].items():
             outputAE['coord'][axisName] = (value - deltaDC[i]['coord'][axisName])#/deltaDC[i]["axisMaxValue"]
+            # print(">>>", outputAE['coord'][axisName], deltaDC[i]["axisMaxValue"])
         
         # print(">>>", sourceDeepComponents)
         # outputAE["axisMinValue"] = deltaDC[i]["axisMinValue"]

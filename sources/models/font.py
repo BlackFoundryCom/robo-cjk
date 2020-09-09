@@ -1068,6 +1068,7 @@ class Font():
                 glyph = self[rglyph.name]
                 
                 self.writeGlif(glyph)
+                self.getGlyph(rglyph.name, type = glyph.type, font = self._fullRFont)
                 # rglyph = glyph._RGlyph
                 # rglyph.lib.update(glyph.lib)
                 # txt = rglyph.dumpToGLIF()
