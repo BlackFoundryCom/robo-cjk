@@ -591,6 +591,8 @@ class GlyphVariationAxesGroup(Group):
         self.glyphVariationsAxes = glyphVariationsAxes
         
         slider = SliderListCell(minValue = 0, maxValue = 1)
+
+        self.resetSliderToZero = Button((5, 3, 100, 20), 'Reset sliders', sizeStyle = "small", callback = self.resetSliderToZeroCallback)
         
         self.sliderValueTitle = TextBox((-160, 3, -100, 20), "Axis value:", sizeStyle = 'small')
         self.sliderValueEditText = EditText((-100, 0, -0, 20), '', callback = self.sliderValueEditTextCallback)
@@ -650,6 +652,26 @@ class GlyphVariationAxesGroup(Group):
                 sizeStyle = "small",
                 callback = self.setLocationTo1ButtonCallback)
             self.setLocationTo1Button.show(False)
+
+    @lockedProtect
+    def resetSliderToZeroCallback(self, sender):
+        sel = self.glyphVariationAxesList.getSelection()
+        newList = []
+        for i, e in enumerate(self.glyphVariationAxesList.get()):
+            minValue = float(e["MinValue"])
+            maxValue = float(e["MaxValue"])
+            newList.append({
+                "Axis":e["Axis"],
+                "MinValue":e["MinValue"],
+                "PreviewValue":self.RCJKI.systemValue(0, minValue, maxValue),
+                "MaxValue":e["MaxValue"],
+                })
+            self.glyphVariationAxesList.set(newList)
+
+        self.RCJKI.currentGlyph.sourcesList = self.glyphVariationAxesList.get()
+        self.RCJKI.updateDeepComponent(update = False)
+        self.glyphVariationAxesList.setSelection(sel)
+        self.controller.updatePreview()
         
     @lockedProtect
     def sliderValueEditTextCallback(self, sender):
