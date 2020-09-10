@@ -452,19 +452,20 @@ class RoboCJKController(object):
 
     @property 
     def currentViewSourceList(self):
-        if self.isAtomic:
-            return self.atomicView.atomicElementsList
-        elif self.isDeepComponent:
-            return self.deepComponentView.sourcesList
-        elif self.isCharacterGlyph:
-            return self.characterGlyphView.sourcesList
+        return self.glyphInspectorWindow.glyphVariationAxesItem
+        # if self.isAtomic:
+        #     return self.atomicView.atomicElementsList
+        # elif self.isDeepComponent:
+        #     return self.deepComponentView.sourcesList
+        # elif self.isCharacterGlyph:
+        #     return self.characterGlyphView.sourcesList
     @property 
     def currentViewSliderList(self):
         return self.glyphInspectorWindow.deepComponentAxesItem
-        if self.isDeepComponent:
-            return self.deepComponentView.slidersList
-        elif self.isCharacterGlyph:
-            return self.characterGlyphView.slidersList
+        # if self.isDeepComponent:
+        #     return self.deepComponentView.slidersList
+        # elif self.isCharacterGlyph:
+        #     return self.characterGlyphView.slidersList
 
     @property 
     def currentViewSourceValue(self):
@@ -475,31 +476,31 @@ class RoboCJKController(object):
         elif self.isCharacterGlyph:
             return self.characterGlyphView.sourcesSliderValue
 
-    @refresh
-    def addSubView(self):
-        self.window = CurrentGlyphWindow()
-        if self.window is None: return
-        # add the view to the GlyphEditor
-        self.showCanvasGroups()
-        if self.isAtomic: 
-            self.window.addGlyphEditorSubview(self.atomicView)
-            self.updateListInterface()
-            return
-        elif self.isDeepComponent:
-            self.window.addGlyphEditorSubview(self.deepComponentView)
-            self.deepComponentView.setUI()
-            self.updateListInterface()
-            return
-        elif self.isCharacterGlyph:
-            self.window.addGlyphEditorSubview(self.characterGlyphView)
-            self.characterGlyphView.setUI()
-            self.updateListInterface()
-            return
+    # @refresh
+    # def addSubView(self):
+    #     self.window = CurrentGlyphWindow()
+    #     if self.window is None: return
+    #     # add the view to the GlyphEditor
+    #     self.showCanvasGroups()
+    #     if self.isAtomic: 
+    #         self.window.addGlyphEditorSubview(self.atomicView)
+    #         self.updateListInterface()
+    #         return
+    #     elif self.isDeepComponent:
+    #         self.window.addGlyphEditorSubview(self.deepComponentView)
+    #         self.deepComponentView.setUI()
+    #         self.updateListInterface()
+    #         return
+    #     elif self.isCharacterGlyph:
+    #         self.window.addGlyphEditorSubview(self.characterGlyphView)
+    #         self.characterGlyphView.setUI()
+    #         self.updateListInterface()
+    #         return
 
-    def showCanvasGroups(self):
-        self.atomicView.show(self.isAtomic)
-        self.deepComponentView.show(self.isDeepComponent)
-        self.characterGlyphView.show(self.isCharacterGlyph)
+    # def showCanvasGroups(self):
+    #     self.atomicView.show(self.isAtomic)
+    #     self.deepComponentView.show(self.isDeepComponent)
+    #     self.characterGlyphView.show(self.isCharacterGlyph)
 
     def openGlyphInspector(self):
         glyphVariationsAxes = []
@@ -541,7 +542,7 @@ class RoboCJKController(object):
         mjdt.restore()
 
     def observerDraw(self, notification):
-        self.showCanvasGroups()
+        # self.showCanvasGroups()
         if hasattr(self.currentGlyph, 'type'):
             self.drawer.draw(
                 notification,
@@ -820,7 +821,7 @@ class RoboCJKController(object):
             if self.currentGlyph._glyphVariations:
                 l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
 
-        self.currentViewSourceList.set(l)
+        self.currentViewSourceList.glyphVariationAxesList.set(l)
         self.currentGlyph.sourcesList = l
 
     def userValue(self, value, minValue, maxValue):

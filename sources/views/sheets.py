@@ -39,33 +39,33 @@ connectorPath = os.path.join(cwd, "rcjk2mysql", "Config", "connectors.cfg")
 # print("tail", tail)
 
 class SelectLayerSheet():
-    def __init__(self, RCJKI, availableLayers):
+    def __init__(self, RCJKI, controller, availableLayers):
         self.RCJKI = RCJKI
         self.availableLayers = availableLayers
-        self.parent = CurrentGlyphWindow()
-        self.parent.sheet = Sheet((300, 420), self.parent.w)
+        # self.parent = CurrentGlyphWindow()
+        self.sheet = Sheet((300, 420), controller.controller.w)
         
         self.previewGlyph = None
         
         self.aegv =  self.RCJKI.currentGlyph.lib.get('robocjk.atomicElement.glyphVariations',{})
-        self.parent.sheet.layerList = List(
+        self.sheet.layerList = List(
             (0, 0, -0, 80),
             [l.layer.name for l in self.availableLayers if l.layer.name not in self.aegv.values()],
             allowsMultipleSelection = False,
             selectionCallback = self.updatePreview
             )
         
-        self.parent.sheet.newAxisNameTextBox = TextBox(
+        self.sheet.newAxisNameTextBox = TextBox(
             (0, 80, 100, 20), 
             'Axis Name:'
             )
         layerName = files.normalizeCode(str(len(self.aegv)), 4)
-        self.parent.sheet.newAxisNameEditText = EditText(
+        self.sheet.newAxisNameEditText = EditText(
             (100, 80, -0, 20), 
             layerName
             )
     
-        self.parent.sheet.canvasPreview = Canvas(
+        self.sheet.canvasPreview = Canvas(
             (0, 100, -0, -20), 
             canvasSize=(300, 300), 
             delegate=self
@@ -73,41 +73,42 @@ class SelectLayerSheet():
 
         self.updatePreview(None)
         
-        self.parent.sheet.addButton = Button(
+        self.sheet.addButton = Button(
             (-150,-20, 150, 20), 
             'Add', 
             callback=self.addLayer
             )
 
-        self.parent.sheet.closeButton = Button(
+        self.sheet.closeButton = Button(
             (-300,-20, 150, 20), 
             'Close', 
             callback=self.closeSheet
             )
 
-        self.parent.sheet.setDefaultButton(self.parent.sheet.addButton)
-        self.parent.sheet.open()
+        self.sheet.setDefaultButton(self.sheet.addButton)
+        self.sheet.open()
         
     def addLayer(self, sender):
-        newAxisName = self.parent.sheet.newAxisNameEditText.get()
-        newLayerName = self.parent.sheet.layerList.get()[self.parent.sheet.layerList.getSelection()[0]]
+        newAxisName = self.sheet.newAxisNameEditText.get()
+        newLayerName = self.sheet.layerList.get()[self.sheet.layerList.getSelection()[0]]
         if newAxisName in self.RCJKI.currentGlyph._glyphVariations.axes:
             PostBannerNotification('Impossible', "Layer name already exist")
             return
         self.RCJKI.currentGlyph.addGlyphVariation(newAxisName, newLayerName)
         self.RCJKI.updateListInterface()
         self.RCJKI.updateDeepComponent(update = False)
+        self.sheet.close()
         
     def closeSheet(self, sender):
-        self.parent.sheet.close()
+        self.sheet.close()
     
     def updatePreview(self, sender):
-        if not self.parent.sheet.layerList.getSelection() : return
+        if not self.sheet.layerList.getSelection() : return
         self.previewGlyph = None
         for l in self.availableLayers:
-            if l.layer.name == self.parent.sheet.layerList.get()[self.parent.sheet.layerList.getSelection()[0]]:
+            if l.layer.name == self.sheet.layerList.get()[self.sheet.layerList.getSelection()[0]]:
                 self.previewGlyph = l
-        self.parent.sheet.canvasPreview.update()
+        self.sheet.canvasPreview.update()
                 
     def draw(self):
         if not self.previewGlyph: return

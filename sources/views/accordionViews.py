@@ -127,7 +127,7 @@ class CompositionRulesGroup(Group):
         self.setUI()
 
     def setUI(self):
-        if not self.currentFont.dataBase or not self.RCJKI.currentGlyph.name.startswith("uni"): return
+        if not self.RCJKI.currentFont.dataBase or not self.RCJKI.currentGlyph.name.startswith("uni"): return
         if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni'):
             try:
                 self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
@@ -600,14 +600,25 @@ class GlyphVariationAxesGroup(Group):
             y = -40
         
         self.selectedSourceAxis = None
-        self.glyphVariationAxesList = List(
-            (0, 25, -0, y), 
-            self.glyphVariationsAxes, 
-            columnDescriptions = [
+        listDescription = [
                     {"title": "Axis", "editable": True, "width": 100},
                     {"title": "MinValue", "editable": True, "width": 40},
                     {"title": "PreviewValue", "cell": slider},
-                    {"title": "MaxValue", "editable": True, "width": 40}],
+                    {"title": "MaxValue", "editable": True, "width": 40}
+                    ]
+        if self.RCJKI.currentGlyph.type == "atomicElement":
+            listDescription = [
+                    {"title": "Axis", "editable": True, "width": 80},
+                    {"title": "Layer", "editable": False, "width": 80},
+                    {"title": "MinValue", "editable": True, "width": 40},
+                    {"title": "PreviewValue", "cell": slider},
+                    {"title": "MaxValue", "editable": True, "width": 40}
+                    ]
+
+        self.glyphVariationAxesList = List(
+            (0, 25, -0, y), 
+            self.glyphVariationsAxes, 
+            columnDescriptions = listDescription,
             selectionCallback = self.glyphVariationAxesListSelectionCallback,
             editCallback = self.glyphVariationAxesListEditCallback,
             doubleClickCallback = self.glyphVariationAxesListDoubleClickCallback,
@@ -758,24 +769,43 @@ class GlyphVariationAxesGroup(Group):
             
         elif self.RCJKI.currentGlyph.type == "characterGlyph":
             SelectFontVariationSheet(self.RCJKI, self)
+
+        elif self.RCJKI.currentGlyph.type == "atomicElement":
+            availableLayers = [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
+            print(availableLayers)
+            if [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.name != 'foreground']:
+                sheets.SelectLayerSheet(self.RCJKI, self, availableLayers)
         
     @lockedProtect
     def removeGlyphVariationButtonCallback(self, sender):
         if self.glyphVariationAxesList.getSelection():
-            name = self.glyphVariationAxesList.get()[self.glyphVariationAxesList.getSelection()[0]]["Axis"]
-            self.RCJKI.currentGlyph.removeVariationAxis(name)
-            self.RCJKI.currentGlyph.selectedElement = []
-            self.RCJKI.currentGlyph.selectedSourceAxis = None
-            self.glyphVariationAxesList.setSelection([0])
-            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
-            self.RCJKI.currentGlyph.sourcesList = l
-            self.glyphVariationAxesList.set(l)
-            self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
-            self.RCJKI.sliderValue = None
-            self.RCJKI.sliderName = None
-            self.RCJKI.updateDeepComponent(update = False)
-            self.controller.updatePreview()
+            if self.RCJKI.currentGlyph.type != "atomicElement":
+                name = self.glyphVariationAxesList.get()[self.glyphVariationAxesList.getSelection()[0]]["Axis"]
+                self.RCJKI.currentGlyph.removeVariationAxis(name)
+                self.RCJKI.currentGlyph.selectedElement = []
+                self.RCJKI.currentGlyph.selectedSourceAxis = None
+                self.glyphVariationAxesList.setSelection([0])
+                glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
+                l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+                self.RCJKI.currentGlyph.sourcesList = l
+                self.glyphVariationAxesList.set(l)
+                self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+                self.RCJKI.sliderValue = None
+                self.RCJKI.sliderName = None
+                self.RCJKI.updateDeepComponent(update = False)
+                self.controller.updatePreview()
+            else:
+                sel = self.glyphVariationAxesList.getSelection()
+                layers = self.glyphVariationAxesList.get()
+                layerName = layers[sel[0]]["Axis"]
+                self.RCJKI.currentGlyph.removeGlyphVariation(layerName)
+                layers.pop(sel[0])
+                self.glyphVariationAxesList.set(layers)
+                self.computeCurrentGlyph(self.glyphVariationAxesList)
+
+    def computeCurrentGlyph(self, sender):
+        self.RCJKI.currentGlyph.sourcesList = sender.get()
+        self.RCJKI.currentGlyph.preview.computeDeepComponentsPreview(sender.get())
         
     def editSelectedAxisExtremeValueButtonCallback(self, sender):
         sel = self.glyphVariationAxesList.getSelection()
@@ -787,6 +817,7 @@ class GlyphVariationAxesGroup(Group):
         backuplayer = f._RFont.getLayer("backup_axis")
         backuplayer.newGlyph(self.RCJKI.currentGlyph.name)
         backupGlyph = backuplayer[self.RCJKI.currentGlyph.name]
+        backupGlyph.clear()
         pen = backupGlyph.getPen()
         self.setLocationTo1Button.show(True)
 
@@ -809,6 +840,9 @@ class GlyphVariationAxesGroup(Group):
         axisMaxValue = self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMaxValue
 
         self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMaxValue = axisMaxValue / location1value
+
+        f = self.RCJKI.currentFont
+        f._RFont.removeLayer("backup_axis")
 
         print(self.RCJKI.currentGlyph._glyphVariations[selectedAxisName])
         # f = self.RCJKI.currentFont

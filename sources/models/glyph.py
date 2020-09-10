@@ -147,6 +147,14 @@ class Glyph(RGlyph):
                     for glyphVariation in self._glyphVariations.infos:
                         glyphVariation.content.deepComponents[index].coord.add(axis, 0)
 
+        for i, dc in enumerate(self._deepComponents):
+            variations = self.getParent()[self._deepComponents[i]["name"]]._glyphVariations
+            for coord, value in dc["coord"].items():
+                dc["coord"][coord] = value/variations[coord].axisMaxValue
+            for var in self._glyphVariations.values():
+                for coord, value in var.content.deepComponents[i].coord.items():
+                    var.content.deepComponents[i].coord[coord] = value/variations[coord].axisMaxValue                    
+
         self.removeDeepComponents(deepComponentToRemove)
 
     def removeDeepComponents(self, deepComponents:list = []):
