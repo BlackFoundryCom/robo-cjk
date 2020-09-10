@@ -393,28 +393,28 @@ class RoboCJKController(object):
             self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
-            self.closeComponentWindow()
+            # self.closeComponentWindow()
         else:
             installTool(self.transformationTool)
-            if self.currentFont.dataBase:
-                if self.currentGlyph.type =='characterGlyph':
-                    self.closeCharacterWindow()
-                    if self.currentGlyph.name.startswith("uni"):
-                        if self.componentWindow is None:
-                            self.componentWindow = roboCJKView.ComponentWindow(self)
-                        self.componentWindow.setUI()
-                        self.componentWindow.open()
-                    else:
-                        self.closeComponentWindow()
-                elif self.currentGlyph.type == 'deepComponent':
-                    self.closeComponentWindow()
-                    if self.currentGlyph.name.startswith("DC_"):
-                        if self.characterWindow is None:
-                            self.characterWindow = roboCJKView.CharacterWindow(self)
-                        self.characterWindow.setUI()
-                        self.characterWindow.open()
-                    else:
-                        self.closeCharacterWindow()
+            # if self.currentFont.dataBase:
+            #     if self.currentGlyph.type =='characterGlyph':
+            #         # self.closeCharacterWindow()
+            #         if self.currentGlyph.name.startswith("uni"):
+            #             # if self.componentWindow is None:
+            #             #     self.componentWindow = roboCJKView.ComponentWindow(self)
+            #             self.componentWindow.setUI()
+            #             self.componentWindow.open()
+            #         else:
+            #             # self.closeComponentWindow()
+            #     elif self.currentGlyph.type == 'deepComponent':
+            #         # self.closeComponentWindow()
+            #         if self.currentGlyph.name.startswith("DC_"):
+            #             # if self.characterWindow is None:
+            #             #     self.characterWindow = roboCJKView.CharacterWindow(self)
+            #             # self.characterWindow.setUI()
+            #             # self.characterWindow.open()
+            #         else:
+            #             # self.closeCharacterWindow()
 
         self.openGlyphInspector()
         # self.showCanvasGroups()

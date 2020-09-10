@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from mojo.UI import AccordionView
+from mojo.UI import AccordionView, UpdateCurrentGlyphView
 from vanilla import *
 from mojo.roboFont import *
 from mojo.canvas import Canvas, CanvasGroup
@@ -127,6 +127,7 @@ class CompositionRulesGroup(Group):
         self.setUI()
 
     def setUI(self):
+        if not self.currentFont.dataBase or not self.RCJKI.currentGlyph.name.startswith("uni"): return
         if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni'):
             try:
                 self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
@@ -262,7 +263,7 @@ class RelatedGlyphsGroup(Group):
         "Can't be designed with current deep components",
         "All",
         "Have outlines", 
-        # "Custom list"
+        "Custom list"
         ]
     
     def __init__(self, posSize, RCJKI, controller):
@@ -270,68 +271,215 @@ class RelatedGlyphsGroup(Group):
         self.RCJKI = RCJKI
         self.controller = controller
 
+        self.backgroundCanvas = CanvasGroup((0, 0, -0, -0), delegate = self)
         self.filter = 0
         self.preview = 1
+        self.title = TextBox((0, 5, -0, 20), "", sizeStyle = 'small', alignment = 'center')
         self.optionPopUpButton = PopUpButton(
-            (0, 0, -0, 20), self.filterRules, 
+            (0, 20, -0, 20), self.filterRules, 
             sizeStyle = "mini",
             callback = self.optionPopUpButtonCallback)
-        self.variantList = List(
-            (80, 16, 40, -0), [],
+        self.customField = EditText((0, 37, -0, 20), "", callback = self.customFieldCallback)
+        self.customField.show(False)
+        self.charactersList = List(
+            (80, 36, 40, -0), [],
             drawFocusRing = False, 
-            selectionCallback = self.variantListSelectionCallback)
-        
+            selectionCallback = self.charactersListSelectionCallback)
+        self.component = SmartTextBox(
+            (0, 36, 80, -0),
+            "",
+            sizeStyle = 65,
+            alignment = "center"
+            )
+
         self.previewCheckBox = CheckBox(
-            (125, 20, 120, 20), "Preview", 
+            (125, 40, 120, 20), "Preview", 
             value = self.preview, 
             sizeStyle = "small",
             callback = self.previewCheckBoxCallback)
+
+        self.sliders = Group((120, 65, -0, -0))
+        self.sliders.show(False)
         
-        self.sliderPositionX = Slider(
-            (125, 40, -10, 20), 
+        self.sliders.sliderPositionX = Slider(
+            (0, 0, -10, 20), 
             minValue = -1000,
             maxValue = 1000, 
             value = 0,
-            callback = self.sliderPositionXCallback)
-        self.sliderPositionY = Slider(
-            (125, 60, -10, 20), 
+            callback = self.sliderPositionCallback)
+        self.sliders.sliderPositionY = Slider(
+            (0, 20, -10, 20), 
             minValue = -1000, 
             maxValue = 1000, 
             value = 0,
-            callback = self.sliderPositionYCallback)
+            callback = self.sliderPositionCallback)
         
-        self.scaleXEditText = EditText(
-            (125, 80, 50, 20), 1, 
+        self.sliders.scaleXEditText = EditText(
+            (0, 40, 50, 20), 1, 
             sizeStyle = "small",
-            callback = self.scaleXEditTextCallback)
-        self.scaleYEditText = EditText(
-            (175, 80, 50, 20), 1, 
+            callback = self.scaleEditTextCallback)
+        self.sliders.scaleYEditText = EditText(
+            (50, 40, 50, 20), 1, 
             sizeStyle = "small",
-            callback = self.scaleYEditTextCallback)
+            callback = self.scaleEditTextCallback)
+        self.RCJKI.drawer.refGlyph = None
+        self.RCJKI.drawer.refGlyphPos = [0, 0]
+        self.char = ""
+        self.setUI()
         
     def draw(self):
         pass
 
-    def optionPopUpButtonCallback(self, sender):
-        pass
+    def mouseDragged(self, point):
+        x, y = self.RCJKI.drawer.refGlyphPos
+        dx = point.deltaX()
+        dy = point.deltaY()
+        x += dx
+        y -= dy
+        sensibility = 1
+        self.RCJKI.drawer.refGlyphPos = [x*sensibility, y*sensibility]  
+        self.sliders.sliderPositionX.set(x)
+        self.sliders.sliderPositionY.set(y)
+        UpdateCurrentGlyphView()
 
-    def variantListSelectionCallback(self, sender):
-        pass
+    def optionPopUpButtonCallback(self, sender):
+        self.filter = sender.get()
+        self.filterCharacters()
+
+    def filterCharacters(self):
+        l = []
+        characterGlyphSet = self.RCJKI.currentFont.staticCharacterGlyphSet()
+        deepComponentSet = self.RCJKI.currentFont.staticDeepComponentSet()
+        if self.filter == 4:
+            l = list(self.relatedChars)
+            title = "Related Characters"
+        elif self.filter in [0, 1]:
+            names = [files.unicodeName(c) for c in self.relatedChars]
+            if self.filter == 0:
+                result = set(names) & set(characterGlyphSet)
+            else:
+                result = set(names) - set(characterGlyphSet)
+            title = self.filterRules[self.filter]
+            l = [chr(int(n[3:], 16)) for n in result]
+
+        elif self.filter in [2, 3]:
+            DCSet = set([x for x in deepComponentSet if self.RCJKI.currentFont.get(x)._RGlyph.lib["robocjk.deepComponents"]])
+            for c in self.relatedChars:
+                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
+                inside = len(set(compo) - DCSet) == 0
+                if self.filter == 2 and inside:
+                    l.append(c)
+                elif self.filter == 3 and not inside:
+                    l.append(c)
+            title = " ".join(self.filterRules[self.filter].split(' ')[:3])
+
+        elif self.filter == 5:
+            names = [files.unicodeName(c) for c in self.relatedChars]
+            l = []
+            for name in names:
+                try:
+                    if len(self.RCJKI.currentFont.get(name)):
+                        l.append(chr(int(name[3:], 16)))
+                except:pass
+            title = self.filterRules[self.filter]
+
+        if self.filter == 6:
+            self.charactersList.setPosSize((80, 56, 40, -0))
+            self.component.setPosSize((0, 56, 80, -0))
+            self.previewCheckBox.setPosSize((125, 60, 120, 20))
+            self.sliders.setPosSize((120, 85, -0, -0))
+            self.customField.show(True)
+            title = "Custom List" 
+        else:
+            self.customField.show(False)
+            self.charactersList.setPosSize((80, 36, 40, -0))
+            self.component.setPosSize((0, 36, 80, -0))
+            self.previewCheckBox.setPosSize((125, 40, 120, 20))
+            self.sliders.setPosSize((120, 65, -0, -0))
+
+
+        self.RCJKI.drawer.refGlyph = None
+        self.RCJKI.drawer.refGlyphPos = [0, 0]   
+        UpdateCurrentGlyphView()
+        self.charactersList.set(l)
+        self.title.set("%s %s"%(len(l), title))
+
+    def customFieldCallback(self, sender):
+        chars = sender.get()
+        self.charactersList.set(chars)
+        self.title.set("%s %s"%(len(chars), "Custom List"))
+
+    def setRefGlyph(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.RCJKI.drawer.refGlyph = None
+            self.RCJKI.drawer.refGlyphPos = [0, 0]
+            return
+        char = sender.get()[sel[0]]
+        if self.preview:
+            try:
+                glyph = self.RCJKI.currentFont.get(files.unicodeName(char))
+            except:
+                glyph = None
+            self.RCJKI.drawer.refGlyph = glyph
+            self.RCJKI.drawer.refGlyphPos = [self.sliders.sliderPositionX.get(), self.sliders.sliderPositionY.get()]  
+            UpdateCurrentGlyphView()
+
+    def setUI(self):
+        if not self.RCJKI.currentGlyph.name.startswith("DC_"): return
+        self.relatedChars = set()
+        try:
+            _, code, _ = self.RCJKI.currentGlyph.name.split("_") 
+            char = chr(int(code, 16))
+            for k, v in self.RCJKI.currentFont.dataBase.items():
+                if char in v:
+                    self.relatedChars.add(k)
+        except: pass
+        self.filterCharacters()
+        self.component.set(char)
+
+    def charactersListSelectionCallback(self, sender):
+        self.previewCheckBox.show(self.filter in [0, 5, 6])
+        self.sliders.show(self.filter in [0, 5, 6])
+        if self.preview:
+            self.setRefGlyph(sender)
+
+        sel = sender.getSelection()
+        if not sel:
+            return
+        char = sender.get()[sel[0]]
+        if char != self.char:
+            self.sliders.sliderPositionX.set(0)
+            self.sliders.sliderPositionY.set(0)
+            self.RCJKI.drawer.refGlyphPos = [0, 0]
+
+            self.sliders.scaleXEditText.set(100)
+            self.sliders.scaleYEditText.set(100)
+            self.RCJKI.drawer.refGlyphScale = [1, 1]  
+            self.char = char
+
+        if self.filter in [0, 3]:
+            if files.unicodeName(char) in self.RCJKI.currentFont.staticCharacterGlyphSet():
+                self.previewCheckBox.show(True)
+        UpdateCurrentGlyphView()
 
     def previewCheckBoxCallback(self, sender):
-        pass
+        self.preview = sender.get()
+        self.sliders.show(self.preview)
+        if self.preview:
+            self.setRefGlyph(self.charactersList)
+        else:
+            self.RCJKI.drawer.refGlyph = None 
+            self.RCJKI.drawer.refGlyphPos = [0, 0]
+            UpdateCurrentGlyphView()
 
-    def sliderPositionXCallback(self, sender):
-        pass
+    def sliderPositionCallback(self, sender):
+        self.RCJKI.drawer.refGlyphPos = [self.sliders.sliderPositionX.get(), self.sliders.sliderPositionY.get()]  
+        UpdateCurrentGlyphView()
 
-    def sliderPositionYCallback(self, sender):
-        pass
-
-    def scaleXEditTextCallback(self, sender):
-        pass
-
-    def scaleYEditTextCallback(self, sender):
-        pass
+    def scaleEditTextCallback(self, sender):
+        self.RCJKI.drawer.refGlyphScale = [self.sliders.scaleXEditText.get()/100, self.sliders.scaleYEditText.get()/100]  
+        UpdateCurrentGlyphView()   
         
 class PreviewGroup(Group):
     
@@ -838,7 +986,7 @@ class CharacterGlyphInspector(Inspector):
         self.glyphVariationsAxes = glyphVariationsAxes
         self.deepComponentAxes = deepComponentAxes
         
-        self.w = Window((300, 850), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
+        self.w = Window((0, 0, 300, 850), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "characterGlyph"
         
@@ -865,7 +1013,7 @@ class DeepComponentInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = [], atomicElementAxes = []):
         self.RCJKI = RCJKI
-        self.w = Window((300, 870), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
+        self.w = Window((0, 0, 300, 870), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "deepComponent"
         
@@ -876,7 +1024,7 @@ class DeepComponentInspector(Inspector):
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
-                       dict(label="Related glyphs", view=self.relatedGlyphsItem, size=100, collapsed=False, canResize=True),
+                       dict(label="Related glyphs", view=self.relatedGlyphsItem, size=140, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
@@ -892,7 +1040,7 @@ class AtomicElementInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = []):
         self.RCJKI = RCJKI
-        self.w = Window((300, 600), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
+        self.w = Window((0, 0, 300, 600), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "atomicElement"
         
