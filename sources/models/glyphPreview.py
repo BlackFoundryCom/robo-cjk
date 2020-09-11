@@ -89,7 +89,10 @@ class AtomicInstance:
     def getTransformedGlyph(self, round:bool = False) -> RGlyph:
         glyph = self.glyph.copy()
         glyph.scaleBy((self.scalex, self.scaley))
-        glyph.rotateBy(self.rotation, (self.rcenterx, self.rcentery))
+        r = self.rotation
+        if r:
+            r = int(self.rotation%(360*self.rotation/abs(self.rotation)))
+        glyph.rotateBy(r, (self.rcenterx, self.rcentery))
         glyph.moveBy((self.x, self.y))
         if round:
             glyph.round()
