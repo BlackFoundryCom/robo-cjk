@@ -50,6 +50,11 @@ import math
 #     return(outputCG)
     
 def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxisInfos={}):
+    # print("masterDeepComponent \t", masterDeepComponent, "\n\n")
+    # print("sourceDeepComponents \t", sourceDeepComponents, "\n\n")
+    # print("deepComponentAxisInfos \t", deepComponentAxisInfos, "\n\n")
+
+    deepComponentAxisInfos = {k:v/sourceDeepComponents[k].axisMaxValue for k, v in deepComponentAxisInfos.items()}
     deltaDC = []
     for masterAtomicElement in masterDeepComponent:
         coord = dict((axisName, 0) for axisName, value in masterAtomicElement['coord'].items())
@@ -116,6 +121,8 @@ def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxis
 from fontTools.ufoLib.pointPen import PointToSegmentPen
 
 def deepolation(newGlyph, masterGlyph, layersInfo = {}, axisMinValue = 0., axisMaxValue = 1.):
+    #LLNGG
+    # print(layersInfo)
     if not deepCompatible(masterGlyph, list(layersInfo.keys())):
         return None
     pen = PointToSegmentPen(newGlyph.getPen())

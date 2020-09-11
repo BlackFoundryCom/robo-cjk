@@ -126,6 +126,7 @@ class Glyph(RGlyph):
             return
         deepComponentToRemove = []
         glyphset = set(self.currentFont.glyphSet())
+        # print("self._glyphVariations before update", self._deepComponents)
         for index, deepComponent in enumerate(self._deepComponents):
             if set([deepComponent.name]) - glyphset:
                 deepComponentToRemove.append(index)
@@ -148,13 +149,22 @@ class Glyph(RGlyph):
                         glyphVariation.content.deepComponents[index].coord.add(axis, 0)
 
         for i, dc in enumerate(self._deepComponents):
-            variations = self.getParent()[self._deepComponents[i]["name"]]._glyphVariations
+            variations = self.getParent()[dc["name"]]._glyphVariations
             for coord, value in dc["coord"].items():
-                dc["coord"][coord] = value/variations[coord].axisMaxValue
+                
+                dc.axisMaxValue = variations[coord].axisMaxValue
+                dc.axisMinValue = variations[coord].axisMinValue
+                # dc["coord"][coord] = value/variations[coord].axisMaxValue
+
             for var in self._glyphVariations.values():
                 for coord, value in var.content.deepComponents[i].coord.items():
-                    var.content.deepComponents[i].coord[coord] = value/variations[coord].axisMaxValue                    
+                    
+                    # var.content.deepComponents[i].coord[coord] = value/variations[coord].axisMaxValue                    
+                    # print(var.content.deepComponents[i].axisMaxValue, variations[coord].axisMaxValue                    )
+                    var.content.deepComponents[i].axisMaxValue = variations[coord].axisMaxValue                    
+                    var.content.deepComponents[i].axisMinValue = variations[coord].axisMinValue                    
 
+        # print("self._glyphVariations after update", self._deepComponents)
         self.removeDeepComponents(deepComponentToRemove)
 
     def removeDeepComponents(self, deepComponents:list = []):

@@ -1300,6 +1300,7 @@ class RoboCJKView(BaseWindowController):
         # else:
         self.prevGlyphName = prevGlyphName
         user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[self.prevGlyphName])
+        self.currentFont[self.prevGlyphName].update()
         
         self.setGlyphNameToCanvas(sender, self.prevGlyphName)
         # if not self.RCJKI.mysql:
