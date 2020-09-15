@@ -869,6 +869,10 @@ class GlyphVariationAxesGroup(Group):
         f = self.RCJKI.currentFont
         f._RFont.removeLayer("backup_axis")
 
+        if self.RCJKI.currentGlyph._glyphVariations:
+            source = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+        self.glyphVariationAxesList.set(source)
+
         # print(self.RCJKI.currentGlyph._glyphVariations[selectedAxisName])
         # f = self.RCJKI.currentFont
         # f._RFont.removeLayer("backup_axis")

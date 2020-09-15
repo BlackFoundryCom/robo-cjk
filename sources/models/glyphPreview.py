@@ -129,6 +129,8 @@ class Preview:
 
         for axis in sourceList:
             layer = self.glyph._glyphVariations[axis['Axis']].layerName
+            minValue = self.glyph._glyphVariations[axis['Axis']].minValue
+            maxValue = self.glyph._glyphVariations[axis['Axis']].maxValue
             value = axis['PreviewValue']
             if not filtered:
                 layersInfos[layer] = value
@@ -150,6 +152,7 @@ class Preview:
         axisPreview = []
         parentFont = self.glyph.getParent()
         for i, deepComponent in enumerate(glyph._deepComponents):
+            # atomicElementGlyph = parentFont.get(deepComponent["name"])
             # p_queue = queue.Queue()
             # threading.Thread(target = self._queue__generateDeepComponent, args = (p_queue, axisPreview, parentFont), daemon = True).start()
             # p_queue.put(deepComponent)
@@ -163,7 +166,11 @@ class Preview:
                 
                 for axisName, layerName in deepComponent.coord.items():
                     if variationGlyph[axisName] is None: continue
-                    layersInfos[variationGlyph[axisName].layerName] = deepComponent.coord[axisName]
+                    # print(deepComponent, deepComponent.coord, deepComponent.coord[axisName])
+                    minValue = variationGlyph[axisName].minValue
+                    maxValue = variationGlyph[axisName].maxValue
+                    # print(minValue, maxValue)
+                    layersInfos[variationGlyph[axisName].layerName] = (deepComponent.coord[axisName]-minValue)/(maxValue-minValue)
 
                 axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, deepComponent, variationGlyph))
             except:
@@ -289,7 +296,9 @@ class DeepComponentPreview(Preview):
             for atomicAxisName, layerVariation in glyphParent.get(masterAtomicElement.name)._glyphVariations.items():
                 _atomicElement.coord[atomicAxisName] = 0
                 if atomicAxisName in self.glyph._glyphVariations[axis][i].coord:
-                    _atomicElement.coord[atomicAxisName] = self.glyph._glyphVariations[axis][i].coord[atomicAxisName]
+                    minValue = layerVariation.minValue
+                    maxValue = layerVariation.maxValue
+                    _atomicElement.coord[atomicAxisName] = (self.glyph._glyphVariations[axis][i].coord[atomicAxisName]-minValue)/(maxValue-minValue)
                 layersInfos[layerVariation.layerName] = _atomicElement.coord[atomicAxisName]
 
             axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, variation, _atomicElement.coord.__dict__))
