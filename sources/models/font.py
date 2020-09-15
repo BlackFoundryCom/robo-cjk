@@ -432,22 +432,22 @@ class Font():
         for name in self._RFont.keys():
             yield self[name]
 
-    def __getitem__(self, name):
+    def __getitem2__(self, name):
         if not isinstance(name, str):
             name = name["name"]
         try:
-            if not set([name]) - set(self._RFont.keys()):
-                return self._glyphs[self._RFont[name]]
-            else:
-                if self.mysqlFont:
-                    self.getmySQLGlyph(name)
-                else:
-                    self.getGlyph(name, font = self._fullRFont)
-                    self.getGlyph(name)
-                return self._glyphs[self._RFont[name]]
+            # if not set([name]) - set(self._RFont.keys()):
+            return self._glyphs[self._RFont[name]]
+            # else:
+            #     if self.mysqlFont:
+            #         self.getmySQLGlyph(name)
+            #     else:
+            #         self.getGlyph(name, font = self._fullRFont)
+            #         self.getGlyph(name)
+            #     return self._glyphs[self._RFont[name]]
         except:
-            if isinstance(name, dict):
-                name = name["name"]
+            # if isinstance(name, dict):
+            #     name = name["name"]
             if self.mysqlFont:
                 self.getmySQLGlyph(name)
             else:
@@ -457,17 +457,20 @@ class Font():
             return self._glyphs[self._RFont[name]]
         return self._glyphs[self._RFont[name]]
 
-    def __getitem2__(self, name):
-        if isinstance(name, dict):
+    def __getitem__(self, name):
+        if not isinstance(name, str):
             name = name["name"]
         try:
-            # if set([name]) & set(self._RFont.keys()):
             return self._glyphs[self._RFont[name]]
         except:
             if self.mysqlFont:
                 self.getmySQLGlyph(name)
             else:
                 self.getGlyph(name, font = self._fullRFont)
+                # self._RFont.newGlyph(name)
+                # pen = self._RFont[name]
+                # self._fullRFont[name].draw(pen)
+                # self._glyphs[self._RFont[name]] = self._glyphs[self._fullRFont[name]]
                 self.getGlyph(name)
             return self._glyphs[self._RFont[name]]
 

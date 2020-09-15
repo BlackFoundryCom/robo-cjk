@@ -750,7 +750,8 @@ class GlyphVariationAxesGroup(Group):
             self.RCJKI.currentGlyph._glyphVariations[axis].minValue = minValue
             self.RCJKI.currentGlyph._glyphVariations[axis].maxValue = maxValue
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
-        self.RCJKI.currentGlyph.sourcesList = sender.get()
+        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(x["PreviewValue"], x["MinValue"], x["MaxValue"])} for x in sender.get()]
+        # self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
         
@@ -855,18 +856,20 @@ class GlyphVariationAxesGroup(Group):
         selectedAxisName = self.glyphVariationAxesList.get()[sel[0]]["Axis"]
         location1value = self.glyphVariationAxesList.get()[sel[0]]["PreviewValue"]
         for deepComponent in self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].content.deepComponents:
-            axisMinValue = deepComponent.axisMinValue
-            axisMaxValue = deepComponent.axisMaxValue
+            minValue = deepComponent.minValue
+            maxValue = deepComponent.maxValue
             
-        axisMinValue = self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMinValue
-        axisMaxValue = self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMaxValue
+        minValue = self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].minValue
+        maxValue = self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].maxValue
 
-        self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].axisMaxValue = axisMaxValue / location1value
+        # self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].maxValue = maxValue / location1value
+        # print(minValue, maxValue, location1value, self.RCJKI.userValue(round(location1value, 3), minValue, maxValue))
+        self.RCJKI.currentGlyph._glyphVariations[selectedAxisName].maxValue = maxValue / location1value#self.RCJKI.userValue(round(location1value, 3), minValue, maxValue)
 
         f = self.RCJKI.currentFont
         f._RFont.removeLayer("backup_axis")
 
-        print(self.RCJKI.currentGlyph._glyphVariations[selectedAxisName])
+        # print(self.RCJKI.currentGlyph._glyphVariations[selectedAxisName])
         # f = self.RCJKI.currentFont
         # f._RFont.removeLayer("backup_axis")
 
@@ -924,7 +927,7 @@ class DeepComponentAxesGroup(Group):
             self.deepComponentAxesList.set(newList)
 
         self.deepComponentAxesList.setSelection(sel)
-        self.setSliderValue2Glyph(self.deepComponentAxesList)
+        self.setSliderValue2Glyph(self.deepComponentAxesList, minValue, maxValue)
         self.RCJKI.updateDeepComponent(update = False)
     
     @lockedProtect    
@@ -943,12 +946,13 @@ class DeepComponentAxesGroup(Group):
     def deepComponentAxesListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return         
-        self.setSliderValue2Glyph(sender)
+        
         minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sender.getSelection()[0]]['Axis'])
+        self.setSliderValue2Glyph(sender, minValue, maxValue)
         self.sliderValueEditText.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
         self.RCJKI.updateDeepComponent(update = False)
 
-    def setSliderValue2Glyph(self, sender):
+    def setSliderValue2Glyph(self, sender, minValue, maxValue):
         def _getKeys(glyph):
             if glyph.type == "characterGlyph":
                 return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
@@ -963,7 +967,8 @@ class DeepComponentAxesGroup(Group):
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
             
-        self.RCJKI.sliderValue = round(float(self.deepComponentAxesList[sender.getSelection()[0]]['PreviewValue']), 3)
+        # self.RCJKI.sliderValue = round(float(self.deepComponentAxesList[sender.getSelection()[0]]['PreviewValue']), 3)
+        self.RCJKI.sliderValue = self.RCJKI.userValue(round(sender.get()[sender.getSelection()[0]]["PreviewValue"], 3), minValue, maxValue)
         sliderName = self.deepComponentAxesList[sender.getSelection()[0]]['Axis']
         self.RCJKI.sliderName = sliderName
         if self.RCJKI.isDeepComponent:

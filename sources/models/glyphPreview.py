@@ -89,7 +89,10 @@ class AtomicInstance:
     def getTransformedGlyph(self, round:bool = False) -> RGlyph:
         glyph = self.glyph.copy()
         glyph.scaleBy((self.scalex, self.scaley))
-        glyph.rotateBy(self.rotation, (self.rcenterx, self.rcentery))
+        r = self.rotation
+        if r:
+            r = int(self.rotation%(360*self.rotation/abs(self.rotation)))
+        glyph.rotateBy(r, (self.rcenterx, self.rcentery))
         glyph.moveBy((self.x, self.y))
         if round:
             glyph.round()
@@ -401,15 +404,15 @@ class CharacterGlyphPreview(Preview):
 
         # print("_glyphVariations", _glyphVariations)
 
-        for i, dc in enumerate(_deepComponents):
-        #     variations = glyphParent.get(_deepComponents[i]["name"])._glyphVariations
-            for coord, value in dc["coord"].items():
-                # print(_glyphVariations)
+        # for i, dc in enumerate(_deepComponents):
+        # #     variations = glyphParent.get(_deepComponents[i]["name"])._glyphVariations
+        #     for coord, value in dc["coord"].items():
+        #         # print(_glyphVariations)
 
-                dc["coord"][coord] = value/list(_glyphVariations.values())[0].content.deepComponents[i].axisMaxValue
-            for var in _glyphVariations.values():
-                for coord, value in var.content.deepComponents[i].coord.items():
-                    var.content.deepComponents[i].coord[coord] = value/var.content.deepComponents[i].axisMaxValue
+        #         dc["coord"][coord] = value/list(_glyphVariations.values())[0].content.deepComponents[i].maxValue
+        #     for var in _glyphVariations.values():
+        #         for coord, value in var.content.deepComponents[i].coord.items():
+        #             var.content.deepComponents[i].coord[coord] = value/var.content.deepComponents[i].maxValue
 
         for i, UICharacterGlyphVariation in enumerate(sourcelist):
             characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']

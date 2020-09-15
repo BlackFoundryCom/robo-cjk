@@ -369,6 +369,28 @@ class RoboCJKController(object):
             self.importDCFromCG.close()
             self.importDCFromCG = None
 
+    def sortDeepComponentAxesList(self, dclist):
+        initial = ["_na", "_fl", "_mi"]
+        final = ["_bo"]
+        newList = []
+        endList = []
+        oldList = copy.deepcopy(dclist)
+        toDel = []
+        for init in initial:
+            for i, axis in enumerate(oldList):
+                if axis["Axis"].endswith(init):
+                    newList.append(axis)
+                    toDel.append(i)
+        for fina in final:
+            for i, axis in enumerate(oldList):
+                if axis["Axis"].endswith(fina):
+                    endList.append(axis)
+                    toDel.append(i)
+        oldList = [x for i, x in enumerate(oldList) if i not in toDel]
+        newList.extend(oldList)
+        newList.extend(endList)
+        return newList
+
     @lockedProtect
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
@@ -389,6 +411,8 @@ class RoboCJKController(object):
                 self.currentGlyph.sourcesList = [
                     {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
                     ]
+
+            self.currentGlyph.sourcesList = self.sortDeepComponentAxesList(self.currentGlyph.sourcesList)
             self.currentViewSourceList.set(self.currentGlyph.sourcesList)
             self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
@@ -609,8 +633,8 @@ class RoboCJKController(object):
         if len(self.currentGlyph.selectedElement) == 1:
             for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
                 minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
-                l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
-
+                l.append({'Axis':axisName, 'PreviewValue':self.systemValue(value, minValue, maxValue), 'MinValue':minValue, 'MaxValue':maxValue})
+        l = self.sortDeepComponentAxesList(l)
         element.deepComponentAxesList.set(l)
         if hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):
                 element.deepComponentName.set(data[self.currentGlyph.selectedElement[0]].name)
