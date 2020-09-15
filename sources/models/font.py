@@ -467,10 +467,6 @@ class Font():
                 self.getmySQLGlyph(name)
             else:
                 self.getGlyph(name, font = self._fullRFont)
-                # self._RFont.newGlyph(name)
-                # pen = self._RFont[name]
-                # self._fullRFont[name].draw(pen)
-                # self._glyphs[self._RFont[name]] = self._glyphs[self._fullRFont[name]]
                 self.getGlyph(name)
             return self._glyphs[self._RFont[name]]
 

@@ -402,18 +402,6 @@ class CharacterGlyphPreview(Preview):
         _deepComponents = copy.deepcopy(self.glyph._deepComponents)
         _glyphVariations = copy.deepcopy(self.glyph._glyphVariations)
 
-        # print("_glyphVariations", _glyphVariations)
-
-        # for i, dc in enumerate(_deepComponents):
-        # #     variations = glyphParent.get(_deepComponents[i]["name"])._glyphVariations
-        #     for coord, value in dc["coord"].items():
-        #         # print(_glyphVariations)
-
-        #         dc["coord"][coord] = value/list(_glyphVariations.values())[0].content.deepComponents[i].maxValue
-        #     for var in _glyphVariations.values():
-        #         for coord, value in var.content.deepComponents[i].coord.items():
-        #             var.content.deepComponents[i].coord[coord] = value/var.content.deepComponents[i].maxValue
-
         for i, UICharacterGlyphVariation in enumerate(sourcelist):
             characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']
 

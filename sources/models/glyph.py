@@ -148,35 +148,6 @@ class Glyph(RGlyph):
                     for glyphVariation in self._glyphVariations.infos:
                         glyphVariation.content.deepComponents[index].coord.add(axis, 0)
 
-        # parentFont = self.getParent()
-        # for i, dc in enumerate(self._deepComponents):
-        #     # variations = parentFont.get(dc["name"], parentFont._RFont)._glyphVariations
-        #     variations = parentFont._glyphs[self._RFont[dc["name"]]]._glyphVariations
-        #     # if dc.axisMaxValue == variations[coord].axisMaxValue: continue
-        #     for coord, value in dc["coord"].items():
-                
-        #         print(dc, coord, value, variations[coord].maxValue, variations[coord].minValue, dc["coord"].getMinValue(coord))#, self._glyphVariations[coord].maxValue, self._glyphVariations[coord].minValue)
-        #         # dc.axisMaxValue = variations[coord].axisMaxValue
-        #         # dc.axisMinValue = variations[coord].axisMinValue
-
-        #         dc.maxValue = variations[coord].maxValue
-        #         dc.minValue = variations[coord].minValue
-
-        #         # dc["coord"][coord] = value/variations[coord].axisMaxValue
-
-        #     print(self._glyphVariations)
-        #     for var in self._glyphVariations.values():
-        #         for coord, value in var.content.deepComponents[i].coord.items():
-                    
-        #             # var.content.deepComponents[i].coord[coord] = value/variations[coord].axisMaxValue                    
-        #             # print(var.content.deepComponents[i].axisMaxValue, variations[coord].axisMaxValue                    )
-        #             # var.content.deepComponents[i].axisMaxValue = variations[coord].axisMaxValue                    
-        #             # var.content.deepComponents[i].axisMinValue = variations[coord].axisMinValue
-
-        #             var.content.deepComponents[i].maxValue = variations[coord].maxValue                    
-        #             var.content.deepComponents[i].minValue = variations[coord].minValue                    
-
-        # print("self._glyphVariations after update", self._deepComponents)
         self.removeDeepComponents(deepComponentToRemove)
 
     def removeDeepComponents(self, deepComponents:list = []):

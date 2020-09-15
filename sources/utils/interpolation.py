@@ -18,37 +18,6 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import math
 
-#### DEPRECATED
-# def deepdeepdeepolation(masterCharacterGlyph, characterGlyphVariations, characterGlyphAxisInfos):
-#     deltaCG = []
-#     for masterDeepComponentInstance in masterCharacterGlyph:
-#         deltaDC = dict(masterDeepComponentInstance)
-#         deltaDC['coord'] = dict((axisName, 0) for axisName, value in masterDeepComponentInstance['coord'].items())
-#         deltaCG.append(deltaDC)
-    
-#     for characterGlyphAxisName, sourceCharacterGlyph in characterGlyphVariations.items():
-#         ratio = characterGlyphAxisInfos[characterGlyphAxisName]
-#         for i, sourceDeepComponent in enumerate(sourceCharacterGlyph):
-#             for e in ['x', 'y', 'rotation']:
-#                 deltaCG[i][e] += (masterCharacterGlyph[i][e] - sourceDeepComponent[e]) * ratio 
-#             for e in ['scalex', 'scaley']:
-#                 deltaCG[i][e] *= (masterCharacterGlyph[i][e] - sourceDeepComponent[e]) * ratio
-            
-#             for sourceDeepComponentAxisName, sourceDeepComponentAxisRatio in sourceDeepComponent['coord'].items():
-#                 deltaCG[i]['coord'][sourceDeepComponentAxisName] += ratio * (masterCharacterGlyph[i]['coord'][sourceDeepComponentAxisName] - sourceDeepComponentAxisRatio)
-        
-#     outputCG = []
-#     for i, masterDeepComponent in enumerate(masterCharacterGlyph):
-#         outputDC = {}
-#         outputDC['name'] = masterDeepComponent['name']
-#         for e in ['x', 'y', 'scalex', 'scaley', 'rotation']:
-#             outputDC[e] = masterDeepComponent[e] - deltaCG[i][e]    
-
-#         outputDC['coord'] = dict((axisName, value - deltaCG[i]['coord'][axisName]) for axisName, value in masterDeepComponent['coord'].items())
-#         outputCG.append(outputDC)
-
-#     return(outputCG)
-
 def normalizedValue(v, minv, maxv):
     return (v-minv)/(maxv-minv)
     
