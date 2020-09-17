@@ -413,7 +413,7 @@ class RoboCJKController(object):
                     ]
 
             self.currentGlyph.sourcesList = self.sortDeepComponentAxesList(self.currentGlyph.sourcesList)
-            self.currentViewSourceList.set(self.currentGlyph.sourcesList)
+            self.currentViewSourceList.glyphVariationAxesList.set(self.currentGlyph.sourcesList)
             self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
@@ -744,7 +744,7 @@ class RoboCJKController(object):
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
             self.updateDeepComponent()
-            self.currentViewSourceList.setSelection([])
+            self.currentViewSourceList.glyphVariationAxesList.setSelection([])
 
         self.currentGlyph.keyDown((modifiers, inputKey, character))
 

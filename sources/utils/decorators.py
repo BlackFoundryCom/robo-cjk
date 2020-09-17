@@ -140,5 +140,6 @@ def refresh(func):
         e = self
         if hasattr(self, 'RCJKI'):
             e = self.RCJKI
-        e.glyphInspectorWindow.updatePreview()
+        if e.glyphInspectorWindow is not None:
+            e.glyphInspectorWindow.updatePreview()
     return wrapper
