@@ -33,6 +33,10 @@ class Drawer():
         self.refGlyphPos = [0, 0]
         self.refGlyphScale = [1, 1]
 
+        self.existingInstance = None
+        self.existingInstancePos = [0, 0]
+        self.existingInstanceScale = [1, 1]
+
     def drawIndexOfElements(self, d, glyph, view):
         x, y = glyph[0].points[0].x, glyph[0].points[0].y
         view._drawTextAtPoint(
@@ -92,6 +96,14 @@ class Drawer():
             mjdt.translate(*self.refGlyphPos)
             mjdt.scale(*self.refGlyphScale)
             mjdt.drawGlyph(self.roundGlyph(self.refGlyph))
+            mjdt.restore()
+
+        if self.existingInstance is not None:
+            mjdt.save()
+            mjdt.fill(1, .8, 0, .8)
+            mjdt.translate(*self.existingInstancePos)
+            mjdt.scale(*self.existingInstanceScale)
+            mjdt.drawGlyph(self.roundGlyph(self.existingInstance))
             mjdt.restore()
 
         if onlyPreview: return

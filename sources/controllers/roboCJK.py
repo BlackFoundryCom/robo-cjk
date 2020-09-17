@@ -61,6 +61,8 @@ from tools import transformationTool
 from views import PDFProofer
 # reload(PDFProofer)
 
+from views import accordionViews
+
 import os
 from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
 import mojo.drawingTools as mjdt
@@ -161,6 +163,8 @@ class RoboCJKController(object):
         self.mysql_password = ""
         self.bf_log = bf_log
 
+        self.glyphInspectorWindow = None
+
         self.updateDeepComponentQueue = queue.Queue()
 
     def connect2mysql(self):
@@ -230,6 +234,7 @@ class RoboCJKController(object):
             removeObserver(self, "glyphWindowWillClose")
             removeObserver(self, "draw")
             removeObserver(self, "drawPreview")
+            removeObserver(self, "drawInactive")
             removeObserver(self, "currentGlyphChanged")
             removeObserver(self, "mouseDown")
             removeObserver(self, "mouseUp")
@@ -242,6 +247,7 @@ class RoboCJKController(object):
             addObserver(self, "glyphWindowWillClose", "glyphWindowWillClose")
             addObserver(self, "observerDraw", "draw")
             addObserver(self, "observerDrawPreview", "drawPreview")
+            addObserver(self, "observerDraw", "drawInactive")
             addObserver(self, "currentGlyphChanged", "currentGlyphChanged")
             addObserver(self, "mouseDown", "mouseDown")
             addObserver(self, "mouseUp", "mouseUp")
@@ -303,7 +309,9 @@ class RoboCJKController(object):
         # self.closeimportDCFromCG()
         self.closeComponentWindow()
         self.closeCharacterWindow()
-
+        if self.glyphInspectorWindow is not None:
+            self.glyphInspectorWindow.closeWindow()
+            self.glyphInspectorWindow = None
         try:
         # if CurrentGlyphWindow() is not None:
             posSize = CurrentGlyphWindow().window().getPosSize()
@@ -312,9 +320,9 @@ class RoboCJKController(object):
         except:pass
 
 
-        self.window.removeGlyphEditorSubview(self.atomicView)
-        self.window.removeGlyphEditorSubview(self.deepComponentView)
-        self.window.removeGlyphEditorSubview(self.characterGlyphView)
+        # self.window.removeGlyphEditorSubview(self.atomicView)
+        # self.window.removeGlyphEditorSubview(self.deepComponentView)
+        # self.window.removeGlyphEditorSubview(self.characterGlyphView)
         # self.roboCJKView.w.atomicElementPreview.update()
         # self.roboCJKView.w.deepComponentPreview.update()
         # self.roboCJKView.w.characterGlyphPreview.update()
@@ -361,53 +369,83 @@ class RoboCJKController(object):
             self.importDCFromCG.close()
             self.importDCFromCG = None
 
+    def sortDeepComponentAxesList(self, dclist):
+        initial = ["_na", "_fl", "_mi"]
+        final = ["_bo"]
+        newList = []
+        endList = []
+        oldList = copy.deepcopy(dclist)
+        toDel = []
+        for init in initial:
+            for i, axis in enumerate(oldList):
+                if axis["Axis"].endswith(init):
+                    newList.append(axis)
+                    toDel.append(i)
+        for fina in final:
+            for i, axis in enumerate(oldList):
+                if axis["Axis"].endswith(fina):
+                    endList.append(axis)
+                    toDel.append(i)
+        oldList = [x for i, x in enumerate(oldList) if i not in toDel]
+        newList.extend(oldList)
+        newList.extend(endList)
+        return newList
+
     @lockedProtect
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
         if glyph is None: return
+        changed = False
         if glyph.name != self.currentGlyph.name:
             # self.currentFont.locker.unlock(self.currentGlyph)
+            changed = True
             self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
         d = self.currentGlyph._glyphVariations
-        if self.currentGlyph.type == "atomicElement":
-            self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
-                ]
-        else:
-            self.currentGlyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
-                ]
-        self.currentViewSourceList.set(self.currentGlyph.sourcesList)
-        self.currentViewSourceValue.set("")
+        if changed:
+            if self.currentGlyph.type == "atomicElement":
+                self.currentGlyph.sourcesList = [
+                    {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
+                    ]
+            else:
+                self.currentGlyph.sourcesList = [
+                    {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
+                    ]
+
+            self.currentGlyph.sourcesList = self.sortDeepComponentAxesList(self.currentGlyph.sourcesList)
+            self.currentViewSourceList.glyphVariationAxesList.set(self.currentGlyph.sourcesList)
+            self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
-            self.closeComponentWindow()
+            # self.closeComponentWindow()
         else:
             installTool(self.transformationTool)
-            if self.currentFont.dataBase:
-                if self.currentGlyph.type =='characterGlyph':
-                    self.closeCharacterWindow()
-                    if self.currentGlyph.name.startswith("uni"):
-                        if self.componentWindow is None:
-                            self.componentWindow = roboCJKView.ComponentWindow(self)
-                        self.componentWindow.setUI()
-                        self.componentWindow.open()
-                    else:
-                        self.closeComponentWindow()
-                elif self.currentGlyph.type == 'deepComponent':
-                    self.closeComponentWindow()
-                    if self.currentGlyph.name.startswith("DC_"):
-                        if self.characterWindow is None:
-                            self.characterWindow = roboCJKView.CharacterWindow(self)
-                        self.characterWindow.setUI()
-                        self.characterWindow.open()
-                    else:
-                        self.closeCharacterWindow()
+            # if self.currentFont.dataBase:
+            #     if self.currentGlyph.type =='characterGlyph':
+            #         # self.closeCharacterWindow()
+            #         if self.currentGlyph.name.startswith("uni"):
+            #             # if self.componentWindow is None:
+            #             #     self.componentWindow = roboCJKView.ComponentWindow(self)
+            #             self.componentWindow.setUI()
+            #             self.componentWindow.open()
+            #         else:
+            #             # self.closeComponentWindow()
+            #     elif self.currentGlyph.type == 'deepComponent':
+            #         # self.closeComponentWindow()
+            #         if self.currentGlyph.name.startswith("DC_"):
+            #             # if self.characterWindow is None:
+            #             #     self.characterWindow = roboCJKView.CharacterWindow(self)
+            #             # self.characterWindow.setUI()
+            #             # self.characterWindow.open()
+            #         else:
+            #             # self.closeCharacterWindow()
 
-        self.showCanvasGroups()
-        self.addSubView()
+        self.openGlyphInspector()
+        # self.showCanvasGroups()
+        # self.addSubView()
         self.updateDeepComponent()
+
+        self.glyphInspectorWindow.updatePreview()
 
     def exportDataBase(self):
         self.currentFont.exportDataBase()
@@ -438,18 +476,20 @@ class RoboCJKController(object):
 
     @property 
     def currentViewSourceList(self):
-        if self.isAtomic:
-            return self.atomicView.atomicElementsList
-        elif self.isDeepComponent:
-            return self.deepComponentView.sourcesList
-        elif self.isCharacterGlyph:
-            return self.characterGlyphView.sourcesList
+        return self.glyphInspectorWindow.glyphVariationAxesItem
+        # if self.isAtomic:
+        #     return self.atomicView.atomicElementsList
+        # elif self.isDeepComponent:
+        #     return self.deepComponentView.sourcesList
+        # elif self.isCharacterGlyph:
+        #     return self.characterGlyphView.sourcesList
     @property 
     def currentViewSliderList(self):
-        if self.isDeepComponent:
-            return self.deepComponentView.slidersList
-        elif self.isCharacterGlyph:
-            return self.characterGlyphView.slidersList
+        return self.glyphInspectorWindow.deepComponentAxesItem
+        # if self.isDeepComponent:
+        #     return self.deepComponentView.slidersList
+        # elif self.isCharacterGlyph:
+        #     return self.characterGlyphView.slidersList
 
     @property 
     def currentViewSourceValue(self):
@@ -460,31 +500,48 @@ class RoboCJKController(object):
         elif self.isCharacterGlyph:
             return self.characterGlyphView.sourcesSliderValue
 
-    @refresh
-    def addSubView(self):
-        self.window = CurrentGlyphWindow()
-        if self.window is None: return
-        # add the view to the GlyphEditor
-        self.showCanvasGroups()
-        if self.isAtomic: 
-            self.window.addGlyphEditorSubview(self.atomicView)
-            self.updateListInterface()
-            return
-        elif self.isDeepComponent:
-            self.window.addGlyphEditorSubview(self.deepComponentView)
-            self.deepComponentView.setUI()
-            self.updateListInterface()
-            return
-        elif self.isCharacterGlyph:
-            self.window.addGlyphEditorSubview(self.characterGlyphView)
-            self.characterGlyphView.setUI()
-            self.updateListInterface()
-            return
+    # @refresh
+    # def addSubView(self):
+    #     self.window = CurrentGlyphWindow()
+    #     if self.window is None: return
+    #     # add the view to the GlyphEditor
+    #     self.showCanvasGroups()
+    #     if self.isAtomic: 
+    #         self.window.addGlyphEditorSubview(self.atomicView)
+    #         self.updateListInterface()
+    #         return
+    #     elif self.isDeepComponent:
+    #         self.window.addGlyphEditorSubview(self.deepComponentView)
+    #         self.deepComponentView.setUI()
+    #         self.updateListInterface()
+    #         return
+    #     elif self.isCharacterGlyph:
+    #         self.window.addGlyphEditorSubview(self.characterGlyphView)
+    #         self.characterGlyphView.setUI()
+    #         self.updateListInterface()
+    #         return
 
-    def showCanvasGroups(self):
-        self.atomicView.show(self.isAtomic)
-        self.deepComponentView.show(self.isDeepComponent)
-        self.characterGlyphView.show(self.isCharacterGlyph)
+    # def showCanvasGroups(self):
+    #     self.atomicView.show(self.isAtomic)
+    #     self.deepComponentView.show(self.isDeepComponent)
+    #     self.characterGlyphView.show(self.isCharacterGlyph)
+
+    def openGlyphInspector(self):
+        glyphVariationsAxes = []
+        if self.glyphInspectorWindow is not None:
+            return
+        if self.isAtomic: 
+            for axisName, layer in self.currentGlyph._glyphVariations.items():
+                glyphVariationsAxes.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
+            self.glyphInspectorWindow = accordionViews.AtomicElementInspector(self, glyphVariationsAxes)
+        elif self.isDeepComponent:
+            if self.currentGlyph._glyphVariations:
+                glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+            self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)
+        elif self.isCharacterGlyph:
+            if self.currentGlyph._glyphVariations:
+                glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+            self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
 
     def draw(self):
         mjdt.save()
@@ -509,7 +566,7 @@ class RoboCJKController(object):
         mjdt.restore()
 
     def observerDraw(self, notification):
-        self.showCanvasGroups()
+        # self.showCanvasGroups()
         if hasattr(self.currentGlyph, 'type'):
             self.drawer.draw(
                 notification,
@@ -539,7 +596,8 @@ class RoboCJKController(object):
             except: return
             
             self.currentGlyph.pointIsInside((self.px, self.py), event["shiftDown"])
-            self.currentViewSliderList.set([])
+            self.currentViewSliderList.deepComponentAxesList.set([])
+            self.currentViewSliderList.deepComponentName.set("")
             if self.currentGlyph.selectedElement: 
                 self.setListWithSelectedElement()
 
@@ -560,10 +618,11 @@ class RoboCJKController(object):
             pass
 
     def setListWithSelectedElement(self):
-        if self.isDeepComponent:
-            element = self.deepComponentView
-        elif self.isCharacterGlyph:
-            element = self.characterGlyphView
+        element = self.currentViewSliderList
+        # if self.isDeepComponent:
+        #     element = self.deepComponentView
+        # elif self.isCharacterGlyph:
+        #     element = self.characterGlyphView
 
         if not self.currentGlyph.selectedSourceAxis:
             data = self.currentGlyph._deepComponents
@@ -574,8 +633,11 @@ class RoboCJKController(object):
         if len(self.currentGlyph.selectedElement) == 1:
             for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
                 minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
-                l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
-        element.slidersList.set(l)
+                l.append({'Axis':axisName, 'PreviewValue':self.systemValue(value, minValue, maxValue), 'MinValue':minValue, 'MaxValue':maxValue})
+        l = self.sortDeepComponentAxesList(l)
+        element.deepComponentAxesList.set(l)
+        if hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):
+                element.deepComponentName.set(data[self.currentGlyph.selectedElement[0]].name)
         self.sliderValue = None
 
     @refresh
@@ -586,7 +648,7 @@ class RoboCJKController(object):
         if self.transformationToolIsActiv and self.currentGlyph.selectedElement: return
         try: x, y = info['point'].x, info['point'].y
         except: return
-        self.currentViewSliderList.set([])
+        self.currentViewSliderList.deepComponentAxesList.set([])
         self.currentGlyph.selectionRectTouch(
             *sorted([x, self.px]), 
             *sorted([y, self.py])
@@ -682,7 +744,7 @@ class RoboCJKController(object):
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
             self.updateDeepComponent()
-            self.currentViewSourceList.setSelection([])
+            self.currentViewSourceList.glyphVariationAxesList.setSelection([])
 
         self.currentGlyph.keyDown((modifiers, inputKey, character))
 
@@ -751,12 +813,12 @@ class RoboCJKController(object):
 
     def removeAtomicElement(self, sender):
         self.currentGlyph.removeAtomicElementAtIndex()
-        self.currentViewSliderList.set([])
+        self.currentViewSliderList.deepComponentAxesList.set([])
         self.updateDeepComponent()
 
     def removeDeepComponent(self, sender):
         self.currentGlyph.removeDeepComponentAtIndexToGlyph()
-        self.currentViewSliderList.set([])
+        self.currentViewSliderList.deepComponentAxesList.set([])
         self.updateDeepComponent()
 
     def importDeepComponentFromAnotherCharacterGlyph(self, sender):
@@ -783,7 +845,7 @@ class RoboCJKController(object):
             if self.currentGlyph._glyphVariations:
                 l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
 
-        self.currentViewSourceList.set(l)
+        self.currentViewSourceList.glyphVariationAxesList.set(l)
         self.currentGlyph.sourcesList = l
 
     def userValue(self, value, minValue, maxValue):

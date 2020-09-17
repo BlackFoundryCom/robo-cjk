@@ -121,7 +121,7 @@ class CharacterGlyph(Glyph):
         if not items:
             d = DeepComponentNamed(deepComponentName)
             for axis in self.currentFont[deepComponentName]._glyphVariations.axes:
-                d.coord.add(axis, 0)
+                d.coord.add(axis, self.currentFont[deepComponentName]._glyphVariations[axis].minValue)
         else:
             d = items
             d.name = deepComponentName

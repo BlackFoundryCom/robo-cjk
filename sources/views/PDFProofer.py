@@ -965,7 +965,6 @@ class NewPDF:
                 self.designFrameViewer.draw()
 
                 db.newPage(FRAMEX, FRAMEY)
-
                 db.textBox(user, (0, FRAMEY-85, FRAMEX, 55), align = 'center')
                 db.textBox(text, (0, FRAMEY-105, FRAMEX, 55), align = 'center')
                 s = .11

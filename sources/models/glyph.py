@@ -126,6 +126,7 @@ class Glyph(RGlyph):
             return
         deepComponentToRemove = []
         glyphset = set(self.currentFont.glyphSet())
+        # print("self._glyphVariations before update", self._deepComponents)
         for index, deepComponent in enumerate(self._deepComponents):
             if set([deepComponent.name]) - glyphset:
                 deepComponentToRemove.append(index)

@@ -608,11 +608,11 @@ class GlyphPreviewCanvas(CanvasGroup):
         d = self.glyph._glyphVariations
         if self.glyph.type ==  "atomicElement":
             self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer, "PreviewValue":0} for axisName, layer in  d.items()
+                {"Axis":axisName, "Layer":layer, "PreviewValue":layer.minValue} for axisName, layer in  d.items()
                 ]
         else:
             self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0} for axisName, layerName in  d.items()
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":layerName.minValue} for axisName, layerName in  d.items()
                 ]
 
         if self.glyph.markColor is not None:

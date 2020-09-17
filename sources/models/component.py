@@ -61,6 +61,55 @@ class DictClass:
             return fallback
         return getattr(self, item)
 
+# class Coord(DictClass):
+
+#     def __init__(self, **kwargs):
+#         super().__init__()
+#         for k, v in kwargs.items():
+#             if isinstance(v, (int, float)):
+#                 setattr(self, k, {"value":v, "minValue":0., "maxValue":1.})
+#             else:
+#                 setattr(self, k, v)
+
+#     def __getitem__(self, item):
+#         return getattr(self, item).get("value")
+
+#     def getMinValue(self, item):
+#         return getattr(self, item).get("minValue")
+
+#     def getMaxValue(self, item):
+#         return getattr(self, item).get("maxValue")
+
+#     def add(self, axis: str, value: int = 0):
+#         """
+#         Add new axis with its value
+#         """
+#         if isinstance(value, float):
+#             setattr(self, axis, {"value":value, "minValue":0., "maxValue":1.})
+#         else:
+#             setattr(self, axis, value)
+
+#     def remove(self, axis: str):
+#         """
+#         Remove axis
+#         """
+#         delattr(self, axis)
+
+#     @property
+#     def axes(self):
+#         """
+#         Return a list of all the axes
+#         """
+#         return self.keys()
+
+#     def clear(self):
+#         """
+#         Remove all axes
+#         """
+#         axes = list(vars(self))
+#         for axis in axes:
+#             self.remove(axis)
+
 class Coord(DictClass):
 
     def __init__(self, **kwargs):
@@ -94,8 +143,7 @@ class Coord(DictClass):
         axes = list(vars(self))
         for axis in axes:
             self.remove(axis)
-        # for k in vars(self):
-        #     delattr(self, k)
+
 
 class DeepComponent(DictClass):
 
@@ -107,7 +155,12 @@ class DeepComponent(DictClass):
             x: int = 0, 
             y: int = 0,
             rcenterx: int = 0,
-            rcentery: int = 0):
+            rcentery: int = 0,
+            # axisMinValue: float = 0.,
+            # axisMaxValue: float = 1.,
+            maxValue: float = 1.,
+            minValue: float = 0.,
+            ):
         super().__init__()
         self.coord = Coord(**dict(coord))
         self.rotation = rotation
@@ -117,6 +170,10 @@ class DeepComponent(DictClass):
         self.y = y
         self.rcenterx = rcenterx
         self.rcentery = rcentery
+        # self.axisMinValue = axisMinValue
+        # self.axisMaxValue = axisMaxValue
+        self.maxValue = maxValue
+        self.minValue = minValue
 
     def set(self, items: dict):
         """
@@ -295,9 +352,11 @@ class Content(DictClass):
 
 class VariationGlyphsInfos:
 
-    def __init__(self, layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0, content:dict = {}):
+    def __init__(self, layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0, content:dict = {}, axisMinValue:float=0., axisMaxValue:float=1.):
         self.minValue = minValue
         self.maxValue = maxValue
+        # self.axisMinValue = axisMinValue
+        # self.axisMaxValue = axisMaxValue
         self.layerName = layerName
         self.content = Content(**content)
 
@@ -355,6 +414,8 @@ class VariationGlyphsInfos:
         return {
                 "minValue": self.minValue, 
                 "maxValue": self.maxValue, 
+                # "axisMinValue": self.axisMinValue, 
+                # "axisMaxValue": self.axisMaxValue, 
                 "layerName": self.layerName,
                 "content": self.content._toDict()
                 }

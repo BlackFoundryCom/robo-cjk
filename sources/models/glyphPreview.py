@@ -129,6 +129,8 @@ class Preview:
 
         for axis in sourceList:
             layer = self.glyph._glyphVariations[axis['Axis']].layerName
+            minValue = self.glyph._glyphVariations[axis['Axis']].minValue
+            maxValue = self.glyph._glyphVariations[axis['Axis']].maxValue
             value = axis['PreviewValue']
             if not filtered:
                 layersInfos[layer] = value
@@ -150,6 +152,7 @@ class Preview:
         axisPreview = []
         parentFont = self.glyph.getParent()
         for i, deepComponent in enumerate(glyph._deepComponents):
+            # atomicElementGlyph = parentFont.get(deepComponent["name"])
             # p_queue = queue.Queue()
             # threading.Thread(target = self._queue__generateDeepComponent, args = (p_queue, axisPreview, parentFont), daemon = True).start()
             # p_queue.put(deepComponent)
@@ -158,10 +161,16 @@ class Preview:
                 dc = parentFont.get(deepComponent.name)
                 deepComponentGlyph = dc.foreground
                 variationGlyph = dc._glyphVariations
+
+                # print(">>>>>>>", glyph._glyphVariations)
                 
                 for axisName, layerName in deepComponent.coord.items():
                     if variationGlyph[axisName] is None: continue
-                    layersInfos[variationGlyph[axisName].layerName] = deepComponent.coord[axisName]
+                    # print(deepComponent, deepComponent.coord, deepComponent.coord[axisName])
+                    minValue = variationGlyph[axisName].minValue
+                    maxValue = variationGlyph[axisName].maxValue
+                    # print(minValue, maxValue)
+                    layersInfos[variationGlyph[axisName].layerName] = (deepComponent.coord[axisName]-minValue)/(maxValue-minValue)
 
                 axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, deepComponent, variationGlyph))
             except:
@@ -201,8 +210,10 @@ class Preview:
         return previewGlyph
 
     def _getAtomicInstance(self, deepComponentGlyph, layersInfos, deepComponent, coord):
+        axisMinValue = deepComponent.get("axisMinValue", 0.)
+        axisMaxValue = deepComponent.get("axisMaxValue", 1.)
         atomicInstance = AtomicInstance(
-            glyph = interpolation.deepolation(RGlyph(), deepComponentGlyph, layersInfos),
+            glyph = interpolation.deepolation(RGlyph(), deepComponentGlyph, layersInfos, axisMinValue, axisMaxValue),
             # name = deepComponent.name,
             scalex = deepComponent.scalex,
             scaley = deepComponent.scaley,
@@ -236,6 +247,7 @@ class DeepComponentPreview(Preview):
             self.axisPreview = self._generateDeepComponentVariation(axis = axis, preview=False)
         else:
             self.axisPreview = self._generateDeepComponent(glyph = self.glyph, preview = False, update = False)
+
     def computeDeepComponentsPreview(self, axes:list = [], update:bool = True):
         if not axes:
             axes = self.glyph.sourcesList
@@ -284,7 +296,9 @@ class DeepComponentPreview(Preview):
             for atomicAxisName, layerVariation in glyphParent.get(masterAtomicElement.name)._glyphVariations.items():
                 _atomicElement.coord[atomicAxisName] = 0
                 if atomicAxisName in self.glyph._glyphVariations[axis][i].coord:
-                    _atomicElement.coord[atomicAxisName] = self.glyph._glyphVariations[axis][i].coord[atomicAxisName]
+                    minValue = layerVariation.minValue
+                    maxValue = layerVariation.maxValue
+                    _atomicElement.coord[atomicAxisName] = (self.glyph._glyphVariations[axis][i].coord[atomicAxisName]-minValue)/(maxValue-minValue)
                 layersInfos[layerVariation.layerName] = _atomicElement.coord[atomicAxisName]
 
             axisPreview.append(self._getAtomicInstance(deepComponentGlyph, layersInfos, variation, _atomicElement.coord.__dict__))
@@ -388,30 +402,31 @@ class CharacterGlyphPreview(Preview):
         if update:
             self.glyph.update()
 
+        glyphParent = self.glyph.getParent()
+        # self.glyph.update()
         variationPreview = []
 
         characterGlyphAxisInfos = {}
-        for UICharacterGlyphVariation in sourcelist:
+
+        _deepComponents = copy.deepcopy(self.glyph._deepComponents)
+        _glyphVariations = copy.deepcopy(self.glyph._glyphVariations)
+
+        for i, UICharacterGlyphVariation in enumerate(sourcelist):
             characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']
+
         if not characterGlyphAxisInfos:return
 
         outputCG = interpolation.deepdeepolation(
-            self.glyph._deepComponents, 
-            self.glyph._glyphVariations, 
+            _deepComponents, 
+            _glyphVariations, 
             characterGlyphAxisInfos
             )
 
-        glyphParent = self.glyph.getParent()
         for j, deepComponentInstance in enumerate(outputCG):
-            # cg_queue = queue.Queue()
-            # threading.Thread(target = self._queue_generateCharacterGlyphPreview, args = (cg_queue, variationPreview), daemon=True).start()
-            # cg_queue.put((j, deepComponentInstance))
             try:
                 glyph = glyphParent.get(deepComponentInstance['name'])
-                # deepComponentInstance["x"] = self.glyph._deepComponents[j].x
-                # deepComponentInstance["y"] = self.glyph._deepComponents[j].y
-                deepComponentInstance["rcenterx"] = self.glyph._deepComponents[j].rcenterx
-                deepComponentInstance["rcentery"] = self.glyph._deepComponents[j].rcentery
+                deepComponentInstance["rcenterx"] = _deepComponents[j].rcenterx
+                deepComponentInstance["rcentery"] = _deepComponents[j].rcentery
                 variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), deepComponentInstance))                
             except Exception as e:
                 raise e
@@ -429,25 +444,8 @@ class CharacterGlyphPreview(Preview):
         for atomicInstance in variationPreview:
             g = atomicInstance.getTransformedGlyph()
             g.draw(pen)
-            # for c in atomicInstance.getTransformedGlyph():
-            #     previewGlyph.appendContour(c)
 
         if outlinesPreview is not None:
             g = outlinesPreview
             g.draw(pen)
-            # for c in outlinesPreview:
-            #     previewGlyph.appendContour(c)
         return previewGlyph
-
-    # def _queue_generateCharacterGlyphPreview(self, cg_queue, variationPreview):
-    #     j, deepComponentInstance = cg_queue.get()
-    #     try:
-    #         glyph = self.glyph.getParent()[deepComponentInstance['name']]
-    #         # deepComponentInstance["x"] = self.glyph._deepComponents[j].x
-    #         # deepComponentInstance["y"] = self.glyph._deepComponents[j].y
-    #         deepComponentInstance["rcenterx"] = self.glyph._deepComponents[j].rcenterx
-    #         deepComponentInstance["rcentery"] = self.glyph._deepComponents[j].rcentery
-    #         variationPreview.append(self._getDeepComponentInstance(self._getPreviewGlyph(glyph._deepComponents,  glyph._glyphVariations,  deepComponentInstance['coord']), deepComponentInstance))                
-    #     except Exception as e:
-    #         raise e
-    #     cg_queue.task_done()
