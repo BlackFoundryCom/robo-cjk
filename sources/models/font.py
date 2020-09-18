@@ -99,7 +99,7 @@ class Font():
             showUI = False
             )
         fontFilePath = '{}.ufo'.format(os.path.join(fontPath, name))
-        # self._RFont.save(fontFilePath)
+        self._RFont.save(fontFilePath)
 
         fontFilePath = '{}.ufo'.format(os.path.join(fontPath, "%sfull"%name))
         self._fullRFont = NewFont(
@@ -205,7 +205,7 @@ class Font():
         self.fontPath = fontPath
         if fontpath is not None:
             files.makepath(os.path.join(fontpath, "%s.ufo"%fontName))
-            # self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
+            self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
 
         print("fontpath")
         print(os.path.join(fontpath, "%s.ufo"%fontName))
@@ -256,7 +256,7 @@ class Font():
                 fontFilePath = files.makepath(os.path.join(self.fontpath, "%s.ufo"%fontName))
         else:
             fontFilePath = '{}.ufo'.format(os.path.join(self.fontPath, self.fontName))
-        # self._RFont.save(fontFilePath)
+        self._RFont.save(fontFilePath)
         self._initFontLib(self.fontLib, self._RFont)
 
     def loadTeam(self):
