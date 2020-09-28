@@ -1,3 +1,7 @@
 connectors.cfg
 dev_rcjk2mysql/*
+__pycache__*/*.ufo
+dev_rcjk2mysql/*
+*/locker__
+connectors.cfg
 __pycache__
