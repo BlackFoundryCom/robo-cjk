@@ -478,7 +478,7 @@ class RelatedGlyphsGroup(Group):
         UpdateCurrentGlyphView()
 
     def scaleEditTextCallback(self, sender):
-        self.RCJKI.drawer.refGlyphScale = [self.sliders.scaleXEditText.get()/100, self.sliders.scaleYEditText.get()/100]  
+        self.RCJKI.drawer.refGlyphScale = [int(self.sliders.scaleXEditText.get())/100, int(self.sliders.scaleYEditText.get())/100]  
         UpdateCurrentGlyphView()   
         
 class PreviewGroup(Group):
