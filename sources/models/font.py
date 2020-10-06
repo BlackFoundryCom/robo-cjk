@@ -1156,12 +1156,14 @@ class Font():
         if not set([newName]) - set(self.atomicElementSet + self.deepComponentSet + self.characterGlyphSet):
             return
         if not self.mysql:
-            if not self.locker.userHasLock(self[oldName]): return False
+            if not self.locker.userHasLock(self[oldName]): 
+                return False
             self.save()
             f = self._RFont.getLayer('foreground')
-            if newName in f.keys(): return False
-            self[oldName].name = newName
-            f[oldName].name = newName
+            if newName in f.keys(): 
+                return False
+            self.get(oldName).name = newName
+            f.get(oldName).name = newName
             glyph = f[newName]
             txt = glyph.dumpToGLIF()
             fileName = "%s.glif"%files.userNameToFileName(glyph.name)
@@ -1171,15 +1173,15 @@ class Font():
             oldPath = os.path.join(self.fontPath, glyphType, oldFileName)
 
             if glyphType == "atomicElement":
-                for n in self.deepComponentSet:
-                    dcg = self[n]
+                for n in self.staticDeepComponentSet():
+                    dcg = self.get(n)
                     for ae in dcg._deepComponents:
                         if ae.name == oldName:
                             ae.name = newName
                 
             elif glyphType == "deepComponent":
-                for n in self.characterGlyphSet:
-                    dcg = self[n]
+                for n in self.staticCharacterGlyphSet():
+                    dcg = self.get(n)
                     for ae in dcg._deepComponents:
                         if ae.name == oldName:
                             ae.name = newName
