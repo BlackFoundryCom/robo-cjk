@@ -38,13 +38,13 @@ VariationGlyphs = component.VariationGlyphs
 VariationGlyphsInfos = component.VariationGlyphsInfos
 
 # Deprecated keys
-atomicElementsKey = 'robocjk.deepComponent.atomicElements'
+# atomicElementsKey = 'robocjk.deepComponent.atomicElements'
 glyphVariationsKey = 'robocjk.deepComponent.glyphVariations'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
 axesKey = 'robocjk.axes'
-variationGlyphsKey = 'robocjk.glyphVariationGlyphs'
+variationGlyphsKey = 'robocjk.variationGlyphs'
 
 
 class DeepComponent(Glyph):
@@ -76,7 +76,7 @@ class DeepComponent(Glyph):
         try:
             if lib:
                 if variationGlyphsKey not in lib.keys():
-                    deepComponents = lib[atomicElementsKey]
+                    deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[glyphVariationsKey]
                 else:
                     deepComponents = lib[deepComponentsKey]
@@ -84,7 +84,7 @@ class DeepComponent(Glyph):
                 axes = lib.get(axesKey)
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys():
-                    deepComponents = self._RGlyph.lib[atomicElementsKey]
+                    deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
@@ -160,12 +160,14 @@ class DeepComponent(Glyph):
         self.lib.clear()
         lib = RLib()
 
-        for variations in self._glyphVariations.values():
-            variations.setAxisWidth(self.currentFont.defaultGlyphWidth)
+        # for variations in self._glyphVariations.values():
+        #     variations.setAxisWidth(self.currentFont.defaultGlyphWidth)
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
+
+        # del lib[glyphVariationsKey]
 
         self.lib.update(lib)
         self.markColor = color

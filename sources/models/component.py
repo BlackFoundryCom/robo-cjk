@@ -596,8 +596,8 @@ class Axis:
         self.minValue = minValue
         self.maxValue = maxValue
 
-    def __repr__(self):
-        return "<"+str(vars(self))+">"
+    # def __repr__(self):
+    #     return "<"+str(vars(self))+">"
 
     def _toDict(self):
         return {x:getattr(self, x) for x in vars(self)}
@@ -624,8 +624,9 @@ class Axes(list):
         self.pop(index)
 
     def getList(self):
-        print("Axes", [x._toDict() for x in self])
+        # print("Axes", [x._toDict() for x in self])
         return [x._toDict() for x in self]
+        # return [x._toDict() for x in self]
 
 class Coord(dict):
 
@@ -717,7 +718,7 @@ class DeepComponent(dict):
         d = {}
         d["coord"] = {x:getattr(self.coord, x) for x in vars(self.coord)}
         d["transform"] = {x:getattr(self.transform, x) for x in vars(self.transform)}
-        print("DeepComponent ",d)
+        # print("DeepComponent ",d)
         return d
 
     def _unnamed(self):
@@ -830,7 +831,7 @@ class DeepComponents:
         """
         Return a list reprensentation on the class
         """
-        print("DeepComponents", [x._toDict() for x in self._deepComponents])
+        # print("DeepComponents", [x._toDict() for x in self._deepComponents])
         return [x._toDict() for x in self._deepComponents]
 
     def _unnamed(self):
@@ -877,6 +878,9 @@ class VariationGlyphsInfos:
     def _toDict(self):
         return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList()}
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
 class VariationGlyphs(list):
 
     def _init_with_old_format(self, data):
@@ -916,12 +920,13 @@ class VariationGlyphs(list):
         """
         Return a list reprensentation on the class
         """
+        # return [x for x in self]
         return [x._toDict() for x in self]
         # return {x: getattr(self, x)._toDict() for x in vars(self)}     
 
     # @property
     def layerNames(self):
-        return [x.layerName for x in self]
+        return [x["layerName"] for x in self]
     
 
     @property

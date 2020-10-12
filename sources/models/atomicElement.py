@@ -35,11 +35,11 @@ VariationGlyphs = component.VariationGlyphs
 Axes = component.Axes
 
 # Deprecated key 
-glyphVariationsKey = 'robocjk.atomicElement.glyphVariations'
+glyphVariationsKey = 'robocjk.glyphVariationGlyphs'
 
 # Actual key
 axesKey = 'robocjk.axes'
-variationGlyphsKey = 'robocjk.glyphVariationGlyphs'
+variationGlyphsKey = 'robocjk.variationGlyphs'
 
 class AtomicElement(Glyph):
     def __init__(self, name):
@@ -61,11 +61,16 @@ class AtomicElement(Glyph):
     
     def _initWithLib(self):
         if variationGlyphsKey not in self._RGlyph.lib.keys():
-            self._glyphVariations = VariationGlyphs(dict(self._RGlyph.lib[glyphVariationsKey]))
+            key = dict(self._RGlyph.lib[glyphVariationsKey])
+            self._axes = Axes()
+            self._axes._init_with_old_format(key)
+            self._glyphVariations = VariationGlyphs()
+            self._glyphVariations._init_with_old_format(key)
+            # self._glyphVariations = VariationGlyphs(dict(self._RGlyph.lib[glyphVariationsKey]))
         else:
             if axesKey in self._RGlyph.lib:
                 self._axes = Axes(self._RGlyph.lib[axesKey])
-                self._glyphVariations = VariationGlyphs(dict(self._RGlyph.lib[variationGlyphsKey]))
+                self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey])
             else:
                 self._axes = Axes()
                 self._axes._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]))
@@ -87,13 +92,13 @@ class AtomicElement(Glyph):
         self.lib.clear()
         lib = RLib()
         
-        for variations in self._glyphVariations.values():
-            layersNames = [x.name for x in self._RFont.layers]
-            if variations.layerName not in layersNames:
-                continue
-            axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
-            variations.writeOutlines(axisGlyph)
-            variations.setAxisWidth(axisGlyph.width)
+        # for variations in self._glyphVariations.values():
+        #     layersNames = [x.name for x in self._RFont.layers]
+        #     if variations.layerName not in layersNames:
+        #         continue
+        #     axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
+        #     variations.writeOutlines(axisGlyph)
+        #     variations.setAxisWidth(axisGlyph.width)
     
         # lib[glyphVariationsKey] = self._glyphVariations.getDict()
         lib[axesKey] = self._axes.getList()

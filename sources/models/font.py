@@ -664,7 +664,7 @@ class Font():
         if type in ["atomicElement", "characterGlyph"]:
             if isinstance(glyph, str):
                 glyph = self.get(glyph)
-            layerNames = glyph._glyphVariations.layerNames
+            layerNames = glyph._glyphVariations.layerNames()
             # path = os.path.join(self.fontPath, type)
             # for layerPath in [f.path for f in os.scandir(path) if f.is_dir()]:
             #     layerName = os.path.split(layerPath)[1]
@@ -1031,6 +1031,7 @@ class Font():
         glyph.save()
         glyphType = glyph.type
         rglyph = glyph._RGlyph
+        rglyph.lib.clear()
         rglyph.lib.update(glyph.lib)
         txt = rglyph.dumpToGLIF()
         fileName = "%s.glif"%files.userNameToFileName(glyph.name)
