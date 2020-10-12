@@ -50,9 +50,9 @@ def compute(func):
 
 def _getKeys(glyph):
     if glyph.type == "characterGlyph":
-        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.fontVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
     else:
-        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.glyphVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
 
 class Glyph(RGlyph):
 
@@ -67,10 +67,8 @@ class Glyph(RGlyph):
     def _setStackUndo(self):
         # if self.type != 'atomicElement':
         lib = RLib()
-        deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self)
-
+        deepComponentsKey, glyphVariationsKey = _getKeys(self)
         lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
-        lib[axesKey] = copy.deepcopy(self._axes)
         lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
         self.stackUndo_lib = [lib]
         self.indexStackUndo_lib = 0

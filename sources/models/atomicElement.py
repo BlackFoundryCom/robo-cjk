@@ -32,19 +32,16 @@ import copy
 Glyph = glyph.Glyph
 DictClass = component.DictClass
 VariationGlyphs = component.VariationGlyphs
-Axes = component.Axes
 
 # Deprecated key 
 glyphVariationsKey = 'robocjk.atomicElement.glyphVariations'
 
 # Actual key
-axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.glyphVariationGlyphs'
 
 class AtomicElement(Glyph):
     def __init__(self, name):
         super().__init__()
-        self._axes = Axes()
         self._glyphVariations = VariationGlyphs()
         self.name = name
         self.type = "atomicElement"
@@ -63,14 +60,7 @@ class AtomicElement(Glyph):
         if variationGlyphsKey not in self._RGlyph.lib.keys():
             self._glyphVariations = VariationGlyphs(dict(self._RGlyph.lib[glyphVariationsKey]))
         else:
-            if axesKey in self._RGlyph.lib:
-                self._axes = Axes(self._RGlyph.lib[axesKey])
-                self._glyphVariations = VariationGlyphs(dict(self._RGlyph.lib[variationGlyphsKey]))
-            else:
-                self._axes = Axes()
-                self._axes._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]))
-                self._glyphVariations = VariationGlyphs()
-                self._glyphVariations._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]))
+            self._glyphVariations = VariationGlyphs(dict(self._RGlyph.lib[variationGlyphsKey]))
 
     def addGlyphVariation(self, newAxisName, newLayerName):
         self._glyphVariations.addAxis(newAxisName, layerName = newLayerName)
@@ -96,7 +86,6 @@ class AtomicElement(Glyph):
             variations.setAxisWidth(axisGlyph.width)
     
         # lib[glyphVariationsKey] = self._glyphVariations.getDict()
-        lib[axesKey] = list(self._axes)
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
 
         self.lib.update(lib)
