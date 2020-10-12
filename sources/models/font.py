@@ -178,6 +178,7 @@ class Font():
             #     stopGlyph = time.time()
             #     print(stopGlyph-startGlyph, "per glyph")
         self.createLayersFromVariationAxis()
+        self.save()
         # createLayerStop = time.time()
         # print(createLayerStop-getStop, "createLayersFromVariationAxis")
         # stop = time.time()
@@ -1058,13 +1059,15 @@ class Font():
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, "w") as file:
                 lib = self._fullRFont.lib.asDict()
-                del lib["public.glyphOrder"]
+                if "public.glyphOrder" in lib:
+                    del lib["public.glyphOrder"]
                 file.write(json.dumps(lib,
                     indent=4, separators=(',', ': ')))
 
             for rglyph in self._RFont.getLayer('foreground'):
-                if not self.locker.userHasLock(rglyph): continue
+                # if not self.locker.userHasLock(rglyph): continue
                 glyph = self[rglyph.name]
+                # glyph = self.get(rglyph.name, self._fullRFont)
                 
                 self.writeGlif(glyph)
                 self.getGlyph(rglyph.name, type = glyph.type, font = self._fullRFont)

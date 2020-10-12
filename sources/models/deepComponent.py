@@ -33,6 +33,7 @@ glyphAddRemoveUndo = decorators.glyphAddRemoveUndo
 
 DeepComponentNamed = component.DeepComponentNamed
 DeepComponents = component.DeepComponents
+Axes = component.Axes
 VariationGlyphs = component.VariationGlyphs
 VariationGlyphsInfos = component.VariationGlyphsInfos
 
@@ -42,6 +43,7 @@ glyphVariationsKey = 'robocjk.deepComponent.glyphVariations'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
+axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.glyphVariationGlyphs'
 
 
@@ -49,6 +51,7 @@ class DeepComponent(Glyph):
     def __init__(self, name):
         super().__init__()
         self._deepComponents = DeepComponents()
+        self._axes = Axes()
         self._glyphVariations = VariationGlyphs()
         self.selectedSourceAxis = None
         self.computedAtomicSelectedSourceInstances = []
@@ -85,10 +88,19 @@ class DeepComponent(Glyph):
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
-            self._deepComponents = DeepComponents(deepComponents)
-            self._glyphVariations = VariationGlyphs(variationGlyphs)
+            if axesKey in lib:
+                self._deepComponents = DeepComponents(deepComponents)
+                self._axes = Axes(lib[axesKey])
+                self._glyphVariations = VariationGlyphs(variationGlyphs)
+            else:
+                self._deepComponents = DeepComponents(deepComponents)
+                self._axes = Axes()      
+                self._axes._init_with_old_format(variationGlyphs)
+                self._glyphVariations = VariationGlyphs()
+                self._glyphVariations._init_with_old_format(variationGlyphs)
         except:
             self._deepComponents = DeepComponents()
+            self._axes = Axes()  
             self._glyphVariations = VariationGlyphs()
 
     def duplicateSelectedElements(self):
@@ -150,6 +162,7 @@ class DeepComponent(Glyph):
             variations.setAxisWidth(self.currentFont.defaultGlyphWidth)
 
         lib[deepComponentsKey] = self._deepComponents.getList()
+        lib[axesKey] = list(self._axes)
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
 
         self.lib.update(lib)

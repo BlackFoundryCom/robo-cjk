@@ -31,6 +31,7 @@ from models import deepComponent
 
 DeepComponentNamed = component.DeepComponentNamed
 DeepComponents = component.DeepComponents
+Axes = component.Axes
 VariationGlyphs = component.VariationGlyphs
 
 import copy
@@ -41,12 +42,14 @@ glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
+axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.fontVariationGlyphs'
 
 class CharacterGlyph(Glyph):
     def __init__(self, name):
         super().__init__()
         self._deepComponents = DeepComponents()
+        self._axes = Axes()
         self._glyphVariations = VariationGlyphs()
         self.selectedSourceAxis = None
         self.computedDeepComponents = []
@@ -78,8 +81,10 @@ class CharacterGlyph(Glyph):
         return self._glyphVariations
 
     def _initWithLib(self, lib=None):
+        print(self.name, "1")
         try:
             if lib:
+                print(self.name, "2")
                 if variationGlyphsKey not in lib.keys():
                     deepComponents = lib[deepComponentsKeyOld]
                     variationGlyphs = lib[glyphVariationsKey]
@@ -87,6 +92,7 @@ class CharacterGlyph(Glyph):
                     deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[variationGlyphsKey]
             else:
+                print(self.name, "3")
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
                     deepComponents = self._RGlyph.lib[deepComponentsKeyOld]
                     variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
@@ -94,10 +100,22 @@ class CharacterGlyph(Glyph):
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
 
-            self._deepComponents = DeepComponents(deepComponents)      
-            self._glyphVariations = VariationGlyphs(variationGlyphs)
+            if axesKey in lib:
+                print(self.name, "4")
+                self._deepComponents = DeepComponents(deepComponents)
+                self._axes = Axes(lib[axesKey])
+                self._glyphVariations = VariationGlyphs(variationGlyphs)
+            else:
+                print(self.name, "5")
+                self._deepComponents = DeepComponents(deepComponents)
+                self._axes = Axes()      
+                self._axes._init_with_old_format(variationGlyphs)
+                self._glyphVariations = VariationGlyphs()
+                self._glyphVariations._init_with_old_format(variationGlyphs)
         except:
+            print(self.name, "6")
             self._deepComponents = DeepComponents()
+            self._axes = Axes()   
             self._glyphVariations = VariationGlyphs()
 
     def duplicateSelectedElements(self):
@@ -152,19 +170,20 @@ class CharacterGlyph(Glyph):
         self.lib.clear()
         lib = RLib()
 
-        for axis, variations in self._glyphVariations.items():
-            variations.layerName = axis
-            try:
-                axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
-                variations.writeOutlines(axisGlyph)
-                variations.setAxisWidth(axisGlyph.width)
-            except:
-                pass
+        # for axis, variations in self._glyphVariations.items():
+        #     variations.layerName = axis
+        #     try:
+        #         axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
+        #         variations.writeOutlines(axisGlyph)
+        #         variations.setAxisWidth(axisGlyph.width)
+        #     except:
+        #         pass
 
         # lib[deepComponentsKeyOld] = self._deepComponents.getList()
         # lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
         lib[deepComponentsKey] = self._deepComponents.getList()
+        lib[axesKey] = list(self._axes)
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)
         self.markColor = color
