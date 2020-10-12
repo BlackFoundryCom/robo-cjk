@@ -81,39 +81,34 @@ class CharacterGlyph(Glyph):
         return self._glyphVariations
 
     def _initWithLib(self, lib=None):
-        print(self.name, "1")
         try:
             if lib:
-                print(self.name, "2")
                 if variationGlyphsKey not in lib.keys():
                     deepComponents = lib[deepComponentsKeyOld]
                     variationGlyphs = lib[glyphVariationsKey]
                 else:
                     deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[variationGlyphsKey]
+                axes = lib.get(axesKey)
             else:
-                print(self.name, "3")
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
                     deepComponents = self._RGlyph.lib[deepComponentsKeyOld]
                     variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
-
-            if axesKey in lib:
-                print(self.name, "4")
+                axes = self._RGlyph.lib.get(axesKey)
+            if axes:
                 self._deepComponents = DeepComponents(deepComponents)
-                self._axes = Axes(lib[axesKey])
+                self._axes = Axes(axes)
                 self._glyphVariations = VariationGlyphs(variationGlyphs)
             else:
-                print(self.name, "5")
                 self._deepComponents = DeepComponents(deepComponents)
                 self._axes = Axes()      
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(variationGlyphs)
         except:
-            print(self.name, "6")
             self._deepComponents = DeepComponents()
             self._axes = Axes()   
             self._glyphVariations = VariationGlyphs()
@@ -183,7 +178,7 @@ class CharacterGlyph(Glyph):
         # lib[glyphVariationsKey] = self._glyphVariations.getDict()
 
         lib[deepComponentsKey] = self._deepComponents.getList()
-        lib[axesKey] = list(self._axes)
+        lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)
         self.markColor = color

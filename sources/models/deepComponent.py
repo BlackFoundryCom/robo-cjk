@@ -81,6 +81,7 @@ class DeepComponent(Glyph):
                 else:
                     deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[variationGlyphsKey]
+                axes = lib.get(axesKey)
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys():
                     deepComponents = self._RGlyph.lib[atomicElementsKey]
@@ -88,7 +89,8 @@ class DeepComponent(Glyph):
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
-            if axesKey in lib:
+                axes = self._RGlyph.lib.get(axesKey)
+            if axes:
                 self._deepComponents = DeepComponents(deepComponents)
                 self._axes = Axes(lib[axesKey])
                 self._glyphVariations = VariationGlyphs(variationGlyphs)
@@ -162,7 +164,7 @@ class DeepComponent(Glyph):
             variations.setAxisWidth(self.currentFont.defaultGlyphWidth)
 
         lib[deepComponentsKey] = self._deepComponents.getList()
-        lib[axesKey] = list(self._axes)
+        lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
 
         self.lib.update(lib)
