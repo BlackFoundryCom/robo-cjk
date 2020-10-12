@@ -1100,7 +1100,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeVerSecLine(self, 
@@ -1119,7 +1119,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeHorGrid(self,
@@ -1139,7 +1139,7 @@ class DesignFrameDrawer:
             dist += h / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
 
     def _makeVerGrid(self,
                     glyph: RGlyph, 
@@ -1158,7 +1158,7 @@ class DesignFrameDrawer:
             dist += w / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
 
 
     def _findProximity(self, 
@@ -1192,7 +1192,7 @@ class DesignFrameDrawer:
 
             frame = self._getEmRatioFrame(self.controller.designFrame.characterFace, w, h, translateY)
             outside, inside = self.controller.designFrame.overshoot
-            self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
+            # self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
 
         self._makeHorGrid(RGlyph(), *frame, translateY, step = 24)
         self._makeVerGrid(RGlyph(), *frame, translateY, step = 24)
