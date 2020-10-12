@@ -177,10 +177,7 @@ class GroupPosition(Group):
         if not sel:
             return
         oldName = self.currentGroup
-        get = sender.get()
-        print(get)
-        if not len(get): return
-        newName = get[sel[0]].get("groups")
+        newName = sender.get()[sel[0]].get("groups")
         if newName == oldName: return
         self.hangulModule.groups.renameGroup(oldName, newName)
         self.currentGroup = newName
@@ -205,16 +202,14 @@ class GroupPosition(Group):
     # @lock
     def removeGroupCallback(self, sender):
         if self.currentGroup is None: return
-        self.groupsList.setSelection([])
         self.hangulModule.groups.removeGroup(self.currentGroup)
         self.currentGroup = None
 
     def setGroupsList(self):
         self.lock = True
         sel = self.groupsList.getSelection()
-        if sel:
-            self.groupsList.set([dict(groups = x, jamos = "".join(self.hangulModule.groups[x].jamos)) for x in self.hangulModule.getGroupsFor(self.position)])
-            self.groupsList.setSelection(sel)
+        self.groupsList.set([dict(groups = x, jamos = "".join(self.hangulModule.groups[x].jamos)) for x in self.hangulModule.getGroupsFor(self.position)])
+        self.groupsList.setSelection(sel)
         self.lock = False
 
     def setJamosList(self):

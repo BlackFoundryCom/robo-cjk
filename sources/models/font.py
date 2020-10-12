@@ -99,7 +99,7 @@ class Font():
             showUI = False
             )
         fontFilePath = '{}.ufo'.format(os.path.join(fontPath, name))
-        # self._RFont.save(fontFilePath)
+        self._RFont.save(fontFilePath)
 
         fontFilePath = '{}.ufo'.format(os.path.join(fontPath, "%sfull"%name))
         self._fullRFont = NewFont(
@@ -178,6 +178,7 @@ class Font():
             #     stopGlyph = time.time()
             #     print(stopGlyph-startGlyph, "per glyph")
         self.createLayersFromVariationAxis()
+        self.save()
         # createLayerStop = time.time()
         # print(createLayerStop-getStop, "createLayersFromVariationAxis")
         # stop = time.time()
@@ -205,7 +206,7 @@ class Font():
         self.fontPath = fontPath
         if fontpath is not None:
             files.makepath(os.path.join(fontpath, "%s.ufo"%fontName))
-            # self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
+            self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
 
         print("fontpath")
         print(os.path.join(fontpath, "%s.ufo"%fontName))
@@ -256,7 +257,7 @@ class Font():
                 fontFilePath = files.makepath(os.path.join(self.fontpath, "%s.ufo"%fontName))
         else:
             fontFilePath = '{}.ufo'.format(os.path.join(self.fontPath, self.fontName))
-        # self._RFont.save(fontFilePath)
+        self._RFont.save(fontFilePath)
         self._initFontLib(self.fontLib, self._RFont)
 
     def loadTeam(self):
@@ -1058,13 +1059,15 @@ class Font():
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, "w") as file:
                 lib = self._fullRFont.lib.asDict()
-                del lib["public.glyphOrder"]
+                if "public.glyphOrder" in lib:
+                    del lib["public.glyphOrder"]
                 file.write(json.dumps(lib,
                     indent=4, separators=(',', ': ')))
 
             for rglyph in self._RFont.getLayer('foreground'):
-                if not self.locker.userHasLock(rglyph): continue
+                # if not self.locker.userHasLock(rglyph): continue
                 glyph = self[rglyph.name]
+                # glyph = self.get(rglyph.name, self._fullRFont)
                 
                 self.writeGlif(glyph)
                 self.getGlyph(rglyph.name, type = glyph.type, font = self._fullRFont)
@@ -1156,12 +1159,14 @@ class Font():
         if not set([newName]) - set(self.atomicElementSet + self.deepComponentSet + self.characterGlyphSet):
             return
         if not self.mysql:
-            if not self.locker.userHasLock(self[oldName]): return False
+            if not self.locker.userHasLock(self[oldName]): 
+                return False
             self.save()
             f = self._RFont.getLayer('foreground')
-            if newName in f.keys(): return False
-            self[oldName].name = newName
-            f[oldName].name = newName
+            if newName in f.keys(): 
+                return False
+            self.get(oldName).name = newName
+            f.get(oldName).name = newName
             glyph = f[newName]
             txt = glyph.dumpToGLIF()
             fileName = "%s.glif"%files.userNameToFileName(glyph.name)
@@ -1171,15 +1176,15 @@ class Font():
             oldPath = os.path.join(self.fontPath, glyphType, oldFileName)
 
             if glyphType == "atomicElement":
-                for n in self.deepComponentSet:
-                    dcg = self[n]
+                for n in self.staticDeepComponentSet():
+                    dcg = self.get(n)
                     for ae in dcg._deepComponents:
                         if ae.name == oldName:
                             ae.name = newName
                 
             elif glyphType == "deepComponent":
-                for n in self.characterGlyphSet:
-                    dcg = self[n]
+                for n in self.staticCharacterGlyphSet():
+                    dcg = self.get(n)
                     for ae in dcg._deepComponents:
                         if ae.name == oldName:
                             ae.name = newName
