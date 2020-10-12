@@ -1104,7 +1104,7 @@ class RoboCJKView(BaseWindowController):
                 self.currentFont.save()
 
     def newProjectButtonCallback(self, sender):
-        if not self.RCJKI.currentFont.mysqlFont:
+        if not self.RCJKI.mysql:
             folder = putFile()
             if not folder: return
             askYesNo('Would you like to create a private locker repository?', resultCallback = self.askYesNocallback)
@@ -1183,11 +1183,11 @@ class RoboCJKView(BaseWindowController):
 
             self.setmySQLRCJKFiles()
         elif self.currentrcjkFile == "Select a project":
+            self.w.newProjectButton.enable(True)
             pass
         else:
             # self.RCJKI.dataBase = {}
             self.w.saveProjectButton.enable(True)
-            self.w.newProjectButton.enable(True)
             self.w.fontInfos.enable(True)
             self.w.generateFontButton.enable(True)
             self.w.teamManagerButton.enable(True)
