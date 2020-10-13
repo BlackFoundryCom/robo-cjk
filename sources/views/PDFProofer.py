@@ -875,6 +875,12 @@ class HanDesignFrame(DesignFrame):
 
 FRAMEX, FRAMEY = 595, 841
 
+INPROGRESS = (1., 0., 0., 1.)
+CHECKING1 = (1., .5, 0., 1.)
+CHECKING2 = (1., 1., 0., 1.)
+CHECKING3 = (0., .5, 1., 1.)
+DONE = (0., 1., .5, 1.)
+
 class NewPDF:
 
     def __init__(self, RCJKI, controller, text):
@@ -882,7 +888,24 @@ class NewPDF:
         self.controller = controller
         self.designFrame = HanDesignFrame()
         self.designFrameViewer = DesignFrameDrawer(self)
-        self.pages = [ ["uni%s"%hex(ord(x))[2:].upper() for x in text[i:i+20]] for i in range(0, len(text), 20) ]
+        textColor = {INPROGRESS:[], CHECKING1:[], CHECKING2:[], CHECKING3:[], DONE:[]}
+        for x in text:
+            name = "uni%s"%hex(ord(x))[2:].upper()
+            glyph = self.RCJKI.currentFont.get(name)
+            color = glyph.markColor
+            if color in textColor.keys():
+                textColor[color].append(glyph)
+            else:
+                textColor[INPROGRESS].append(glyph)
+        glyphs = []
+        glyphs.extend(textColor[INPROGRESS])
+        glyphs.extend(textColor[CHECKING1])
+        glyphs.extend(textColor[CHECKING2])
+        glyphs.extend(textColor[CHECKING3])
+        glyphs.extend(textColor[DONE])
+        # self.pages = [ ["uni%s"%hex(ord(x))[2:].upper() for x in text[i:i+20]] for i in range(0, len(text), 20) ]
+        self.pages = [ [x for x in glyphs[i:i+20]] for i in range(0, len(glyphs), 20) ]
+        # self.pages = [ [self.RCJKI.currentFont.get("uni%s"%hex(ord(x))[2:].upper()) for x in text[i:i+20]] for i in range(0, len(text), 20) ]
         self.draw()
 
     def draw(self):
@@ -917,17 +940,24 @@ class NewPDF:
             db.scale(s, s)
             db.translate(tx, ty)
             db.fontSize(60)
-            for i, name in enumerate(page):
+            for i, glyph in enumerate(page):
+                name = glyph.name
                 try:
                     for variation in self.RCJKI.currentFont.fontVariations:
-                        glyph1 = self.RCJKI.currentFont.get(name)
+                        glyph1 = glyph
                         glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
                         glyph1.preview.variationPreview.removeOverlap()
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
+                        glyph1.preview.variationPreview.markColor = glyph1.markColor
                         glyphsVariations[variation].append(glyph1.preview.variationPreview)
 
                         drawDesignFrame()
+                        if glyph1.markColor:
+                            db.fill(*glyph1.markColor)
+                        else:
+                            db.fill(*INPROGRESS)
+                        db.rect(0, 900, 250, 100)
                         db.fill(0, 0, 0, 1)
                         db.stroke(None)                    
                         db.textBox(name, (0, 900, 1000, 100), align = "center")
@@ -942,6 +972,7 @@ class NewPDF:
                         variation = "normal"
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
+                        glyph1.preview.variationPreview.markColor = glyph1.markColor
                         glyphsVariations[variation].append(glyph1.preview.variationPreview)
                         db.drawGlyph(glyph1.preview.variationPreview)
 
@@ -976,6 +1007,11 @@ class NewPDF:
 
                 for i, glyph in enumerate(weight):
                     drawDesignFrame()
+                    if glyph.markColor:
+                        db.fill(*glyph.markColor)
+                    else:
+                        db.fill(*INPROGRESS)
+                    db.rect(0, 900, 250, 100)
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)                    
                     db.textBox(glyph.name, (0, 900, 1000, 100), align = "center")
@@ -1003,7 +1039,7 @@ class NewPDF:
             textPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_text.txt'%(date, str(pageIndex).zfill(2)))
             files.makepath(textPath)
             with open(textPath, 'w', encoding = 'utf-8') as file:
-                file.write("".join([chr(int(x[3:], 16)) for x in page]))
+                file.write("".join([chr(int(x.name[3:], 16)) for x in page]))
 
 class DesignFrameDrawer:
 
