@@ -56,12 +56,13 @@ from mojo.roboFont import *
 import threading
 import queue
 
-INPROGRESS = (1., 0., 0., 1.)
-CHECKING1 = (1., .5, 0., 1.)
-CHECKING2 = (1., 1., 0., 1.)
-CHECKING3 = (0., .5, 1., 1.)
-DONE = (0., 1., .5, 1.)
-STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
+from utils import colors
+INPROGRESS = colors.INPROGRESS
+CHECKING1 = colors.CHECKING1
+CHECKING2 = colors.CHECKING2
+CHECKING3 = colors.CHECKING3
+DONE = colors.DONE
+STATE_COLORS = colors.STATE_COLORS
 
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
 removeGlyphImagePath = os.path.join(os.getcwd(), "resources", "removeButton.pdf")

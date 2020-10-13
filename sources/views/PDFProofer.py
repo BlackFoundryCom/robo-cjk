@@ -875,11 +875,13 @@ class HanDesignFrame(DesignFrame):
 
 FRAMEX, FRAMEY = 595, 841
 
-INPROGRESS = (1., 0., 0., 1.)
-CHECKING1 = (1., .5, 0., 1.)
-CHECKING2 = (1., 1., 0., 1.)
-CHECKING3 = (0., .5, 1., 1.)
-DONE = (0., 1., .5, 1.)
+from utils import colors
+INPROGRESS = colors.INPROGRESS
+CHECKING1 = colors.CHECKING1
+CHECKING2 = colors.CHECKING2
+CHECKING3 = colors.CHECKING3
+DONE = colors.DONE
+STATE_COLORS = colors.STATE_COLORS
 
 class NewPDF:
 
