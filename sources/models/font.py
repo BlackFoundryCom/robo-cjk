@@ -179,7 +179,7 @@ class Font():
             #     stopGlyph = time.time()
             #     print(stopGlyph-startGlyph, "per glyph")
         self.createLayersFromVariationAxis()
-        self.save()
+        # self.save()
         # createLayerStop = time.time()
         # print(createLayerStop-getStop, "createLayersFromVariationAxis")
         # stop = time.time()
