@@ -647,7 +647,17 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterAtomicElement = PopUpButton(
             (90, 120, 120, 20),
-            ["that are in font", "that are not empty", "that are empty", "that have outlines"],
+            [
+            "that are in font", 
+            "that are not empty", 
+            "that are empty", 
+            "that have outlines",
+            "that are in progress", 
+            "that are checking 1", 
+            "that are checking 2", 
+            "that are checking 3", 
+            "that are done"
+            ],
             callback = self.filterAtomicElementCallback,
             sizeStyle = "mini"
             )
@@ -713,7 +723,18 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterDeepComponent = PopUpButton(
             (290, 120, 120, 20),
-            ["that are in font", "that are not empty", "that are empty", "that have outlines", "that are not locked"],
+            [
+            "that are in font", 
+            "that are not empty", 
+            "that are empty", 
+            "that have outlines", 
+            "that are not locked",
+            "that are in progress", 
+            "that are checking 1", 
+            "that are checking 2", 
+            "that are checking 3", 
+            "that are done"
+            ],
             callback = self.filterDeepComponentCallback,
             sizeStyle = "mini"
             )
@@ -778,7 +799,19 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.secondFilterCharacterGlyph = PopUpButton(
             (490, 120, 120, 20),
-            ["that are in font", "that can be fully designed", "that are not empty", "that are empty", "that have outlines", "that are not locked"],
+            [
+            "that are in font", 
+            "that can be fully designed", 
+            "that are not empty", 
+            "that are empty", 
+            "that have outlines", 
+            "that are not locked",
+            "that are in progress", 
+            "that are checking 1", 
+            "that are checking 2", 
+            "that are checking 3", 
+            "that are done"
+            ],
             callback = self.filterCharacterGlyphCallback,
             sizeStyle = "mini"
             )
@@ -950,7 +983,7 @@ class RoboCJKView(BaseWindowController):
             self.w.secondFilterAtomicElement.getItem(),
             aeList,
             # list(set(aeList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            list(set(aeList) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
+            set(aeList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
             )
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
@@ -965,7 +998,7 @@ class RoboCJKView(BaseWindowController):
             self.w.secondFilterDeepComponent.getItem(),
             dcList,
             # list(set(dcList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            list(set(dcList) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
+            set(dcList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
             )
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
@@ -980,7 +1013,7 @@ class RoboCJKView(BaseWindowController):
             self.w.secondFilterCharacterGlyph.getItem(),
             cgList,
             # list(set(cgList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            list(set(cgList) & set([x for x in self.currentFont.currentUserLockedGlyphs()]))
+            set(cgList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
             )
 
         self.w.atomicElement.setSelection([])
@@ -990,12 +1023,13 @@ class RoboCJKView(BaseWindowController):
         self.w.characterGlyph.set(charSet)
 
     def filterGlyphs(self, glyphtype, option1, option2, allGlyphs, lockedGlyphs):
+        lockedGlyphs = lockedGlyphs & set(allGlyphs)
 
         def getFilteredList(option1, l, lockedGlyphs):
             if option1 == "All those":
                 return l
             else:
-                return list(set(lockedGlyphs) & set(l))
+                return list(lockedGlyphs & set(l))
 
         if option2 == "that can be fully designed":
             l = []
@@ -1013,36 +1047,93 @@ class RoboCJKView(BaseWindowController):
 
         elif option2 == "that are not empty":
             if glyphtype == "characterGlyph":
-                l = [x for x in allGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
+                if option1 == "All those":
+                    return [x for x in allGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
+                else:
+                    return [x for x in lockedGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
             elif glyphtype == "deepComponent":
-                l = [x for x in allGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
+                if option1 == "All those":
+                    return [x for x in allGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
+                else:
+                    return [x for x in lockedGlyphs if self.RCJKI.currentFont.get(x)._deepComponents or len(self.RCJKI.currentFont.get(x))]
             else:
-                l = [x for x in allGlyphs if len(self.RCJKI.currentFont.get(x))]
-            return getFilteredList(option1, l, lockedGlyphs)
+                if option1 == "All those":
+                    return [x for x in allGlyphs if len(self.RCJKI.currentFont.get(x))]
+                else:
+                    return [x for x in lockedGlyphs if len(self.RCJKI.currentFont.get(x))]
+            # return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that have outlines":
-            l = [x for x in allGlyphs if len(self.RCJKI.currentFont.get(x))]
-            return getFilteredList(option1, l, lockedGlyphs)
+            if option1 == "All those":
+                return [x for x in allGlyphs if len(self.RCJKI.currentFont.get(x))]
+            else:
+                return [x for x in lockedGlyphs if len(self.RCJKI.currentFont.get(x))]
+            # return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that are empty":
             if glyphtype == "characterGlyph":
-                l = [x for x in allGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
+                if option1 == "All those":
+                    return [x for x in allGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
+                else:
+                    return [x for x in lockedGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
             elif glyphtype == "deepComponent":
-                l = [x for x in allGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
+                if option1 == "All those":
+                    return [x for x in allGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
+                else:
+                    return [x for x in lockedGlyphs if not self.RCJKI.currentFont.get(x)._deepComponents and not len(self.RCJKI.currentFont.get(x))]
             else:
-                l = [x for x in allGlyphs if not len(self.RCJKI.currentFont.get(x))]
-            return getFilteredList(option1, l, lockedGlyphs)
+                if option1 == "All those":
+                    return [x for x in allGlyphs if not len(self.RCJKI.currentFont.get(x))]
+                else:
+                    return [x for x in lockedGlyphs if not len(self.RCJKI.currentFont.get(x))]
+
+            # return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that are in font":
             l = allGlyphs
             return getFilteredList(option1, l, lockedGlyphs)
 
         elif option2 == "that are not locked":
-
             pass
+
+        elif option2 == "that are in progress":
+            if option1 == "All those":
+                return [x for x in allGlyphs if self.RCJKI.currentFont.get(x).markColor in [None, INPROGRESS]]
+            else:
+                return [x for x in lockedGlyphs if self.RCJKI.currentFont.get(x).markColor in [None, INPROGRESS]]
+            # return getFilteredList(option1, l, lockedGlyphs)
+
+        elif option2 == "that are checking 1":
+            if option1 == "All those":
+                return [x for x in allGlyphs if self.RCJKI.currentFont.get(x).markColor == CHECKING1]
+            else:
+                return [x for x in lockedGlyphs if self.RCJKI.currentFont.get(x).markColor == CHECKING1]
+            # return getFilteredList(option1, l, lockedGlyphs)
+
+        elif option2 == "that are checking 2":
+            if option1 == "All those":
+                return [x for x in allGlyphs if self.RCJKI.currentFont.get(x).markColor == CHECKING2]
+            else:
+                return [x for x in lockedGlyphs if self.RCJKI.currentFont.get(x).markColor == CHECKING2]
+            # return getFilteredList(option1, l, lockedGlyphs)
+
+        elif option2 == "that are checking 3":
+            if option1 == "All those":
+                return [x for x in allGlyphs if self.RCJKI.currentFont.get(x).markColor == CHECKING3]
+            else:
+                return [x for x in lockedGlyphs if self.RCJKI.currentFont.get(x).markColor == CHECKING3]
+            # return getFilteredList(option1, l, lockedGlyphs)
+
+        elif option2 == "that are done":
+            if option1 == "All those":
+                return [x for x in allGlyphs if self.RCJKI.currentFont.get(x).markColor == DONE]
+            else:
+                return [x for x in lockedGlyphs if self.RCJKI.currentFont.get(x).markColor == DONE]
+            # return getFilteredList(option1, l, lockedGlyphs)
+
         else:
             return allGlyphs
-        
+
     def windowCloses(self, sender):
         for w in AllWindows():
             try:
