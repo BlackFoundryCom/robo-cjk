@@ -163,7 +163,7 @@ class DeepComponent(DictClass):
             ):
         super().__init__()
         self.coord = Coord(**dict(coord))
-        self.rotation = rotation
+        self.rotation = self.normalizeRotation(rotation)
         self.scalex = scalex
         self.scaley = scaley
         self.x = x
@@ -174,6 +174,12 @@ class DeepComponent(DictClass):
         # self.axisMaxValue = axisMaxValue
         self.maxValue = maxValue
         self.minValue = minValue
+
+    def normalizeRotation(self, rotation):
+        r = rotation
+        if r:
+            r = int(rotation%(360*rotation/abs(rotation)))
+        return r
 
     def set(self, items: dict):
         """
