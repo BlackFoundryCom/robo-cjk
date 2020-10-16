@@ -720,8 +720,7 @@ class DeepComponent(dict):
         Return a dict representation of the deep component datas.
         Allows to exclude an attribute in the dictionnary with exception
         """
-        # d = {x:getattr(self, x) for x in vars(self) if x != exception}
-        d = {}
+        d = {x:getattr(self, x) for x in vars(self) if x != exception}
         d["coord"] = {x:getattr(self.coord, x) for x in vars(self.coord)}
         d["transform"] = {x:getattr(self.transform, x) for x in vars(self.transform)}
         # print("DeepComponent ",d)
