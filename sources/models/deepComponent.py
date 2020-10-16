@@ -39,7 +39,7 @@ VariationGlyphsInfos = component.VariationGlyphsInfos
 
 # Deprecated keys
 # atomicElementsKey = 'robocjk.deepComponent.atomicElements'
-glyphVariationsKey = 'robocjk.deepComponent.glyphVariations'
+glyphVariationsKey = 'robocjk.glyphVariationGlyphs'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
