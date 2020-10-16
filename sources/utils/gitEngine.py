@@ -51,9 +51,7 @@ class GitEngine():
             return
             
         f = open(os.path.join(self._path, '.gitignore'), 'w')
-        gitignore = '''*/*.ufo
-        */locker__
-        '''
+        gitignore = '*/*.ufo\n*/locker__'
         f.write(gitignore)
         f.close()
         self.commit('add .gitignore')

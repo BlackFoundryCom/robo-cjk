@@ -41,8 +41,8 @@ class Locker():
                 cp = subprocess.run(['git', 'clone', "https://"+githubHostLocker+":"+githubHostLockerPassword+"@github.com/"+githubHostLocker+"/"+repoName+".git", "locker__"], cwd=path)
                 print(cp.returncode)
 
-                with open(os.path.join(self._path, "README.txt"), 'w') as f:
-                    f.write("This is a git repo for locking elements from "+path+"\n")
+                f = open(os.path.join(self._path, "README.txt"), 'w')
+                f.write("This is a git repo for locking elements from "+path+"\n")
                 subprocess.run(['git', 'add', 'README.txt'], cwd=self._path)
                 subprocess.run(['git', 'commit', '-m', 'init'], cwd=self._path)
                 subprocess.run(['git', 'push'], cwd=self._path)

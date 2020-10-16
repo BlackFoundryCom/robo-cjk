@@ -185,7 +185,5 @@ class CharacterGlyph(Glyph):
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getDict()
-
-        # del lib[glyphVariationsKey]
         self.lib.update(lib)
         self.markColor = color

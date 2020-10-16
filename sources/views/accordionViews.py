@@ -30,6 +30,10 @@ import os, copy
 lockedProtect = decorators.lockedProtect
 refresh = decorators.refresh
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
+alignLeftButtonImagePath = os.path.join(os.getcwd(), "resources", "alignLeftButton.pdf")
+alignTopButtonImagePath = os.path.join(os.getcwd(), "resources", "alignTopButton.pdf")
+alignRightButtonImagePath = os.path.join(os.getcwd(), "resources", "alignRightButton.pdf")
+alignBottomButtonImagePath = os.path.join(os.getcwd(), "resources", "alignBottomButton.pdf")
 
 class SmartTextBox(TextBox):
     def __init__(self, posSize, text="", alignment="natural", 
@@ -980,12 +984,13 @@ class DeepComponentAxesGroup(Group):
         elif self.RCJKI.isCharacterGlyph:
             self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
 
-INPROGRESS = (1., 0., 0., 1.)
-CHECKING1 = (1., .5, 0., 1.)
-CHECKING2 = (1., 1., 0., 1.)
-CHECKING3 = (0., .5, 1., 1.)
-DONE = (0., 1., .5, 1.)
-STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
+from utils import colors
+INPROGRESS = colors.INPROGRESS
+CHECKING1 = colors.CHECKING1
+CHECKING2 = colors.CHECKING2
+CHECKING3 = colors.CHECKING3
+DONE = colors.DONE
+STATE_COLORS = colors.STATE_COLORS
         
 class PropertiesGroup(Group):
     
@@ -1035,6 +1040,85 @@ class PropertiesGroup(Group):
         if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
             self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
+
+class TransformationGroup(Group):
+
+    def __init__(self, posSize, RCJKI, controller):
+        super().__init__(posSize)
+        self.RCJKI = RCJKI
+        self.controller = controller
+
+        self.alignLeft = ImageButton(
+            (5, 5, 40, 40),
+            alignLeftButtonImagePath,
+            bordered = False,
+            callback = self.alignLeftButtonCallback
+            )
+        self.alignTop = ImageButton(
+            (45, 5, 40, 40),
+            alignTopButtonImagePath,
+            bordered = False,
+            callback = self.alignTopButtonCallback
+            )
+        self.alignRight = ImageButton(
+            (85, 5, 40, 40),
+            alignRightButtonImagePath,
+            bordered = False,
+            callback = self.alignRightButtonCallback
+            )
+        self.alignBottom = ImageButton(
+            (125, 5, 40, 40),
+            alignBottomButtonImagePath,
+            bordered = False,
+            callback = self.alignBottomButtonCallback
+            )
+
+    def alignLeftButtonCallback(self, sender):
+        self.alignSelectedElements(self.RCJKI.currentGlyph, "left")
+        self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
+
+    def alignTopButtonCallback(self, sender):
+        self.alignSelectedElements(self.RCJKI.currentGlyph, "top")
+        self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
+
+    def alignRightButtonCallback(self, sender):
+        self.alignSelectedElements(self.RCJKI.currentGlyph, "right")
+        self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
+
+    def alignBottomButtonCallback(self, sender):
+        self.alignSelectedElements(self.RCJKI.currentGlyph, "bottom")
+        self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
+
+    def alignSelectedElements(self, glyph, align = "left"):
+
+        class SelectedElements:
+        
+            def __init__(self, settings, glyph):
+                self.settings = settings
+                self.glyph = glyph
+                
+            def __repr__(self):
+                return f"< settings:{self.settings}, glyph:{self.glyph} >"
+
+        selection = glyph.selectedElement
+        elements = []
+        for i, x in zip(selection, glyph._getSelectedElement()):
+            elements.append(SelectedElements(x, glyph.preview.axisPreview[i].getTransformedGlyph()))
+        alignments = ["left", "bottom", "right", "top"]
+        pos = alignments.index(align)
+        target = []
+        for element in elements:
+            target.append(element.glyph.box[pos])
+        target = [max(target), min(target)][pos < 2]
+        for element in elements:
+            diffx = [target - element.glyph.box[pos], 0][pos%2]
+            diffy = [0, target - element.glyph.box[pos]][pos%2]
+            element.settings.x += diffx
+            element.settings.y += diffy
 
 class Inspector:
 
@@ -1087,13 +1171,15 @@ class DeepComponentInspector(Inspector):
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
+        self.transformationItem = TransformationGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Related glyphs", view=self.relatedGlyphsItem, size=140, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
-                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
+                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
+                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)

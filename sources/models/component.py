@@ -676,11 +676,17 @@ class Transform(dict):
             ):
         self.rcenterx = rcenterx
         self.rcentery = rcentery
-        self.rotation = rotation
+        self.rotation = self._normalizeRotation(rotation)
         self.scalex = scalex
         self.scaley = scaley
         self.x = x
         self.y = y
+
+    def _normalizeRotation(self, rotation):
+        r = rotation
+        if r:
+            r = int(rotation%(360*rotation/abs(rotation)))
+        return r
 
 class DeepComponent(dict):
 

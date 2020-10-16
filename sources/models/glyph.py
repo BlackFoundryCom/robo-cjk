@@ -68,7 +68,6 @@ class Glyph(RGlyph):
         # if self.type != 'atomicElement':
         lib = RLib()
         deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self)
-
         lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
         lib[axesKey] = copy.deepcopy(self._axes)
         lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)

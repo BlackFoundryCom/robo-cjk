@@ -111,6 +111,7 @@ class Font():
 
         self._glyphs = {}
         self._fullGlyphs = {}
+        self.fontVariations = []
 
         if 'fontLib.json' in os.listdir(self.fontPath):
             libPath = os.path.join(self.fontPath, 'fontLib.json')
@@ -119,7 +120,7 @@ class Font():
             self._initFontLib(self.fontLib)
             # for k, v in self.fontLib.items():
             #     self._RFont.lib[k] = v
-        self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
+            self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
@@ -1066,7 +1067,7 @@ class Font():
                     indent=4, separators=(',', ': ')))
 
             for rglyph in self._RFont.getLayer('foreground'):
-                # if not self.locker.userHasLock(rglyph): continue
+                if not self.locker.userHasLock(rglyph): continue
                 glyph = self[rglyph.name]
                 # glyph = self.get(rglyph.name, self._fullRFont)
                 
