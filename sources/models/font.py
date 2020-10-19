@@ -1167,7 +1167,7 @@ class Font():
             if newName in f.keys(): 
                 return False
             self.get(oldName).name = newName
-            f.get(oldName).name = newName
+            f[oldName].name = newName
             glyph = f[newName]
             txt = glyph.dumpToGLIF()
             fileName = "%s.glif"%files.userNameToFileName(glyph.name)
