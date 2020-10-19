@@ -50,11 +50,26 @@ def compute(func):
 
 def _getKeys(glyph):
     if glyph.type == "characterGlyph":
-        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.fontVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
     else:
-        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.glyphVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
 
-class Glyph(RGlyph):
+import operator
+class _MathMixin:
+
+    def __add__(self, other):
+        return self._doBinaryOperator(other, operator.add)
+
+    def __sub__(self, other):
+        return self._doBinaryOperator(other, operator.sub)
+
+    def __mul__(self, scalar):
+        return self._doBinaryOperatorScalar(scalar, operator.mul)
+
+    def __rmul__(self, scalar):
+        return self._doBinaryOperatorScalar(scalar, operator.mul)
+
+class Glyph(RGlyph, _MathMixin):
 
     def __init__(self):
         super().__init__()
@@ -63,6 +78,10 @@ class Glyph(RGlyph):
         # self.preview = None
         self.sourcesList = []
         self._designState = ""
+
+
+        self.model = None
+        self.deltas = None
 
     def _setStackUndo(self):
         # if self.type != 'atomicElement':
@@ -80,6 +99,35 @@ class Glyph(RGlyph):
             return True
         else:
             return bool(self._deepComponents)
+
+    def instantiate(self, location):
+        if self.model is None:
+            return self  # XXX raise error?
+        if self.deltas is None:
+            self.deltas = self.model.getDeltas([self] + self.variations)
+        location = normalizeLocation(location, self.axes)
+        return self.model.interpolateFromDeltas(location, self.deltas)
+
+    def _doBinaryOperatorScalar(self, scalar, op):
+        result = self.__class__()
+        result.name = self.name
+        result.unicodes = self.unicodes
+        result.width = op(self.width, scalar)
+        # result.outline = op(self.outline, scalar)
+        # result.components = [op(compo, scalar) for compo in self.components]
+        return result
+
+    def _doBinaryOperator(self, other, op):
+        result = self.__class__()
+        result.name = self.name
+        result.unicodes = self.unicodes
+        result.width = op(self.width, other.width)
+        # result.outline = op(self.outline, other.outline)
+        # result.components = [
+        #     op(compo1, compo2)
+        #     for compo1, compo2 in zip(self.components, other.components)
+        # ]
+        return result
 
     # @property
     # def designState(self):

@@ -591,6 +591,27 @@ class DCCG_View(CanvasGroup):
         elif self.RCJKI.isCharacterGlyph:
             self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
 
+from fontTools.varLib.models import VariationModel
+import math
+from fontTools.misc.transform import Transform
+def makeTransform(rcenterx, rcentery, rotation, scalex, scaley, x, y, scaleUsesCenter=False):
+    rotation = math.radians(rotation)
+    if not scaleUsesCenter:
+        rcenterx *= scalex
+        rcentery *= scaley
+        t = Transform()
+        t = t.translate(x + rcenterx, y + rcentery)
+        t = t.rotate(rotation)
+        t = t.translate(-rcenterx, -rcentery)
+        t = t.scale(scalex, scaley)
+    else:
+        t = Transform()
+        t = t.translate(x + rcenterx, y + rcentery)
+        t = t.rotate(rotation)
+        t = t.scale(scalex, scaley)
+        t = t.translate(-rcenterx, -rcentery)
+    return t
+
 
 class GlyphPreviewCanvas(CanvasGroup):
 
@@ -601,41 +622,107 @@ class GlyphPreviewCanvas(CanvasGroup):
         self.glyphName = ''
         self.drawer = drawer.Drawer(RCJKI)
 
+    def instantiateCharacterGlyph(self, glyph, location):
+        # glyph = self.characterGlyphGlyphSet.getGlyph(glyphName)
+        glyph = glyph.instantiate(location)
+        # locations = [{}, location]
+        # model = VariationModel(locations)
+        # masterValues = [1, 2]
+        # deltas = model.getDeltas(masterValues)
+        # glyph = model.interpolateFromDeltas(location, deltas)
+        deepItems = []
+        print("1")
+        for deepComponent in glyph._deepComponents:
+            # print(deepComponent._toDict()["transform"])
+            deepItem = self.instantiateDeepComponent(
+                deepComponent.name, deepComponent.coord,
+                makeTransform(**deepComponent._toDict()["transform"], scaleUsesCenter=False),
+            )
+            deepItems.append((deepComponent.name, deepItem))
+        # for component in glyph.components:
+        #     print(component)
+        #     deepItem = self.instantiateDeepComponent(
+        #         component.name, component.coord,
+        #         makeTransform(**component.transform, scaleUsesCenter=self._scaleUsesCenter),
+        #     )
+        #     deepItems.append((component.name, deepItem))
+        print("2")
+        return glyph.outline, deepItems, glyph.width
+
+    def instantiateDeepComponent(self, glyphName, location, transform):
+        print("start dc")
+        glyph = self.RCJKI.currentFont[glyphName]
+        # glyph = glyph.instantiate(location)
+        # locations = [{}, location]
+        # model = VariationModel(locations)
+        # masterValues = [1, 2]
+        # deltas = model.getDeltas(masterValues)
+        # glyph = model.interpolateFromDeltas(location, deltas)
+        atomicOutlines = []
+        print(glyph._deepComponents)
+        for deepComponent in glyph._deepComponents:
+            t = transform.transform(makeTransform(**deepComponent._toDict()["transform"], scaleUsesCenter=self._scaleUsesCenter))
+            atomicOutline = self.instantiateAtomicElement(
+                deepComponent.name, deepComponent.coord, t,
+            )
+            atomicOutlines.append((deepComponent.name, atomicOutline))
+        print("end dc")
+        return atomicOutlines
+
+    def instantiateAtomicElement(self, glyphName, location, transform):
+        print("start ae")
+        # glyph = self.atomicElementGlyphSet.getGlyph(glyphName)
+        # glyph = glyph.instantiate(location)
+        glyph = self.RCJKI.currentFont[glyphName]
+        # locations = [{}, location]
+        # model = VariationModel(locations)
+        # masterValues = [1, 2]
+        # deltas = model.getDeltas(masterValues)
+        # glyph = model.interpolateFromDeltas(location, deltas)
+        print("end ae")
+        return glyph.outline.transform(transform)
+
     def draw(self):
         if not self.RCJKI.get("currentFont"): return
         if not self.glyphName: return
+
         self.glyph = self.RCJKI.currentFont[self.glyphName]
-        d = self.glyph._glyphVariations
-        if self.glyph.type ==  "atomicElement":
-            self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer, "PreviewValue":layer.minValue} for axisName, layer in  d.items()
-                ]
-        else:
-            self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":layerName.minValue} for axisName, layerName in  d.items()
-                ]
+        outlines, items, width = self.instantiateCharacterGlyph(self.glyph, {"WGHT":1})
+        print(outlines, items, width)
 
-        if self.glyph.markColor is not None:
-            mjdt.fill(*self.glyph.markColor)
-            mjdt.rect(0, 0, 200, 20)
 
-        scale = .15
-        mjdt.scale(scale, scale)
-        mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
-        self.glyph.preview.computeDeepComponentsPreview(update = False)
-        if self.glyph.preview.variationPreview is not None:
-            self.drawer.drawVariationPreview(
-                    self.glyph, 
-                    scale, 
-                    color = (0, 0, 0, 1), 
-                    strokecolor = (0, 0, 0, 0)
-                    )
-        else:
-            self.glyph.preview.computeDeepComponents(update = False)
-            self.drawer.drawAxisPreview(
-                self.glyph, 
-                (0, 0, 0, 1), 
-                scale, 
-                (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
-                )
+        # self.glyph = self.RCJKI.currentFont[self.glyphName]
+        # d = self.glyph._glyphVariations
+        # if self.glyph.type ==  "atomicElement":
+        #     self.glyph.sourcesList = [
+        #         {"Axis":axisName, "Layer":layer, "PreviewValue":layer.minValue} for axisName, layer in  d.items()
+        #         ]
+        # else:
+        #     self.glyph.sourcesList = [
+        #         {"Axis":axisName, "Layer":layerName, "PreviewValue":layerName.minValue} for axisName, layerName in  d.items()
+        #         ]
+
+        # if self.glyph.markColor is not None:
+        #     mjdt.fill(*self.glyph.markColor)
+        #     mjdt.rect(0, 0, 200, 20)
+
+        # scale = .15
+        # mjdt.scale(scale, scale)
+        # mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
+        # self.glyph.preview.computeDeepComponentsPreview(update = False)
+        # if self.glyph.preview.variationPreview is not None:
+        #     self.drawer.drawVariationPreview(
+        #             self.glyph, 
+        #             scale, 
+        #             color = (0, 0, 0, 1), 
+        #             strokecolor = (0, 0, 0, 0)
+        #             )
+        # else:
+        #     self.glyph.preview.computeDeepComponents(update = False)
+        #     self.drawer.drawAxisPreview(
+        #         self.glyph, 
+        #         (0, 0, 0, 1), 
+        #         scale, 
+        #         (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
+        #         )
 
