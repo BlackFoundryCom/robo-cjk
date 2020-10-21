@@ -33,7 +33,7 @@ Glyph = glyph.Glyph
 DictClass = component.DictClass
 VariationGlyphs = component.VariationGlyphs
 Axes = component.Axes
-
+from fontTools.varLib.models import VariationModel
 # Deprecated key 
 glyphVariationsKey = 'robocjk.glyphVariationGlyphs'
 
@@ -48,8 +48,21 @@ class AtomicElement(Glyph):
         self._glyphVariations = VariationGlyphs()
         self.name = name
         self.type = "atomicElement"
-        self.preview = glyphPreview.AtomicElementPreview(self)
+        # self.preview = glyphPreview
+        # self.preview = glyphPreview.AtomicElementPreview(self)
         self.save()
+
+    def preview(self, position:dict, font):
+        locations = [{}]
+        locations.extend([x["location"] for x in self._glyphVariations.getDict()])
+
+        model = VariationModel(locations)
+        layerGlyphs = []
+        for variation in self._glyphVariations.getDict():
+            layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[self.name])
+        resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
+
+        return resultGlyph
 
     @property
     def foreground(self):

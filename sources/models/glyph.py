@@ -54,22 +54,22 @@ def _getKeys(glyph):
     else:
         return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
 
-import operator
-class _MathMixin:
+# import operator
+# class _MathMixin:
 
-    def __add__(self, other):
-        return self._doBinaryOperator(other, operator.add)
+#     def __add__(self, other):
+#         return self._doBinaryOperator(other, operator.add)
 
-    def __sub__(self, other):
-        return self._doBinaryOperator(other, operator.sub)
+#     def __sub__(self, other):
+#         return self._doBinaryOperator(other, operator.sub)
 
-    def __mul__(self, scalar):
-        return self._doBinaryOperatorScalar(scalar, operator.mul)
+#     def __mul__(self, scalar):
+#         return self._doBinaryOperatorScalar(scalar, operator.mul)
 
-    def __rmul__(self, scalar):
-        return self._doBinaryOperatorScalar(scalar, operator.mul)
+#     def __rmul__(self, scalar):
+#         return self._doBinaryOperatorScalar(scalar, operator.mul)
 
-class Glyph(RGlyph, _MathMixin):
+class Glyph(RGlyph):
 
     def __init__(self):
         super().__init__()
@@ -78,7 +78,6 @@ class Glyph(RGlyph, _MathMixin):
         # self.preview = None
         self.sourcesList = []
         self._designState = ""
-
 
         self.model = None
         self.deltas = None
@@ -100,34 +99,34 @@ class Glyph(RGlyph, _MathMixin):
         else:
             return bool(self._deepComponents)
 
-    def instantiate(self, location):
-        if self.model is None:
-            return self  # XXX raise error?
-        if self.deltas is None:
-            self.deltas = self.model.getDeltas([self] + self.variations)
-        location = normalizeLocation(location, self.axes)
-        return self.model.interpolateFromDeltas(location, self.deltas)
+    # def instantiate(self, location):
+    #     if self.model is None:
+    #         return self  # XXX raise error?
+    #     if self.deltas is None:
+    #         self.deltas = self.model.getDeltas([self] + self.variations)
+    #     location = normalizeLocation(location, self.axes)
+    #     return self.model.interpolateFromDeltas(location, self.deltas)
 
-    def _doBinaryOperatorScalar(self, scalar, op):
-        result = self.__class__()
-        result.name = self.name
-        result.unicodes = self.unicodes
-        result.width = op(self.width, scalar)
-        # result.outline = op(self.outline, scalar)
-        # result.components = [op(compo, scalar) for compo in self.components]
-        return result
+    # def _doBinaryOperatorScalar(self, scalar, op):
+    #     result = self.__class__()
+    #     result.name = self.name
+    #     result.unicodes = self.unicodes
+    #     result.width = op(self.width, scalar)
+    #     # result.outline = op(self.outline, scalar)
+    #     # result.components = [op(compo, scalar) for compo in self.components]
+    #     return result
 
-    def _doBinaryOperator(self, other, op):
-        result = self.__class__()
-        result.name = self.name
-        result.unicodes = self.unicodes
-        result.width = op(self.width, other.width)
-        # result.outline = op(self.outline, other.outline)
-        # result.components = [
-        #     op(compo1, compo2)
-        #     for compo1, compo2 in zip(self.components, other.components)
-        # ]
-        return result
+    # def _doBinaryOperator(self, other, op):
+    #     result = self.__class__()
+    #     result.name = self.name
+    #     result.unicodes = self.unicodes
+    #     result.width = op(self.width, other.width)
+    #     # result.outline = op(self.outline, other.outline)
+    #     # result.components = [
+    #     #     op(compo1, compo2)
+    #     #     for compo1, compo2 in zip(self.components, other.components)
+    #     # ]
+    #     return result
 
     # @property
     # def designState(self):
@@ -148,6 +147,11 @@ class Glyph(RGlyph, _MathMixin):
     # @stateColor.setter
     # def stateColor(self, value:tuple):
     #     self._RGlyph.markColor = value
+    def _transformGlyph(self, glyph, transform):
+        glyph.scaleBy((transform["scalex"], transform["scaley"]))
+        glyph.rotateBy(transform["rotation"], (transform["rcenterx"], transform["rcentery"]))
+        glyph.moveBy((transform["x"], transform["y"]))
+        return glyph
 
     def save(self):
         # print("glyohsave", self.name, self.stateColor)

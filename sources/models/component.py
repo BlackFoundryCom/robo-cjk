@@ -61,537 +61,87 @@ class DictClass:
             return fallback
         return getattr(self, item)
 
-# # class Coord(DictClass):
+import operator
 
-# #     def __init__(self, **kwargs):
-# #         super().__init__()
-# #         for k, v in kwargs.items():
-# #             if isinstance(v, (int, float)):
-# #                 setattr(self, k, {"value":v, "minValue":0., "maxValue":1.})
-# #             else:
-# #                 setattr(self, k, v)
+class InterpolationError(Exception):
+    pass
 
-# #     def __getitem__(self, item):
-# #         return getattr(self, item).get("value")
-
-# #     def getMinValue(self, item):
-# #         return getattr(self, item).get("minValue")
-
-# #     def getMaxValue(self, item):
-# #         return getattr(self, item).get("maxValue")
-
-# #     def add(self, axis: str, value: int = 0):
-# #         """
-# #         Add new axis with its value
-# #         """
-# #         if isinstance(value, float):
-# #             setattr(self, axis, {"value":value, "minValue":0., "maxValue":1.})
-# #         else:
-# #             setattr(self, axis, value)
-
-# #     def remove(self, axis: str):
-# #         """
-# #         Remove axis
-# #         """
-# #         delattr(self, axis)
-
-# #     @property
-# #     def axes(self):
-# #         """
-# #         Return a list of all the axes
-# #         """
-# #         return self.keys()
-
-# #     def clear(self):
-# #         """
-# #         Remove all axes
-# #         """
-# #         axes = list(vars(self))
-# #         for axis in axes:
-# #             self.remove(axis)
-
-# class Coord(DictClass):
-
-#     def __init__(self, **kwargs):
-#         super().__init__()
-#         for k, v in kwargs.items():
-#             setattr(self, k, v)
-
-#     def add(self, axis: str, value: int = 0):
-#         """
-#         Add new axis with its value
-#         """
-#         setattr(self, axis, value)
-
-#     def remove(self, axis: str):
-#         """
-#         Remove axis
-#         """
-#         delattr(self, axis)
-
-#     @property
-#     def axes(self):
-#         """
-#         Return a list of all the axes
-#         """
-#         return self.keys()
-
-#     def clear(self):
-#         """
-#         Remove all axes
-#         """
-#         axes = list(vars(self))
-#         for axis in axes:
-#             self.remove(axis)
-
-
-# class DeepComponent(DictClass):
-
-#     def __init__(self, 
-#             coord : dict = {}, 
-#             rotation: int = 0, 
-#             scalex: int = 1, 
-#             scaley: int = 1, 
-#             x: int = 0, 
-#             y: int = 0,
-#             rcenterx: int = 0,
-#             rcentery: int = 0,
-#             # axisMinValue: float = 0.,
-#             # axisMaxValue: float = 1.,
-#             maxValue: float = 1.,
-#             minValue: float = 0.,
-#             ):
-#         super().__init__()
-#         self.coord = Coord(**dict(coord))
-#         self.rotation = rotation
-#         self.scalex = scalex
-#         self.scaley = scaley
-#         self.x = x
-#         self.y = y
-#         self.rcenterx = rcenterx
-#         self.rcentery = rcentery
-#         # self.axisMinValue = axisMinValue
-#         # self.axisMaxValue = axisMaxValue
-#         self.maxValue = maxValue
-#         self.minValue = minValue
-
-#     def set(self, items: dict):
-#         """
-#         Reinitialize the deep components data with dictionary
-#             items = {
-#                     'name': 'deepComponentName',
-#                     'coord': {'axisName':value},
-#                     'rotation': 0,
-#                     'scalex': 1,
-#                     'scaley': 1,
-#                     'x': 0,
-#                     'y': 0,
-#                     }
-#         """
-#         for k, v in items.items():
-#             setattr(self, k, v)
-#         self.coord = Coord(**dict(items['coord']))
-
-#     def _toDict(self, exception: str = ''):
-#         """
-#         Return a dict representation of the deep component datas.
-#         Allows to exclude an attribute in the dictionnary with exception
-#         """
-#         d = {x:getattr(self, x) for x in vars(self) if x != exception}
-#         d["coord"] = {x:getattr(d["coord"], x) for x in vars(d["coord"])}
-#         return d
-
-#     def _unnamed(self):
-#         """
-#         Return an unnamed dict representation of the deep component datas
-#         """
-#         return self._toDict(exception = "name")
-
-# class DeepComponentNamed(DeepComponent):
-
-#     def __init__(self, name: str, **kwargs):
-#         super().__init__(**kwargs)
-#         self.name = name
-
-
-# class DeepComponents:
-
-#     """
-#     Structure
-#     [
-#         {
-#         'name': glyphName, 
-#         'coord': {
-#                 VariationAxis0: v, 
-#                 VariationAxis1: v
-#                 }, 
-#         'x': v, 
-#         'y': v, 
-#         'scalex': v, 
-#         'scaley': v, 
-#         'rotation': v
-#         },
-#         {
-#         'name': glyphName, 
-#         'coord': {
-#                 VariationAxis0: v, 
-#                 VariationAxis1: v
-#                 }, 
-#         'x': v, 
-#         'y': v, 
-#         'scalex': v, 
-#         'scaley': v, 
-#         'rotation': v
-#         }
-#     ]   
-#     """
-
-#     def __init__(self, deepComponents: list = []):
-#         self._deepComponents = []
-#         for deepComponent in deepComponents:
-#             self._deepComponents.append(DeepComponentNamed(**dict(deepComponent)))
-
-#     def add(self, name: str, items: dict = {}):
-#         """
-#         Add new deep component
-#         """
-#         self._deepComponents.append(DeepComponentNamed(name, **items))
-
-#     def removeDeepComponent(self, index: int):
-#         """
-#         Remove deep component at an index
-#         """
-#         if index < len(self._deepComponents):
-#             self._deepComponents.pop(index)
-
-#     def removeDeepComponents(self, indexes: list):
-#         """
-#         Remove deep components at indexes
-#         """
-#         if not indexes: 
-#             return
-#         self._deepComponents = [x for i, x in enumerate(self._deepComponents) if i not in indexes]
-
-#     def addDeepComponent(self, deepComponent):
-#         """
-#         Add new deep component
-#         """
-#         self._deepComponents.append(deepComponent)
-
-#     def append(self, item):
-#         """
-#         This function is made for backward compatibility
-#         Add new deep component 
-#         """
-#         self.addDeepComponent(item)
-
-#     def __repr__(self):
-#         return str(self._deepComponents)
-
-#     def __iter__(self):
-#         for deepComponent in self._deepComponents:
-#             yield deepComponent
-
-#     def __getitem__(self, index):
-#         assert isinstance(index, int)
-#         return self._deepComponents[index]
-
-#     def __setitem__(self, item, value):
-#         setattr(self, item, value)
-
-#     def __bool__(self):
-#         return bool(self._deepComponents)
-
-#     def getList(self):
-#         """
-#         Return a list reprensentation on the class
-#         """
-#         return [x._toDict() for x in self._deepComponents]
-
-#     def _unnamed(self):
-#         pass
-
-# class Content(DictClass):
-
-#     def __init__(self, outlines:list = [], deepComponents:list = [], width:int = 0):
-#         super().__init__()
-#         self.outlines = outlines
-#         self.deepComponents = [DeepComponent(**dict(x)) for x in deepComponents]
-#         self.width = width
-
-#     def _writeOutlines(self, glyph):
-#         """
-#         Write the outlines instruction of the layer
-#         """
-#         pen = RecordingPen()
-#         glyph.draw(pen)
-#         self.outlines = pen.value
-
-#     def _addDeepComponent(self, deepComponentInfos:dict = {}):
-#         """
-#         Add new deep Component
-#         """
-#         self.deepComponents.append(DeepComponent(**dict(deepComponentInfos)))
-
-#     def _removeDeepComponent(self, index):
-#         """
-#         Remove a deep component at index
-#         """
-#         self.deepComponents.pop(index)
-
-#     def _setAxisWidth(self, width:int = 0):
-#         """
-#         Set the axis width
-#         """
-#         self.width = width
-
-#     def _toDict(self):
-#         return {"outlines": self.outlines,
-#                 "deepComponents": [x._toDict() for x in self.deepComponents],
-#                 "width": self.width}
-
-# class VariationGlyphsInfos:
-
-#     def __init__(self, layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0, content:dict = {}, axisMinValue:float=0., axisMaxValue:float=1.):
-#         self.minValue = minValue
-#         self.maxValue = maxValue
-#         # self.axisMinValue = axisMinValue
-#         # self.axisMaxValue = axisMaxValue
-#         self.layerName = layerName
-#         self.content = Content(**content)
-
-#     def initContent(self, outlines = [], deepComponents = []):
-#         """
-#         Initialize the content with a given outlines and/or deep components
-#         """
-#         self.content = Content(outlines = outlines, deepComponents = deepComponents)
-
-#     def addDeepComponent(self, deepComponentInfos:dict = {}):
-#         """
-#         Add new deep Component
-#         """
-#         self.content._addDeepComponent(deepComponentInfos)
-
-#     def append(self, item):
-#         """
-#         made for backward compatibility
-#         """
-#         self.content._addDeepComponent(deepComponentInfos)
-
-#     def removeDeepComponent(self, index):
-#         """
-#         Remove a deep component at index
-#         """
-#         self.content._removeDeepComponent(index)  
-
-#     def removeDeepComponents(self, indexes):
-#         """
-#         Remove multiple deep components at indexes
-#         """
-#         for index in reversed(sorted(indexes)):
-#             self.content._removeDeepComponent(index) 
-
-#     def __repr__(self):
-#         return str(self)
-
-#     def __str__(self):
-#         return str(self.__dict__)
-
-#     def __getitem__(self, index):
-#         return self.content.deepComponents[index]
-
-#     def __setitem__(self, item, value):
-#         setattr(self, item, value)
-
-#     def items(self):
-#         for x in vars(self):
-#             yield (x, getattr(self, x))
-
-#     def _toDict(self):
-#         """
-#         Return a dict representation 
-#         """
-#         return {
-#                 "minValue": self.minValue, 
-#                 "maxValue": self.maxValue, 
-#                 # "axisMinValue": self.axisMinValue, 
-#                 # "axisMaxValue": self.axisMaxValue, 
-#                 "layerName": self.layerName,
-#                 "content": self.content._toDict()
-#                 }
-
-#     def writeOutlines(self, glyph):
-#         """
-#         Write the outlines instruction of the layer
-#         """
-#         self.content._writeOutlines(glyph)
-
-#     def setAxisWidth(self, width:int = 0):
-#         """
-#         Set the axis width
-#         """
-#         self.content._setAxisWidth(width)
-
-
-# class VariationGlyphs(DictClass):
-
-#     """
-#     structure:
+class _MathMixin:
     
-#     {
-#         'VariationAxis0': {
-#                             'min': 0.0, 
-#                             'max': 1.0, 
-#                             'content': {
-#                                         'outlines': recordingPen.value, 
-#                                         'deepComponents':[]
-#                                         },
-#                             'layerName': 'layerName'
-#                             },
-#         'VariationAxis1': {
-#                             'min': 0.0, 
-#                             'max': 1.0, 
-#                             'content': {
-#                                         'outlines': [], 
-#                                         'deepComponents': [
-#                                                             {
-#                                                             'coord':{
-#                                                                     DCAxisName: v, 
-#                                                                     DCAxisName:v
-#                                                                     }, 
-#                                                             'x': v, 
-#                                                             'y': v, 
-#                                                             'scalex: v, 
-#                                                             'scaley: v, 
-#                                                             'rotation': v
-#                                                             }
-#                                                           ]
-#                                         },
-#                             'layerName': 'layerName'
-#                             },
-# }
-
-#     """
-
-
-#     def __init__(self, axes = {}):
-#         super().__init__()
-#         for k, v in axes.items():
-#             if type(v) == list: # test for backward compatibility
-#                 setattr(self, k, VariationGlyphsInfos())
-#                 getattr(self, k).initContent(deepComponents = v)
-#             elif type(v) == dict:
-#                 setattr(self, k, VariationGlyphsInfos(**v))
-#             else:
-#                 setattr(self, k, VariationGlyphsInfos(v)) # fallback for backward compatibility
-
-#     def __bool__(self):
-#         return bool(vars(self))
-
-#     def addAxis(self, axisName: str, deepComponents:list = [], layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0):
-#         """
-#         Add new axis with no named deep components
-#         """
-#         infos = VariationGlyphsInfos(layerName = layerName, minValue = minValue, maxValue = maxValue)
-#         for deepComponent in deepComponents:
-#             infos.addDeepComponent(deepComponent._unnamed())
-#         setattr(self, axisName, infos)
-
-#     def removeAxis(self, axisName: str):
-#         """
-#         Remove a variation axis
-#         """
-#         if not hasattr(self, axisName):
-#             return
-#         delattr(self, axisName)
-
-#     def addDeepComponent(self, deepComponent):
-#         """
-#         Add a new component to the whole axes
-#         """
-#         for x in vars(self):
-#             getattr(self, x).addDeepComponent(deepComponent._unnamed())
-
-#     def removeDeepComponents(self, indexes: list):
-#         """
-#         Remove components variation at indexes
-#         """
-#         if not indexes:
-#             return
-#         for x in vars(self):
-#             getattr(self, x).removeDeepComponents(indexes)
-
-#     def getDict(self):
-#         """
-#         Return a list reprensentation on the class
-#         """
-#         return {x: getattr(self, x)._toDict() for x in vars(self)}     
-
-#     @property
-#     def layerNames(self):
-#         return [x.layerName for x in self.values()]
+    def __add__(self, other):
+        return self._doBinaryOperator(other, operator.add)
+        
+    def __sub__(self, other):
+        return self._doBinaryOperator(other, operator.sub)
+        
+    def __mul__(self, scalar):
+        return self._doBinaryOperatorScalar(scalar, operator.mul)
+        
+    def __rmul__(self, scalar):
+        return self._doBinaryOperatorScalar(scalar, operator.mul)
+        
+class MathDict(dict, _MathMixin):
     
+    def _doBinaryOperatorScalar(self, scalar, op):
+        result = MathDict()
+        for k, v in self.items():
+            if isinstance(v, (int, float, MathDict, MathList)):
+                result[k] = op(v, scalar)
+            else:
+                result[k] = v
+        return result
+        
+    def _doBinaryOperator(self, other, op):
+        # any missing keys will be taken from the other dict
+        self_other = dict(other)
+        self_other.update(self)
+        other_self = dict(self)
+        other_self.update(other)
+        result = MathDict()
+        for k, v1 in self_other.items():
+            v2 = other_self[k]
+            if isinstance(v1, (int, float, MathDict, MathList)):
+                result[k] = op(v1, v2)
+            else:
+                if v1 != v2:
+                    print(v1, v2)
+                    raise InterpolationError("incompatible dicts")
+                result[k] = v1
+        return result
+        
+class MathList(_MathMixin, list):
+    
+    def _doBinaryOperatorScalar(self, scalar, op):
+        result = MathList()
+        for e in self:
+            if isinstance(e, (int, float, MathDict, MathList)):
+                result.append(op(e, scalar))
+            else:
+                result.append(e)
+        return result
+        
+    def _doBinaryOperator(self, other, op):
+        # any missing keys will be taken from the other dict
+        assert len(self) == len(other)
+        self_other = list(other)
+        other_self = list(self)
+        result = MathList()
+        for i, e1 in enumerate(self_other):
+            e2 = other_self[i]
+            if isinstance(e1, (int, float, MathDict, MathList)):
+                result.append(op(e1, e2))
+            else:
+                if e1 != e2:
+                    print(e1, e2)
+                    raise InterpolationError("incompatible lists")
+                result.append(e1)
+        return result
 
-#     @property
-#     def axes(self):
-#         """
-#         Return a list of all the variations axes
-#         """
-#         return self.keys()
+class Axis(MathDict):
 
-#     @property
-#     def infos(self):
-#         """
-#         Return a list of all the variations
-#         """
-#         return self.values()
-
-# if __name__ == "__main__":
-#     deepComponentTest = DeepComponents(
-#         [{
-#             'name': "53E3",
-#             'coord': {'DIAG': 0.5}, 
-#             'rotation': 0, 
-#             'scalex': 0.02, 
-#             'scaley': 0.07199999999999995, 
-#             'x': 980, 
-#             'y': 340
-#         }])
-
-
-#     deepComponentTest.add("test", {
-#                     'coord': {'DIAG': 0.5}, 
-#                     'rotation': 90, 
-#                     'scalex': 0.02, 
-#                     'scaley': 0.07199999999999995, 
-#                     'x': 980, 
-#                     'y': 340
-#                     })
-#     print("---")
-#     print(deepComponentTest)
-#     glyphVariationTest = VariationGlyphs()
-#     glyphVariationTest.addAxis("wght", deepComponentTest)
-#     glyphVariationTest.addAxis("slnt", deepComponentTest)
-#     print("---")
-#     print(glyphVariationTest)
-#     glyphVariationTest.removeDeepComponents([0])
-#     print("---")
-#     print(glyphVariationTest)
-#     print("---")
-#     print(glyphVariationTest.getDict())
-#     print("---")
-
-#     glyphVariationTest1 = VariationGlyphs()
-#     glyphVariationTest1.addAxis("axis2")
-#     print(glyphVariationTest1.axis2.minValue)
-#     glyphVariationTest1.axis2.minValue = 30
-#     print(glyphVariationTest1.axis2.minValue)
-#     glyphVariationTest1["axis2"].maxValue = 60
-#     print(glyphVariationTest1.axis2)
-
-class Axis:
-
-    def __init__(self, name, minValue = 0, maxValue = 1):
+    def __init__(self, name="", minValue=0, maxValue=1):
+        # for k, v in kwargs.items():
+        #     self[k] = v
         self.name = name
         self.minValue = minValue
         self.maxValue = maxValue
@@ -600,13 +150,17 @@ class Axis:
     #     return "<"+str(vars(self))+">"
 
     def _toDict(self):
-        return {x:getattr(self, x) for x in vars(self)}
+        return MathDict({x:getattr(self, x) for x in vars(self)})
 
-class Axes(list):
+class Axes(MathList):
 
     """
     This class refere to robocjk.axes key
     """
+
+    def __init__(self, axes = []):
+        for axis in axes:
+            self.addAxis(axis)
 
     def _init_with_old_format(self, data):
         for k, v in data.items():
@@ -625,10 +179,10 @@ class Axes(list):
 
     def getList(self):
         # print("Axes", [x._toDict() for x in self])
-        return [x._toDict() for x in self]
+        return MathList([x._toDict() for x in self])
         # return [x._toDict() for x in self]
 
-class Coord(dict):
+class Coord(MathDict):
 
     def __init__(self, **kwargs):
         super().__init__()
@@ -662,7 +216,7 @@ class Coord(dict):
         for axis in axes:
             self.remove(axis)
 
-class Transform(dict):
+class Transform(MathDict):
 
     def __init__(self, 
             rcenterx: int = 0,
@@ -674,6 +228,9 @@ class Transform(dict):
             y: int = 0,
             **kwargs
             ):
+        super().__init__()
+        # for k, v in kwargs.items():
+        #     setattr(self, k, v)
         self.rcenterx = rcenterx
         self.rcentery = rcentery
         self.rotation = self._normalizeRotation(rotation)
@@ -688,7 +245,7 @@ class Transform(dict):
             r = int(rotation%(360*rotation/abs(rotation)))
         return r
 
-class DeepComponent(dict):
+class DeepComponent(MathDict):
 
     def __init__(self, 
             coord : dict = {}, 
@@ -696,7 +253,10 @@ class DeepComponent(dict):
             ):
         super().__init__()
         self.coord = Coord(**dict(coord))
-        self.transform = Transform(**dict(kwargs))
+        if 'transform' in kwargs.keys():
+            self.transform = Transform(**dict(kwargs["transform"]))
+        else:
+            self.transform = Transform(**dict(kwargs))
 
     def set(self, items: dict):
         """
@@ -713,6 +273,7 @@ class DeepComponent(dict):
         """
         for k, v in items.items():
             setattr(self, k, v)
+        self.transform = Transform(**dict(items['transform']))
         self.coord = Coord(**dict(items['coord']))
 
     def _toDict(self, exception: str = ''):
@@ -720,10 +281,9 @@ class DeepComponent(dict):
         Return a dict representation of the deep component datas.
         Allows to exclude an attribute in the dictionnary with exception
         """
-        d = {x:getattr(self, x) for x in vars(self) if x != exception}
-        d["coord"] = {x:getattr(self.coord, x) for x in vars(self.coord)}
-        d["transform"] = {x:getattr(self.transform, x) for x in vars(self.transform)}
-        # print("DeepComponent ",d)
+        d = MathDict({x:getattr(self, x) for x in vars(self) if x != exception})
+        d["coord"] = MathDict({x:getattr(self.coord, x) for x in vars(self.coord)})
+        d["transform"] = MathDict({x:getattr(self.transform, x) for x in vars(self.transform)})
         return d
 
     def _unnamed(self):
@@ -774,7 +334,7 @@ class DeepComponents:
     """
 
     def __init__(self, deepComponents: list = []):
-        self._deepComponents = []
+        self._deepComponents = MathList([])
         for deepComponent in deepComponents:
             if deepComponent.get("name"):
                 self._deepComponents.append(DeepComponentNamed(**dict(deepComponent)))
@@ -837,18 +397,23 @@ class DeepComponents:
         Return a list reprensentation on the class
         """
         # print("DeepComponents", [x._toDict() for x in self._deepComponents])
-        return [x._toDict() for x in self._deepComponents]
+        return MathList([x._toDict() for x in self._deepComponents])
 
     def _unnamed(self):
         pass
 
 
-class VariationGlyphsInfos:
+class VariationGlyphsInfos(MathDict):
 
     def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}):
-        self.location = location #location is a dict specifiying the design space location {"wght":1, "wdth":1}
+        # print("_init_ variation glyphs", location, layerName, deepComponents)
+        self.location = MathDict(location) #location is a dict specifiying the design space location {"wght":1, "wdth":1}
         self.layerName = layerName
         self.deepComponents = DeepComponents(deepComponents)
+
+        # print(self.location)
+        # print(self.layerName)
+        # print(self.deepComponents)
 
     # @property
     # def location(self):
@@ -876,22 +441,32 @@ class VariationGlyphsInfos:
         for x in self.deepComponents:
             x.removeDeepComponents(indexes)
 
-    def __repr__(self):
-        return str({x:getattr(self, x) for x in vars(self)})
-        return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
+    # def __repr__(self):
+    #     return str({x:getattr(self, x) for x in vars(self)})
+    #     return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
     def _toDict(self):
-        return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList()}
+        return MathDict({"location":MathDict(self.location), "layerName":self.layerName, "deepComponents":self.deepComponents.getList()})
 
     def __getitem__(self, item):
         return getattr(self, item)
 
-class VariationGlyphs(list):
+class VariationGlyphs(MathList):
+
+    def __init__(self, variationGlyphs=[]):
+        for variation in variationGlyphs:
+            self.addAxis(variation)
+        # print("variationGlyphs", variationGlyphs)
 
     def _init_with_old_format(self, data):
         for k, v in data.items():
-            variation = dict(location = {k:v.get("maxValue")}, layerName = v.get("layerName"), deepComponents = v.get("content").get("deepComponents"))
+            variation = MathDict({"location": MathDict({k:v.get("maxValue")}), "layerName": v.get("layerName"), "deepComponents": MathList(v.get("content").get("deepComponents"))})
             self.addAxis(variation)
+
+    # def __iter__(self):
+    #     for x in super(VariationGlyphs, self).__iter__():
+    #         print(dir(x))
+    #         yield x._toDict()
 
     def addAxis(self, variation):
         self.append(VariationGlyphsInfos(**variation))
@@ -926,7 +501,7 @@ class VariationGlyphs(list):
         Return a list reprensentation on the class
         """
         # return [x for x in self]
-        return [x._toDict() for x in self]
+        return MathList([x._toDict() for x in self])
         # return {x: getattr(self, x)._toDict() for x in vars(self)}     
 
     # @property

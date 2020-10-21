@@ -24,6 +24,7 @@ from models import component, glyphPreview
 # reload(component)
 # reload(glyphPreview)
 from utils import interpolation, decorators
+from fontTools.varLib.models import VariationModel
 # reload(interpolation)
 # reload(decorators)
 glyphUndo = decorators.glyphUndo
@@ -59,9 +60,38 @@ class DeepComponent(Glyph):
         self.selectedElement = []
         self.name = name
         self.type = "deepComponent"
-        self.preview = glyphPreview.DeepComponentPreview(self)
+        # self.preview = glyphPreview
+        # self.preview = glyphPreview.DeepComponentPreview(self)
         self._setStackUndo()
         self.save()
+
+    def preview(self, position:dict, font = None):
+        locations = [{}]
+        locations.extend([x["location"] for x in self._glyphVariations])
+
+        model = VariationModel(locations)
+        masterDeepComponents = self._deepComponents.getList()
+        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getDict()]
+
+        result = []
+        for i, deepComponent in enumerate(masterDeepComponents):
+            variations = []
+            for gv in axesDeepComponents:
+                variations.append(gv[i])
+            result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+
+        resultGlyph = RGlyph()
+        if font is None:
+            font = self.getParent()
+
+        for i, dc in enumerate(result):
+            name = dc.get("name")
+            position = dc.get("coord")
+            g = font[name].preview(position, font)
+            g = self._transformGlyph(g, dc.get("transform"))
+            g.draw(resultGlyph.getPen())
+
+        return resultGlyph
 
     @property
     def atomicElements(self):
@@ -92,7 +122,7 @@ class DeepComponent(Glyph):
                 axes = self._RGlyph.lib.get(axesKey)
             if axes:
                 self._deepComponents = DeepComponents(deepComponents)
-                self._axes = Axes(lib[axesKey])
+                self._axes = Axes(axes)
                 self._glyphVariations = VariationGlyphs(variationGlyphs)
             else:
                 self._deepComponents = DeepComponents(deepComponents)

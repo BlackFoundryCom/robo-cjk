@@ -35,6 +35,7 @@ Axes = component.Axes
 VariationGlyphs = component.VariationGlyphs
 
 import copy
+from fontTools.varLib.models import VariationModel
 
 # Deprecated keys
 # deepComponentsKeyOld = 'robocjk.characterGlyph.deepComponents'
@@ -58,7 +59,8 @@ class CharacterGlyph(Glyph):
         self.name = name
         self.type = "characterGlyph"
         self.outlinesPreview = None
-        self.preview = glyphPreview.CharacterGlyphPreview(self)
+        # self.preview = glyphPreview
+        # self.preview = glyphPreview.CharacterGlyphPreview(self)
 
         # lib = RLib()
         # lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
@@ -67,6 +69,34 @@ class CharacterGlyph(Glyph):
         # self.indexStackUndo_lib = 0
         self._setStackUndo()
         self.save()
+
+    def preview(self, position:dict, font = None):
+        locations = [{}]
+        locations.extend([x["location"] for x in self._glyphVariations])
+
+        model = VariationModel(locations)
+        masterDeepComponents = self._deepComponents.getList()
+        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getDict()]
+
+        result = []
+        for i, deepComponent in enumerate(masterDeepComponents):
+            variations = []
+            for gv in axesDeepComponents:
+                variations.append(gv[i])
+            result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+
+        resultGlyph = RGlyph()
+        if font is None:
+            font = self.getParent()
+
+        for i, dc in enumerate(result):
+            name = dc.get("name")
+            position = dc.get("coord")
+            g = font[name].preview(position, font)
+            g = self._transformGlyph(g, dc.get("transform"))
+            g.draw(resultGlyph.getPen())
+
+        return resultGlyph
 
     @property
     def foreground(self):

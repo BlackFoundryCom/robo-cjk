@@ -591,27 +591,30 @@ class DCCG_View(CanvasGroup):
         elif self.RCJKI.isCharacterGlyph:
             self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
 
-from fontTools.varLib.models import VariationModel
-import math
-from fontTools.misc.transform import Transform
-def makeTransform(rcenterx, rcentery, rotation, scalex, scaley, x, y, scaleUsesCenter=False):
-    rotation = math.radians(rotation)
-    if not scaleUsesCenter:
-        rcenterx *= scalex
-        rcentery *= scaley
-        t = Transform()
-        t = t.translate(x + rcenterx, y + rcentery)
-        t = t.rotate(rotation)
-        t = t.translate(-rcenterx, -rcentery)
-        t = t.scale(scalex, scaley)
-    else:
-        t = Transform()
-        t = t.translate(x + rcenterx, y + rcentery)
-        t = t.rotate(rotation)
-        t = t.scale(scalex, scaley)
-        t = t.translate(-rcenterx, -rcentery)
-    return t
+# from fontTools.varLib.models import VariationModel
+# import math
+# from fontTools.misc.transform import Transform
+# def makeTransform(rcenterx, rcentery, rotation, scalex, scaley, x, y, scaleUsesCenter=False):
+#     rotation = math.radians(rotation)
+#     if not scaleUsesCenter:
+#         rcenterx *= scalex
+#         rcentery *= scaley
+#         t = Transform()
+#         t = t.translate(x + rcenterx, y + rcentery)
+#         t = t.rotate(rotation)
+#         t = t.translate(-rcenterx, -rcentery)
+#         t = t.scale(scalex, scaley)
+#     else:
+#         t = Transform()
+#         t = t.translate(x + rcenterx, y + rcentery)
+#         t = t.rotate(rotation)
+#         t = t.scale(scalex, scaley)
+#         t = t.translate(-rcenterx, -rcentery)
+#     return t
 
+# from fontTools.varLib.models import VariationModel
+# from models import component
+# from pprint import pprint
 
 class GlyphPreviewCanvas(CanvasGroup):
 
@@ -622,73 +625,91 @@ class GlyphPreviewCanvas(CanvasGroup):
         self.glyphName = ''
         self.drawer = drawer.Drawer(RCJKI)
 
-    def instantiateCharacterGlyph(self, glyph, location):
-        # glyph = self.characterGlyphGlyphSet.getGlyph(glyphName)
-        glyph = glyph.instantiate(location)
-        # locations = [{}, location]
-        # model = VariationModel(locations)
-        # masterValues = [1, 2]
-        # deltas = model.getDeltas(masterValues)
-        # glyph = model.interpolateFromDeltas(location, deltas)
-        deepItems = []
-        print("1")
-        for deepComponent in glyph._deepComponents:
-            # print(deepComponent._toDict()["transform"])
-            deepItem = self.instantiateDeepComponent(
-                deepComponent.name, deepComponent.coord,
-                makeTransform(**deepComponent._toDict()["transform"], scaleUsesCenter=False),
-            )
-            deepItems.append((deepComponent.name, deepItem))
-        # for component in glyph.components:
-        #     print(component)
-        #     deepItem = self.instantiateDeepComponent(
-        #         component.name, component.coord,
-        #         makeTransform(**component.transform, scaleUsesCenter=self._scaleUsesCenter),
-        #     )
-        #     deepItems.append((component.name, deepItem))
-        print("2")
-        return glyph.outline, deepItems, glyph.width
+    # def _transformGlyph(self, glyph, transform):
+    #     glyph.scaleBy((transform["scalex"], transform["scaley"]))
+    #     glyph.rotateBy(transform["rotation"], (transform["rcenterx"], transform["rcentery"]))
+    #     glyph.moveBy((transform["x"], transform["y"]))
+    #     return glyph
 
-    def instantiateDeepComponent(self, glyphName, location, transform):
-        print("start dc")
-        glyph = self.RCJKI.currentFont[glyphName]
-        # glyph = glyph.instantiate(location)
-        # locations = [{}, location]
-        # model = VariationModel(locations)
-        # masterValues = [1, 2]
-        # deltas = model.getDeltas(masterValues)
-        # glyph = model.interpolateFromDeltas(location, deltas)
-        atomicOutlines = []
-        print(glyph._deepComponents)
-        for deepComponent in glyph._deepComponents:
-            t = transform.transform(makeTransform(**deepComponent._toDict()["transform"], scaleUsesCenter=self._scaleUsesCenter))
-            atomicOutline = self.instantiateAtomicElement(
-                deepComponent.name, deepComponent.coord, t,
-            )
-            atomicOutlines.append((deepComponent.name, atomicOutline))
-        print("end dc")
-        return atomicOutlines
+    # def computeCharacterGlyphPreview(self, glyph, position:dict, font = None):
+    #     locations = [{}]
+    #     locations.extend([x["location"] for x in glyph._glyphVariations])
 
-    def instantiateAtomicElement(self, glyphName, location, transform):
-        print("start ae")
-        # glyph = self.atomicElementGlyphSet.getGlyph(glyphName)
-        # glyph = glyph.instantiate(location)
-        glyph = self.RCJKI.currentFont[glyphName]
-        # locations = [{}, location]
-        # model = VariationModel(locations)
-        # masterValues = [1, 2]
-        # deltas = model.getDeltas(masterValues)
-        # glyph = model.interpolateFromDeltas(location, deltas)
-        print("end ae")
-        return glyph.outline.transform(transform)
+    #     model = VariationModel(locations)
+    #     masterDeepComponents = glyph._deepComponents.getList()
+    #     axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getDict()]
+
+    #     result = []
+    #     for i, deepComponent in enumerate(masterDeepComponents):
+    #         variations = []
+    #         for gv in axesDeepComponents:
+    #             variations.append(gv[i])
+    #         result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+
+    #     resultGlyph = RGlyph()
+    #     if font is None:
+    #         font = glyph.getParent()
+    #     for i, dc in enumerate(result):
+    #         name = dc.get("name")
+    #         position = dc.get("coord")
+    #         g = self.computeDeepComponentPreview(font[name], position, font)
+    #         g = self._transformGlyph(g, dc.get("transform"))
+    #         g.draw(resultGlyph.getPen())
+
+    #     return resultGlyph
+
+    # def computeDeepComponentPreview(self, glyph, position:dict, font = None):
+    #     locations = [{}]
+    #     locations.extend([x["location"] for x in glyph._glyphVariations.getDict()])
+
+    #     model = VariationModel(locations)
+    #     masterDeepComponents = glyph._deepComponents.getList()
+    #     axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getDict()]
+
+    #     result = []
+    #     for i, deepComponent in enumerate(masterDeepComponents):
+    #         variations = []
+    #         for gv in axesDeepComponents:
+    #             variations.append(gv[i])
+    #         result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+
+    #     resultGlyph = RGlyph()
+    #     if font is None:
+    #         font = glyph.getParent()
+    #     for i, dc in enumerate(result):
+    #         name = dc.get("name")
+    #         position = dc.get("coord")
+    #         g = self.computeAtomicElementPreview(font[name], position, font)
+    #         g = self._transformGlyph(g, dc.get("transform"))
+    #         g.draw(resultGlyph.getPen())
+
+    #     return resultGlyph
+
+    # def computeAtomicElementPreview(self, glyph, position:dict, font):
+    #     locations = [{}]
+    #     locations.extend([x["location"] for x in glyph._glyphVariations.getDict()])
+
+    #     model = VariationModel(locations)
+    #     layerGlyphs = []
+    #     for variation in glyph._glyphVariations.getDict():
+    #         layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[glyph.name])
+    #     resultGlyph = model.interpolateFromMasters(position, [glyph._RGlyph, *layerGlyphs])
+
+    #     return resultGlyph
 
     def draw(self):
         if not self.RCJKI.get("currentFont"): return
         if not self.glyphName: return
 
         self.glyph = self.RCJKI.currentFont[self.glyphName]
-        outlines, items, width = self.instantiateCharacterGlyph(self.glyph, {"WGHT":1})
-        print(outlines, items, width)
+        # glyph = self.glyph.preview.computeCharacterGlyphPreview(self.glyph, {"WGHT":1})
+
+        scale = .15
+        mjdt.scale(scale, scale)
+        mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
+        mjdt.drawGlyph(self.glyph.preview({"WGHT":1}))
+        # outlines, items, width = self.instantiateCharacterGlyph(self.glyph, {"WGHT":1})
+        # print(outlines, items, width)
 
 
         # self.glyph = self.RCJKI.currentFont[self.glyphName]
