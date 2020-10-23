@@ -465,7 +465,7 @@ class VariationGlyphs(MathList):
 
     # def __iter__(self):
     #     for x in super(VariationGlyphs, self).__iter__():
-    #         print(dir(x))
+    #         # print(dir(x))
     #         yield x._toDict()
 
     def addAxis(self, variation):
