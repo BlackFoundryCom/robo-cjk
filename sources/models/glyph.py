@@ -175,6 +175,7 @@ class Glyph(RGlyph):
         return self._RGlyph.components
 
     def update(self):
+        return #should readapt this fonction to the new format
         if self.type == 'atomicElement':
             return
         deepComponentToRemove = []

@@ -514,14 +514,14 @@ class VariationGlyphs(MathList):
         """
         Return a list of all the variations axes
         """
-        return self.keys()
+        return [x["layerName"] for x in self]
 
     @property
     def infos(self):
         """
         Return a list of all the variations
         """
-        return self.values()
+        return [x["deepComponents"] for x in self]
 
 if __name__ == "__main__":
     dc = [{'coord': {'HGHT': 618.4000000000001, 'HWGT': 96.86, 'LLNGG': 101.0, 'RLNG': 0.0, 'VWGT': 75.8, 'WDTH': 0.82}, 'rotation': 0, 'scalex': 1.0, 'scaley': 1.0, 'x': -241, 'y': 70, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_53E3_00'}, {'coord': {'HGHT': 0.454, 'HWGT': 0.385, 'LLNG': 0.0, 'RLNG': 0.0, 'VWGT': 0.37, 'WDTH': 0.658}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 176, 'y': 90, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_65E5_00'}, {'coord': {'WGHT': 0.316}, 'rotation': 0, 'scalex': 0.5559999999999998, 'scaley': 1.008, 'x': 392, 'y': -372, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_4E00_00'}]

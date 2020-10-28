@@ -126,13 +126,13 @@ class Drawer():
         mjdt.fill(*color)
         mjdt.stroke(*strokecolor)
         mjdt.strokeWidth(scale)
-        mjdt.drawGlyph(self.roundGlyph(glyph.preview.variationPreview))  
+        mjdt.drawGlyph(self.roundGlyph(glyph.preview()))  
         mjdt.restore()
 
     def drawAxisPreview(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
         mjdt.save()
         index = None
-        for i, atomicInstance in enumerate(glyph.preview.axisPreview):
+        for i, atomicInstance in enumerate(glyph.preview()):
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
                 mjdt.save()
@@ -173,7 +173,7 @@ class Drawer():
             if self.RCJKI.currentFont[c.baseGlyph].type == "atomicElement":
                 mjdt.drawGlyph(self.roundGlyph(self.RCJKI.currentFont[c.baseGlyph]))
             else:
-                self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents(update = False)
+                # self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents(update = False)
                 self.drawAxisPreview(self.RCJKI.currentFont[c.baseGlyph],
                                             flatComponentColor,
                                             scale,
