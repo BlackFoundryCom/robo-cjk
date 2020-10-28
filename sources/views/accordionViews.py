@@ -765,7 +765,7 @@ class GlyphVariationAxesGroup(Group):
             self.RCJKI.currentGlyph.selectedSourceAxis = None
         else:
             isel = sender.getSelection()[0]
-            self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['Axis']
+            self.RCJKI.currentGlyph.selectedSourceAxis = {sender.get()[isel]['Axis']:1}
 
         self.RCJKI.currentGlyph.selectedElement = []
         self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
@@ -970,7 +970,7 @@ class DeepComponentAxesGroup(Group):
             lib = RLib()
             deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
             lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
-            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getDict())
+            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
@@ -1134,7 +1134,6 @@ class CharacterGlyphInspector(Inspector):
         self.RCJKI = RCJKI
         self.glyphVariationsAxes = glyphVariationsAxes
         self.deepComponentAxes = deepComponentAxes
-        
         self.w = Window((0, 0, 300, 850), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "characterGlyph"

@@ -54,14 +54,14 @@ class AtomicElement(Glyph):
 
     def preview(self, position:dict, font):
         locations = [{}]
-        locations.extend([x["location"] for x in self._glyphVariations.getDict()])
+        locations.extend([x["location"] for x in self._glyphVariations.getList()])
 
         model = VariationModel(locations)
         layerGlyphs = []
-        for variation in self._glyphVariations.getDict():
+        for variation in self._glyphVariations.getList():
             layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[self.name])
         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
-
+        # resultGlyph.removeOverlap()
         return resultGlyph
 
     @property
@@ -113,9 +113,9 @@ class AtomicElement(Glyph):
         #     variations.writeOutlines(axisGlyph)
         #     variations.setAxisWidth(axisGlyph.width)
     
-        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        # lib[glyphVariationsKey] = self._glyphVariations.getList()
         lib[axesKey] = self._axes.getList()
-        lib[variationGlyphsKey] = self._glyphVariations.getDict()
+        lib[variationGlyphsKey] = self._glyphVariations.getList()
 
         self.lib.update(lib)
         self.markColor = color

@@ -272,10 +272,12 @@ class RoboCJKController(object):
 
     @refresh
     def updateDeepComponent(self, update = False):
-        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
-        if self.isAtomic: return
-        axis = self.currentGlyph.selectedSourceAxis
-        self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
+        if not self.currentGlyph.selectedSourceAxis:
+            self.currentGlyph.selectedSourceAxis = {}#{x.name:0 for x in self.currentGlyph._axes}
+        # self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
+        # if self.isAtomic: return
+        # axis = self.currentGlyph.selectedSourceAxis
+        # self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
 
     def computeDeepComponentsPreview(self, q):
         update = q.get()
@@ -404,17 +406,27 @@ class RoboCJKController(object):
             changed = True
             self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
-        d = self.currentGlyph._glyphVariations
+        # d = self.currentGlyph._glyphVariations
         if changed:
-            if self.currentGlyph.type == "atomicElement":
-                self.currentGlyph.sourcesList = [
-                    {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
-                    ]
-            else:
-                self.currentGlyph.sourcesList = [
-                    {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
-                    ]
+            self.currentGlyph.sourcesList = []
+            for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
+                self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
+            # if self.currentGlyph.type == "atomicElement":
+            #     self.currentGlyph.sourcesList = []
+            #     for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
+            #         self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
+            #     # {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
+            #     # self.currentGlyph.sourcesList = [
+            #         # {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
+            #         # ]
+            # else:
+            #     for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
+            #         self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
+            #     # self.currentGlyph.sourcesList = [
+            #     #     {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
+            #     #     ]
 
+            # print("self.currentGlyph.sourcesList", self.currentGlyph.sourcesList)
             self.currentGlyph.sourcesList = self.sortDeepComponentAxesList(self.currentGlyph.sourcesList)
             self.currentViewSourceList.glyphVariationAxesList.set(self.currentGlyph.sourcesList)
             self.currentViewSourceValue.set("")
@@ -443,9 +455,8 @@ class RoboCJKController(object):
             #         else:
             #             # self.closeCharacterWindow()
 
+        ####### A remettre
         self.openGlyphInspector()
-        # self.showCanvasGroups()
-        # self.addSubView()
         self.updateDeepComponent()
 
         self.glyphInspectorWindow.updatePreview()
@@ -533,17 +544,22 @@ class RoboCJKController(object):
         glyphVariationsAxes = []
         if self.glyphInspectorWindow is not None:
             return
-        if self.isAtomic: 
+        if self.isAtomic: # TODO
             for axisName, layer in self.currentGlyph._glyphVariations.items():
                 glyphVariationsAxes.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
             self.glyphInspectorWindow = accordionViews.AtomicElementInspector(self, glyphVariationsAxes)
-        elif self.isDeepComponent:
-            if self.currentGlyph._glyphVariations:
-                glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
-            self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)
-        elif self.isCharacterGlyph:
-            if self.currentGlyph._glyphVariations:
-                glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+        # elif self.isDeepComponent:
+        #     if self.currentGlyph._axes:
+        #         # glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+        #     self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)
+        elif self.isDeepComponent or self.isCharacterGlyph:
+            if self.currentGlyph._axes:
+                glyphVariationsAxes = []
+                for axis in self.currentGlyph._axes:
+                    pos = {a.name:0 for a in self.currentGlyph._axes} # should find hos to give multiple axis
+                    pos = 0
+                    glyphVariationsAxes.append({"Axis":axis.name, "PreviewValue":pos, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
+                # glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
             self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
 
     def draw(self):
@@ -679,7 +695,7 @@ class RoboCJKController(object):
                     # glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
                     lib = RLib()
                     lib[deepComponentsKey] = copy.deepcopy(self.currentGlyph._deepComponents.getList())
-                    lib[glyphVariationsKey] = copy.deepcopy(self.currentGlyph._glyphVariations.getDict())
+                    lib[glyphVariationsKey] = copy.deepcopy(self.currentGlyph._glyphVariations.getList())
                     self.currentGlyph.stackUndo_lib.append(lib)
             else:
                 self.currentGlyph.indexStackUndo_lib = 0

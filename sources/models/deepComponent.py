@@ -70,8 +70,8 @@ class DeepComponent(Glyph):
         locations.extend([x["location"] for x in self._glyphVariations])
 
         model = VariationModel(locations)
-        masterDeepComponents = self._deepComponents.getList()
-        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getDict()]
+        masterDeepComponents = self._deepComponents
+        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList()]
 
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
@@ -87,10 +87,11 @@ class DeepComponent(Glyph):
         for i, dc in enumerate(result):
             name = dc.get("name")
             position = dc.get("coord")
-            g = font[name].preview(position, font)
-            g = self._transformGlyph(g, dc.get("transform"))
-            g.draw(resultGlyph.getPen())
+            # g = font[name].preview(position, font)
+            self._transformGlyph(font[name].preview(position, font), dc.get("transform")).draw(resultGlyph.getPen())
+            # g.draw(resultGlyph.getPen())
 
+        # resultGlyph.removeOverlap()
         return resultGlyph
 
     @property
@@ -195,7 +196,7 @@ class DeepComponent(Glyph):
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
-        lib[variationGlyphsKey] = self._glyphVariations.getDict()
+        lib[variationGlyphsKey] = self._glyphVariations.getList()
 
         self.lib.update(lib)
         self.markColor = color

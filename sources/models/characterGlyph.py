@@ -46,7 +46,10 @@ deepComponentsKey = 'robocjk.deepComponents'
 axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
 
+
 class CharacterGlyph(Glyph):
+
+    
     def __init__(self, name):
         super().__init__()
         self._deepComponents = DeepComponents()
@@ -75,8 +78,8 @@ class CharacterGlyph(Glyph):
         locations.extend([x["location"] for x in self._glyphVariations])
 
         model = VariationModel(locations)
-        masterDeepComponents = self._deepComponents.getList()
-        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getDict()]
+        masterDeepComponents = self._deepComponents
+        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList()]
 
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
@@ -88,13 +91,12 @@ class CharacterGlyph(Glyph):
         resultGlyph = RGlyph()
         if font is None:
             font = self.getParent()
-
         for i, dc in enumerate(result):
             name = dc.get("name")
             position = dc.get("coord")
-            g = font[name].preview(position, font)
-            g = self._transformGlyph(g, dc.get("transform"))
-            g.draw(resultGlyph.getPen())
+            # g = font[name].preview(position, font)
+            self._transformGlyph(font[name].preview(position, font), dc.get("transform")).draw(resultGlyph.getPen())
+            # g.draw(resultGlyph.getPen())
 
         return resultGlyph
 
@@ -210,10 +212,10 @@ class CharacterGlyph(Glyph):
         #         pass
 
         # lib[deepComponentsKeyOld] = self._deepComponents.getList()
-        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        # lib[glyphVariationsKey] = self._glyphVariations.getList()
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
-        lib[variationGlyphsKey] = self._glyphVariations.getDict()
+        lib[variationGlyphsKey] = self._glyphVariations.getList()
         self.lib.update(lib)
         self.markColor = color

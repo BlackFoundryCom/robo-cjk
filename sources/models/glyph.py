@@ -25,6 +25,8 @@ glyphUndo = decorators.glyphUndo
 from models import deepComponent, component
 # reload(component)
 import copy
+import math
+from fontTools.misc.transform import Transform
 
 # reload(deepComponent)
 DeepComponents = component.DeepComponents
@@ -147,10 +149,33 @@ class Glyph(RGlyph):
     # @stateColor.setter
     # def stateColor(self, value:tuple):
     #     self._RGlyph.markColor = value
+    # def _transformGlyph(self, glyph, transform):
+    #     glyph.scaleBy((transform["scalex"], transform["scaley"]))
+    #     glyph.rotateBy(transform["rotation"], (transform["rcenterx"], transform["rcentery"]))
+    #     glyph.moveBy((transform["x"], transform["y"]))
+    #     return glyph
+
+    def makeTransform(self, x, y, rotation, scalex, scaley, rcenterx, rcentery, scaleUsesCenter=False):
+        rotation = math.radians(rotation)
+        if not scaleUsesCenter:
+            rcenterx *= scalex
+            rcentery *= scaley
+            t = Transform()
+            t = t.translate(x + rcenterx, y + rcentery)
+            t = t.rotate(rotation)
+            t = t.translate(-rcenterx, -rcentery)
+            t = t.scale(scalex, scaley)
+        else:
+            t = Transform()
+            t = t.translate(x + rcenterx, y + rcentery)
+            t = t.rotate(rotation)
+            t = t.scale(scalex, scaley)
+            t = t.translate(-rcenterx, -rcentery)
+        return t
+
     def _transformGlyph(self, glyph, transform):
-        glyph.scaleBy((transform["scalex"], transform["scaley"]))
-        glyph.rotateBy(transform["rotation"], (transform["rcenterx"], transform["rcentery"]))
-        glyph.moveBy((transform["x"], transform["y"]))
+        t = self.makeTransform(**transform)
+        glyph.transformBy(tuple(t))
         return glyph
 
     def save(self):

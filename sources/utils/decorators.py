@@ -86,7 +86,7 @@ def glyphUndo(func):
                     lib = RLib()
                     deepComponentsKey, glyphVariationsKey = _getKeys(self)
                     lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
-                    lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getDict())
+                    lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getList())
                     self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                     self.stackUndo_lib.append(lib)
                     self.indexStackUndo_lib += 1
@@ -104,7 +104,7 @@ def glyphAddRemoveUndo(func):
                 lib = RLib()
                 deepComponentsKey, glyphVariationsKey = _getKeys(self)
                 lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
-                lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getDict())
+                lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getList())
                 self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                 self.stackUndo_lib.append(lib)
                 self.indexStackUndo_lib += 1
@@ -122,7 +122,7 @@ def glyphTransformUndo(func):
                 lib = RLib()
                 deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
                 lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
-                lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getDict())
+                lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
                 self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
                 self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
                 self.RCJKI.currentGlyph.indexStackUndo_lib += 1

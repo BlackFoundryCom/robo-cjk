@@ -85,7 +85,7 @@ class MathDict(dict, _MathMixin):
     def _doBinaryOperatorScalar(self, scalar, op):
         result = MathDict()
         for k, v in self.items():
-            if isinstance(v, (int, float, MathDict, MathList)):
+            if isinstance(v, (int, float, MathDict)):
                 result[k] = op(v, scalar)
             else:
                 result[k] = v
@@ -100,7 +100,7 @@ class MathDict(dict, _MathMixin):
         result = MathDict()
         for k, v1 in self_other.items():
             v2 = other_self[k]
-            if isinstance(v1, (int, float, MathDict, MathList)):
+            if isinstance(v1, (int, float, MathDict)):
                 result[k] = op(v1, v2)
             else:
                 if v1 != v2:
@@ -109,35 +109,35 @@ class MathDict(dict, _MathMixin):
                 result[k] = v1
         return result
         
-class MathList(_MathMixin, list):
+# class MathList(_MathMixin, list):
     
-    def _doBinaryOperatorScalar(self, scalar, op):
-        result = MathList()
-        for e in self:
-            if isinstance(e, (int, float, MathDict, MathList)):
-                result.append(op(e, scalar))
-            else:
-                result.append(e)
-        return result
+#     def _doBinaryOperatorScalar(self, scalar, op):
+#         result = MathList()
+#         for e in self:
+#             if isinstance(e, (int, float, MathDict, MathList)):
+#                 result.append(op(e, scalar))
+#             else:
+#                 result.append(e)
+#         return result
         
-    def _doBinaryOperator(self, other, op):
-        # any missing keys will be taken from the other dict
-        assert len(self) == len(other)
-        self_other = list(other)
-        other_self = list(self)
-        result = MathList()
-        for i, e1 in enumerate(self_other):
-            e2 = other_self[i]
-            if isinstance(e1, (int, float, MathDict, MathList)):
-                result.append(op(e1, e2))
-            else:
-                if e1 != e2:
-                    print(e1, e2)
-                    raise InterpolationError("incompatible lists")
-                result.append(e1)
-        return result
+#     def _doBinaryOperator(self, other, op):
+#         # any missing keys will be taken from the other dict
+#         assert len(self) == len(other)
+#         self_other = list(other)
+#         other_self = list(self)
+#         result = MathList()
+#         for i, e1 in enumerate(self_other):
+#             e2 = other_self[i]
+#             if isinstance(e1, (int, float, MathDict, MathList)):
+#                 result.append(op(e1, e2))
+#             else:
+#                 if e1 != e2:
+#                     print(e1, e2)
+#                     raise InterpolationError("incompatible lists")
+#                 result.append(e1)
+#         return result
 
-class Axis(MathDict):
+class Axis:
 
     def __init__(self, name="", minValue=0, maxValue=1):
         # for k, v in kwargs.items():
@@ -146,13 +146,13 @@ class Axis(MathDict):
         self.minValue = minValue
         self.maxValue = maxValue
 
-    # def __repr__(self):
-    #     return "<"+str(vars(self))+">"
+    def __repr__(self):
+        return "<"+str(vars(self))+">"
 
     def _toDict(self):
         return MathDict({x:getattr(self, x) for x in vars(self)})
 
-class Axes(MathList):
+class Axes(list):
 
     """
     This class refere to robocjk.axes key
@@ -179,8 +179,11 @@ class Axes(MathList):
 
     def getList(self):
         # print("Axes", [x._toDict() for x in self])
-        return MathList([x._toDict() for x in self])
+        return [x._toDict() for x in self]
         # return [x._toDict() for x in self]
+
+    # def __repr__(self):
+    #     return str(self.getList())
 
 class Coord(MathDict):
 
@@ -334,7 +337,7 @@ class DeepComponents:
     """
 
     def __init__(self, deepComponents: list = []):
-        self._deepComponents = MathList([])
+        self._deepComponents = []
         for deepComponent in deepComponents:
             if deepComponent.get("name"):
                 self._deepComponents.append(DeepComponentNamed(**dict(deepComponent)))
@@ -380,7 +383,7 @@ class DeepComponents:
 
     def __iter__(self):
         for deepComponent in self._deepComponents:
-            yield deepComponent
+            yield deepComponent._toDict()
 
     def __getitem__(self, index):
         assert isinstance(index, int)
@@ -397,13 +400,13 @@ class DeepComponents:
         Return a list reprensentation on the class
         """
         # print("DeepComponents", [x._toDict() for x in self._deepComponents])
-        return MathList([x._toDict() for x in self._deepComponents])
+        return [x._toDict() for x in self._deepComponents]
 
     def _unnamed(self):
         pass
 
 
-class VariationGlyphsInfos(MathDict):
+class VariationGlyphsInfos:
 
     def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}):
         # print("_init_ variation glyphs", location, layerName, deepComponents)
@@ -441,17 +444,17 @@ class VariationGlyphsInfos(MathDict):
         for x in self.deepComponents:
             x.removeDeepComponents(indexes)
 
-    # def __repr__(self):
-    #     return str({x:getattr(self, x) for x in vars(self)})
-    #     return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
+    def __repr__(self):
+        return str({x:getattr(self, x) for x in vars(self)})
+        return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
     def _toDict(self):
-        return MathDict({"location":MathDict(self.location), "layerName":self.layerName, "deepComponents":self.deepComponents.getList()})
+        return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList()}
 
     def __getitem__(self, item):
         return getattr(self, item)
 
-class VariationGlyphs(MathList):
+class VariationGlyphs(list):
 
     def __init__(self, variationGlyphs=[]):
         for variation in variationGlyphs:
@@ -460,7 +463,7 @@ class VariationGlyphs(MathList):
 
     def _init_with_old_format(self, data):
         for k, v in data.items():
-            variation = MathDict({"location": MathDict({k:v.get("maxValue")}), "layerName": v.get("layerName"), "deepComponents": MathList(v.get("content").get("deepComponents"))})
+            variation = {"location": {k:v.get("maxValue")}, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
             self.addAxis(variation)
 
     # def __iter__(self):
@@ -470,6 +473,18 @@ class VariationGlyphs(MathList):
 
     def addAxis(self, variation):
         self.append(VariationGlyphsInfos(**variation))
+
+    # def __iter__(self):
+    #     for x in self:
+    #         yield x._toDict()
+
+    def getList(self):
+        """
+        Return a list reprensentation on the class
+        """
+        # return [x for x in self]
+        return [x._toDict() for x in self]
+        # return {x: getattr(self, x)._toDict() for x in vars(self)}  
     
     def removeAxis(self, arg):
         if isinstance(arg, int):
@@ -496,13 +511,11 @@ class VariationGlyphs(MathList):
         for x in self:
             x.removeDeepComponents(indexes)
 
-    def getDict(self):
-        """
-        Return a list reprensentation on the class
-        """
-        # return [x for x in self]
-        return MathList([x._toDict() for x in self])
-        # return {x: getattr(self, x)._toDict() for x in vars(self)}     
+   
+
+
+    # def __repr__(self):
+    #     return str(self.getList())
 
     # @property
     def layerNames(self):

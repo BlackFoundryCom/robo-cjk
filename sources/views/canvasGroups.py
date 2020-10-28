@@ -578,7 +578,7 @@ class DCCG_View(CanvasGroup):
             deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
             # glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
             lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
-            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getDict())
+            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
@@ -637,7 +637,7 @@ class GlyphPreviewCanvas(CanvasGroup):
 
     #     model = VariationModel(locations)
     #     masterDeepComponents = glyph._deepComponents.getList()
-    #     axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getDict()]
+    #     axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getList()]
 
     #     result = []
     #     for i, deepComponent in enumerate(masterDeepComponents):
@@ -660,11 +660,11 @@ class GlyphPreviewCanvas(CanvasGroup):
 
     # def computeDeepComponentPreview(self, glyph, position:dict, font = None):
     #     locations = [{}]
-    #     locations.extend([x["location"] for x in glyph._glyphVariations.getDict()])
+    #     locations.extend([x["location"] for x in glyph._glyphVariations.getList()])
 
     #     model = VariationModel(locations)
     #     masterDeepComponents = glyph._deepComponents.getList()
-    #     axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getDict()]
+    #     axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getList()]
 
     #     result = []
     #     for i, deepComponent in enumerate(masterDeepComponents):
@@ -687,11 +687,11 @@ class GlyphPreviewCanvas(CanvasGroup):
 
     # def computeAtomicElementPreview(self, glyph, position:dict, font):
     #     locations = [{}]
-    #     locations.extend([x["location"] for x in glyph._glyphVariations.getDict()])
+    #     locations.extend([x["location"] for x in glyph._glyphVariations.getList()])
 
     #     model = VariationModel(locations)
     #     layerGlyphs = []
-    #     for variation in glyph._glyphVariations.getDict():
+    #     for variation in glyph._glyphVariations.getList():
     #         layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[glyph.name])
     #     resultGlyph = model.interpolateFromMasters(position, [glyph._RGlyph, *layerGlyphs])
 

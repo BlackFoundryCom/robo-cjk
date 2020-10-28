@@ -1884,7 +1884,7 @@ class Test:
 
         model = VariationModel(locations)
         masterDeepComponents = glyph._deepComponents.getList()
-        axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getDict()]
+        axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getList()]
 
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
@@ -1911,11 +1911,11 @@ class Test:
 
     def computeDeepComponentPreview(self, glyph, position:dict, font = None):
         locations = [{}]
-        locations.extend([x["location"] for x in glyph._glyphVariations.getDict()])
+        locations.extend([x["location"] for x in glyph._glyphVariations.getList()])
 
         model = VariationModel(locations)
         masterDeepComponents = glyph._deepComponents.getList()
-        axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getDict()]
+        axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getList()]
 
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
@@ -1942,12 +1942,12 @@ class Test:
 
     def computeAtomicElementPreview(self, glyph, position:dict, font):
         locations = [{}]
-        locations.extend([x["location"] for x in glyph._glyphVariations.getDict()])
+        locations.extend([x["location"] for x in glyph._glyphVariations.getList()])
 
         model = VariationModel(locations)
 
         layerGlyphs = []
-        for variation in glyph._glyphVariations.getDict():
+        for variation in glyph._glyphVariations.getList():
             layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[glyph.name])
         result = model.interpolateFromMasters(position, [glyph._RGlyph, *layerGlyphs])
         print(result)
