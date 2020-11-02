@@ -948,7 +948,7 @@ class NewPDF:
                     for variation in self.RCJKI.currentFont.fontVariations:
                         glyph1 = glyph
                         glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
-                        glyph1.preview.variationPreview.removeOverlap()
+                        # glyph1.preview.variationPreview.removeOverlap()
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
                         glyph1.preview.variationPreview.markColor = glyph1.markColor
@@ -970,7 +970,7 @@ class NewPDF:
                         
                         db.drawGlyph(glyph1.preview.variationPreview)
                         glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 0)])
-                        glyph1.preview.variationPreview.removeOverlap()
+                        # glyph1.preview.variationPreview.removeOverlap()
                         variation = "normal"
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
@@ -1177,7 +1177,7 @@ class DesignFrameDrawer:
             dist += h / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
 
     def _makeVerGrid(self,
                     glyph: RGlyph, 
@@ -1196,7 +1196,7 @@ class DesignFrameDrawer:
             dist += w / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
 
 
     def _findProximity(self, 
@@ -1230,7 +1230,7 @@ class DesignFrameDrawer:
 
             frame = self._getEmRatioFrame(self.controller.designFrame.characterFace, w, h, translateY)
             outside, inside = self.controller.designFrame.overshoot
-            # self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
+            self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
 
         self._makeHorGrid(RGlyph(), *frame, translateY, step = 24)
         self._makeVerGrid(RGlyph(), *frame, translateY, step = 24)
