@@ -52,7 +52,7 @@ class AtomicElement(Glyph):
         # self.preview = glyphPreview.AtomicElementPreview(self)
         self.save()
 
-    def preview(self, position:dict, font):
+    def preview(self, position:dict={}, font=None):
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations.getList()])
 

@@ -707,7 +707,8 @@ class GlyphPreviewCanvas(CanvasGroup):
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
-        mjdt.drawGlyph(self.glyph.preview({"WGHT":1}))
+        for g in self.glyph.preview():
+            mjdt.drawGlyph(g)
         # outlines, items, width = self.instantiateCharacterGlyph(self.glyph, {"WGHT":1})
         # print(outlines, items, width)
 

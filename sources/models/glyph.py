@@ -175,6 +175,7 @@ class Glyph(RGlyph):
 
     def _transformGlyph(self, glyph, transform):
         t = self.makeTransform(**transform)
+        # for c in glyph:
         glyph.transformBy(tuple(t))
         return glyph
 
@@ -308,23 +309,23 @@ class Glyph(RGlyph):
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
-        for index, atomicInstanceGlyph in enumerate(self.preview.axisPreview):
-            atomicInstanceGlyph.selected = False
-            if atomicInstanceGlyph.getTransformedGlyph().pointInside((px, py)):
-                atomicInstanceGlyph.selected = True
+        for index, atomicInstanceGlyph in enumerate(self.preview({})):
+            atomicInstanceGlyph.selectedContour = False
+            if atomicInstanceGlyph.pointInside((px, py)):
+                atomicInstanceGlyph.selectedContour = True
                 if index not in self.selectedElement:
                     self.selectedElement.append(index)
                 if not multipleSelection: return
 
     def selectionRectTouch(self, x: int, w: int, y: int, h: int):
-        for index, atomicInstanceGlyph in enumerate(self.preview.axisPreview):
+        for index, atomicInstanceGlyph in enumerate(self.preview({})):
             inside = False
-            atomicInstanceGlyph.selected = False
-            for c in atomicInstanceGlyph.getTransformedGlyph():
+            atomicInstanceGlyph.selectedContour = False
+            for c in atomicInstanceGlyph:
                 for p in c.points:
                     if p.x > x and p.x < w and p.y > y and p.y < h:
                         inside = True
-                        atomicInstanceGlyph.selected = True
+                        atomicInstanceGlyph.selectedContour = True
             if inside:
                 if index in self.selectedElement: continue
                 self.selectedElement.append(index)

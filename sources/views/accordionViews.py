@@ -154,8 +154,8 @@ class CompositionRulesGroup(Group):
         mjdt.translate(20, 25)
         mjdt.scale(.04)
         mjdt.fill(0, 0, 0, 1)
-        for atomicInstance in self.glyph.preview.axisPreview:
-            mjdt.drawGlyph(atomicInstance.getTransformedGlyph()) 
+        # for atomicInstance in self.glyph.preview.axisPreview:
+        mjdt.drawGlyph(self.glyph.preview({})) 
         mjdt.restore()
 
     def componentsListSelectionCallback(self, sender):
@@ -196,7 +196,7 @@ class CompositionRulesGroup(Group):
         index = sender.get()[sel[0]]
         self.deepComponentName = "DC_%s_%s"%(self.code, index)
         self.glyph = self.RCJKI.currentFont.get(self.deepComponentName)
-        self.glyph.preview.computeDeepComponents(update = False)
+        # self.glyph.preview.computeDeepComponents(update = False)
         self.canvas.update()
         self.setExistingInstances(self.deepComponentName)
 
@@ -206,8 +206,8 @@ class CompositionRulesGroup(Group):
         for n in f.staticCharacterGlyphSet():
             g = f.get(n)
             for i, x in enumerate(g._deepComponents):
-                if x.name == deepComponentName:
-                    variations = {k:copy.deepcopy(y[i]) for k, y in g._glyphVariations.items()}
+                if x['name'] == deepComponentName:
+                    variations = [copy.deepcopy(y.deepComponents[i]) for y in g._glyphVariations]
                     try:
                         self.existingDeepComponentInstances[chr(int(n[3:], 16))] = [copy.deepcopy(x), variations]
                     except:

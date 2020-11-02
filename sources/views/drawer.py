@@ -129,7 +129,8 @@ class Drawer():
         loc = {}
         if glyph.sourcesList: 
             loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
-        mjdt.drawGlyph(self.roundGlyph(glyph.preview(loc)))  
+        for g in glyph.preview(loc):
+            mjdt.drawGlyph(self.roundGlyph(g))  
         mjdt.restore()
 
     def drawAxisPreview(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
@@ -137,22 +138,22 @@ class Drawer():
         index = None
         for i, atomicInstance in enumerate(glyph.preview(glyph.selectedSourceAxis)):
             mjdt.fill(*color)
-            if drawSelectedElements and i in glyph.selectedElement:
-                mjdt.save()
-                mjdt.stroke(1, 0, 0, 1)
-                mjdt.strokeWidth(1*scale)
-                tx = atomicInstance.x+atomicInstance.rcenterx
-                ty = atomicInstance.y+atomicInstance.rcentery
-                mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
-                mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
-                mjdt.stroke(None)
-                mjdt.fill(1, 0, 0, 1)
-                mjdt.fontSize(8*scale)
-                mjdt.textBox(f"{int(atomicInstance.rcenterx)} {int(atomicInstance.rcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
-                mjdt.restore()
-                mjdt.fill(0, .8, .8, .5)
+            # if drawSelectedElements and i in glyph.selectedElement:
+                # mjdt.save()
+                # mjdt.stroke(1, 0, 0, 1)
+                # mjdt.strokeWidth(1*scale)
+                # tx = atomicInstance.x+atomicInstance.rcenterx
+                # ty = atomicInstance.y+atomicInstance.rcentery
+                # mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
+                # mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
+                # mjdt.stroke(None)
+                # mjdt.fill(1, 0, 0, 1)
+                # mjdt.fontSize(8*scale)
+                # mjdt.textBox(f"{int(atomicInstance.rcenterx)} {int(atomicInstance.rcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
+                # mjdt.restore()
+                # mjdt.fill(0, .8, .8, .5)
 
-            for c in atomicInstance.glyph:
+            for c in atomicInstance:
                 if c.clockwise:
                     mjdt.stroke(1, 0, 0, 1)
                     mjdt.strokeWidth(2*scale)

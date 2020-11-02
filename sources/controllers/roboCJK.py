@@ -650,9 +650,21 @@ class RoboCJKController(object):
 
         l = []
         if len(self.currentGlyph.selectedElement) == 1:
-            for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
-                minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
-                l.append({'Axis':axisName, 'PreviewValue':self.systemValue(value, minValue, maxValue), 'MinValue':minValue, 'MaxValue':maxValue})
+            for dc in self.currentGlyph._deepComponents:
+                dc_name = dc["name"]
+                glyph = self.currentFont.get(dc_name)
+                for axis, variation in zip(glyph._axes, glyph._glyphVariations):
+                    minValue = axis.minValue
+                    maxValue = axis.maxValue
+                    axisName = axis.name
+                    value = variation.location
+                    l.append({'Axis':axisName, 'PreviewValue':value.get(list(value.keys())[0]), 'MinValue':minValue, 'MaxValue':maxValue})
+                    # print({'Axis':axisName, 'PreviewValue':self.systemValue(value, minValue, maxValue), 'MinValue':minValue, 'MaxValue':maxValue})
+
+            # for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
+            #     print("I'm ici aussi")
+            #     minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
+            #     l.append({'Axis':axisName, 'PreviewValue':self.systemValue(value, minValue, maxValue), 'MinValue':minValue, 'MaxValue':maxValue})
         l = self.sortDeepComponentAxesList(l)
         element.deepComponentAxesList.set(l)
         if hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):

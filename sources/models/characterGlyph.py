@@ -46,6 +46,13 @@ deepComponentsKey = 'robocjk.deepComponents'
 axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
 
+class RCJKGlyph(RGlyph):
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        self.selectedContour = False
 
 class CharacterGlyph(Glyph):
 
@@ -73,7 +80,7 @@ class CharacterGlyph(Glyph):
         self._setStackUndo()
         self.save()
 
-    def preview(self, position:dict, font = None):
+    def preview(self, position:dict={}, font = None):
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations])
 
@@ -88,17 +95,23 @@ class CharacterGlyph(Glyph):
                 variations.append(gv[i])
             result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
 
-        resultGlyph = RGlyph()
+        # resultGlyph = RGlyph()
         if font is None:
             font = self.getParent()
         for i, dc in enumerate(result):
             name = dc.get("name")
             position = dc.get("coord")
-            # g = font[name].preview(position, font)
-            self._transformGlyph(font[name].preview(position, font), dc.get("transform")).draw(resultGlyph.getPen())
+            resultGlyph = RCJKGlyph(**dc.get("transform"))
+            g = font[name].preview(position, font)
+            for c in g:
+                c.draw(resultGlyph.getPen())
+            self._transformGlyph(resultGlyph, dc.get("transform"))
+            # g.draw(resultGlyph.getPen())
+            yield resultGlyph
+
             # g.draw(resultGlyph.getPen())
 
-        return resultGlyph
+        # return resultGlyph
 
     @property
     def foreground(self):
