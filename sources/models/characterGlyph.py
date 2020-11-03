@@ -81,6 +81,8 @@ class CharacterGlyph(Glyph):
         self.save()
 
     def preview(self, position:dict={}, font = None):
+        if not position:
+            position = self.getLocation()
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations])
 
@@ -169,12 +171,15 @@ class CharacterGlyph(Glyph):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
     def updateDeepComponentCoord(self, nameAxis, value):
-        try:
-            if self.selectedSourceAxis is not None:
-                self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
-            else:
-                self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
-        except: pass
+        if self.selectedSourceAxis:
+            index = 0
+            for i, x in enumerate(self._axes):
+                if x.name == self.selectedSourceAxis:
+                    index = i
+            self._glyphVariations[i].deepComponents[self.selectedElement[0]].coord[nameAxis] = value
+            # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
+        else:
+            self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
 
     def removeVariationAxis(self, name):
         self._glyphVariations.removeAxis(name)
@@ -192,8 +197,8 @@ class CharacterGlyph(Glyph):
         self._deepComponents.addDeepComponent(d)
         self._glyphVariations.addDeepComponent(d)
 
-        self.preview.computeDeepComponentsPreview(update = False)
-        self.preview.computeDeepComponents(update = False)
+        # self.preview.computeDeepComponentsPreview(update = False)
+        # self.preview.computeDeepComponents(update = False)
 
         # font = self.getParent()
         # glyph = font[self.name]

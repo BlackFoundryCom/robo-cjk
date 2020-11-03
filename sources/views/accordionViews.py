@@ -154,7 +154,6 @@ class CompositionRulesGroup(Group):
         mjdt.translate(20, 25)
         mjdt.scale(.04)
         mjdt.fill(0, 0, 0, 1)
-        # for atomicInstance in self.glyph.preview.axisPreview:
         mjdt.drawGlyph(self.glyph.preview({})) 
         mjdt.restore()
 
@@ -233,8 +232,8 @@ class CompositionRulesGroup(Group):
         dcname = self.deepComponentSettings.name
         dcglyph = self.RCJKI.currentFont.get(dcname)
         axes = [{"Axis":axisName, "Layer":layer, "PreviewValue":self.deepComponentSettings['coord'][axisName]} for axisName, layer in dcglyph._glyphVariations.items()]
-        dcglyph.preview.computeDeepComponentsPreview(axes)
-        self.RCJKI.drawer.existingInstance = dcglyph.preview.variationPreview
+        # dcglyph.preview.computeDeepComponentsPreview(axes)
+        self.RCJKI.drawer.existingInstance = dcglyph.preview()
         self.RCJKI.drawer.existingInstancePos = [self.deepComponentSettings.x, self.deepComponentSettings.y]
 
     def existingInstancesListDoubleClickCallback(self, sender):
@@ -765,7 +764,7 @@ class GlyphVariationAxesGroup(Group):
             self.RCJKI.currentGlyph.selectedSourceAxis = None
         else:
             isel = sender.getSelection()[0]
-            self.RCJKI.currentGlyph.selectedSourceAxis = {sender.get()[isel]['Axis']:1}
+            self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['Axis']
 
         self.RCJKI.currentGlyph.selectedElement = []
         self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
@@ -832,7 +831,7 @@ class GlyphVariationAxesGroup(Group):
 
     def computeCurrentGlyph(self, sender):
         self.RCJKI.currentGlyph.sourcesList = sender.get()
-        self.RCJKI.currentGlyph.preview.computeDeepComponentsPreview(sender.get())
+        # self.RCJKI.currentGlyph.preview.computeDeepComponentsPreview(sender.get())
         
     def editSelectedAxisExtremeValueButtonCallback(self, sender):
         sel = self.glyphVariationAxesList.getSelection()
@@ -848,7 +847,10 @@ class GlyphVariationAxesGroup(Group):
         pen = backupGlyph.getPen()
         self.setLocationTo1Button.show(True)
 
-        for atomicInstance in self.RCJKI.currentGlyph.preview.axisPreview:
+        # loc = {}
+        # if self.RCJKI.currentGlyph.selectedSourceAxis:
+        #     loc = {self.RCJKI.currentGlyph.selectedSourceAxis:1}
+        for atomicInstance in self.RCJKI.currentGlyph.preview():
             g = atomicInstance.getTransformedGlyph()
             g.draw(pen)
 
@@ -946,7 +948,14 @@ class DeepComponentAxesGroup(Group):
             return
         else:
             values = sender.get()[sel[0]]
-            minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
+            selectedAtomicElementName = self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].name
+            atomicElement = self.RCJKI.currentFont[selectedAtomicElementName]
+
+            for x in atomicElement._axes:
+                if self.deepComponentAxesList[sel[0]]['Axis'] == x.name:
+                    minValue = x.minValue
+                    maxValue = x.maxValue
+            # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
             sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
             self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
         
@@ -954,23 +963,31 @@ class DeepComponentAxesGroup(Group):
     def deepComponentAxesListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return         
-        
-        minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sender.getSelection()[0]]['Axis'])
+        # minValue = self.RCJKI.currentGlyph._axes[]
+
+        selectedAtomicElementName = self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].name
+        atomicElement = self.RCJKI.currentFont[selectedAtomicElementName]
+
+        for x in atomicElement._axes:
+            if self.deepComponentAxesList[sender.getSelection()[0]]['Axis'] == x.name:
+                minValue = x.minValue
+                maxValue = x.maxValue
+
+        # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sender.getSelection()[0]]['Axis'])
         self.setSliderValue2Glyph(sender, minValue, maxValue)
         self.sliderValueEditText.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
         self.RCJKI.updateDeepComponent(update = False)
 
     def setSliderValue2Glyph(self, sender, minValue, maxValue):
         def _getKeys(glyph):
-            if glyph.type == "characterGlyph":
-                return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
-            else:
-                return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
+            return 'robocjk.deepComponents', 'robocjk.variationGlyphs', 'robocjk.axes'
+
         if self.RCJKI.currentGlyph.type in ['characterGlyph', 'deepComponent']:
             lib = RLib()
-            deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
+            deepComponentsKey, glyphVariationsKey, axesKey = _getKeys(self.RCJKI.currentGlyph)
             lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
             lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
+            lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList())
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
@@ -1106,8 +1123,12 @@ class TransformationGroup(Group):
 
         selection = glyph.selectedElement
         elements = []
+        # loc = {}
+        # if glyph.selectedSourceAxis:
+        #     loc = {glyph.selectedSourceAxis:1}
+        preview = [x for x in glyph.preview()]
         for i, x in zip(selection, glyph._getSelectedElement()):
-            elements.append(SelectedElements(x, glyph.preview.axisPreview[i].getTransformedGlyph()))
+            elements.append(SelectedElements(x, preview[i]))
         alignments = ["left", "bottom", "right", "top"]
         pos = alignments.index(align)
         target = []

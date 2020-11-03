@@ -502,7 +502,10 @@ class ComponentWindow():
         mjdt.translate(20, 25)
         mjdt.scale(.04)
         mjdt.fill(0, 0, 0, 1)
-        for atomicInstance in self.glyph.preview.axisPreview:
+        # loc = {}
+        # if self.glyph.selectedSourceAxis:
+        #     loc = {self.glyph.selectedSourceAxis:1}
+        for atomicInstance in self.glyph.preview():
             mjdt.drawGlyph(atomicInstance.getTransformedGlyph()) 
         mjdt.restore()
 
@@ -532,7 +535,7 @@ class ComponentWindow():
         index = sender.get()[sel[0]]
         self.deepComponentName = "DC_%s_%s"%(self.code, index)
         self.glyph = self.RCJKI.currentFont[self.deepComponentName]
-        self.glyph.preview.computeDeepComponents(update = False)
+        # self.glyph.preview.computeDeepComponents(update = False)
         self.w.canvas2.update()
 
     def variantComponentListdoubleClickCallback(self, sender):
@@ -1192,7 +1195,7 @@ class RoboCJKView(BaseWindowController):
                 f.insertGlyph(g, name=n)
                 continue
 
-            g.preview.computeDeepComponents()
+            # g.preview.computeDeepComponents()
             f.newGlyph(n)
             f[n].width = g.width
 
@@ -1822,7 +1825,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             return
         self.charName = name
         self.refGlyph = self.RCJKI.currentFont[name]
-        self.refGlyph.preview.computeDeepComponents(update = False)
+        # self.refGlyph.preview.computeDeepComponents(update = False)
         self.deepComponents = self.refGlyph._deepComponents
         self.glyphVariations = self.refGlyph._glyphVariations
         self.deepComponentsName = [chr(int(dc.name.split("_")[1], 16)) for dc in self.deepComponents]
@@ -1850,7 +1853,10 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         mjdt.save()
         mjdt.translate(20, 21)
         mjdt.scale(.09)
-        for i, atomicElement in enumerate(self.refGlyph.preview.axisPreview):
+        # loc = {}
+        # if self.refGlyph.selectedSourceAxis:
+            # loc = {self.refGlyph.selectedSourceAxis:1}
+        for i, atomicElement in enumerate(self.refGlyph.preview()):
             if i == self.index:
                 mjdt.fill(.7, 0, .15, 1)
             else:

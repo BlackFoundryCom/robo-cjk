@@ -185,7 +185,7 @@ class Axes(list):
     # def __repr__(self):
     #     return str(self.getList())
 
-class Coord(MathDict):
+class Coord(DictClass):
 
     def __init__(self, **kwargs):
         super().__init__()
@@ -219,7 +219,7 @@ class Coord(MathDict):
         for axis in axes:
             self.remove(axis)
 
-class Transform(MathDict):
+class Transform(DictClass):
 
     def __init__(self, 
             rcenterx: int = 0,
@@ -248,7 +248,7 @@ class Transform(MathDict):
             r = int(rotation%(360*rotation/abs(rotation)))
         return r
 
-class DeepComponent(MathDict):
+class DeepComponent(DictClass):
 
     def __init__(self, 
             coord : dict = {}, 

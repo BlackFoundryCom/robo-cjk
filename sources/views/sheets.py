@@ -297,7 +297,7 @@ class SelectDeepComponentSheet():
 
     def getDeepComponentPreview(self, deepComponentName):
         self.glyph = self.RCJKI.currentFont[deepComponentName]
-        self.glyph.preview.computeDeepComponents(update = False)
+        # self.glyph.preview.computeDeepComponents(update = False)
         self.parent.sheet.canvasPreview.update()
     
     def closeSheet(self, sender):
@@ -313,7 +313,10 @@ class SelectDeepComponentSheet():
         mjdt.translate(75, 35)
         mjdt.scale(.15)
         mjdt.fill(0, 0, 0, 1)
-        for atomicinstance in self.glyph.preview.axisPreview:
+        # # loc = {}
+        # # if self.glyph.selectedSourceAxis:
+        #     loc = {self.glyph.selectedSourceAxis:1}
+        for atomicinstance in self.glyph.preview():
             mjdt.drawGlyph(atomicinstance.getTransformedGlyph()) 
         mjdt.restore()
 
@@ -969,7 +972,7 @@ class LockController:
         mjdt.scale(s, s)
         mjdt.translate(350, 350)
         if glyph.type != "atomicElement":
-            glyph.preview.computeDeepComponents(update = False)
+            # glyph.preview.computeDeepComponents(update = False)
             self.RCJKI.drawer.drawAxisPreview(
                 glyph,
                 (0, 0, 0, 1),

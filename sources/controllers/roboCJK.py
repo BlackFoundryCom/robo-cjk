@@ -279,22 +279,22 @@ class RoboCJKController(object):
         # axis = self.currentGlyph.selectedSourceAxis
         # self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
 
-    def computeDeepComponentsPreview(self, q):
-        update = q.get()
-        self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
-        q.task_done()
+    # def computeDeepComponentsPreview(self, q):
+    #     update = q.get()
+    #     self.currentGlyph.preview.computeDeepComponentsPreview(update = update)
+    #     q.task_done()
 
-    def computeDeepComponents(self, q):
-        axis = q.get()
-        self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
-        q.task_done()
+    # def computeDeepComponents(self, q):
+    #     axis = q.get()
+    #     self.currentGlyph.preview.computeDeepComponents(axis = axis, update = False)
+    #     q.task_done()
 
     def decomposeGlyphToBackupLayer(self, glyph):
         def _decompose(glyph, axis, layername):
             if layername not in self.currentFont._RFont.layers:
                 self.currentFont._RFont.newLayer(layername)
-                glyph.preview.computeDeepComponents(axis)
-                ais = glyph.preview.axisPreview
+                # glyph.preview.computeDeepComponents(axis)
+                ais = glyph.preview()
                 f = self.currentFont._RFont.getLayer(layername)
                 f.newGlyph(glyph.name)
                 g1 = f[glyph.name]
@@ -638,33 +638,28 @@ class RoboCJKController(object):
 
     def setListWithSelectedElement(self):
         element = self.currentViewSliderList
-        # if self.isDeepComponent:
-        #     element = self.deepComponentView
-        # elif self.isCharacterGlyph:
-        #     element = self.characterGlyphView
-
         if not self.currentGlyph.selectedSourceAxis:
             data = self.currentGlyph._deepComponents
         else:
-            data = self.currentGlyph._glyphVariations[self.currentGlyph.selectedSourceAxis]
-
+            index = 0
+            for i, x in enumerate(self.currentGlyph._axes):
+                if x.name == self.currentGlyph.selectedSourceAxis:
+                    index = i
+            data = self.currentGlyph._glyphVariations[index].deepComponents
         l = []
         if len(self.currentGlyph.selectedElement) == 1:
-            for dc in self.currentGlyph._deepComponents:
-                dc_name = dc["name"]
-                glyph = self.currentFont.get(dc_name)
-                for axis, variation in zip(glyph._axes, glyph._glyphVariations):
-                    minValue = axis.minValue
-                    maxValue = axis.maxValue
-                    axisName = axis.name
-                    value = variation.location
-                    l.append({'Axis':axisName, 'PreviewValue':value.get(list(value.keys())[0]), 'MinValue':minValue, 'MaxValue':maxValue})
-                    # print({'Axis':axisName, 'PreviewValue':self.systemValue(value, minValue, maxValue), 'MinValue':minValue, 'MaxValue':maxValue})
+            i = self.currentGlyph.selectedElement[0]
+            dc = data[i]
+            dc_name = self.currentGlyph._deepComponents[i].name
+            glyph = self.currentFont.get(dc_name)
+            
+            for axis, variation in zip(glyph._axes, glyph._glyphVariations):
+                minValue = axis.minValue
+                maxValue = axis.maxValue
+                axisName = axis.name
+                value = dc["coord"][axisName]
+                l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
 
-            # for axisName, value in data[self.currentGlyph.selectedElement[0]].coord.items():
-            #     print("I'm ici aussi")
-            #     minValue, maxValue = self.currentGlyph.getDeepComponentMinMaxValue(axisName)
-            #     l.append({'Axis':axisName, 'PreviewValue':self.systemValue(value, minValue, maxValue), 'MinValue':minValue, 'MaxValue':maxValue})
         l = self.sortDeepComponentAxesList(l)
         element.deepComponentAxesList.set(l)
         if hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):
@@ -771,12 +766,10 @@ class RoboCJKController(object):
             self.doUndo()
         elif modifiers[4] and modifiers[0] and character == 'Z':
             self.doRedo()
-
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
             self.updateDeepComponent()
             self.currentViewSourceList.glyphVariationAxesList.setSelection([])
-
         self.currentGlyph.keyDown((modifiers, inputKey, character))
 
     def opaque(self):

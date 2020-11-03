@@ -43,12 +43,12 @@ STATE_COLORS = {
     CHECKING3:"CHECKING3", 
     DONE:"DONE"}
 
-def compute(func):
-    def wrapper(self, *args, **kwargs):
-        func(self, *args, **kwargs)
-        self.preview.computeDeepComponents(update = False)
-        self.preview.computeDeepComponentsPreview(update = False)
-    return wrapper
+# def compute(func):
+#     def wrapper(self, *args, **kwargs):
+#         func(self, *args, **kwargs)
+#         # self.preview.computeDeepComponents(update = False)
+#         # self.preview.computeDeepComponentsPreview(update = False)
+#     return wrapper
 
 def _getKeys(glyph):
     if glyph.type == "characterGlyph":
@@ -179,6 +179,12 @@ class Glyph(RGlyph):
         glyph.transformBy(tuple(t))
         return glyph
 
+    def getLocation(self):
+        loc = {}
+        if self.selectedSourceAxis:
+            loc = {self.selectedSourceAxis:1}
+        return loc
+
     def save(self):
         # print("glyohsave", self.name, self.stateColor)
         color = self.markColor
@@ -255,7 +261,11 @@ class Glyph(RGlyph):
 
     def _getElements(self):
         if self.selectedSourceAxis:
-            return self._glyphVariations[self.selectedSourceAxis]
+            index = 0
+            for i, x in enumerate(self.currentGlyph._axes):
+                if x.name == self.currentGlyph.selectedSourceAxis:
+                    index = i
+            return self.currentGlyph._glyphVariations[index].deepComponents
         else:
             return self._deepComponents
 
@@ -263,9 +273,9 @@ class Glyph(RGlyph):
         element = self._getElements()
         if element is None: return
         for index in self.selectedElement:
-            yield element[index]
+            yield element[index].transform
     
-    @compute
+    # @compute
     def setRotationAngleToSelectedElements(self, rotation: int, append: bool = True):
         for selectedElement in self._getSelectedElement():
             if append:
@@ -273,13 +283,13 @@ class Glyph(RGlyph):
             else:
                 selectedElement.rotation = -int(rotation)
 
-    @compute
+    # @compute
     def setPositionToSelectedElements(self, position: list):
         for selectedElement in self._getSelectedElement():
             selectedElement.x += position[0]
             selectedElement.y += position[1]
 
-    @compute
+    # @compute
     def setScaleToSelectedElements(self, scale: list):
         x, y = scale
         for selectedElement in self._getSelectedElement():
@@ -297,7 +307,7 @@ class Glyph(RGlyph):
             selectedElement.scalex += x
             selectedElement.scaley += y
 
-    @compute
+    # @compute
     def setTransformationCenterToSelectedElements(self, center):
         tx, ty = center
         for index in self.selectedElement:

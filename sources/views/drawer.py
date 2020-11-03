@@ -103,7 +103,8 @@ class Drawer():
             mjdt.fill(1, .8, 0, .8)
             mjdt.translate(*self.existingInstancePos)
             mjdt.scale(*self.existingInstanceScale)
-            mjdt.drawGlyph(self.roundGlyph(self.existingInstance))
+            for c in self.existingInstance:
+                mjdt.drawGlyph(self.roundGlyph(c))
             mjdt.restore()
 
         if onlyPreview: return
@@ -136,7 +137,10 @@ class Drawer():
     def drawAxisPreview(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
         mjdt.save()
         index = None
-        for i, atomicInstance in enumerate(glyph.preview(glyph.selectedSourceAxis)):
+        # loc = {}
+        # if glyph.selectedSourceAxis:
+        #     loc = {glyph.selectedSourceAxis:1}
+        for i, atomicInstance in enumerate(glyph.preview()):
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
                 mjdt.save()

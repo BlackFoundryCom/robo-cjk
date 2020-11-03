@@ -215,7 +215,7 @@ class AtomicView(CanvasGroup):
 
     def computeCurrentGlyph(self, sender):
         self.RCJKI.currentGlyph.sourcesList = sender.get()
-        self.RCJKI.currentGlyph.preview.computeDeepComponentsPreview(sender.get())
+        # self.RCJKI.currentGlyph.preview.computeDeepComponentsPreview(sender.get())
 
 class DCCG_View(CanvasGroup):
 

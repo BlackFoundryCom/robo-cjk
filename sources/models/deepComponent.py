@@ -73,6 +73,8 @@ class DeepComponent(Glyph):
         self.save()
 
     def preview(self, position:dict={}, font = None):
+        if not position:
+            position = self.getLocation()
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations])
 
@@ -159,8 +161,13 @@ class DeepComponent(Glyph):
         self._glyphVariations.removeAxis(axisName)
 
     def updateAtomicElementCoord(self, axisName, value):
-        if self.selectedSourceAxis is not None:
-            self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[axisName] = value
+        if self.selectedSourceAxis:
+            index = 0
+            for i, x in enumerate(self._axes):
+                if x.name == self.selectedSourceAxis:
+                    index = i
+            self._glyphVariations[i].deepComponents[self.selectedElement[0]].coord[axisName] = value
+            # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[axisName] = value
         else:
             self._deepComponents[self.selectedElement[0]].coord[axisName] = value
     
@@ -177,8 +184,8 @@ class DeepComponent(Glyph):
         self._deepComponents.addDeepComponent(d)
         self._glyphVariations.addDeepComponent(d)
 
-        self.preview.computeDeepComponentsPreview(update = False)
-        self.preview.computeDeepComponents(update = False)
+        # self.preview.computeDeepComponentsPreview(update = False)
+        # self.preview.computeDeepComponents(update = False)
 
     @glyphAddRemoveUndo
     def removeAtomicElementAtIndex(self):

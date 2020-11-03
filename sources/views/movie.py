@@ -129,14 +129,17 @@ class Movie:
      
         alpha = 2*math.pi/maxNbAxes
         ld = [{'Axis': l, 'PreviewValue':0} for l in axes]
-        glyph.preview.computeDeepComponentsPreview(ld)
-        origineGlyph = glyph.preview.variationPreview.copy()
+        # glyph.preview.computeDeepComponentsPreview(ld)
+        origineGlyph = RGlyph()
+        for atomicInstance in glyph.preview():
+            atomicInstance.draw(origineGlyph.getPen())
+        # origineGlyph = glyph.preview.variationPreview.copy()
         origineGlyph.name = "interpo"
         db.newDrawing()
         for k in range(nbAxes):
             start = time.time()
             ld = [{'Axis': l, 'PreviewValue':[0, 1][j == k]} for j, l in enumerate(axes)]
-            glyph.preview.computeDeepComponentsPreview(ld)
+            # glyph.preview.computeDeepComponentsPreview(ld)
             for g in range(LCM):
 
                 H = 700
@@ -222,7 +225,10 @@ class Movie:
                 db.translate(0, 120)
 
                 ratioX = ratioY = (rands[k][g])/1000
-                interpoGlyph = interpolation.interpol_glyph_glyph_ratioX_ratioY_scaleX_scaleY(origineGlyph, glyph.preview.variationPreview, ratioX, ratioY, 1, 1, NewFont(showUI = False))
+                resultGlyph = RGlyph()
+                for c in glyph.preview():
+                    c.draw(resultGlyph.getPen())
+                interpoGlyph = interpolation.interpol_glyph_glyph_ratioX_ratioY_scaleX_scaleY(origineGlyph, resultGlyph, ratioX, ratioY, 1, 1, NewFont(showUI = False))
                 db.drawGlyph(interpoGlyph)
 
         #         for aes in glyph.preview:

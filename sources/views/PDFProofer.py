@@ -134,13 +134,14 @@ class UfoText(Textbox):
                 rglyph = self.RCJKI.currentFont[charName] 
                 glyph = RGlyph()
                 if not self.sourceList:
-                    rglyph.preview.computeDeepComponents(update = False)
-                    for atomicInstance in rglyph.preview.axisPreview:
-                        for c in atomicInstance.getTransformedGlyph():
-                            glyph.appendContour(c)
+                    # rglyph.preview.computeDeepComponents(update = False)
+                    for atomicInstance in rglyph.preview(self.sourceList):
+                        atomicInstance.draw(glyph.getPen())
+                        # for c in atomicInstance.getTransformedGlyph():
+                        #     glyph.appendContour(c)
                 else:
-                    rglyph.preview.computeDeepComponentsPreview(self.sourceList,update = False)
-                    glyph = rglyph.preview.variationPreview
+                    for atomicInstance in rglyph.preview():
+                        atomicInstance.draw(glyph.getPen())
 
                 yield (x, y), glyph
                 
@@ -148,13 +149,14 @@ class UfoText(Textbox):
                     g = self.RCJKI.currentFont[c.baseGlyph]
                     glyph = RGlyph()
                     if not self.sourceList:
-                        g.preview.computeDeepComponents(update = False)
-                        for atomicInstance in g.preview.axisPreview:
-                            for c in atomicInstance.getTransformedGlyph():
-                                glyph.appendContour(c)
+                        # g.preview.computeDeepComponents(update = False)
+                        for atomicInstance in g.preview(self.sourceList):
+                            atomicInstance.draw(glyph.getPen())
+                            # for c in atomicInstance.getTransformedGlyph():
+                            #     glyph.appendContour(c)
                     else:
-                        g.preview.computeDeepComponentsPreview(self.sourceList,update = False)
-                        glyph = g.preview.variationPreview
+                        for atomicInstance in g.preview():
+                            atomicInstance.draw(glyph.getPen())
 
                     yield (x, y), glyph
                     

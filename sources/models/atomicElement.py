@@ -53,6 +53,8 @@ class AtomicElement(Glyph):
         self.save()
 
     def preview(self, position:dict={}, font=None):
+        if not position:
+            position = self.getLocation()
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations.getList()])
 
