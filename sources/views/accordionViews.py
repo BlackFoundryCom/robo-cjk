@@ -524,14 +524,18 @@ class PreviewGroup(Group):
         mjdt.fill(.15)
         mjdt.scale(scale, scale)
         mjdt.translate(0, abs(self.RCJKI.currentFont._RFont.info.descender))
-        self.RCJKI.drawer.drawGlyph(
-            self.RCJKI.currentGlyph,
-            scale,
-            (0, 0, 0, 1),
-            (0, 0, 0, 0),
-            (0, 0, 0, 1),
-            drawSelectedElements = False
-            )
+
+        mjdt.save()
+        mjdt.fill(0, 0, 0, 1)
+        mjdt.stroke(0, 0, 0, 0)
+        mjdt.strokeWidth(scale)
+        loc = {}
+        glyph = self.RCJKI.currentGlyph
+        if glyph.sourcesList: 
+            loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
+        for g in glyph.preview(loc):
+            mjdt.drawGlyph(g)  
+        mjdt.restore()
         mjdt.restore()
 
     def update(self):
