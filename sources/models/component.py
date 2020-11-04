@@ -178,7 +178,7 @@ class DeepComponent(DictClass):
     def normalizeRotation(self, rotation):
         r = rotation
         if r:
-            r = int(rotation%(360*rotation/abs(rotation)))
+            r = float(rotation%(360*rotation/abs(rotation)))
         return r
 
     def set(self, items: dict):
