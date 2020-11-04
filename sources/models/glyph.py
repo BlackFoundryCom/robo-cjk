@@ -262,10 +262,10 @@ class Glyph(RGlyph):
     def _getElements(self):
         if self.selectedSourceAxis:
             index = 0
-            for i, x in enumerate(self.currentGlyph._axes):
-                if x.name == self.currentGlyph.selectedSourceAxis:
+            for i, x in enumerate(self._axes):
+                if x.name == self.selectedSourceAxis:
                     index = i
-            return self.currentGlyph._glyphVariations[index].deepComponents
+            return self._glyphVariations[index].deepComponents
         else:
             return self._deepComponents
 

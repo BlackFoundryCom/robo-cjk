@@ -927,7 +927,13 @@ class DeepComponentAxesGroup(Group):
         except:
             return
         newList = []
-        minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
+        selectedAtomicElementName = self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].name
+        atomicElement = self.RCJKI.currentFont[selectedAtomicElementName]
+        for x in atomicElement._axes:
+            if self.deepComponentAxesList[sel[0]]['Axis'] == x.name:
+                minValue = x.minValue
+                maxValue = x.maxValue
+        # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
         for i, e in enumerate(self.deepComponentAxesList.get()):
             if i != sel[0]:
                 newList.append(e)
