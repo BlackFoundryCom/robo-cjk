@@ -922,6 +922,10 @@ class DeepComponentAxesGroup(Group):
             return
         newList = []
         minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
+        if value < minValue:
+            value = minValue
+        elif value > maxValue:
+            value = maxValue
         for i, e in enumerate(self.deepComponentAxesList.get()):
             if i != sel[0]:
                 newList.append(e)
