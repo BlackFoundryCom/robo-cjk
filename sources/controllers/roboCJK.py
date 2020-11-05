@@ -256,7 +256,7 @@ class RoboCJKController(object):
         self.observers = not self.observers
 
     def fontDidSave(self, info):
-        if self.currentFont and self.currentFont._RFont == CurrentFont():
+        if self.currentFont and CurrentFont() in [self.currentFont._RFont, self.currentFont._fullRFont]:
             if self.mysql:
                 if self.currentGlyph:
                     self.currentFont.saveGlyph(self.currentGlyph)
