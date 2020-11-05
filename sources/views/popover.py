@@ -96,9 +96,7 @@ class EditPopoverAlignTool(EditPopover):
         self.glyph = glyph
 
         lib = self.getLib()
-        print("1")
         self.infos = lib[self.glyph.selectedElement[0]]
-        print("2")
         y = 10
         if self.infos.get("name"):
             self.popover.Title = TextBox(
@@ -108,13 +106,11 @@ class EditPopoverAlignTool(EditPopover):
                 alignment = 'center'
                 )
             y += 25
-        print("3")
         self.popover.xTextBox = TextBox(
             (10, y, 20, 20), 
             "x:", 
             sizeStyle = "mini"
             )
-        print("4")
         self.popover.xEditText = EditText(
             (30, y, 30, 20), 
             self.infos["transform"]["x"], 
@@ -122,13 +118,11 @@ class EditPopoverAlignTool(EditPopover):
             callback = self.xCallback
             )
         editTextAesthetic(self.popover.xEditText)
-        print("5")
         self.popover.scalexTextBox = TextBox(
             (70, y, 20, 20), 
             "↔:", 
             sizeStyle = "mini"
             )
-        print("6")
         self.popover.scalexEditText = EditText(
             (90, y, 30, 20), 
             self.infos["transform"]["scalex"]*1000, 
@@ -137,13 +131,11 @@ class EditPopoverAlignTool(EditPopover):
             callback = self.scalexCallback
             )
         editTextAesthetic(self.popover.scalexEditText)
-        print("7")
         self.popover.rotationTextBox = TextBox(
             (120, y, 20, 20), 
             "⟳:", 
             sizeStyle = "mini"
             )
-        print("8")
         self.popover.rotationEditText = EditText(
             (140, y, 30, 20), 
             self.infos["transform"]["rotation"], 
@@ -151,14 +143,12 @@ class EditPopoverAlignTool(EditPopover):
             callback = self.rotationCallback
             )
         editTextAesthetic(self.popover.rotationEditText)
-        print("9")
         y += 20
         self.popover.yTextBox = TextBox(
             (10, y, 20, 20), 
             "y:", 
             sizeStyle = "mini"
             )
-        print("10")
         self.popover.yEditText = EditText(
             (30, y, 30, 20), 
             self.infos["transform"]["y"], 
@@ -166,7 +156,6 @@ class EditPopoverAlignTool(EditPopover):
             callback = self.yCallback
             )
         editTextAesthetic(self.popover.yEditText)
-        print("11")
         self.popover.scaleyTextBox = TextBox(
             (70, y, 20, 20), 
             "↕:", 
@@ -179,7 +168,6 @@ class EditPopoverAlignTool(EditPopover):
             formatter = numberFormatter, 
             callback = self.scaleyCallback
             )
-        print("12")
         editTextAesthetic(self.popover.scaleyEditText)
 
         y += 20
@@ -195,7 +183,6 @@ class EditPopoverAlignTool(EditPopover):
             callback = self.rcenterxCallback
             )
         editTextAesthetic(self.popover.rcenterxEditText)
-        print("13")
         self.popover.rcenteryTextBox = TextBox(
             (70, y, 25, 20), 
             "⨀ y:", 
@@ -208,7 +195,6 @@ class EditPopoverAlignTool(EditPopover):
             formatter = numberFormatter, 
             callback = self.rcenteryCallback
             )
-        print("14")
         editTextAesthetic(self.popover.rcenteryEditText)
 
         y+=20
@@ -216,7 +202,6 @@ class EditPopoverAlignTool(EditPopover):
         d = [dict(layer = k, value = round(self.RCJKI.userValue(v, *self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(k)), 3)) for k, v in self.infos["coord"].items()]
         # else:
         #     d = [dict(layer = k, value = v) for k, v in self.infos["coord"].items()]
-        print("15")
         self.popover.coord = List(
             (10,y, -10, -30),
             d,
@@ -236,7 +221,6 @@ class EditPopoverAlignTool(EditPopover):
         scrollView = self.popover.coord.getNSScrollView()
         scrollView.setDrawsBackground_(False)
         scrollView.setBorderType_(NSNoBorder)
-        print("16")
         self.popover.copy = SquareButton(
             (10, -30, 75, -10),
             "copy",
@@ -244,7 +228,6 @@ class EditPopoverAlignTool(EditPopover):
             sizeStyle = "small"
             )
         buttonAsthetic(self.popover.copy)
-        print("17")
         self.popover.paste = SquareButton(
             (85, -30, 75, -10),
             "paste",
@@ -252,7 +235,6 @@ class EditPopoverAlignTool(EditPopover):
             sizeStyle = "small"
             )
         buttonAsthetic(self.popover.paste)
-        print("18")
 
         self.open()
 

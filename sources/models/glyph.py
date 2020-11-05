@@ -351,5 +351,11 @@ class Glyph(RGlyph):
     def getDeepComponentMinMaxValue(self, axisName):
         if not self.selectedElement: return
         selectedAtomicElementName = self._deepComponents[self.selectedElement[0]].name
-        atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
-        return atomicElement.minValue, atomicElement.maxValue
+        for x in self.currentFont[selectedAtomicElementName ]._axes:
+            if x.name == axisName:
+                return x.minValue, x.maxValue
+        # atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
+        # return atomicElement.minValue, atomicElement.maxValue
+
+
+
