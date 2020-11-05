@@ -133,22 +133,22 @@ class RoboCJKController(object):
         self.locked = False
 
         self.roundToGrid = False
-        self.atomicView = canvasGroups.AtomicView(
-            self,
-            posSize = (20, 0, 300, -20), 
-            delegate = self
-            )
-        self.deepComponentView = canvasGroups.DCCG_View(
-            self,
-            posSize = (20, 0, 300, -20), 
-            delegate = self
-            )
+        # self.atomicView = canvasGroups.AtomicView(
+        #     self,
+        #     posSize = (20, 0, 300, -20), 
+        #     delegate = self
+        #     )
+        # self.deepComponentView = canvasGroups.DCCG_View(
+        #     self,
+        #     posSize = (20, 0, 300, -20), 
+        #     delegate = self
+        #     )
 
-        self.characterGlyphView = canvasGroups.DCCG_View(
-            self,
-            posSize = (20, 0, 300, -20), 
-            delegate = self
-            )
+        # self.characterGlyphView = canvasGroups.DCCG_View(
+        #     self,
+        #     posSize = (20, 0, 300, -20), 
+        #     delegate = self
+        #     )
         self.transformationToolIsActiv = False
         # self.pdf = PDFProofer.PDFEngine(self)
         self.importDCFromCG = None

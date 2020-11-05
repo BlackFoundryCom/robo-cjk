@@ -169,8 +169,8 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
     g = glyph._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
-    if glyph.type != "atomicElement":
-        RCJKI.currentView.setglyphState()
+    # if glyph.type != "atomicElement":
+    #     RCJKI.currentView.setglyphState()
     
 
     # glyph.save()
