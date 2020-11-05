@@ -154,7 +154,8 @@ class CompositionRulesGroup(Group):
         mjdt.translate(20, 25)
         mjdt.scale(.04)
         mjdt.fill(0, 0, 0, 1)
-        mjdt.drawGlyph(self.glyph.preview({})) 
+        for c in self.glyph.preview():
+            mjdt.drawGlyph(c) 
         mjdt.restore()
 
     def componentsListSelectionCallback(self, sender):
@@ -229,12 +230,19 @@ class CompositionRulesGroup(Group):
             return
         char = sender.get()[sel[0]]
         self.deepComponentSettings, self.deepComponentVariationSettings = self.existingDeepComponentInstances[char]
-        dcname = self.deepComponentSettings.name
+        dcname = self.deepComponentSettings['name']
         dcglyph = self.RCJKI.currentFont.get(dcname)
-        axes = [{"Axis":axisName, "Layer":layer, "PreviewValue":self.deepComponentSettings['coord'][axisName]} for axisName, layer in dcglyph._glyphVariations.items()]
+        axes = []
+        for axis, var in zip(dcglyph._axes, dcglyph._glyphVariations):
+            d = {"Axis":axis.name, "Layer":var.layerName, "PreviewValue":self.deepComponentSettings['coord'][axis.name]}
+            axes.append(d)
+        # axes = [{"Axis":axisName, "Layer":layer, "PreviewValue":self.deepComponentSettings['coord'][axisName]} for axisName, layer in dcglyph._glyphVariations.items()]
         # dcglyph.preview.computeDeepComponentsPreview(axes)
-        self.RCJKI.drawer.existingInstance = dcglyph.preview()
-        self.RCJKI.drawer.existingInstancePos = [self.deepComponentSettings.x, self.deepComponentSettings.y]
+        dcglyphPreview = []
+        for c in dcglyph.preview(self.deepComponentSettings['coord']):
+            dcglyphPreview.append(dcglyph._transformGlyph(c, self.deepComponentSettings['transform']))
+        self.RCJKI.drawer.existingInstance = dcglyphPreview
+        # self.RCJKI.drawer.existingInstancePos = [0, 0]
 
     def existingInstancesListDoubleClickCallback(self, sender):
         sel = sender.getSelection()

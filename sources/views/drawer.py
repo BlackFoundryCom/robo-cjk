@@ -140,6 +140,7 @@ class Drawer():
         # loc = {}
         # if glyph.selectedSourceAxis:
         #     loc = {glyph.selectedSourceAxis:1}
+        # for i, atomicInstance in enumerate(glyph.preview()):
         for i, atomicInstance in enumerate(glyph.preview()):
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:

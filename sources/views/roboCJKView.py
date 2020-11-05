@@ -138,7 +138,7 @@ def getRelatedGlyphs(font, glyphName, regenerated = []):
         regenerated.append(glyphName)
     if not hasattr(g, "_deepComponents"): return
     for dc in g._deepComponents:
-        getRelatedGlyphs(font, dc.name, regenerated)
+        getRelatedGlyphs(font, dc['name'], regenerated)
 
 # This function is outside of any class
 def openGlyphWindowIfLockAcquired(RCJKI, glyphName):

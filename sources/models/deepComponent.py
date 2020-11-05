@@ -90,6 +90,7 @@ class DeepComponent(Glyph):
             result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
 
         # resultGlyph = RGlyph()
+        # self.frozenPreview = []
         if font is None:
             font = self.getParent()
 
@@ -102,6 +103,7 @@ class DeepComponent(Glyph):
                 c.draw(resultGlyph.getPen())
             self._transformGlyph(resultGlyph, dc.get("transform"))
             # g.draw(resultGlyph.getPen())
+            # self.frozenPreview.append(resultGlyph)
             yield resultGlyph
 
         # resultGlyph.removeOverlap()

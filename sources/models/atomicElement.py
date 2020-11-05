@@ -58,12 +58,14 @@ class AtomicElement(Glyph):
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations.getList()])
 
+        # self.frozenPreview = []
         model = VariationModel(locations)
         layerGlyphs = []
         for variation in self._glyphVariations.getList():
             layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[self.name])
         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
         # resultGlyph.removeOverlap()
+        # self.frozenPreview.append(resultGlyph)
         return resultGlyph
 
     @property

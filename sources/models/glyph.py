@@ -84,6 +84,8 @@ class Glyph(RGlyph):
         self.model = None
         self.deltas = None
 
+        # self.frozenPreview = []
+
     def _setStackUndo(self):
         # if self.type != 'atomicElement':
         lib = RLib()
@@ -319,6 +321,9 @@ class Glyph(RGlyph):
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
+        # preview = self.frozenPreview
+        # if not preview:
+        #     preview = self.preview({})
         for index, atomicInstanceGlyph in enumerate(self.preview({})):
             atomicInstanceGlyph.selectedContour = False
             if atomicInstanceGlyph.pointInside((px, py)):
@@ -328,6 +333,9 @@ class Glyph(RGlyph):
                 if not multipleSelection: return
 
     def selectionRectTouch(self, x: int, w: int, y: int, h: int):
+        # preview = self.frozenPreview
+        # if not preview:
+        #     preview = self.preview({})
         for index, atomicInstanceGlyph in enumerate(self.preview({})):
             inside = False
             atomicInstanceGlyph.selectedContour = False
