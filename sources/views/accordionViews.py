@@ -759,7 +759,10 @@ class GlyphVariationAxesGroup(Group):
                     self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
                     self.RCJKI.currentGlyph.selectedSourceAxis = name
             glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+            l = []
+            for axis in self.RCJKI.currentGlyph._axes:
+                l.append({'Axis':axis.name, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
+            # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
         elif edited[0] in [1, 3]:

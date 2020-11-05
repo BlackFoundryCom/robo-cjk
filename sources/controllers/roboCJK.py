@@ -545,8 +545,13 @@ class RoboCJKController(object):
         if self.glyphInspectorWindow is not None:
             return
         if self.isAtomic: # TODO
-            for axisName, layer in self.currentGlyph._glyphVariations.items():
-                glyphVariationsAxes.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
+            for axis, var in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
+                axisName = axis.name
+                minValue = axis.minValue
+                maxValue = axis.maxValue
+                layerName = var.layerName
+            # for axisName, layer in self.currentGlyph._glyphVariations.items():
+                glyphVariationsAxes.append({"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":minValue, "MaxValue":maxValue})
             self.glyphInspectorWindow = accordionViews.AtomicElementInspector(self, glyphVariationsAxes)
         # elif self.isDeepComponent:
         #     if self.currentGlyph._axes:
@@ -859,6 +864,7 @@ class RoboCJKController(object):
         l = []
         if self.isAtomic:
             for axisName, layer in self.currentGlyph._glyphVariations.items():
+                print("here")
                 l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
             
         elif self.isDeepComponent:

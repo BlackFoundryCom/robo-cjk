@@ -53,12 +53,14 @@ class AtomicElement(Glyph):
         self.save()
 
     def preview(self, position:dict={}, font=None):
-        if not position:
-            position = self.getLocation()
+        # if not position:
+        #     position = self.getLocation()
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations.getList()])
 
         # self.frozenPreview = []
+        if font is None:
+            font = self.getParent()
         model = VariationModel(locations)
         layerGlyphs = []
         for variation in self._glyphVariations.getList():
