@@ -46,6 +46,7 @@ class AtomicElement(Glyph):
         super().__init__()
         self._axes = Axes()
         self._glyphVariations = VariationGlyphs()
+        self.selectedSourceAxis = None
         self.name = name
         self.type = "atomicElement"
         # self.preview = glyphPreview
