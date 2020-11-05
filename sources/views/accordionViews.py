@@ -445,7 +445,8 @@ class RelatedGlyphsGroup(Group):
             for k, v in self.RCJKI.currentFont.dataBase.items():
                 if char in v:
                     self.relatedChars.add(k)
-        except: pass
+        except: 
+            char = self.RCJKI.currentGlyph.name
         self.filterCharacters()
         self.component.set(char)
 
