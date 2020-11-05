@@ -21,34 +21,34 @@ from mojo.roboFont import *
 import copy
 from imp import reload
 from controllers import roboCJK
-reload(roboCJK)
+# reload(roboCJK)
 
 def gitCoverage(msg='save'):
 
     def foo(func):
         def wrapper(self, *args, **kwargs):
-            try:
-                gitEngine = roboCJK.gitEngine
-                if not gitEngine.isInGitRepository():
+            if not self.mysql:
+                try:
+                    gitEngine = roboCJK.gitEngine
+                    if not gitEngine.isInGitRepository():
+                        PostBannerNotification(
+                            'Impossible', "Project is not is GIT repository"
+                            )
+                        return
+                    gitEngine.createGitignore()
+                    gitEngine.pull()
+                    func(self, *args, **kwargs)
+                    gitEngine.commit(msg)   
+                    gitEngine.push()
                     PostBannerNotification(
-                        'Impossible', "Project is not is GIT repository"
-                        )
-                    return
-                
-                gitEngine.createGitignore()
-                gitEngine.pull()
+                        'font did save', ""
+                            ) 
+
+                except Exception as e:
+                    raise e
+            else:
 
                 func(self, *args, **kwargs)
-
-                gitEngine.commit(msg)   
-                gitEngine.push()
-
-                PostBannerNotification(
-                        'font did save', ""
-                        ) 
-
-            except Exception as e:
-                raise e
         return wrapper 
     return foo
 
@@ -71,15 +71,22 @@ def lockedProtect(func):
 deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
 glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
 
+def _getKeys(glyph):
+    if glyph.type == "characterGlyph":
+        return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
+    else:
+        return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
+
 def glyphUndo(func):
     def wrapper(self, *args, **kwargs):
         try:
             modifiers, inputKey, character = args[0]
-            if self.type == "characterGlyph":
+            if self.type in ["characterGlyph", "deepComponent"]:
                 if not (modifiers[4] and character == 'z') and not (modifiers[0] and modifiers[4] and character == 'Z'):
                     lib = RLib()
-                    lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
-                    lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
+                    deepComponentsKey, glyphVariationsKey = _getKeys(self)
+                    lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
+                    lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getDict())
                     self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                     self.stackUndo_lib.append(lib)
                     self.indexStackUndo_lib += 1
@@ -93,11 +100,11 @@ def glyphUndo(func):
 def glyphAddRemoveUndo(func):
     def wrapper(self, *args, **kwargs):
         try:
-            print(self.type)
-            if self.type == "characterGlyph":
+            if self.type in ["characterGlyph", "deepComponent"]:
                 lib = RLib()
-                lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
-                lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
+                deepComponentsKey, glyphVariationsKey = _getKeys(self)
+                lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
+                lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getDict())
                 self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                 self.stackUndo_lib.append(lib)
                 self.indexStackUndo_lib += 1
@@ -111,10 +118,11 @@ def glyphAddRemoveUndo(func):
 def glyphTransformUndo(func):
     def wrapper(self, *args, **kwargs):
         try:
-            if self.RCJKI.currentGlyph.type == "characterGlyph":
+            if self.RCJKI.currentGlyph.type in ["characterGlyph", "deepComponent"]:
                 lib = RLib()
-                lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents)
-                lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations)
+                deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
+                lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
+                lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getDict())
                 self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
                 self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
                 self.RCJKI.currentGlyph.indexStackUndo_lib += 1
@@ -129,4 +137,9 @@ def refresh(func):
     def wrapper(self, *args, **kwargs):
         func(self, *args, **kwargs)
         UpdateCurrentGlyphView()
+        e = self
+        if hasattr(self, 'RCJKI'):
+            e = self.RCJKI
+        if e.glyphInspectorWindow is not None:
+            e.glyphInspectorWindow.updatePreview()
     return wrapper

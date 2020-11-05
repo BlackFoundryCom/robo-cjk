@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
+from fontTools.pens.recordingPen import RecordingPen
 
 class DictClass:
 
@@ -60,27 +61,54 @@ class DictClass:
             return fallback
         return getattr(self, item)
 
-class Values(DictClass):
+# class Coord(DictClass):
 
-    # __slots__ = "value", "minValue", "maxValue"
+#     def __init__(self, **kwargs):
+#         super().__init__()
+#         for k, v in kwargs.items():
+#             if isinstance(v, (int, float)):
+#                 setattr(self, k, {"value":v, "minValue":0., "maxValue":1.})
+#             else:
+#                 setattr(self, k, v)
 
-    def __init__(self, value, minValue:int = 0, maxValue:int = 1):
-        super().__init__()
-        self.value = value
-        self.minValue = minValue
-        self.maxValue = maxValue
+#     def __getitem__(self, item):
+#         return getattr(self, item).get("value")
 
-    def __call__(self, typ = float):
-        return typ(self.value)
+#     def getMinValue(self, item):
+#         return getattr(self, item).get("minValue")
 
-    def __str__(self):
-        return str(self.value)
+#     def getMaxValue(self, item):
+#         return getattr(self, item).get("maxValue")
 
-    def __repr__(self):
-        return str(self)
+#     def add(self, axis: str, value: int = 0):
+#         """
+#         Add new axis with its value
+#         """
+#         if isinstance(value, float):
+#             setattr(self, axis, {"value":value, "minValue":0., "maxValue":1.})
+#         else:
+#             setattr(self, axis, value)
 
-    def _toDict(self):
-        return {x:getattr(self, x) for x in vars(self)}
+#     def remove(self, axis: str):
+#         """
+#         Remove axis
+#         """
+#         delattr(self, axis)
+
+#     @property
+#     def axes(self):
+#         """
+#         Return a list of all the axes
+#         """
+#         return self.keys()
+
+#     def clear(self):
+#         """
+#         Remove all axes
+#         """
+#         axes = list(vars(self))
+#         for axis in axes:
+#             self.remove(axis)
 
 class Coord(DictClass):
 
@@ -108,7 +136,16 @@ class Coord(DictClass):
         """
         return self.keys()
 
-class Component(DictClass):
+    def clear(self):
+        """
+        Remove all axes
+        """
+        axes = list(vars(self))
+        for axis in axes:
+            self.remove(axis)
+
+
+class DeepComponent(DictClass):
 
     def __init__(self, 
             coord : dict = {}, 
@@ -116,20 +153,39 @@ class Component(DictClass):
             scalex: int = 1, 
             scaley: int = 1, 
             x: int = 0, 
-            y: int = 0):
+            y: int = 0,
+            rcenterx: int = 0,
+            rcentery: int = 0,
+            # axisMinValue: float = 0.,
+            # axisMaxValue: float = 1.,
+            maxValue: float = 1.,
+            minValue: float = 0.,
+            ):
         super().__init__()
         self.coord = Coord(**dict(coord))
-        self.rotation = rotation
+        self.rotation = self.normalizeRotation(rotation)
         self.scalex = scalex
         self.scaley = scaley
         self.x = x
         self.y = y
+        self.rcenterx = rcenterx
+        self.rcentery = rcentery
+        # self.axisMinValue = axisMinValue
+        # self.axisMaxValue = axisMaxValue
+        self.maxValue = maxValue
+        self.minValue = minValue
+
+    def normalizeRotation(self, rotation):
+        r = rotation
+        if r:
+            r = float(rotation%(360*rotation/abs(rotation)))
+        return r
 
     def set(self, items: dict):
         """
-        Reinitialize the components data with dictionary
+        Reinitialize the deep components data with dictionary
             items = {
-                    'name': 'componentName',
+                    'name': 'deepComponentName',
                     'coord': {'axisName':value},
                     'rotation': 0,
                     'scalex': 1,
@@ -142,9 +198,9 @@ class Component(DictClass):
             setattr(self, k, v)
         self.coord = Coord(**dict(items['coord']))
 
-    def _todict(self, exception: str = ''):
+    def _toDict(self, exception: str = ''):
         """
-        Return a dict representation of the component datas.
+        Return a dict representation of the deep component datas.
         Allows to exclude an attribute in the dictionnary with exception
         """
         d = {x:getattr(self, x) for x in vars(self) if x != exception}
@@ -153,192 +209,299 @@ class Component(DictClass):
 
     def _unnamed(self):
         """
-        Return an unnamed dict representation of the component datas
+        Return an unnamed dict representation of the deep component datas
         """
-        return self._todict(exception = "name")
+        return self._toDict(exception = "name")
 
-class ComponentNamed(Component):
+class DeepComponentNamed(DeepComponent):
 
     def __init__(self, name: str, **kwargs):
         super().__init__(**kwargs)
         self.name = name
 
 
-class Components:
+class DeepComponents:
 
-    def removeComponent(self, index: int):
-        """
-        Remove component at an index
-        """
-        if index < len(self._components):
-            self._components.pop(index)
+    """
+    Structure
+    [
+        {
+        'name': glyphName, 
+        'coord': {
+                VariationAxis0: v, 
+                VariationAxis1: v
+                }, 
+        'x': v, 
+        'y': v, 
+        'scalex': v, 
+        'scaley': v, 
+        'rotation': v
+        },
+        {
+        'name': glyphName, 
+        'coord': {
+                VariationAxis0: v, 
+                VariationAxis1: v
+                }, 
+        'x': v, 
+        'y': v, 
+        'scalex': v, 
+        'scaley': v, 
+        'rotation': v
+        }
+    ]   
+    """
 
-    def removeComponents(self, indexes: list):
-        """
-        Remove components at indexes
-        """
-        self._components = [x for i, x in enumerate(self._components) if i not in indexes]
+    def __init__(self, deepComponents: list = []):
+        self._deepComponents = []
+        for deepComponent in deepComponents:
+            self._deepComponents.append(DeepComponentNamed(**dict(deepComponent)))
 
-    def addComponent(self, component):
+    def add(self, name: str, items: dict = {}):
         """
-        Add new component
+        Add new deep component
         """
-        self._components.append(component)
+        self._deepComponents.append(DeepComponentNamed(name, **items))
+
+    def removeDeepComponent(self, index: int):
+        """
+        Remove deep component at an index
+        """
+        if index < len(self._deepComponents):
+            self._deepComponents.pop(index)
+
+    def removeDeepComponents(self, indexes: list):
+        """
+        Remove deep components at indexes
+        """
+        if not indexes: 
+            return
+        self._deepComponents = [x for i, x in enumerate(self._deepComponents) if i not in indexes]
+
+    def addDeepComponent(self, deepComponent):
+        """
+        Add new deep component
+        """
+        self._deepComponents.append(deepComponent)
 
     def append(self, item):
         """
         This function is made for backward compatibility
-        Add new component 
+        Add new deep component 
         """
-        self.addComponent(item)
+        self.addDeepComponent(item)
 
     def __repr__(self):
-        return str(self._components)
+        return str(self._deepComponents)
 
     def __iter__(self):
-        for component in self._components:
-            yield component
+        for deepComponent in self._deepComponents:
+            yield deepComponent
 
     def __getitem__(self, index):
         assert isinstance(index, int)
-        return self._components[index]
+        return self._deepComponents[index]
 
     def __setitem__(self, item, value):
         setattr(self, item, value)
+
+    def __bool__(self):
+        return bool(self._deepComponents)
 
     def getList(self):
         """
         Return a list reprensentation on the class
         """
-        return [x._todict() for x in self._components]
+        return [x._toDict() for x in self._deepComponents]
 
     def _unnamed(self):
         pass
 
+class Content(DictClass):
 
-class GlyphComponentsNamed(Components):
-
-    """
-    Deep component structure:
-        [
-            {
-                'coord': {'DIAG': 0.5}, 
-                'name': 'stem', 
-                'rotation': 0, 
-                'scalex': 0.02, 
-                'scaley': 1, 
-                'x': 980, 
-                'y': -120
-            }, 
-            {
-                'coord': {'DIAG': 0.5}, 
-                'name': 'stem', 
-                'rotation': -90, 
-                'scalex': 0.02, 
-                'scaley': 1, 
-                'x': 0, 
-                'y': 880
-            }
-        ]
-    """
-
-    """
-    Character Glyph strucure:
-        [
-            {
-                'coord': {'HGHT': 0.262, 'HWGT': 0.393, 'LLNG': 0.289, 'RLNG': 0.289, 'VWGT': 0.408, 'WDTH': 0.415}, 
-                'name': 'DC_65E5_00', 
-                'rotation': 0, 
-                'scalex': 1, 
-                'scaley': 1, 
-                'x': 0, 
-                'y': 7
-            }
-        ]
-    """
-
-    def __init__(self, components: list = []):
+    def __init__(self, outlines:list = [], deepComponents:list = [], width:int = 0):
         super().__init__()
-        self._components = []
-        for component in components:
-            self._components.append(ComponentNamed(**dict(component)))
+        self.outlines = outlines
+        self.deepComponents = [DeepComponent(**dict(x)) for x in deepComponents]
+        self.width = width
 
-    def add(self, name: str, items: dict = {}):
+    def _writeOutlines(self, glyph):
         """
-        Add new component
+        Write the outlines instruction of the layer
         """
-        self._components.append(ComponentNamed(name, **items))
+        pen = RecordingPen()
+        glyph.draw(pen)
+        self.outlines = pen.value
 
-
-class GlyphComponentsVariations(Components):
-
-    def __init__(self, components: list = []):
-        super().__init__()
-        self._components = []
-        for component in components:
-            self._components.append(Component(**dict(component)))
-
-    def add(self, items: dict = {}):
+    def _addDeepComponent(self, deepComponentInfos:dict = {}):
         """
-        Add new component
+        Add new deep Component
         """
-        self._components.append(Component(**items))
+        self.deepComponents.append(DeepComponent(**dict(deepComponentInfos)))
+
+    def _removeDeepComponent(self, index):
+        """
+        Remove a deep component at index
+        """
+        self.deepComponents.pop(index)
+
+    def _setAxisWidth(self, width:int = 0):
+        """
+        Set the axis width
+        """
+        self.width = width
+
+    def _toDict(self):
+        return {"outlines": self.outlines,
+                "deepComponents": [x._toDict() for x in self.deepComponents],
+                "width": self.width}
+
+class VariationGlyphsInfos:
+
+    def __init__(self, layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0, content:dict = {}, axisMinValue:float=0., axisMaxValue:float=1.):
+        self.minValue = minValue
+        self.maxValue = maxValue
+        # self.axisMinValue = axisMinValue
+        # self.axisMaxValue = axisMaxValue
+        self.layerName = layerName
+        self.content = Content(**content)
+
+    def initContent(self, outlines = [], deepComponents = []):
+        """
+        Initialize the content with a given outlines and/or deep components
+        """
+        self.content = Content(outlines = outlines, deepComponents = deepComponents)
+
+    def addDeepComponent(self, deepComponentInfos:dict = {}):
+        """
+        Add new deep Component
+        """
+        self.content._addDeepComponent(deepComponentInfos)
+
+    def append(self, item):
+        """
+        made for backward compatibility
+        """
+        self.content._addDeepComponent(deepComponentInfos)
+
+    def removeDeepComponent(self, index):
+        """
+        Remove a deep component at index
+        """
+        self.content._removeDeepComponent(index)  
+
+    def removeDeepComponents(self, indexes):
+        """
+        Remove multiple deep components at indexes
+        """
+        for index in reversed(sorted(indexes)):
+            self.content._removeDeepComponent(index) 
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return str(self.__dict__)
+
+    def __getitem__(self, index):
+        return self.content.deepComponents[index]
+
+    def __setitem__(self, item, value):
+        setattr(self, item, value)
+
+    def items(self):
+        for x in vars(self):
+            yield (x, getattr(self, x))
+
+    def _toDict(self):
+        """
+        Return a dict representation 
+        """
+        return {
+                "minValue": self.minValue, 
+                "maxValue": self.maxValue, 
+                # "axisMinValue": self.axisMinValue, 
+                # "axisMaxValue": self.axisMaxValue, 
+                "layerName": self.layerName,
+                "content": self.content._toDict()
+                }
+
+    def writeOutlines(self, glyph):
+        """
+        Write the outlines instruction of the layer
+        """
+        self.content._writeOutlines(glyph)
+
+    def setAxisWidth(self, width:int = 0):
+        """
+        Set the axis width
+        """
+        self.content._setAxisWidth(width)
 
 
-class GlyphVariations(DictClass):
+class VariationGlyphs(DictClass):
 
     """
-    Deep component structure:
-        {
-            'HGHT': [
-                        {
-                            'coord': {'DIAG': 0.5}, 
-                            'rotation': 0, 
-                            'scalex': 0.02, 
-                            'scaley': 0.07199999999999995, 
-                            'x': 980, 
-                            'y': 340
-                        }, 
-                        {
-                            'coord': {'DIAG': 0.5}, 
-                            'rotation': -90, 
-                            'scalex': 0.02, 
-                            'scaley': 1, 
-                            'x': 0, 
-                            'y': 412
-                        }
-                    ]
-        }
-    """
+    structure:
+    
+    {
+        'VariationAxis0': {
+                            'min': 0.0, 
+                            'max': 1.0, 
+                            'content': {
+                                        'outlines': recordingPen.value, 
+                                        'deepComponents':[]
+                                        },
+                            'layerName': 'layerName'
+                            },
+        'VariationAxis1': {
+                            'min': 0.0, 
+                            'max': 1.0, 
+                            'content': {
+                                        'outlines': [], 
+                                        'deepComponents': [
+                                                            {
+                                                            'coord':{
+                                                                    DCAxisName: v, 
+                                                                    DCAxisName:v
+                                                                    }, 
+                                                            'x': v, 
+                                                            'y': v, 
+                                                            'scalex: v, 
+                                                            'scaley: v, 
+                                                            'rotation': v
+                                                            }
+                                                          ]
+                                        },
+                            'layerName': 'layerName'
+                            },
+}
 
     """
-    Character Glyph structure:
-        {
-            'wght': [
-                        {
-                            'coord': {'HGHT': 0.262, 'HWGT': 0.693, 'LLNG': 0.289, 'RLNG': 0.289, 'VWGT': 0.655, 'WDTH': 0.415}, 
-                            'rotation': 0, 
-                            'scalex': 1, 
-                            'scaley': 1, 
-                            'x': 0, 
-                            'y': 7
-                        }
-                    ]
-        }
-    """
+
 
     def __init__(self, axes = {}):
         super().__init__()
         for k, v in axes.items():
-            setattr(self, k, GlyphComponentsVariations(v))
+            if type(v) == list: # test for backward compatibility
+                setattr(self, k, VariationGlyphsInfos())
+                getattr(self, k).initContent(deepComponents = v)
+            elif type(v) == dict:
+                setattr(self, k, VariationGlyphsInfos(**v))
+            else:
+                setattr(self, k, VariationGlyphsInfos(v)) # fallback for backward compatibility
 
-    def addAxis(self, axisName: str, components):
+    def __bool__(self):
+        return bool(vars(self))
+
+    def addAxis(self, axisName: str, deepComponents:list = [], layerName:str = "", minValue:float = 0.0, maxValue:float = 1.0):
         """
-        Add new axis with no named components
+        Add new axis with no named deep components
         """
-        #retrieve the components info without their name
-        noNamedComponents = [Component(**component._unnamed()) for component in components]
-        setattr(self, axisName, noNamedComponents)
+        infos = VariationGlyphsInfos(layerName = layerName, minValue = minValue, maxValue = maxValue)
+        for deepComponent in deepComponents:
+            infos.addDeepComponent(deepComponent._unnamed())
+        setattr(self, axisName, infos)
 
     def removeAxis(self, axisName: str):
         """
@@ -348,18 +511,32 @@ class GlyphVariations(DictClass):
             return
         delattr(self, axisName)
 
-    def addComponent(self, component):
+    def addDeepComponent(self, deepComponent):
         """
         Add a new component to the whole axes
         """
         for x in vars(self):
-            getattr(self, x).add(component._unnamed())
+            getattr(self, x).addDeepComponent(deepComponent._unnamed())
+
+    def removeDeepComponents(self, indexes: list):
+        """
+        Remove components variation at indexes
+        """
+        if not indexes:
+            return
+        for x in vars(self):
+            getattr(self, x).removeDeepComponents(indexes)
 
     def getDict(self):
         """
         Return a list reprensentation on the class
         """
-        return {x: getattr(self, x).getList() for x in vars(self)}     
+        return {x: getattr(self, x)._toDict() for x in vars(self)}     
+
+    @property
+    def layerNames(self):
+        return [x.layerName for x in self.values()]
+    
 
     @property
     def axes(self):
@@ -368,9 +545,52 @@ class GlyphVariations(DictClass):
         """
         return self.keys()
 
-    def removeComponents(self, indexes: list):
+    @property
+    def infos(self):
         """
-        Remove components variation at indexes
+        Return a list of all the variations
         """
-        for x in vars(self):
-            getattr(self, x).removeComponents(indexes)
+        return self.values()
+
+if __name__ == "__main__":
+    deepComponentTest = DeepComponents(
+        [{
+            'name': "53E3",
+            'coord': {'DIAG': 0.5}, 
+            'rotation': 0, 
+            'scalex': 0.02, 
+            'scaley': 0.07199999999999995, 
+            'x': 980, 
+            'y': 340
+        }])
+
+
+    deepComponentTest.add("test", {
+                    'coord': {'DIAG': 0.5}, 
+                    'rotation': 90, 
+                    'scalex': 0.02, 
+                    'scaley': 0.07199999999999995, 
+                    'x': 980, 
+                    'y': 340
+                    })
+    print("---")
+    print(deepComponentTest)
+    glyphVariationTest = VariationGlyphs()
+    glyphVariationTest.addAxis("wght", deepComponentTest)
+    glyphVariationTest.addAxis("slnt", deepComponentTest)
+    print("---")
+    print(glyphVariationTest)
+    glyphVariationTest.removeDeepComponents([0])
+    print("---")
+    print(glyphVariationTest)
+    print("---")
+    print(glyphVariationTest.getDict())
+    print("---")
+
+    glyphVariationTest1 = VariationGlyphs()
+    glyphVariationTest1.addAxis("axis2")
+    print(glyphVariationTest1.axis2.minValue)
+    glyphVariationTest1.axis2.minValue = 30
+    print(glyphVariationTest1.axis2.minValue)
+    glyphVariationTest1["axis2"].maxValue = 60
+    print(glyphVariationTest1.axis2)

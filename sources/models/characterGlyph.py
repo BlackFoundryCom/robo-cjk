@@ -18,30 +18,36 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from mojo.roboFont import *
 from imp import reload
-from models import glyph, component
-reload(glyph)
-reload(component)
+from models import glyph, component, glyphPreview
+# reload(glyph)
+# reload(component)
+# reload(glyphPreview)
 from utils import interpolation, decorators
-reload(interpolation)
+# reload(interpolation)
 Glyph = glyph.Glyph
 glyphAddRemoveUndo = decorators.glyphAddRemoveUndo
 from models import deepComponent
-reload(deepComponent)
+# reload(deepComponent)
 
-ComponentNamed = component.ComponentNamed
-GlyphComponentsNamed = component.GlyphComponentsNamed
-GlyphVariations = component.GlyphVariations
+DeepComponentNamed = component.DeepComponentNamed
+DeepComponents = component.DeepComponents
+VariationGlyphs = component.VariationGlyphs
 
 import copy
 
-deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
+# Deprecated keys
+deepComponentsKeyOld = 'robocjk.characterGlyph.deepComponents'
 glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+
+# Actual keys
+deepComponentsKey = 'robocjk.deepComponents'
+variationGlyphsKey = 'robocjk.fontVariationGlyphs'
 
 class CharacterGlyph(Glyph):
     def __init__(self, name):
         super().__init__()
-        self._deepComponents = GlyphComponentsNamed()
-        self._glyphVariations = GlyphVariations()
+        self._deepComponents = DeepComponents()
+        self._glyphVariations = VariationGlyphs()
         self.selectedSourceAxis = None
         self.computedDeepComponents = []
         self.computedDeepComponentsVariation = []
@@ -49,18 +55,19 @@ class CharacterGlyph(Glyph):
         self.name = name
         self.type = "characterGlyph"
         self.outlinesPreview = None
+        self.preview = glyphPreview.CharacterGlyphPreview(self)
 
-        lib = RLib()
-        lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
-        lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
-        self.stackUndo_lib = [lib]
-        self.indexStackUndo_lib = 0
-
+        # lib = RLib()
+        # lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
+        # lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
+        # self.stackUndo_lib = [lib]
+        # self.indexStackUndo_lib = 0
+        self._setStackUndo()
         self.save()
 
     @property
     def foreground(self):
-        return self.currentFont._RFont[self.name].getLayer('foreground')
+        return self._RFont[self.name].getLayer('foreground')
 
     @property
     def deepComponents(self):
@@ -73,52 +80,38 @@ class CharacterGlyph(Glyph):
     def _initWithLib(self, lib=None):
         try:
             if lib:
-                self._deepComponents = GlyphComponentsNamed(lib[deepComponentsKey])      
-                self._glyphVariations = GlyphVariations(lib[glyphVariationsKey])
+                if variationGlyphsKey not in lib.keys():
+                    deepComponents = lib[deepComponentsKeyOld]
+                    variationGlyphs = lib[glyphVariationsKey]
+                else:
+                    deepComponents = lib[deepComponentsKey]
+                    variationGlyphs = lib[variationGlyphsKey]
             else:
-                self._deepComponents = GlyphComponentsNamed(self._RGlyph.lib[deepComponentsKey])      
-                self._glyphVariations = GlyphVariations(self._RGlyph.lib[glyphVariationsKey])
+                if variationGlyphsKey not in self._RGlyph.lib.keys(): 
+                    deepComponents = self._RGlyph.lib[deepComponentsKeyOld]
+                    variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
+                else:
+                    deepComponents = self._RGlyph.lib[deepComponentsKey]
+                    variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
+
+            self._deepComponents = DeepComponents(deepComponents)      
+            self._glyphVariations = VariationGlyphs(variationGlyphs)
         except:
-            self._deepComponents = GlyphComponentsNamed()
-            self._glyphVariations = GlyphVariations()
-
-    @property
-    def selectedElementCoord(self) -> dict:
-        index = self.selectedElement[0]
-        if self.computedDeepComponents:
-            return list(self.computedDeepComponents[index].values())[0][0]
-        elif self.computedDeepComponentsVariation:
-            return list(self.computedDeepComponentsVariation[index].values())[0][0]
-
-    @property
-    def atomicInstancesGlyphs(self) -> "Index, AtomicInstanceGlyph":
-        if self.computedDeepComponentsVariation:
-            elements = self.computedDeepComponentsVariation
-        else:
-            elements = self.computedDeepComponents
-
-        for i, e in enumerate(elements):
-            for dcCoord, l in e.values():
-                for dcAtomicElements in l:
-                    for atomicInstanceGlyph, _, _ in dcAtomicElements.values():
-                        yield i, atomicInstanceGlyph
+            self._deepComponents = DeepComponents()
+            self._glyphVariations = VariationGlyphs()
 
     def duplicateSelectedElements(self):
         for selectedElement in self._getSelectedElement():
             if selectedElement.get("name"):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
-    def _getElements(self):
-        if self.computedDeepComponents:
-            return self._deepComponents
-        elif self.computedDeepComponentsVariation:
-            return self._glyphVariations[self.selectedSourceAxis]
-
     def updateDeepComponentCoord(self, nameAxis, value):
-        if self.selectedSourceAxis is not None:
-            self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
-        else:
-            self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
+        try:
+            if self.selectedSourceAxis is not None:
+                self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
+            else:
+                self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
+        except: pass
 
     def removeVariationAxis(self, name):
         self._glyphVariations.removeAxis(name)
@@ -126,165 +119,23 @@ class CharacterGlyph(Glyph):
     @glyphAddRemoveUndo
     def addDeepComponentNamed(self, deepComponentName, items = False):
         if not items:
-            d = ComponentNamed(deepComponentName)
+            d = DeepComponentNamed(deepComponentName)
             for axis in self.currentFont[deepComponentName]._glyphVariations.axes:
-                d.coord.add(axis, 0)
+                d.coord.add(axis, self.currentFont[deepComponentName]._glyphVariations[axis].minValue)
         else:
             d = items
             d.name = deepComponentName
 
-        self._deepComponents.addComponent(d)
-        self._glyphVariations.addComponent(d)
+        self._deepComponents.addDeepComponent(d)
+        self._glyphVariations.addDeepComponent(d)
 
-        self.computeDeepComponentsPreview()
-        self.computeDeepComponents()
+        self.preview.computeDeepComponentsPreview(update = False)
+        self.preview.computeDeepComponents(update = False)
 
-    ################ DEPENDENCY WITH DEEPCOMPONENTS ################
-    #                             |                                #
-    #                             V                                #
-    ################################################################
-    def addVariationAxisToDeepComponentNamed(self, axisName, deepComponentName):
-        for d in self._deepComponents:
-            if deepComponentName == d['name']:
-                d['coord'][axisName] = 0
+        # font = self.getParent()
+        # glyph = font[self.name]
+        # font.writeGlif(glyph)
 
-        for gvAxisName, l in self._glyphVariations.items():
-            for i, d in enumerate(l):
-                if deepComponentName == self._deepComponents[i]['name']:
-                    d['coord'][axisName] = 0
-
-    ################ DEPENDENCY WITH DEEPCOMPONENTS ################
-    #                             |                                #
-    #                             V                                #
-    ################################################################
-    def removeVariationAxisToDeepComponentNamed(self, axisName, deepComponentName):
-        for d in self._deepComponents:
-            if deepComponentName == d['name']:
-                del d['coord'][axisName]
-
-        for gvAxisName, l in self._glyphVariations.items():
-            for i, d in enumerate(l):
-                if deepComponentName == self._deepComponents[i]['name']:
-                    del d['coord'][axisName]
-
-    def computeDeepComponents(self):
-        self.computedDeepComponents = []
-        self.computedDeepComponentsVariation = []
-        if self.selectedSourceAxis is None:
-            self.computedDeepComponents = self.generateCharacterGlyph(
-                self, 
-                preview=False
-                )
-        else:
-            self.computedDeepComponentsVariation = self.generateCharacterGlyphVariation(
-                self.selectedSourceAxis,
-                preview=False
-                )
-
-    def computeDeepComponentsPreview(self, sourcelist = []):
-        self.preview = []
-        deepComponentsSelectedVariation = []
-
-        if not sourcelist:
-            sourcelist = self.sourcesList
-
-        characterGlyphAxisInfos = {}
-        for UICharacterGlyphVariation in sourcelist:
-            characterGlyphAxisInfos[UICharacterGlyphVariation['Axis']] = UICharacterGlyphVariation['PreviewValue']
-
-        if not characterGlyphAxisInfos: return
-
-        outputCG = interpolation.deepdeepdeepolation(
-            self._deepComponents, 
-            self._glyphVariations, 
-            characterGlyphAxisInfos
-            )
-
-        for j, masterDeepComponentInstance in enumerate(outputCG):
-            glyph = self.currentFont[masterDeepComponentInstance['name']]
-            masterDeepComponent = glyph._atomicElements
-            deepComponentVariations = glyph._glyphVariations
-            deepComponentAxisInfos = masterDeepComponentInstance['coord']
-        
-            deepdeepolatedDeepComponent = interpolation.deepdeepolation(
-                masterDeepComponent, 
-                deepComponentVariations, 
-                deepComponentAxisInfos
-                )
-
-            previewGlyph = deepComponent.DeepComponent("PreviewGlyph")
-            previewGlyph._atomicElements = GlyphComponentsNamed(deepdeepolatedDeepComponent)
-
-            atomicInstancesPreview = self.generateDeepComponent(
-                previewGlyph, 
-                preview=True
-                )
-
-            for e in atomicInstancesPreview:
-                for aeName, ae in e.items():
-                    ae[0].scaleBy((masterDeepComponentInstance['scalex'], masterDeepComponentInstance['scaley']))
-                    ae[0].moveBy((self._deepComponents[j]['x'], self._deepComponents[j]['y']))
-                    ae[0].moveBy((masterDeepComponentInstance['x'], masterDeepComponentInstance['y']))
-                    ae[0].rotateBy(masterDeepComponentInstance['rotation'])
-                    # ae[0].round()
-            deepComponentsSelectedVariation.append({self._deepComponents[j]['name']: (masterDeepComponentInstance['coord'], atomicInstancesPreview)})                
-
-        if self.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
-
-            layersInfos = {}
-            for d in sourcelist:
-                layer = d['Axis']
-                value = d['PreviewValue']
-                if layer in self.currentFont._RFont.lib['robocjk.fontVariations']:
-                    if len(self._RGlyph.getLayer(layer)):
-                        layersInfos[layer] = value
-
-            self.outlinesPreview = interpolation.deepolation(
-                RGlyph(), 
-                self.foreground, 
-                layersInfos
-                )
-
-        self.preview = deepComponentsSelectedVariation
-
-    def generateCharacterGlyphVariation(self, selectedSourceAxis, preview=True):
-        ### CLEANING TODO ###
-        _lib = {}
-        cgdc = self._deepComponents
-        deepComponentsSelectedVariation = []
-        for characterGlyphAxisName, characterGlyphVariation in self._glyphVariations.items():
-            _lib[characterGlyphAxisName] = characterGlyphVariation
-            
-            if characterGlyphAxisName == selectedSourceAxis:
-                _lib[characterGlyphAxisName] = []
-                
-                for j, dc in enumerate(characterGlyphVariation):
-                    # for index in self.selectedElement:
-                    #     if index == j and self.sliderValue:
-                    #         dc['coord'][self.sliderName] = float(self.sliderValue)
-                
-                    masterDeepComponent = self.currentFont[cgdc[j].name]._atomicElements
-                    deepComponentVariations = self.currentFont[cgdc[j].name]._glyphVariations
-                    deepComponentAxisInfos = {}
-
-                    deepComponentAxisInfos = dc.coord
-
-                    deepdeepolatedDeepComponent = interpolation.deepdeepolation(masterDeepComponent, deepComponentVariations, deepComponentAxisInfos)
-                    previewGlyph = RGlyph()
-                    previewGlyph._atomicElements = GlyphComponentsNamed(deepdeepolatedDeepComponent)
-            
-                    atomicInstancesPreview = self.generateDeepComponent(previewGlyph, preview=True)
-                    for e in atomicInstancesPreview:
-                        for aeName, ae in e.items():
-                            ae[0].scaleBy((dc['scalex'], dc['scaley']))
-                            ae[0].moveBy((dc['x'], dc['y']))
-                            ae[0].rotateBy(dc['rotation'])
-                    deepComponentsSelectedVariation.append({cgdc[j]['name']: (dc['coord'], atomicInstancesPreview)})
-                    
-                    _lib[characterGlyphAxisName].append(dc)
-                    
-        self._glyphVariations = GlyphVariations(_lib)
-        return deepComponentsSelectedVariation
 
     def addCharacterGlyphNamedVariationToGlyph(self, name):
         if name in self._glyphVariations.axes: return
@@ -293,13 +144,27 @@ class CharacterGlyph(Glyph):
     @glyphAddRemoveUndo
     def removeDeepComponentAtIndexToGlyph(self):
         if not self.selectedElement: return
-        self._deepComponents.removeComponents(self.selectedElement)
-        self._glyphVariations.removeComponents(self.selectedElement)
+        self.removeDeepComponents(self.selectedElement)
         self.selectedElement = []
 
     def save(self):
+        color = self.markColor
         self.lib.clear()
         lib = RLib()
+
+        for axis, variations in self._glyphVariations.items():
+            variations.layerName = axis
+            try:
+                axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
+                variations.writeOutlines(axisGlyph)
+                variations.setAxisWidth(axisGlyph.width)
+            except:
+                pass
+
+        # lib[deepComponentsKeyOld] = self._deepComponents.getList()
+        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
+
         lib[deepComponentsKey] = self._deepComponents.getList()
-        lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        lib[variationGlyphsKey] = self._glyphVariations.getDict()
         self.lib.update(lib)
+        self.markColor = color

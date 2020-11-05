@@ -24,13 +24,13 @@ from AppKit import NSColor, NSNoBorder, NumberFormatter
 import mojo.drawingTools as mjdt
 from imp import reload
 from utils import decorators
-reload(decorators)
+# reload(decorators)
 from utils import files
-reload(files)
+# reload(files)
 
 from views import sheets, drawer
-reload(sheets)
-reload(drawer)
+# reload(sheets)
+# reload(drawer)
 
 import copy
 
@@ -39,6 +39,13 @@ refresh = decorators.refresh
 
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 numberFormatter = NumberFormatter()
+
+INPROGRESS = (1., 0., 0., 1.)
+CHECKING1 = (1., .5, 0., 1.)
+CHECKING2 = (1., 1., 0., 1.)
+CHECKING3 = (0., .5, 1., 1.)
+DONE = (0., 1., .5, 1.)
+STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
 
 def setListAesthetic(element):
     element.getNSTableView().setUsesAlternatingRowBackgroundColors_(False)
@@ -124,6 +131,7 @@ class AtomicView(CanvasGroup):
     @lockedProtect
     def addLayerToAtomicElementCallback(self, sender):
         availableLayers = [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.layer.name!='foreground']
+        print(availableLayers)
         if [l for l in self.RCJKI.currentGlyph._RGlyph.layers if l.name != 'foreground']:
             sheets.SelectLayerSheet(self.RCJKI, availableLayers)
 
@@ -148,7 +156,11 @@ class AtomicView(CanvasGroup):
             self.atomicElementsSliderValue.set("")
             return
         else:
-            self.atomicElementsSliderValue.set(round(self.atomicElementsList.get()[sel[0]]['PreviewValue'], 3))
+            minValue = round(sender.get()[sel[0]]['MinValue'], 3)
+            maxValue = round(sender.get()[sel[0]]['MaxValue'], 3)
+            sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
+            self.atomicElementsSliderValue.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
+            # self.atomicElementsSliderValue.set(round(self.atomicElementsList.get()[sel[0]]['PreviewValue'], 3))
 
     @refresh
     @lockedProtect
@@ -169,9 +181,6 @@ class AtomicView(CanvasGroup):
             else:
                 minValue = float(e["MinValue"])
                 maxValue = float(e["MaxValue"])
-                # print(value, minValue, maxValue)
-                # previewValue = (value - minValue) / (maxValue - minValue + 1e-10)
-                # print(previewValue)
                 newList.append({
                     "Axis":e["Axis"],
                     "Layer":e["Layer"],
@@ -206,7 +215,7 @@ class AtomicView(CanvasGroup):
 
     def computeCurrentGlyph(self, sender):
         self.RCJKI.currentGlyph.sourcesList = sender.get()
-        self.RCJKI.currentGlyph.computeDeepComponentsPreview()
+        self.RCJKI.currentGlyph.preview.computeDeepComponentsPreview(sender.get())
 
 class DCCG_View(CanvasGroup):
 
@@ -218,7 +227,7 @@ class DCCG_View(CanvasGroup):
         # self.verticalLine = VerticalLine((-1, -275, -0, -0))
 
         self.roundToGrid = CheckBox(
-            (5, -265, -0, 20),
+            (5, -285, -0, 20),
             'Round to grid',
             value = self.RCJKI.roundToGrid,
             callback = self.roundToGridCallback,
@@ -226,12 +235,24 @@ class DCCG_View(CanvasGroup):
             )
         
         self.drawOnlyDeepolation = CheckBox(
-            (150, -265, -0, 20),
+            (150, -285, -0, 20),
             'Draw only deepolation',
             value = self.RCJKI.drawOnlyDeepolation,
             callback = self.drawOnlyDeepolationCallback,
             sizeStyle = "small"
             )
+
+        self.glyphState = PopUpButton(
+            (5, -265, -100, 20),
+            ["In Progress", "Checking round 1", "Checking round 2", "Checking round 3", "Done"],
+            callback = self.glyphStateCallback
+            )
+        # self.setglyphState()
+
+        self.glyphStateColor = ColorWell(
+            (-100, -265, -5, 20)
+            )
+        self.glyphStateColor.getNSColorWell().setBordered_(False)
 
         self.sourcesTitle = TextBox(
             (0, -240, -0, 20), 
@@ -247,7 +268,9 @@ class DCCG_View(CanvasGroup):
             [],
             columnDescriptions = [
                     {"title": "Axis", "editable": True, "width": 100},
-                    {"title": "PreviewValue", "cell": slider}],
+                    {"title": "MinValue", "editable": True, "width": 40},
+                    {"title": "PreviewValue", "cell": slider},
+                    {"title": "MaxValue", "editable": True, "width": 40}],
             showColumnTitles = False,
             selectionCallback = self.sourcesListSelectionCallback,
             doubleClickCallback = self.sourcesListDoubleClickCallback,
@@ -286,7 +309,9 @@ class DCCG_View(CanvasGroup):
             [],
             columnDescriptions = [
                     {"title": "Axis", "editable": False, "width": 100},
-                    {"title": "PreviewValue", "cell": slider}],
+                    {"title": "MinValue", "editable": False, "width": 40},
+                    {"title": "PreviewValue", "cell": slider},
+                    {"title": "MaxValue", "editable": False, "width": 40}],
             showColumnTitles = False,
             editCallback = self.slidersListEditCallback,
             selectionCallback = self.slidersListSelectiontCallback,
@@ -295,9 +320,37 @@ class DCCG_View(CanvasGroup):
         setListAesthetic(self.slidersList)
         self.selectedSourceAxis = None
 
+    def setglyphState(self):
+        color = self.RCJKI.currentGlyph.markColor
+        state = self.glyphState
+        if color is None:
+            state.set(0)
+        elif color == INPROGRESS:
+            state.set(0)
+        elif color == CHECKING1:
+            state.set(1)
+        elif color == CHECKING2:
+            state.set(2)
+        elif color == CHECKING3:
+            state.set(3)
+        elif color == DONE:
+            state.set(4)
+        else:
+            state.set(0)
+        self.glyphStateCallback(state)
+
+    def glyphStateCallback(self, sender):
+        # return
+        state = sender.get()
+        self.RCJKI.currentGlyph.markColor = STATE_COLORS[state]
+        print("stateColor", self.RCJKI.currentGlyph.markColor)
+        if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
+            self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
+        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
+
     def roundToGridCallback(self, sender):
         self.RCJKI.roundToGrid = sender.get()
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     @refresh
     def drawOnlyDeepolationCallback(self, sender):
@@ -310,6 +363,7 @@ class DCCG_View(CanvasGroup):
         elif self.RCJKI.isCharacterGlyph:
             self.sourcesTitle.set("Font Variation's Axis")
             self.sliderTitle.set("Deep Component's Axis")
+        self.setglyphState()
 
     @lockedProtect
     def sourcesListDoubleClickCallback(self, sender):
@@ -324,8 +378,8 @@ class DCCG_View(CanvasGroup):
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
 
-        self.RCJKI.updateDeepComponent()
-
+        self.RCJKI.updateDeepComponent(update = False)
+        
     @lockedProtect
     def sourcesListSelectionCallback(self, sender):
         sel = self.sourcesList.getSelection()
@@ -335,7 +389,7 @@ class DCCG_View(CanvasGroup):
         else:
             self.selectedSourceAxis = self.sourcesList.get()[sel[0]]["Axis"]
             self.sourcesSliderValue.set(round(self.sourcesList.get()[sel[0]]["PreviewValue"], 3))
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     @lockedProtect
     def sourcesSliderValueCallback(self, sender):
@@ -353,14 +407,18 @@ class DCCG_View(CanvasGroup):
             if i != sel[0]:
                 newList.append(e)
             else:
+                minValue = float(e["MinValue"])
+                maxValue = float(e["MaxValue"])
                 newList.append({
                     "Axis":e["Axis"],
-                    "PreviewValue":value
+                    "MinValue":e["MinValue"],
+                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
+                    "MaxValue":e["MaxValue"],
                     })
             self.sourcesList.set(newList)
 
         self.RCJKI.currentGlyph.sourcesList = self.sourcesList.get()
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
         self.sourcesList.setSelection(sel)
 
     @lockedProtect
@@ -369,6 +427,13 @@ class DCCG_View(CanvasGroup):
         if not sel: 
             return
         edited = sender.getEditedColumnAndRow()
+        values = sender.get()[sel[0]]
+        axis = values["Axis"]
+        minValue = float(values["MinValue"])
+        maxValue = float(values["MaxValue"])
+
+        sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
+
         if edited[0] == 0:
             name =  sender.get()[edited[1]]['Axis']
             if len([x for x in sender.get() if x['Axis'] == name]) > 1:
@@ -386,13 +451,18 @@ class DCCG_View(CanvasGroup):
                     self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
                     self.RCJKI.currentGlyph.selectedSourceAxis = name
             glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
+            # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in glyphVariations]
+            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
+        elif edited[0] in [1, 3]:
+            self.RCJKI.currentGlyph._glyphVariations[axis].minValue = minValue
+            self.RCJKI.currentGlyph._glyphVariations[axis].maxValue = maxValue
+        self.sourcesSliderValue.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
 
-        self.sourcesSliderValue.set(round(sender.get()[sel[0]]['PreviewValue'], 3))
+        # self.sourcesSliderValue.set(round(sender.get()[sel[0]]['PreviewValue'], 3))
         self.RCJKI.currentGlyph.sourcesList = sender.get()
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
 
     @lockedProtect
     def addVarAxisCallback(self, sender):
@@ -406,14 +476,14 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.addVariationToGlyph(name)
 
             if self.RCJKI.currentGlyph._glyphVariations:
-                source = [{'Axis':axis, 'PreviewValue':0.5} for axis in self.RCJKI.currentGlyph._glyphVariations]
+                source = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             self.sourcesList.set(source)
             self.RCJKI.currentGlyph.sourcesList = source
             isel = len(source)
             self.sourcesList.setSelection([isel-1])
             self.selectedSourceAxis = source[isel-1]['Axis']
             self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
-            self.RCJKI.updateDeepComponent()       
+            self.RCJKI.updateDeepComponent(update = False)       
             
         elif self.RCJKI.isCharacterGlyph:
             sheets.SelectFontVariationSheet(self.RCJKI, self)
@@ -427,13 +497,13 @@ class DCCG_View(CanvasGroup):
             self.RCJKI.currentGlyph.selectedSourceAxis = None
             self.sourcesList.setSelection([0])
             glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-            l = [{'Axis':axis, 'PreviewValue':0.5} for axis in glyphVariations]
+            l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             self.RCJKI.currentGlyph.sourcesList = l
             self.sourcesList.set(l)
             self.slidersList.set([])
             self.RCJKI.sliderValue = None
             self.RCJKI.sliderName = None
-            self.RCJKI.updateDeepComponent()
+            self.RCJKI.updateDeepComponent(update = False)
 
     @lockedProtect
     def slidersListSelectiontCallback(self, sender):
@@ -442,7 +512,10 @@ class DCCG_View(CanvasGroup):
             self.sliderSliderValue.set('')
             return
         else:
-            self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+            values = sender.get()[sel[0]]
+            minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.slidersList[sel[0]]['Axis'])
+            sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
+            self.sliderSliderValue.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
 
     @lockedProtect
     def sliderSliderValueCallback(self, sender):
@@ -456,27 +529,29 @@ class DCCG_View(CanvasGroup):
         except:
             return
         newList = []
-        if self.RCJKI.currentGlyph.type == "deepComponent":
-            minValue, maxValue = self.RCJKI.currentGlyph.getAtomicElementMinMaxValue(self.slidersList[sel[0]]['Axis'])
+        # if self.RCJKI.currentGlyph.type == "deepComponent":
+        minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.slidersList[sel[0]]['Axis'])
         for i, e in enumerate(self.slidersList.get()):
             if i != sel[0]:
                 newList.append(e)
             else:
-                if self.RCJKI.currentGlyph.type == "deepComponent":
-                    newList.append({
-                        "Axis":e["Axis"],
-                        "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue)
-                        })
-                else:
-                    newList.append({
-                        "Axis":e["Axis"],
-                        "PreviewValue":value
-                        })
+                # if self.RCJKI.currentGlyph.type == "deepComponent":
+                newList.append({
+                    "Axis":e["Axis"],
+                    "MinValue": minValue,
+                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
+                    "MaxValue": maxValue,
+                    })
+                # else:
+                #     newList.append({
+                #         "Axis":e["Axis"],
+                #         "PreviewValue":value
+                #         })
             self.slidersList.set(newList)
 
         self.slidersList.setSelection(sel)
         self.setSliderValue2Glyph(self.slidersList)
-        self.RCJKI.updateDeepComponent()
+        self.RCJKI.updateDeepComponent(update = False)
         
     @lockedProtect
     def slidersListEditCallback(self, sender):
@@ -484,20 +559,26 @@ class DCCG_View(CanvasGroup):
         if not sel: return         
         self.setSliderValue2Glyph(sender)
         # self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
-        if self.RCJKI.currentGlyph.type == "deepComponent":
-            minValue, maxValue = self.RCJKI.currentGlyph.getAtomicElementMinMaxValue(self.slidersList[sender.getSelection()[0]]['Axis'])
-            self.sliderSliderValue.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
-        else:
-            self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
-        self.RCJKI.updateDeepComponent()
+        # if self.RCJKI.currentGlyph.type == "deepComponent":
+        minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.slidersList[sender.getSelection()[0]]['Axis'])
+        self.sliderSliderValue.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
+        # else:
+        #     self.sliderSliderValue.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+        self.RCJKI.updateDeepComponent(update = False)
 
     def setSliderValue2Glyph(self, sender):
-        if self.RCJKI.currentGlyph.type == 'characterGlyph':
+        def _getKeys(glyph):
+            if glyph.type == "characterGlyph":
+                return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
+            else:
+                return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
+
+        if self.RCJKI.currentGlyph.type in ['characterGlyph', 'deepComponent']:
             lib = RLib()
-            deepComponentsKey = 'robocjk.characterGlyph.deepComponents'
-            glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
-            lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents)
-            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations)
+            deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
+            # glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+            lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
+            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getDict())
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
@@ -527,56 +608,34 @@ class GlyphPreviewCanvas(CanvasGroup):
         d = self.glyph._glyphVariations
         if self.glyph.type ==  "atomicElement":
             self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0.5} for axisName, layer in  d.items()
+                {"Axis":axisName, "Layer":layer, "PreviewValue":layer.minValue} for axisName, layer in  d.items()
                 ]
         else:
             self.glyph.sourcesList = [
-                {"Axis":axisName, "Layer":layerName, "PreviewValue":0.5} for axisName, layerName in  d.items()
+                {"Axis":axisName, "Layer":layerName, "PreviewValue":layerName.minValue} for axisName, layerName in  d.items()
                 ]
+
+        if self.glyph.markColor is not None:
+            mjdt.fill(*self.glyph.markColor)
+            mjdt.rect(0, 0, 200, 20)
+
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
-        self.glyph.computeDeepComponentsPreview()
-        if self.glyphType == 'atomicElement':
-            self.drawer.drawAtomicElementPreview(
+        self.glyph.preview.computeDeepComponentsPreview(update = False)
+        if self.glyph.preview.variationPreview is not None:
+            self.drawer.drawVariationPreview(
+                    self.glyph, 
+                    scale, 
+                    color = (0, 0, 0, 1), 
+                    strokecolor = (0, 0, 0, 0)
+                    )
+        else:
+            self.glyph.preview.computeDeepComponents(update = False)
+            self.drawer.drawAxisPreview(
                 self.glyph, 
+                (0, 0, 0, 1), 
                 scale, 
-                color = (0, 0, 0, 1), 
-                strokecolor = (0, 0, 0, 0)
+                (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
                 )
-
-        elif self.glyphType == 'deepComponent':
-            if self.glyph.preview:
-                self.drawer.drawDeepComponentPreview(
-                    self.glyph, 
-                    scale, 
-                    color = (0, 0, 0, 1), 
-                    strokecolor = (0, 0, 0, 0)
-                    )
-            else:
-                self.glyph.computeDeepComponents()
-                self.drawer.drawGlyphAtomicInstance(
-                    self.glyph, 
-                    (0, 0, 0, 1), 
-                    scale, 
-                    (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
-                    )
-
-        elif self.glyphType == 'characterGlyph':
-            if self.glyph.preview:
-                self.drawer.drawCharacterGlyphPreview(
-                    self.glyph, 
-                    scale, 
-                    color = (0, 0, 0, 1), 
-                    strokecolor = (0, 0, 0, 0)
-                    )
-            else:
-                self.glyph.computeDeepComponents()
-                self.drawer.drawGlyphAtomicInstance(
-                    self.glyph, 
-                    (0, 0, 0, 1), 
-                    scale, 
-                    (0, 0, 0, 1), flatComponentColor = (0, 0, 0, 1)
-                    )
-
 

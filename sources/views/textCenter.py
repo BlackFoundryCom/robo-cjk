@@ -71,7 +71,7 @@ class GlyphUsingDC(Group):
         self.char = ""
         self.charactersNamesList = []
         self.deepComponent = set()
-        for dcname in self.c.RCJKI.currentFont.deepComponentSet:
+        for dcname in self.c.RCJKI.currentFont.staticDeepComponentSet():
             if len(dcname.split('_')) > 1:
                 self.deepComponent.add(chr(int(dcname.split("_")[1], 16)))
 
@@ -104,7 +104,7 @@ class GlyphUsingDC(Group):
         if not char: return []
         var = []
         code = files.normalizeUnicode(hex(ord(char))[2:].upper())
-        for name in self.c.RCJKI.currentFont.deepComponentSet:
+        for name in self.c.RCJKI.currentFont.staticDeepComponentSet():
             if code in name.split("_"):
                 var.append(name.split("_")[2])
         return var
@@ -134,8 +134,8 @@ class GlyphUsingDC(Group):
 
     def characterGlyphUsing(self, code):
         characters = []
-        for name in self.c.RCJKI.currentFont.characterGlyphSet:
-            glyph = self.c.RCJKI.currentFont[name]
+        for name in self.c.RCJKI.currentFont.staticCharacterGlyphSet():
+            glyph = self.c.RCJKI.currentFont.get(name)
             for dc in glyph._deepComponents:
                 if code in dc.name:
                     characters.append(name)
@@ -151,7 +151,7 @@ class DCUsingAE(Group):
         self.search = SearchBox((0, 5, 100, 20),
             callback = self.searchCallback)
 
-        self.atomicElement = self.c.RCJKI.currentFont.atomicElementSet
+        self.atomicElement = self.c.RCJKI.currentFont.staticAtomicElementSet()
         self.atomicElementList = List(
             (0, 25, 100, -0),
             self.atomicElement,
@@ -179,9 +179,9 @@ class DCUsingAE(Group):
 
     def deepComponentGlyphUsing(self, aename):
         deepComponents = []
-        for name in self.c.RCJKI.currentFont.deepComponentSet:
-            glyph = self.c.RCJKI.currentFont[name]
-            for dc in glyph._atomicElements:
+        for name in self.c.RCJKI.currentFont.staticDeepComponentSet():
+            glyph = self.c.RCJKI.currentFont.get(name)
+            for dc in glyph._deepComponents:
                 if aename == dc.name:
                     deepComponents.append(name)
                     break
@@ -192,15 +192,20 @@ class TextCenter:
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
         self.w = Window((800, 300), "Text Center", minSize = (400, 320))
+        self.w.leftInput = EditText(
+            (0, 0, 60, 20),
+            "",
+            callback = self.inputCallback
+            )
         self.w.input = EditText(
-            (0, 0, -60, 20),
+            (60, 0, -60, 20),
             "",
             callback = self.inputCallback
             )
         self.pointsSize = [9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96, 144, 256, 512, 1024],
         self.w.pointSize = ComboBox(
             (-60, 0, -0, 20),
-            self.pointsSize,
+            *self.pointsSize,
             callback = self.pointSizeCallback
             )
         self.w.pointSize.set(72)
@@ -233,12 +238,12 @@ class TextCenter:
             pointSize=72,
             displayOptions = self.displayOptions
             )
-        self.w.multiLineView.setFont(self.RCJKI.currentFont._RFont)
+        self.w.multiLineView.setFont(self.RCJKI.currentFont._fullRFont)
         self.w.multiLineView.setLineHeight(200)
 
         self.sourcesList = []
-        if self.RCJKI.currentFont._RFont.lib.get('robocjk.fontVariations', ''):
-            self.sourcesList = [dict(Axis = x, PreviewValue = 0) for x in self.RCJKI.currentFont._RFont.lib['robocjk.fontVariations']]
+        if self.RCJKI.currentFont.fontVariations:
+            self.sourcesList = [dict(Axis = x, PreviewValue = 0) for x in self.RCJKI.currentFont.fontVariations]
 
         slider = SliderListCell(minValue = 0, maxValue = 1)
         self.w.sourcesList = List(
@@ -271,7 +276,6 @@ class TextCenter:
                             size=180, 
                             collapsed=True, 
                             canResize=1),
-
                        ]
 
         self.w.accordionView = AccordionView((0, 120, 200, -0),
@@ -296,18 +300,25 @@ class TextCenter:
         self.w.multiLineView.update()
         
     def inputCallback(self, sender):
-        self.input(sender.get())
+        self.input(self.w.leftInput.get(), self.w.input.get())
 
-    def input(self, t):
+    def input(self, l, t):
+        l = l.replace("/", " ")
         t = t.replace("/", " ")
         txt = t.split()
         glyphs = []
+        rfont = self.RCJKI.currentFont._RFont
         for e in txt:
             try:
-                glyphs.append(self.RCJKI.currentFont[e])
+                for c in l:
+                    glyphs.append(self.RCJKI.currentFont.get(c, rfont))    
+                glyphs.append(self.RCJKI.currentFont.get(e, rfont))
             except:
                 for c in e:
-                    try: glyphs.append(self.RCJKI.currentFont[files.unicodeName(c)])
+                    try:
+                        for x in l: 
+                            glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(x), rfont))
+                        glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(c), rfont))
                     except: continue
         self.w.multiLineView.set(glyphs)
 
@@ -319,45 +330,50 @@ class TextCenter:
 
     def draw(self, info):
         self.w.pointSize.set(self.w.multiLineView.getPointSize())
-        glyph = self.RCJKI.currentFont[info["glyph"].name]
+        glyph = self.RCJKI.currentFont.get(info["glyph"].name, self.RCJKI.currentFont._RFont)
         scale = info["scale"]
-        # if self.sourcesList and glyph.glyphVariations and glyph.type != "atomicElement":
-        #     glyph.computeDeepComponentsPreview(self.sourcesList)
-        #     self.RCJKI.drawer.drawGlyph(
-        #         glyph, 
-        #         scale, 
-        #         (0, 0, 0, 1),
-        #         (0, 0, 0, 0),
-        #         (0, 0, 0, 1),
-        #         drawSelectedElements = False
-        #         )
-        if self.sourcesList and glyph.glyphVariations:
-            glyph.computeDeepComponentsPreview(self.sourcesList)
-            if glyph.type == 'characterGlyph':
-                self.RCJKI.drawer.drawCharacterGlyphPreview(
+
+        def drawVariation(glyph, sourcelist, drawer):
+            glyph.preview.computeDeepComponentsPreview(sourcelist, update = False)
+            drawer.drawVariationPreview(
                     glyph,
                     scale,
                     (0, 0, 0, 1),
                     (0, 0, 0, 0)
-                    )
-            elif glyph.type == 'deepComponent':
-                self.RCJKI.drawer.drawDeepComponentPreview(
-                    glyph,
-                    scale,
-                    (0, 0, 0, 1),
-                    (0, 0, 0, 0)
-                    )
-        else:
-            if glyph.type in ['deepComponent', 'characterGlyph']:
-                glyph.computeDeepComponents()
-                self.RCJKI.drawer.drawGlyphAtomicInstance(
+                        )
+
+        def drawPreview(glyph, drawer):
+            glyph.preview.computeDeepComponents(update = False)
+            drawer.drawAxisPreview(
                     glyph,
                     (0, 0, 0, 1),
                     scale,
                     (0, 0, 0, 1)
                     )
 
+        if glyph.type in ['deepComponent', 'characterGlyph']:
+            if self.sourcesList:# and glyph.glyphVariations:
+                try:
+                    drawVariation(glyph, self.sourcesList, self.RCJKI.drawer)
+                except:
+                    drawPreview(glyph, self.RCJKI.drawer)
+                # glyph.preview.computeDeepComponentsPreview(self.sourcesList, update = False)
+                # self.RCJKI.drawer.drawVariationPreview(
+                #         glyph,
+                #         scale,
+                #         (0, 0, 0, 1),
+                #         (0, 0, 0, 0)
+                #         )
+            else:
+                drawPreview(glyph, self.RCJKI.drawer)
+                # glyph.preview.computeDeepComponents(update = False)
+                # self.RCJKI.drawer.drawAxisPreview(
+                #     glyph,
+                #     (0, 0, 0, 1),
+                #     scale,
+                #     (0, 0, 0, 1)
+                #     )
+
     def windowWillClose(self, sender):
         self.RCJKI.textCenterWindows.pop(self.RCJKI.textCenterWindows.index(self))
-        print(self.RCJKI.textCenterWindows)
         self.observer(remove = True)

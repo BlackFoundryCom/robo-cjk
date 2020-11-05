@@ -33,6 +33,10 @@ class Drawer():
         self.refGlyphPos = [0, 0]
         self.refGlyphScale = [1, 1]
 
+        self.existingInstance = None
+        self.existingInstancePos = [0, 0]
+        self.existingInstanceScale = [1, 1]
+
     def drawIndexOfElements(self, d, glyph, view):
         x, y = glyph[0].points[0].x, glyph[0].points[0].y
         view._drawTextAtPoint(
@@ -49,45 +53,13 @@ class Drawer():
             g.round()
         return g
 
-    def drawCharacterGlyphPreview(self, glyph, scale, color, strokecolor):
-        mjdt.save()
-        mjdt.fill(*color)
-        mjdt.stroke(*strokecolor)
-        mjdt.strokeWidth(scale)
-        for i, e in enumerate(glyph.preview):
-            for dcName, (dcCoord, l) in e.items():
-                for dcAtomicElements in l:
-                    for atomicInstanceGlyph in dcAtomicElements.values():
-                        mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph[0]))  
-        if glyph.outlinesPreview is not None:
-            mjdt.drawGlyph(self.roundGlyph(glyph.outlinesPreview))  
-        mjdt.restore()
-
-    def drawDeepComponentPreview(self, glyph, scale, color, strokecolor):
-        for i, d in enumerate(glyph.preview):
-            for atomicInstanceGlyph in d.values():
-                mjdt.save()
-                mjdt.fill(*color)
-                mjdt.stroke(*strokecolor)
-                mjdt.strokeWidth(scale)
-                mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph[0]))  
-                mjdt.restore()
-
-    def drawAtomicElementPreview(self, glyph, scale, color, strokecolor):
-        mjdt.save()
-        mjdt.fill(*color)
-        mjdt.stroke(*strokecolor)
-        mjdt.strokeWidth(scale)
-        mjdt.drawGlyph(self.roundGlyph(glyph.preview))  
-        mjdt.restore()
-
     def drawGlyph(self, glyph, scale, color, strokecolor, customColor, drawSelectedElements = True):
-        if not glyph.preview:
+        if glyph.preview.variationPreview is None:
             if glyph.type == 'atomicElement':
                 if not len(glyph): return
             else:
-                glyph.computeDeepComponents()
-            self.drawGlyphAtomicInstance(
+                glyph.preview.computeDeepComponents(update = False)
+            self.drawAxisPreview(
                 glyph,
                 color,
                 scale,
@@ -95,50 +67,26 @@ class Drawer():
                 drawSelectedElements = drawSelectedElements
                 )
         else:
-            args = (glyph, scale, color, strokecolor)
-            if glyph.type == 'atomicElement':
-                self.drawAtomicElementPreview(*args)
-
-            elif glyph.type == "deepComponent":
-                self.drawDeepComponentPreview(*args)
-
-            elif glyph.type == "characterGlyph":
-                self.drawCharacterGlyphPreview(*args)
+            self.drawVariationPreview(glyph, scale, color, strokecolor)
         
     def draw(self, info, customColor = None, refGlyph = None, onlyPreview = False):
         view = info["view"]
         scale = info['scale']
         color = customColor
-        if self.RCJKI.currentGlyph.preview:
+        if self.RCJKI.currentGlyph.preview.variationPreview:
             if info["notificationName"] == "draw":
                 previewColor = [(0, 0, 0, 0), (0, 0, 0, .7)][onlyPreview]
                 previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
             else:    
                 previewColor = [(0, 0, 0, 0), (0, 0, 0, 1)][onlyPreview]
                 previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
-            if self.RCJKI.currentGlyph.type == "characterGlyph":
-                self.drawCharacterGlyphPreview(
-                    self.RCJKI.currentGlyph,
-                    scale, 
-                    color = previewColor, 
-                    strokecolor = previewStrokeColor
-                    )
-                                
-            if self.RCJKI.currentGlyph.type == "deepComponent":
-                self.drawDeepComponentPreview(
-                    self.RCJKI.currentGlyph,
-                    scale, 
-                    color = previewColor, 
-                    strokecolor = previewStrokeColor
-                    )
 
-            elif self.RCJKI.currentGlyph.type == "atomicElement":
-                self.drawAtomicElementPreview(
-                    self.RCJKI.currentGlyph,
-                    scale, 
-                    color = previewColor, 
-                    strokecolor = previewStrokeColor 
-                    )
+            self.drawVariationPreview(
+                self.RCJKI.currentGlyph,
+                scale, 
+                color = previewColor, 
+                strokecolor = previewStrokeColor
+                )
 
         if self.RCJKI.currentGlyph.type == "atomicElement": return
 
@@ -150,36 +98,68 @@ class Drawer():
             mjdt.drawGlyph(self.roundGlyph(self.refGlyph))
             mjdt.restore()
 
+        if self.existingInstance is not None:
+            mjdt.save()
+            mjdt.fill(1, .8, 0, .8)
+            mjdt.translate(*self.existingInstancePos)
+            mjdt.scale(*self.existingInstanceScale)
+            mjdt.drawGlyph(self.roundGlyph(self.existingInstance))
+            mjdt.restore()
+
         if onlyPreview: return
         if self.RCJKI.currentGlyph.type == "deepComponent":
             if not color:
-                if self.RCJKI.currentGlyph.computedAtomicInstances:
+                if not self.RCJKI.currentGlyph.selectedSourceAxis:
                     color = (0, .5, .25, .4)
                 else: color = (.5, .25, 0, .2)
 
         elif self.RCJKI.currentGlyph.type == "characterGlyph":
             if not color:
-                if self.RCJKI.currentGlyph.computedDeepComponents:
+                if not self.RCJKI.currentGlyph.selectedSourceAxis:
                     color = (.25, 0, .5, .8)
                 else: color = (.5, 0, .25, .4)
 
-        self.drawGlyphAtomicInstance(self.RCJKI.currentGlyph, color, scale, customColor, view)   
+        self.drawAxisPreview(self.RCJKI.currentGlyph, color, scale, customColor, view)   
 
-    def drawGlyphAtomicInstance(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
+    def drawVariationPreview(self, glyph, scale, color, strokecolor):
+        mjdt.save()
+        mjdt.fill(*color)
+        mjdt.stroke(*strokecolor)
+        mjdt.strokeWidth(scale)
+        mjdt.drawGlyph(self.roundGlyph(glyph.preview.variationPreview))  
+        mjdt.restore()
+
+    def drawAxisPreview(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
         mjdt.save()
         index = None
-        for i, atomicInstanceGlyph in glyph.atomicInstancesGlyphs:
+        for i, atomicInstance in enumerate(glyph.preview.axisPreview):
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
+                mjdt.save()
+                mjdt.stroke(1, 0, 0, 1)
+                mjdt.strokeWidth(1*scale)
+                tx = atomicInstance.x+atomicInstance.rcenterx
+                ty = atomicInstance.y+atomicInstance.rcentery
+                mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
+                mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
+                mjdt.stroke(None)
+                mjdt.fill(1, 0, 0, 1)
+                mjdt.fontSize(8*scale)
+                mjdt.textBox(f"{int(atomicInstance.rcenterx)} {int(atomicInstance.rcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
+                mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
-            for c in atomicInstanceGlyph:
+
+            for c in atomicInstance.glyph:
                 if c.clockwise:
                     mjdt.stroke(1, 0, 0, 1)
                     mjdt.strokeWidth(2*scale)
-            mjdt.drawGlyph(self.roundGlyph(atomicInstanceGlyph)) 
+            mjdt.save()
+            # mjdt.drawGlyph(atomicInstance.getTransformedGlyph(round = self.RCJKI.roundToGrid)) 
+            mjdt.drawGlyph(atomicInstance.transformedGlyph) 
+            mjdt.restore()
             if customColor is None and view: 
                 if i != index:
-                    self.drawIndexOfElements(i, atomicInstanceGlyph, view)
+                    self.drawIndexOfElements(i, atomicInstance.transformedGlyph, view)
             index = i
         if customColor is None:
             mjdt.fill(customColor)
@@ -193,8 +173,8 @@ class Drawer():
             if self.RCJKI.currentFont[c.baseGlyph].type == "atomicElement":
                 mjdt.drawGlyph(self.roundGlyph(self.RCJKI.currentFont[c.baseGlyph]))
             else:
-                self.RCJKI.currentFont[c.baseGlyph].computeDeepComponents()
-                self.drawGlyphAtomicInstance(self.RCJKI.currentFont[c.baseGlyph],
+                self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents(update = False)
+                self.drawAxisPreview(self.RCJKI.currentFont[c.baseGlyph],
                                             flatComponentColor,
                                             scale,
                                             customColor,

@@ -16,9 +16,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
-from imp import reload
+import sys, os
+
 from controllers import roboCJK
-reload(roboCJK)
+sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
 
 RCJKI = roboCJK.RoboCJKController()
 RCJKI._launchInterface()
