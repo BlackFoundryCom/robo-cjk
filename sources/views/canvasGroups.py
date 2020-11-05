@@ -704,11 +704,13 @@ class GlyphPreviewCanvas(CanvasGroup):
         self.glyph = self.RCJKI.currentFont[self.glyphName]
         # glyph = self.glyph.preview.computeCharacterGlyphPreview(self.glyph, {"WGHT":1})
 
+        mjdt.save()
         scale = .15
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
         for g in self.glyph.preview():
             mjdt.drawGlyph(g)
+        mjdt.restore()
         # outlines, items, width = self.instantiateCharacterGlyph(self.glyph, {"WGHT":1})
         # print(outlines, items, width)
 
@@ -724,9 +726,9 @@ class GlyphPreviewCanvas(CanvasGroup):
         #         {"Axis":axisName, "Layer":layerName, "PreviewValue":layerName.minValue} for axisName, layerName in  d.items()
         #         ]
 
-        # if self.glyph.markColor is not None:
-        #     mjdt.fill(*self.glyph.markColor)
-        #     mjdt.rect(0, 0, 200, 20)
+        if self.glyph.markColor is not None:
+            mjdt.fill(*self.glyph.markColor)
+            mjdt.rect(0, 0, 200, 20)
 
         # scale = .15
         # mjdt.scale(scale, scale)
