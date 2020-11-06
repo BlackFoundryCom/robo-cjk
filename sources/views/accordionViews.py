@@ -800,7 +800,7 @@ class GlyphVariationAxesGroup(Group):
         if self.RCJKI.currentGlyph.type == "deepComponent":
             l = 0
             name = files.normalizeCode(files.int_to_column_id(l), 4)
-            while name in self.RCJKI.currentGlyph._axes:
+            while name in self.RCJKI.currentGlyph._axes.names:
                 l += 1
                 name = files.normalizeCode(files.int_to_column_id(l), 4)
             self.RCJKI.currentGlyph.addVariationToGlyph(name)
