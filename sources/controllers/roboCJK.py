@@ -566,7 +566,10 @@ class RoboCJKController(object):
                     pos = 0
                     glyphVariationsAxes.append({"Axis":axis.name, "PreviewValue":pos, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
                 # glyphVariationsAxes = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
-            self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
+            if self.isDeepComponent:
+                self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)    
+            else:
+                self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
 
     def draw(self):
         mjdt.save()
