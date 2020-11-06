@@ -1664,7 +1664,7 @@ class RoboCJKView(BaseWindowController):
                     elif glyphType == 'deepComponent':
                         d =  glyph._deepComponents
                     for ae in d:
-                        if ae.name == glyphName:
+                        if ae["name"] == glyphName:
                             GlyphsthatUse.add(name)
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
