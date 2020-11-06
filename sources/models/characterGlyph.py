@@ -186,7 +186,7 @@ class CharacterGlyph(Glyph):
     def removeVariationAxis(self, name):
         index = 0
         for i, x in enumerate(self._axes):
-            if x.name == axisName:
+            if x.name == name:
                 index = i
         self._glyphVariations.removeAxis(index)
         self._axes.removeAxis(index)
