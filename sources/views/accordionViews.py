@@ -525,27 +525,29 @@ class PreviewGroup(Group):
         self.RCJKI.drawOnlyDeepolation = sender.get()
         
     def draw(self):
-        mjdt.save()
-        mjdt.fill(1, 1, 1, .7)
-        mjdt.roundedRect(0, 0, 300, [525, 425][self.RCJKI.currentGlyph.type == "atomicElement"], 10)
-        scale = .15
-        mjdt.translate((self.glyphwidth*scale/2), 50)
-        mjdt.fill(.15)
-        mjdt.scale(scale, scale)
-        mjdt.translate(0, abs(self.RCJKI.currentFont._RFont.info.descender))
+        try:
+            mjdt.save()
+            mjdt.fill(1, 1, 1, .7)
+            mjdt.roundedRect(0, 0, 300, [525, 425][self.RCJKI.currentGlyph.type == "atomicElement"], 10)
+            scale = .15
+            mjdt.translate((self.glyphwidth*scale/2), 50)
+            mjdt.fill(.15)
+            mjdt.scale(scale, scale)
+            mjdt.translate(0, abs(self.RCJKI.currentFont._RFont.info.descender))
 
-        mjdt.save()
-        mjdt.fill(0, 0, 0, 1)
-        mjdt.stroke(0, 0, 0, 0)
-        mjdt.strokeWidth(scale)
-        loc = {}
-        glyph = self.RCJKI.currentGlyph
-        if glyph.sourcesList: 
-            loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
-        for g in glyph.preview(loc):
-            mjdt.drawGlyph(g)  
-        mjdt.restore()
-        mjdt.restore()
+            mjdt.save()
+            mjdt.fill(0, 0, 0, 1)
+            mjdt.stroke(0, 0, 0, 0)
+            mjdt.strokeWidth(scale)
+            loc = {}
+            glyph = self.RCJKI.currentGlyph
+            if glyph.sourcesList: 
+                loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
+            for g in glyph.preview(loc):
+                mjdt.drawGlyph(g)  
+            mjdt.restore()
+            mjdt.restore()
+        except:pass
 
     def update(self):
         self.canvas.update()
@@ -589,8 +591,10 @@ class SelectFontVariationSheet():
         isel = len(source)
         self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
         glyphVariationsAxes = []
-        for axisName, layer in self.RCJKI.currentGlyph._glyphVariations.items():
-                glyphVariationsAxes.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
+        for axis, variation in zip(self.RCJKI.currentGlyph._axes, self.RCJKI.currentGlyph._glyphVariations):
+            glyphVariationsAxes.append({"Axis":axis.name, "Layer":variation.layerName, "PreviewValue":0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
+        # for axisName, layer in self.RCJKI.currentGlyph._glyphVariations.items():
+        #         glyphVariationsAxes.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
         self.view.glyphVariationAxesList.set(glyphVariationsAxes)        
         self.view.glyphVariationAxesList.setSelection([isel-1])
         self.RCJKI.updateDeepComponent(update = False)
@@ -794,12 +798,13 @@ class GlyphVariationAxesGroup(Group):
         if self.RCJKI.currentGlyph.type == "deepComponent":
             l = 0
             name = files.normalizeCode(files.int_to_column_id(l), 4)
-            while name in self.RCJKI.currentGlyph._glyphVariations.axes:
+            while name in self.RCJKI.currentGlyph._axes:
                 l += 1
                 name = files.normalizeCode(files.int_to_column_id(l), 4)
             self.RCJKI.currentGlyph.addVariationToGlyph(name)
-            if self.RCJKI.currentGlyph._glyphVariations:
-                source = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+            source = [{'Axis':axis.name, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in self.RCJKI.currentGlyph._axes]
+            # if self.RCJKI.currentGlyph._glyphVariations:
+            #     source = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             self.glyphVariationAxesList.set(source)
             self.RCJKI.currentGlyph.sourcesList = source
             isel = len(source)
@@ -827,8 +832,7 @@ class GlyphVariationAxesGroup(Group):
                 self.RCJKI.currentGlyph.selectedElement = []
                 self.RCJKI.currentGlyph.selectedSourceAxis = None
                 self.glyphVariationAxesList.setSelection([0])
-                glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
-                l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
+                l = [{'Axis':axis.name, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue} for axis in self.RCJKI.currentGlyph._axes]
                 self.RCJKI.currentGlyph.sourcesList = l
                 self.glyphVariationAxesList.set(l)
                 self.controller.deepComponentAxesItem.deepComponentAxesList.set([])

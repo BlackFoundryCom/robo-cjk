@@ -98,14 +98,21 @@ class AtomicElement(Glyph):
                 self._glyphVariations._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]))
 
     def addGlyphVariation(self, newAxisName, newLayerName):
-        self._glyphVariations.addAxis(newAxisName, layerName = newLayerName)
+        self._axes.addAxis({"name":newAxisName, "minValue":0, "maxValue":1})
+        variation = {"location":{newAxisName:1}, "layerName":newLayerName}
+        self._glyphVariations.addVariation(variation)
 
         glyph = AtomicElement(self.name)
         txt = self._RFont.getLayer(newLayerName)[self.name].dumpToGLIF()
         self.currentFont.insertGlyph(glyph, txt, newLayerName)
 
     def removeGlyphVariation(self, axisName):
-        self._glyphVariations.removeAxis(axisName)
+        index = 0
+        for i, x in enumerate(self._axes):
+            if x.name == axisName:
+                index = i
+        self._glyphVariations.removeAxis(index)
+        self._axes.removeAxis(index)
 
     def save(self):
         color = self.markColor

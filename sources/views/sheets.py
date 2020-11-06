@@ -317,7 +317,7 @@ class SelectDeepComponentSheet():
         # # if self.glyph.selectedSourceAxis:
         #     loc = {self.glyph.selectedSourceAxis:1}
         for atomicinstance in self.glyph.preview():
-            mjdt.drawGlyph(atomicinstance.getTransformedGlyph()) 
+            mjdt.drawGlyph(atomicinstance) 
         mjdt.restore()
 
 numberFormatter = NumberFormatter()
@@ -326,7 +326,7 @@ class FontInfosSheet():
 
     def __init__(self, RCJKI, parentWindow, posSize):
         self.RCJKI = RCJKI
-        if not self.RCJKI.get("currentFont"): return
+        # if not self.RCJKI.get("currentFont"): return
         fontvariations = self.RCJKI.currentFont.fontVariations
         if 'robocjk.defaultGlyphWidth' not in self.RCJKI.currentFont._fullRFont.lib:
             self.RCJKI.currentFont._fullRFont.lib['robocjk.defaultGlyphWidth'] = 1000
@@ -497,7 +497,9 @@ class NewCharacterGlyph:
         self.deepComponentList = []
         for n in self.RCJKI.currentFont.deepComponentSet:
             if not n.startswith("DC"): continue
-            if not int(n.split('_')[1], 16) in range(0x110000): continue
+            try:
+                int(n.split('_')[1], 16) in range(0x110000)
+            except:continue
             cell = dict(sel = 0, char = chr(int(n.split('_')[1], 16)))
             if cell not in self.deepComponentList:
                 self.deepComponentList.append(cell)

@@ -312,11 +312,14 @@ class RoboCJKController(object):
     def glyphWindowWillClose(self, notification):
         # print("close stateColor",self.currentGlyph.stateColor)
         # self.closeimportDCFromCG()
-        self.closeComponentWindow()
-        self.closeCharacterWindow()
         if self.glyphInspectorWindow is not None:
             self.glyphInspectorWindow.closeWindow()
             self.glyphInspectorWindow = None
+        self.closeComponentWindow()
+        self.closeCharacterWindow()
+        # if self.glyphInspectorWindow is not None:
+        #     self.glyphInspectorWindow.closeWindow()
+        #     self.glyphInspectorWindow = None
         try:
         # if CurrentGlyphWindow() is not None:
             posSize = CurrentGlyphWindow().window().getPosSize()
@@ -334,10 +337,8 @@ class RoboCJKController(object):
         gae = self.roboCJKView.w.atomicElementPreview.glyphName
         gdc = self.roboCJKView.w.deepComponentPreview.glyphName
         gcg =  self.roboCJKView.w.characterGlyphPreview.glyphName
-        
         # self.currentFont.locker.unlock(self.currentGlyph)
         if not self.mysql:
-            # print(self.currentGlyph.name,self.currentGlyph.markColor)
             self.currentFont.save()
             # self.currentFont.getGlyph(self.currentGlyph, font = self.currentFont._fullRFont)
             if self.currentGlyph is not None:
@@ -863,17 +864,21 @@ class RoboCJKController(object):
     def updateListInterface(self):
         l = []
         if self.isAtomic:
-            for axisName, layer in self.currentGlyph._glyphVariations.items():
-                print("here")
-                l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
+            for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
+                l.append({"Axis":axis.name, "Layer":variation.layerName, "PreviewValue":0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
+            # for axisName, layer in self.currentGlyph._glyphVariations.items():
+            #     print("here")
+            #     l.append({"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue})
             
         elif self.isDeepComponent:
-            if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+            if self.currentGlyph._axes:
+                l = [{'Axis':x.name, 'PreviewValue':0, "MinValue":x.minValue, "MaxValue":x.maxValue} for x in self.currentGlyph._axes]
+                # l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
             
         elif self.isCharacterGlyph:
             if self.currentGlyph._glyphVariations:
-                l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
+                l = [{'Axis':x.name, 'PreviewValue':0, "MinValue":x.minValue, "MaxValue":x.maxValue} for x in self.currentGlyph._axes]
+                # l = [{'Axis':axisName, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axisName, value in self.currentGlyph._glyphVariations.items()]
 
         self.currentViewSourceList.glyphVariationAxesList.set(l)
         self.currentGlyph.sourcesList = l

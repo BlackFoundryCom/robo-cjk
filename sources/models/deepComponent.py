@@ -151,16 +151,22 @@ class DeepComponent(Glyph):
             self._axes = Axes()  
             self._glyphVariations = VariationGlyphs()
 
-    def duplicateSelectedElements(self):
+    def duplicateSelectedElements(self): # TODO
         for selectedElement in self._getSelectedElement():
             if selectedElement.get("name"):
                 self.addAtomicElementNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
     def addGlyphVariation(self, newAxisName):
-        self._glyphVariations.addAxis(newAxisName, self._deepComponents)
+        self._axes.addAxis({"name":newAxisName, "minValue":0, "maxValue":1})
+        self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{newAxisName:1}})
 
     def removeGlyphVariation(self, axisName):
-        self._glyphVariations.removeAxis(axisName)
+        index = 0
+        for i, x in enumerate(self._axes):
+            if x.name == axisName:
+                index = i
+        self._glyphVariations.removeAxis(index)
+        self._axes.removeAxis(index)
 
     def updateAtomicElementCoord(self, axisName, value):
         if self.selectedSourceAxis:
@@ -177,14 +183,17 @@ class DeepComponent(Glyph):
     def addAtomicElementNamed(self, atomicElementName, items = False):
         if not items:
             d = DeepComponentNamed(atomicElementName)
-            for axis in self.currentFont[atomicElementName]._glyphVariations.axes:
-                d.coord.add(axis, 0)
+            dcglyph = self.currentFont[atomicElementName]
+            for i, axis in enumerate(dcglyph._axes):
+                value = dcglyph._axes[i].minValue
+                d.coord.add(axis.name, value)
         else:
             d = items
             d.name = atomicElementName
 
         self._deepComponents.addDeepComponent(d)
-        self._glyphVariations.addDeepComponent(d)
+        if self._axes:
+            self._glyphVariations.addDeepComponent(d)
 
         # self.preview.computeDeepComponentsPreview(update = False)
         # self.preview.computeDeepComponents(update = False)
@@ -196,15 +205,27 @@ class DeepComponent(Glyph):
         self.selectedElement = []
         
     def addVariationToGlyph(self, name):
-        if name in self._glyphVariations.axes: return
-        self._glyphVariations.addAxis(name, self._deepComponents)
+        if name in self._axes.names: return
+        # if name in self._glyphVariations.axes: return
+        self.addGlyphVariation(name)
+        # self._glyphVariations.addVariation(name, self._deepComponents)
 
     def renameVariationAxis(self, oldName, newName):
-        self._glyphVariations.addAxis(newName, self._glyphVariations[oldName])
-        self._glyphVariations.removeAxis(oldName)
+        self._axes.renameAxis(oldName, newName)
+        # for axis in self._axes:
+        #     if axis.name == oldName:
+        #         axis.name == newName
+        self._glyphVariations.renameAxisInsideLocation(oldName, newName)
+        # for variation in self._glyphVariations:
+        #     if oldName in variation.location:
+        #         variation.location[newName] = variation.location[oldName]
+        #         del variation.location[oldName]
+        # self._glyphVariations.addVariation(newName, self._glyphVariations[oldName])
+        # self._glyphVariations.removeAxis(oldName)
 
     def removeVariationAxis(self, name):
-        self._glyphVariations.removeAxis(name)
+        self.removeGlyphVariation(name)
+        # self._glyphVariations.removeAxis(name)
 
     def save(self):
         color = self.markColor

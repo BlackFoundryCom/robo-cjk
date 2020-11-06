@@ -963,6 +963,7 @@ class Font():
             file.write(txt)
 
         for layerName in self._fontLayers:
+            if not layerName: continue
             f = self._RFont.getLayer(layerName)
             if glyph.name in f:
                 layerglyph = f[glyph.name]
@@ -990,7 +991,6 @@ class Font():
             for rglyph in self._RFont.getLayer('foreground'):
                 # if not self.locker.userHasLock(rglyph): continue
                 glyph = self[rglyph.name]
-                
                 self.writeGlif(glyph)
                 self.getGlyph(rglyph.name, type = glyph.type, font = self._fullRFont)
 

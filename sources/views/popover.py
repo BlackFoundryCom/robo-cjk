@@ -94,7 +94,6 @@ class EditPopoverAlignTool(EditPopover):
         super(EditPopoverAlignTool, self).__init__((170,210), point)
         self.RCJKI = RCJKI
         self.glyph = glyph
-
         lib = self.getLib()
         self.infos = lib[self.glyph.selectedElement[0]]
         y = 10
@@ -235,7 +234,6 @@ class EditPopoverAlignTool(EditPopover):
             sizeStyle = "small"
             )
         buttonAsthetic(self.popover.paste)
-
         self.open()
 
     def getLib(self):
@@ -247,7 +245,7 @@ class EditPopoverAlignTool(EditPopover):
             for i, x in enumerate(self.RCJKI.currentGlyph._axes):
                 if x.name == self.glyph.selectedSourceAxis:
                     index = i
-            return self.RCJKI.currentGlyph._glyphVariations[i].deepComponents
+            return self.RCJKI.currentGlyph._glyphVariations[index].deepComponents
             # return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
             
         if self.RCJKI.isCharacterGlyph and not self.glyph.selectedSourceAxis:
@@ -258,7 +256,7 @@ class EditPopoverAlignTool(EditPopover):
             for i, x in enumerate(self.RCJKI.currentGlyph._axes):
                 if x.name == self.glyph.selectedSourceAxis:
                     index = i
-            return self.RCJKI.currentGlyph._glyphVariations[self.RCJKI.currentGlyph._axes.index(self.glyph.selectedSourceAxis)].deepComponents
+            return self.RCJKI.currentGlyph._glyphVariations[index].deepComponents
             # return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
 
     def copyCallback(self, sender):

@@ -167,14 +167,29 @@ class Axes(list):
             axis = dict(name = k, minValue = v.get("minValue"), maxValue = v.get("maxValue"))
             self.addAxis(axis)
 
+    @property
+    def names(self):
+        for axis in self:
+            yield axis.name
+        # return self._axesNames
+    
+
     def addAxis(self, axis:dict):
         self.append(Axis(**axis))
+
+    def renameAxis(self, oldName, newName):
+        for axis in self:
+            if axis.name == oldName:
+                axis.name = newName
 
     def removeAxis(self, arg):
         if isinstance(arg, int):
             index = arg
         else:
-            index = self.index(arg)
+            index = 0
+            for i, x in enumerate(self):
+                if x.name == arg:
+                    index = i
         self.pop(index)
 
     def getList(self):
@@ -430,6 +445,15 @@ class VariationGlyphsInfos:
     # def layerName(self, name):
     #     self._layerName = name    
 
+    def renameAxis(self, oldName, newName):
+        if oldName not in self.location: return
+        newItems = {}
+        for k, v in self.location.items():
+            if k == oldName:
+                newItems[newName] = v
+        self.location = {**self.location, **newItems}
+        del self.location[oldName]
+
     def addLocation(self, name:str, position:float=.0):
         self.location[name] = position
 
@@ -458,20 +482,20 @@ class VariationGlyphs(list):
 
     def __init__(self, variationGlyphs=[]):
         for variation in variationGlyphs:
-            self.addAxis(variation)
+            self.addVariation(variation)
         # print("variationGlyphs", variationGlyphs)
 
     def _init_with_old_format(self, data):
         for k, v in data.items():
             variation = {"location": {k:v.get("maxValue")}, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
-            self.addAxis(variation)
+            self.addVariation(variation)
 
     # def __iter__(self):
     #     for x in super(VariationGlyphs, self).__iter__():
     #         # print(dir(x))
     #         yield x._toDict()
 
-    def addAxis(self, variation):
+    def addVariation(self, variation):
         self.append(VariationGlyphsInfos(**variation))
 
     # def __iter__(self):
@@ -486,12 +510,12 @@ class VariationGlyphs(list):
         return [x._toDict() for x in self]
         # return {x: getattr(self, x)._toDict() for x in vars(self)}  
     
-    def removeAxis(self, arg):
-        if isinstance(arg, int):
-            index = arg
-        else:
-            index = self.index(arg)
+    def removeAxis(self, index):
         self.pop(index)
+
+    def renameAxisInsideLocation(self, oldName, newName):
+        for variation in self:
+            variation.renameAxis(oldName, newName)
 
 ####################################
 
@@ -519,7 +543,7 @@ class VariationGlyphs(list):
 
     # @property
     def layerNames(self):
-        return [x["layerName"] for x in self]
+        return [x["layerName"] for x in self if x["layerName"]]
     
 
     @property

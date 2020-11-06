@@ -167,7 +167,7 @@ class CharacterGlyph(Glyph):
             self._axes = Axes()   
             self._glyphVariations = VariationGlyphs()
 
-    def duplicateSelectedElements(self):
+    def duplicateSelectedElements(self): # TODO
         for selectedElement in self._getSelectedElement():
             if selectedElement.get("name"):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
@@ -184,20 +184,28 @@ class CharacterGlyph(Glyph):
             self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
 
     def removeVariationAxis(self, name):
-        self._glyphVariations.removeAxis(name)
+        index = 0
+        for i, x in enumerate(self._axes):
+            if x.name == axisName:
+                index = i
+        self._glyphVariations.removeAxis(index)
+        self._axes.removeAxis(index)
 
     @glyphAddRemoveUndo
     def addDeepComponentNamed(self, deepComponentName, items = False):
         if not items:
             d = DeepComponentNamed(deepComponentName)
-            for axis in self.currentFont[deepComponentName]._glyphVariations.axes:
-                d.coord.add(axis, self.currentFont[deepComponentName]._glyphVariations[axis].minValue)
+            dcglyph = self.currentFont[deepComponentName]
+            for i, axis in enumerate(dcglyph._axes):
+                value = dcglyph._axes[i].minValue
+                d.coord.add(axis.name, value)
         else:
             d = items
             d.name = deepComponentName
 
         self._deepComponents.addDeepComponent(d)
-        self._glyphVariations.addDeepComponent(d)
+        if self._axes:
+            self._glyphVariations.addDeepComponent(d)
 
         # self.preview.computeDeepComponentsPreview(update = False)
         # self.preview.computeDeepComponents(update = False)
@@ -208,8 +216,9 @@ class CharacterGlyph(Glyph):
 
 
     def addCharacterGlyphNamedVariationToGlyph(self, name):
-        if name in self._glyphVariations.axes: return
-        self._glyphVariations.addAxis(name, self._deepComponents)
+        if name in self._axes: return
+        self._axes.addAxis({"name":name, "minValue":0, "maxValue":1})
+        self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{name:1}})
 
     @glyphAddRemoveUndo
     def removeDeepComponentAtIndexToGlyph(self):
