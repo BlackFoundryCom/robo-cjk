@@ -1052,15 +1052,15 @@ class Font():
                 for n in self.staticDeepComponentSet():
                     dcg = self.get(n)
                     for ae in dcg._deepComponents:
-                        if ae.name == oldName:
-                            ae.name = newName
+                        if ae["name"] == oldName:
+                            ae["name"] = newName
                 
             elif glyphType == "deepComponent":
                 for n in self.staticCharacterGlyphSet():
                     dcg = self.get(n)
                     for ae in dcg._deepComponents:
-                        if ae.name == oldName:
-                            ae.name = newName
+                        if ae["name"] == oldName:
+                            ae["name"] = newName
      
             with open(newPath, "w", encoding = "utf-8") as file:
                 file.write(txt)
