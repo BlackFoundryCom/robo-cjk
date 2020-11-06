@@ -608,6 +608,7 @@ class GlyphVariationAxesGroup(Group):
         super().__init__(posSize)
         self.RCJKI = RCJKI
         self.controller = controller
+        self.glyphtype = glyphtype
         self.glyphVariationsAxes = glyphVariationsAxes
         
         slider = SliderListCell(minValue = 0, maxValue = 1)
@@ -787,7 +788,8 @@ class GlyphVariationAxesGroup(Group):
             self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['Axis']
 
         self.RCJKI.currentGlyph.selectedElement = []
-        self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+        if self.glyphtype != "atomicElement":
+            self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
         self.RCJKI.updateDeepComponent(update = False)
