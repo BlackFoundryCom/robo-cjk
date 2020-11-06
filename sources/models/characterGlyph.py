@@ -113,6 +113,13 @@ class CharacterGlyph(Glyph):
             # self.frozenPreview.append(resultGlyph)
             yield resultGlyph
 
+        # if len(self._RGlyph):
+        #     layerGlyphs = []
+        #     for layerName in self._glyphVariations.layerNames():
+        #         layerGlyphs.append(font._RFont.getLayer(layerName)[self.name])
+        #     if len(layerGlyphs):
+        #         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
+        #         yield resultGlyph
             # g.draw(resultGlyph.getPen())
 
         # return resultGlyph
