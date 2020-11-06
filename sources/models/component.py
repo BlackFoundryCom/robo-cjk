@@ -461,12 +461,10 @@ class VariationGlyphsInfos:
         del self.location[name]
 
     def addDeepComponent(self, deepComponent):
-        for x in self.deepComponents:
-            x.addDeepComponent(deepComponent)
+        self.deepComponents.addDeepComponent(deepComponent)
 
     def removeDeepComponents(self, indexes):
-        for x in self.deepComponents:
-            x.removeDeepComponents(indexes)
+        self.deepComponents.removeDeepComponents(indexes)
 
     def __repr__(self):
         return str({x:getattr(self, x) for x in vars(self)})
@@ -524,7 +522,7 @@ class VariationGlyphs(list):
         Add a new component to the whole axes
         """
         for x in self:
-            x.addDeepComponent(deepComponent._unnamed())
+            x.addDeepComponent(DeepComponent(**deepComponent._unnamed()))
 
     def removeDeepComponents(self, indexes: list):
         """
