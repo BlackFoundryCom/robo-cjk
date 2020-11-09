@@ -430,6 +430,17 @@ class Font():
         elif glyphname in self.deepComponentSet:
             return "dcomponents"
 
+    def getGlyphFromLayer(self, name, layerName):
+        try:
+            return self._glyphs[self._RFont.getLayer(layerName)[name]]
+        except:
+            if self.mysqlFont:
+                self.getmySQLGlyph(name)
+            else:
+                self.getGlyph(name, font = self._fullRFont)
+                self.getGlyph(name)
+            return self._glyphs[self._RFont.getLayer(layerName)[name]]
+
     def __iter__(self):
         for name in self._RFont.keys():
             yield self[name]
