@@ -147,14 +147,14 @@ class Drawer():
                 mjdt.save()
                 mjdt.stroke(1, 0, 0, 1)
                 mjdt.strokeWidth(1*scale)
-                tx = atomicInstance.x+atomicInstance.rcenterx
-                ty = atomicInstance.y+atomicInstance.rcentery
+                tx = atomicInstance.x+atomicInstance.tcenterx
+                ty = atomicInstance.y+atomicInstance.tcentery
                 mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
                 mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
                 mjdt.stroke(None)
                 mjdt.fill(1, 0, 0, 1)
                 mjdt.fontSize(8*scale)
-                mjdt.textBox(f"{int(atomicInstance.rcenterx)} {int(atomicInstance.rcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
+                mjdt.textBox(f"{int(atomicInstance.tcenterx)} {int(atomicInstance.tcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
                 mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
 

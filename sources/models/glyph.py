@@ -153,26 +153,26 @@ class Glyph(RGlyph):
     #     self._RGlyph.markColor = value
     # def _transformGlyph(self, glyph, transform):
     #     glyph.scaleBy((transform["scalex"], transform["scaley"]))
-    #     glyph.rotateBy(transform["rotation"], (transform["rcenterx"], transform["rcentery"]))
+    #     glyph.rotateBy(transform["rotation"], (transform["tcenterx"], transform["tcentery"]))
     #     glyph.moveBy((transform["x"], transform["y"]))
     #     return glyph
 
-    # def makeTransform(self, x, y, rotation, scalex, scaley, rcenterx, rcentery, scaleUsesCenter=False):
+    # def makeTransform(self, x, y, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesCenter=False):
     #     rotation = math.radians(rotation)
     #     if not scaleUsesCenter:
-    #         rcenterx *= scalex
-    #         rcentery *= scaley
+    #         tcenterx *= scalex
+    #         tcentery *= scaley
     #         t = Transform()
-    #         t = t.translate(x + rcenterx, y + rcentery)
+    #         t = t.translate(x + tcenterx, y + tcentery)
     #         t = t.rotate(rotation)
-    #         t = t.translate(-rcenterx, -rcentery)
+    #         t = t.translate(-tcenterx, -tcentery)
     #         t = t.scale(scalex, scaley)
     #     else:
     #         t = Transform()
-    #         t = t.translate(x + rcenterx, y + rcentery)
+    #         t = t.translate(x + tcenterx, y + tcentery)
     #         t = t.rotate(rotation)
     #         t = t.scale(scalex, scaley)
-    #         t = t.translate(-rcenterx, -rcentery)
+    #         t = t.translate(-tcenterx, -tcentery)
     #     return t
 
     def _transformGlyph(self, glyph, transform):
@@ -313,14 +313,14 @@ class Glyph(RGlyph):
     def setTransformationCenterToSelectedElements(self, center):
         tx, ty = center
         for index in self.selectedElement:
-            self._deepComponents[index]["transform"]["rcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
-            self._deepComponents[index]["transform"]["rcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
+            self._deepComponents[index]["transform"]["tcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
+            self._deepComponents[index]["transform"]["tcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
             for variation in self._glyphVariations:
-                variation.deepComponents[index]["transform"]["rcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
-                variation.deepComponents[index]["transform"]["rcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
+                variation.deepComponents[index]["transform"]["tcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
+                variation.deepComponents[index]["transform"]["tcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
             # for variations in self._glyphVariations.values():
-            #     variations[index].rcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
-            #     variations[index].rcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
+            #     variations[index].tcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
+            #     variations[index].tcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point

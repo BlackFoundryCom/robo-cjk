@@ -19,22 +19,22 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 import math
 from fontTools.misc.transform import Transform
 
-def makeTransform(x, y, rotation, scalex, scaley, rcenterx, rcentery, scaleUsesCenter=True):
+def makeTransform(x, y, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesCenter=True):
     rotation = math.radians(rotation)
     if not scaleUsesCenter:
-        rcenterx *= scalex
-        rcentery *= scaley
+        tcenterx *= scalex
+        tcentery *= scaley
         t = Transform()
-        t = t.translate(x + rcenterx, y + rcentery)
+        t = t.translate(x + tcenterx, y + tcentery)
         t = t.rotate(rotation)
-        t = t.translate(-rcenterx, -rcentery)
+        t = t.translate(-tcenterx, -tcentery)
         t = t.scale(scalex, scaley)
     else:
         t = Transform()
-        t = t.translate(x + rcenterx, y + rcentery)
+        t = t.translate(x + tcenterx, y + tcentery)
         t = t.rotate(rotation)
         t = t.scale(scalex, scaley)
-        t = t.translate(-rcenterx, -rcentery)
+        t = t.translate(-tcenterx, -tcentery)
     return t
 
 def normalizedValue(v, minv, maxv):
