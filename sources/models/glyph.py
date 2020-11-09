@@ -26,7 +26,7 @@ from models import deepComponent, component
 # reload(component)
 import copy
 import math
-from fontTools.misc.transform import Transform
+# from fontTools.misc.transform import Transform
 
 # reload(deepComponent)
 DeepComponents = component.DeepComponents

@@ -276,8 +276,8 @@ class Transform(DictClass):
         """
         t = interpolation.makeTransform(self.x, self.y, self.rotation, self.scalex, self.scaley, self.rcenterx, self.rcentery, scaleUsesCenter=False)
         tmp = interpolation.makeTransform(self.x, self.y, self.rotation, self.scalex, self.scaley, self.rcenterx, self.rcentery, scaleUsesCenter=True)
-        self.x = x + t[4] - tmp[4]
-        self.y = y + t[5] - tmp[5]
+        self.x = self.x + t[4] - tmp[4]
+        self.y = self.y + t[5] - tmp[5]
         return self.x, self.y
 
 
@@ -378,7 +378,12 @@ class DeepComponents:
                 self._deepComponents.append(DeepComponent(**dict(deepComponent)))
 
     def _init_with_old_format(self, deepComponents:list = []):
-        self.__init__(deepComponents)
+        self._deepComponents = []
+        for deepComponent in deepComponents:
+            if deepComponent.get("name"):
+                self._deepComponents.append(DeepComponentNamed(**dict(deepComponent)))
+            else:
+                self._deepComponents.append(DeepComponent(**dict(deepComponent)))
         self._convertOffsetFromRCenterToTCenter()
 
     def add(self, name: str, items: dict = {}):
@@ -512,8 +517,9 @@ class VariationGlyphs(list):
     def _init_with_old_format(self, data):
         for k, v in data.items():
             variation = {"location": {k:v.get("maxValue")}, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
-            vgi = self.addVariation(variation)
-            vgi.deepComponents._convertOffsetFromRCenterToTCenter()
+            self.addVariation(variation)
+        for variation in self:
+            variation.deepComponents._convertOffsetFromRCenterToTCenter()
 
     # def __iter__(self):
     #     for x in super(VariationGlyphs, self).__iter__():
@@ -521,9 +527,7 @@ class VariationGlyphs(list):
     #         yield x._toDict()
 
     def addVariation(self, variation):
-        vgi = VariationGlyphsInfos(**variation)
-        self.append(vgi)
-        return vgi
+        self.append(VariationGlyphsInfos(**variation))
 
     # def __iter__(self):
     #     for x in self:

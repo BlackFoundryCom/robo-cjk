@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import math
+from fontTools.misc.transform import Transform
 
 def makeTransform(x, y, rotation, scalex, scaley, rcenterx, rcentery, scaleUsesCenter=True):
     rotation = math.radians(rotation)
