@@ -630,7 +630,7 @@ class GlyphPreviewCanvas(CanvasGroup):
                     color = (0, 0, 0, 1), 
                     strokecolor = (0, 0, 0, 0)
                     )
-        elif self.glyph.type != "atomicElement":
+        else:
             self.glyph.preview.computeDeepComponents(update = False)
             self.drawer.drawAxisPreview(
                 self.glyph, 
