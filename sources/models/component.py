@@ -266,7 +266,8 @@ class Transform(DictClass):
     def _normalizeRotation(self, rotation):
         r = rotation
         if r:
-            r = int(rotation%(360*rotation/abs(rotation)))
+            if abs(r) != 360:
+                r = int(rotation%(360*rotation/abs(rotation)))
         return r
 
     def convertOffsetFromRCenterToTCenter(self):
