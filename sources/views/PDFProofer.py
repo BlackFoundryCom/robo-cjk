@@ -949,12 +949,14 @@ class NewPDF:
                 try:
                     for variation in self.RCJKI.currentFont.fontVariations:
                         glyph1 = glyph
-                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
-                        glyph1.preview.variationPreview.removeOverlap()
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
-                        glyph1.preview.variationPreview.markColor = glyph1.markColor
-                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
+                        resultGlyph = []
+                        for c in glyph1.preview({variation:1}):
+                            c.markColor = glyph1.markColor
+                            c.name = glyph1.name
+                            resultGlyph.append(c)
+                        glyphsVariations[variation].append(resultGlyph)
 
                         drawDesignFrame()
                         if glyph1.markColor:
@@ -969,16 +971,19 @@ class NewPDF:
                         db.fill(1, 1, 1, 1)
                         db.stroke(0, 0, 0, 1)
                         db.strokeWidth(1)
-                        
-                        db.drawGlyph(glyph1.preview.variationPreview)
-                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 0)])
-                        glyph1.preview.variationPreview.removeOverlap()
+                        for c in resultGlyph:
+                            db.drawGlyph(c)
                         variation = "normal"
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
-                        glyph1.preview.variationPreview.markColor = glyph1.markColor
-                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
-                        db.drawGlyph(glyph1.preview.variationPreview)
+                        resultGlyph = []
+                        for c in glyph1.preview({variation:0}):
+                            c.markColor = glyph1.markColor
+                            c.name = glyph1.name
+                            resultGlyph.append(c)
+                        glyphsVariations[variation].append(resultGlyph)
+                        for c in resultGlyph:
+                            db.drawGlyph(c)
 
                         if (i+1)%4:
                             db.translate(1000, 0)
@@ -1009,20 +1014,22 @@ class NewPDF:
                 db.translate(tx, ty)
                 db.fontSize(60)
 
+                print(weight)
                 for i, glyph in enumerate(weight):
                     drawDesignFrame()
-                    if glyph.markColor:
-                        db.fill(*glyph.markColor)
+                    if glyph[0].markColor:
+                        db.fill(*glyph[0].markColor)
                     else:
                         db.fill(*INPROGRESS)
                     db.rect(0, 900, 250, 100)
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)                    
-                    db.textBox(glyph.name, (0, 900, 1000, 100), align = "center")
+                    db.textBox(glyph[0].name, (0, 900, 1000, 100), align = "center")
 
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)
-                    db.drawGlyph(glyph)
+                    for c in glyph:
+                        db.drawGlyph(c)
                     if (i+1)%4 :
                         db.translate(1000, 0)
                     else:
@@ -1140,7 +1147,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeVerSecLine(self, 
@@ -1159,7 +1166,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeHorGrid(self,
@@ -1179,7 +1186,7 @@ class DesignFrameDrawer:
             dist += h / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
 
     def _makeVerGrid(self,
                     glyph: RGlyph, 
@@ -1198,7 +1205,7 @@ class DesignFrameDrawer:
             dist += w / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
 
 
     def _findProximity(self, 
@@ -1232,7 +1239,7 @@ class DesignFrameDrawer:
 
             frame = self._getEmRatioFrame(self.controller.designFrame.characterFace, w, h, translateY)
             outside, inside = self.controller.designFrame.overshoot
-            # self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
+            self._makeOvershoot(RGlyph(), *frame, *self.controller.designFrame.overshoot, translateY)
 
         self._makeHorGrid(RGlyph(), *frame, translateY, step = 24)
         self._makeVerGrid(RGlyph(), *frame, translateY, step = 24)
