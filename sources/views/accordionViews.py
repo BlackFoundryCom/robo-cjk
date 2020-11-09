@@ -438,7 +438,8 @@ class RelatedGlyphsGroup(Group):
             for k, v in self.RCJKI.currentFont.dataBase.items():
                 if char in v:
                     self.relatedChars.add(k)
-        except: pass
+        except: 
+            char = self.RCJKI.currentGlyph.name
         self.filterCharacters()
         self.component.set(char)
 
@@ -922,6 +923,12 @@ class DeepComponentAxesGroup(Group):
             return
         newList = []
         minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
+        minV = min([minValue, maxValue])
+        maxV = max([minValue, maxValue])
+        if value < minV:
+            value = minV
+        elif value > maxV:
+            value = maxV
         for i, e in enumerate(self.deepComponentAxesList.get()):
             if i != sel[0]:
                 newList.append(e)

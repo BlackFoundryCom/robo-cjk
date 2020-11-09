@@ -107,7 +107,7 @@ class Font():
             styleName='Regular', 
             showUI = False
             )
-        # self._fullRFont.save(fontFilePath)
+        self._fullRFont.save(fontFilePath)
 
         self._glyphs = {}
         self._fullGlyphs = {}
