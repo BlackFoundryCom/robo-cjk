@@ -141,7 +141,8 @@ class DeepComponent(Glyph):
                 self._axes = Axes(axes)
                 self._glyphVariations = VariationGlyphs(variationGlyphs)
             else:
-                self._deepComponents = DeepComponents(deepComponents)
+                self._deepComponents = DeepComponents()
+                self._deepComponents._init_with_old_format(deepComponents)
                 self._axes = Axes()      
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()

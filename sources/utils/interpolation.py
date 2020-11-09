@@ -18,6 +18,24 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import math
 
+def makeTransform(x, y, rotation, scalex, scaley, rcenterx, rcentery, scaleUsesCenter=True):
+    rotation = math.radians(rotation)
+    if not scaleUsesCenter:
+        rcenterx *= scalex
+        rcentery *= scaley
+        t = Transform()
+        t = t.translate(x + rcenterx, y + rcentery)
+        t = t.rotate(rotation)
+        t = t.translate(-rcenterx, -rcentery)
+        t = t.scale(scalex, scaley)
+    else:
+        t = Transform()
+        t = t.translate(x + rcenterx, y + rcentery)
+        t = t.rotate(rotation)
+        t = t.scale(scalex, scaley)
+        t = t.translate(-rcenterx, -rcentery)
+    return t
+
 def normalizedValue(v, minv, maxv):
     return (v-minv)/(maxv-minv)
     

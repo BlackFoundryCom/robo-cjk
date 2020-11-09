@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from fontTools.pens.recordingPen import RecordingPen
+from utils import interpolation
 
 class DictClass:
 
@@ -263,6 +264,23 @@ class Transform(DictClass):
             r = int(rotation%(360*rotation/abs(rotation)))
         return r
 
+    def convertOffsetFromRCenterToTCenter(self):
+        """Take a set of transformation parameters that use a center only for rotation
+        ("rcenter"), and return the new x, y offset for the equivalent transform that
+        uses a center for rotation and scaling ("tcenter"), so that
+
+            t1 = makeTransform(x, y, rotation, scalex, scaley, rcenterx, rcentery)
+            t2 = makeTransform(newx, newy, rotation, scalex, scaley, rcenterx, rcentery, scaleUsesCenter=True)
+
+        return the same transformation (bar floating point rounding errors).
+        """
+        t = interpolation.makeTransform(self.x, self.y, self.rotation, self.scalex, self.scaley, self.rcenterx, self.rcentery, scaleUsesCenter=False)
+        tmp = interpolation.makeTransform(self.x, self.y, self.rotation, self.scalex, self.scaley, self.rcenterx, self.rcentery, scaleUsesCenter=True)
+        self.x = x + t[4] - tmp[4]
+        self.y = y + t[5] - tmp[5]
+        return self.x, self.y
+
+
 class DeepComponent(DictClass):
 
     def __init__(self, 
@@ -359,6 +377,10 @@ class DeepComponents:
             else:
                 self._deepComponents.append(DeepComponent(**dict(deepComponent)))
 
+    def _init_with_old_format(self, deepComponents:list = []):
+        self.__init__(deepComponents)
+        self._convertOffsetFromRCenterToTCenter()
+
     def add(self, name: str, items: dict = {}):
         """
         Add new deep component
@@ -392,6 +414,10 @@ class DeepComponents:
         Add new deep component 
         """
         self.addDeepComponent(item)
+
+    def _convertOffsetFromRCenterToTCenter(self):
+        for deepComponent in self._deepComponents:
+            deepComponent.transform.convertOffsetFromRCenterToTCenter()
 
     def __repr__(self):
         return str(self._deepComponents)
@@ -468,7 +494,7 @@ class VariationGlyphsInfos:
 
     def __repr__(self):
         return str({x:getattr(self, x) for x in vars(self)})
-        return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
+        # return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
     def _toDict(self):
         return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList()}
@@ -486,7 +512,8 @@ class VariationGlyphs(list):
     def _init_with_old_format(self, data):
         for k, v in data.items():
             variation = {"location": {k:v.get("maxValue")}, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
-            self.addVariation(variation)
+            vgi = self.addVariation(variation)
+            vgi.deepComponents._convertOffsetFromRCenterToTCenter()
 
     # def __iter__(self):
     #     for x in super(VariationGlyphs, self).__iter__():
@@ -494,7 +521,9 @@ class VariationGlyphs(list):
     #         yield x._toDict()
 
     def addVariation(self, variation):
-        self.append(VariationGlyphsInfos(**variation))
+        vgi = VariationGlyphsInfos(**variation)
+        self.append(vgi)
+        return vgi
 
     # def __iter__(self):
     #     for x in self:
