@@ -106,6 +106,7 @@ class CharacterGlyph(Glyph):
             name = dc.get("name")
             position = dc.get("coord")
             resultGlyph = RCJKGlyph(**dc.get("transform"))
+            if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
             g = font[name].preview(position, font)
             for c in g:
                 c.draw(resultGlyph.getPen())
