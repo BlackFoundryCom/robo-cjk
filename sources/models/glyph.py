@@ -187,7 +187,8 @@ class Glyph(RGlyph):
     def getLocation(self):
         loc = {}
         if self.selectedSourceAxis:
-            loc = {self.selectedSourceAxis:1}
+            axis = self._axes.get(self.selectedSourceAxis)
+            loc = {self.selectedSourceAxis:axis.maxValue}
         return loc
 
     def normalizedValueToMinMaxValue(self, loc):

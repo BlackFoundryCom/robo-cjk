@@ -770,7 +770,7 @@ class GlyphVariationAxesGroup(Group):
             # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
-        elif edited[0] in [1, 3]: #change min/max value
+        elif (edited[0] in [1, 3] and self.glyphtype != "atomicElement") or (edited[0] in [2, 4] and self.glyphtype == "atomicElement"): #change min/max value
             self.RCJKI.currentGlyph._axes.get(axis).minValue = minValue
             self.RCJKI.currentGlyph._axes.get(axis).maxValue = maxValue
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
