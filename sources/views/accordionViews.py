@@ -1029,6 +1029,49 @@ class DeepComponentAxesGroup(Group):
         elif self.RCJKI.isCharacterGlyph:
             self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
 
+class DeepComponentListGroup(Group):
+
+    def __init__(self, posSize, RCJKI):
+        super().__init__(posSize)
+        self.RCJKI = RCJKI
+
+        checkbox = CheckBoxListCell()
+        self.deepComponentList = List(
+            (0, 25, -0, -20), 
+            [], 
+            columnDescriptions = [
+                    {"title": "select", "editable": True, "width": 40, "cell":checkbox},
+                    {"title": "name", "editable": False}],
+            editCallback = self.deepComponentListEditCallback,
+            drawFocusRing = False,
+            showColumnTitles = False
+            )
+        self.setList()
+
+        self.addDeepComponentButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addDeepComponentButtonCallback)
+        self.removeDeepComponentButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeDeepComponentButtonCallback)
+
+    def setList(self):
+        self.deepComponentsNames = [dict(name=x.get("name"), select = i in self.RCJKI.currentGlyph.selectedElement) for i, x in enumerate(self.RCJKI.currentGlyph._deepComponents)]
+        self.deepComponentList.set(self.deepComponentsNames)
+
+    def deepComponentListEditCallback(self, sender):
+        self.RCJKI.currentGlyph.selectedElement = [i for i, x in enumerate(sender.get()) if x["select"]]
+        self.RCJKI.updateDeepComponent()
+
+    def addDeepComponentButtonCallback(self, sender):
+        if self.RCJKI.isDeepComponent:
+            self.RCJKI.addAtomicElement(None)
+        elif self.RCJKI.isCharacterGlyph:
+            self.RCJKI.addDeepComponent(None)
+
+    def removeDeepComponentButtonCallback(self, sender):
+        if self.RCJKI.isDeepComponent:
+            self.RCJKI.removeAtomicElement(None)
+        elif self.RCJKI.isCharacterGlyph:
+            self.RCJKI.removeDeepComponent(None)
+
+
 from utils import colors
 INPROGRESS = colors.INPROGRESS
 CHECKING1 = colors.CHECKING1
@@ -1191,6 +1234,7 @@ class CharacterGlyphInspector(Inspector):
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, deepComponentAxes)
+        self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
@@ -1198,6 +1242,7 @@ class CharacterGlyphInspector(Inspector):
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
                        dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
+                       dict(label="Deep component list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]
 
@@ -1218,6 +1263,7 @@ class DeepComponentInspector(Inspector):
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
+        self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
         self.transformationItem = TransformationGroup((0, 0, -0, -0), self.RCJKI, self)
 
@@ -1226,6 +1272,7 @@ class DeepComponentInspector(Inspector):
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
+                       dict(label="Atomic element list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
                        dict(label="Transformation", view=self.transformationItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]

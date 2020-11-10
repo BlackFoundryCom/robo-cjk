@@ -186,6 +186,7 @@ class SelectAtomicElementSheet():
         if self.atomicElementName is None: return
         self.RCJKI.currentGlyph.addAtomicElementNamed(self.atomicElementName)
         self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.glyphInspectorWindow.deepComponentListItem.setList()
 
     def draw(self):
         if self.previewGlyph is None: return
@@ -310,6 +311,7 @@ class SelectDeepComponentSheet():
     def addDeepComponentList(self, sender):
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
         self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.glyphInspectorWindow.deepComponentListItem.setList()
 
     def draw(self):
         if self.glyph is None: return

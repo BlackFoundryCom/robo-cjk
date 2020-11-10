@@ -486,6 +486,8 @@ class RoboCJKController(object):
         else:
             self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
             addObserver(self, 'mouseDragged', 'mouseDragged')
+        if not self.isAtomic:
+            self.glyphInspectorWindow.deepComponentListItem.setList()
 
     def mouseDragged(self, point):
         try:
@@ -523,6 +525,8 @@ class RoboCJKController(object):
                 element.deepComponentName.set(data[self.currentGlyph.selectedElement[0]].name)
         self.sliderValue = None
 
+        
+
     @refresh
     def mouseUp(self, info):
         removeObserver(self, 'mouseDragged')
@@ -538,6 +542,8 @@ class RoboCJKController(object):
             )
         if self.currentGlyph.selectedElement:
             self.setListWithSelectedElement()
+        if not self.isAtomic:
+            self.glyphInspectorWindow.deepComponentListItem.setList()
     
     def doUndo(self):
         def _getKeys(glyph):
@@ -671,15 +677,18 @@ class RoboCJKController(object):
         self.currentGlyph.removeAtomicElementAtIndex()
         self.currentViewSliderList.deepComponentAxesList.set([])
         self.updateDeepComponent()
+        self.glyphInspectorWindow.deepComponentListItem.setList()
 
     def removeDeepComponent(self, sender):
         self.currentGlyph.removeDeepComponentAtIndexToGlyph()
         self.currentViewSliderList.deepComponentAxesList.set([])
         self.updateDeepComponent()
+        self.glyphInspectorWindow.deepComponentListItem.setList()
 
     def importDeepComponentFromAnotherCharacterGlyph(self, sender):
         self.importDCFromCG = roboCJKView.ImportDeepComponentFromAnotherCharacterGlyph(self)
         self.importDCFromCG.open()
+        self.glyphInspectorWindow.deepComponentListItem.setList()
 
     @lockedProtect
     @refresh
