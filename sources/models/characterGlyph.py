@@ -89,7 +89,7 @@ class CharacterGlyph(Glyph):
 
         model = VariationModel(locations)
         masterDeepComponents = self._deepComponents
-        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList()]
+        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")]
 
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):

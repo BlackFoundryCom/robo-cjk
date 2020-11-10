@@ -465,11 +465,13 @@ class DeepComponents:
 
 class VariationGlyphsInfos:
 
-    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}):
+    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}, axisName: str = "", on: bool = 1):
         # print("_init_ variation glyphs", location, layerName, deepComponents)
         self.location = MathDict(location) #location is a dict specifiying the design space location {"wght":1, "wdth":1}
         self.layerName = layerName
         self.deepComponents = DeepComponents(deepComponents)
+        self.axisName = axisName
+        self.on = on
 
         # print(self.location)
         # print(self.layerName)
@@ -486,6 +488,12 @@ class VariationGlyphsInfos:
     # @layerName.setter
     # def layerName(self, name):
     #     self._layerName = name    
+
+    def activate(self):
+        self.on = True
+
+    def desactivate(self):
+        self.on = False
 
     def renameAxis(self, oldName, newName):
         if oldName not in self.location: return
@@ -513,7 +521,7 @@ class VariationGlyphsInfos:
         # return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
     def _toDict(self):
-        return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList()}
+        return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "axisName":self.axisName, "on":self.on}
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -559,8 +567,6 @@ class VariationGlyphs(list):
         for variation in self:
             variation.renameAxis(oldName, newName)
 
-####################################
-
     def addDeepComponent(self, deepComponent):
         """
         Add a new component to the whole axes
@@ -577,8 +583,19 @@ class VariationGlyphs(list):
         for x in self:
             x.removeDeepComponents(indexes)
 
-   
+    def activateSource(self, index):
+        self[index].activate()
 
+    def activateSources(self, indexes: list):
+        for index in indexes:
+            self.activateSource(index)
+
+    def desactivateSource(self, index):
+        self[index].desactivate()
+
+    def desactivateSources(self, indexes: list):
+        for index in indexes:
+            self.desactivateSource(index)
 
     # def __repr__(self):
     #     return str(self.getList())
