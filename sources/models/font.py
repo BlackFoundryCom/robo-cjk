@@ -806,16 +806,16 @@ class Font():
             self.addGlyph(new_glyph, newFileName, "foreground")
             self.addGlyph(new_glyph, newFileName, "foreground", font = self._fullRFont)
 
-            for _, layers, _ in os.walk(os.path.join(self.fontPath, glyphType)):
-                for layer in layers:
-                    layerDirectory = os.path.join(self.fontPath, glyphType, layer)
-                    if "%s.glif"%filename in os.listdir(layerDirectory) and "%s.glif"%newFileName not in os.listdir(layerDirectory):
-                        layerGlyphPath = os.path.join(layerDirectory, "%s.glif"%filename)
-                        newLayerGlyphPath = os.path.join(layerDirectory, "%s.glif"%newFileName)
+            for layerPath in [ f.path for f in os.scandir(os.path.join(self.fontPath, glyphType)) if f.is_dir() ]:
+                layerName = os.path.basename(layerPath)
+                listdir = set(os.listdir(layerPath))
+                if set(["%s.glif"%filename])&listdir and not set(["%s.glif"%newFileName])&listdir:
+                    layerGlyphPath = os.path.join(layerPath, "%s.glif"%filename)
+                    newLayerGlyphPath = os.path.join(layerPath, "%s.glif"%newFileName)
 
-                        self.duplicateGLIF(glyphName, layerGlyphPath, newGlyphName, newLayerGlyphPath)
-                        self.addGlyph(new_glyph, newFileName, layer)
-                        self.addGlyph(new_glyph, newFileName, layer, font = self._fullRFont)
+                    self.duplicateGLIF(glyphName, layerGlyphPath, newGlyphName, newLayerGlyphPath)
+                    self.addGlyph(new_glyph, newFileName, layerName)
+                    self.addGlyph(new_glyph, newFileName, layerName, font = self._fullRFont)
 
             self.getGlyph(self[newGlyphName])
             self.getGlyph(self[newGlyphName], font = self._fullRFont)

@@ -1571,10 +1571,6 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
     def duplicateAtomicElementCallback(self, sender):
-        PostBannerNotification(
-                'Impossible', "There is a bug on this function, not fixed yet"
-                )
-        return
         newGlyphName = self._duplicateGlyph(self.w.atomicElement, self.RCJKI.currentFont.atomicElementSet)
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
