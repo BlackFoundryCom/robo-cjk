@@ -122,7 +122,6 @@ class DeepComponent(Glyph):
         return self._glyphVariations
     
     def _initWithLib(self, lib=None):
-        # print("_initWithLib", self.name, lib)
         try:
             if lib:
                 if variationGlyphsKey not in lib.keys():
@@ -131,6 +130,7 @@ class DeepComponent(Glyph):
                 else:
                     deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[variationGlyphsKey]
+                hasAxisKey = axesKey in lib.keys()
                 axes = lib.get(axesKey)
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys():
@@ -139,8 +139,9 @@ class DeepComponent(Glyph):
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
+                hasAxisKey = axesKey in self._RGlyph.lib.keys()
                 axes = self._RGlyph.lib.get(axesKey)
-            if axes:
+            if hasAxisKey:
                 self._deepComponents = DeepComponents(deepComponents)
                 self._axes = Axes(axes)
                 self._glyphVariations = VariationGlyphs(variationGlyphs)
@@ -151,7 +152,7 @@ class DeepComponent(Glyph):
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(variationGlyphs)
-        except:
+        except Exception as e:
             self._deepComponents = DeepComponents()
             self._axes = Axes()  
             self._glyphVariations = VariationGlyphs()

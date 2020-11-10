@@ -153,6 +153,7 @@ class CharacterGlyph(Glyph):
                 else:
                     deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[variationGlyphsKey]
+                hasAxisKey = axesKey in lib.keys()
                 axes = lib.get(axesKey)
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
@@ -161,8 +162,9 @@ class CharacterGlyph(Glyph):
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
+                hasAxisKey = axesKey in self._RGlyph.lib.keys()
                 axes = self._RGlyph.lib.get(axesKey)
-            if axes:
+            if hasAxisKey:
                 self._deepComponents = DeepComponents(deepComponents)
                 self._axes = Axes(axes)
                 self._glyphVariations = VariationGlyphs(variationGlyphs)
@@ -173,11 +175,6 @@ class CharacterGlyph(Glyph):
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(variationGlyphs)
-
-            # if glyphVariationsKey in lib:
-            #     del lib[glyphVariationsKey]
-            # if glyphVariationsKey in self._RGlyph.lib:
-            #     del self._RGlyph.lib[glyphVariationsKey]
         except:
             self._deepComponents = DeepComponents()
             self._axes = Axes()   
