@@ -121,7 +121,9 @@ class CharacterGlyph(Glyph):
             for layerName in layerNames:
                 try:
                     g = font._RFont.getLayer(layerName)[self.name]
-                except: continue
+                except Exception as e: 
+                    print(e)
+                    continue
                 layerGlyphs.append(g)
             if len(layerGlyphs):
                 resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])

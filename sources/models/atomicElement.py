@@ -66,6 +66,11 @@ class AtomicElement(Glyph):
         model = VariationModel(locations)
         layerGlyphs = []
         for variation in self._glyphVariations.getList():
+            try:
+                g = font._RFont.getLayer(variation["layerName"])[self.name]
+            except Exception as e: 
+                print(e)
+                continue
             layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[self.name])
         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
         # resultGlyph.removeOverlap()
