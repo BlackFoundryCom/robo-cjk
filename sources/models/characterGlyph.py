@@ -104,10 +104,10 @@ class CharacterGlyph(Glyph):
             font = self.getParent()
         for i, dc in enumerate(result):
             name = dc.get("name")
-            position = dc.get("coord")
+            pos = dc.get("coord")
             resultGlyph = RCJKGlyph(**dc.get("transform"))
             if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
-            g = font[name].preview(position, font)
+            g = font[name].preview(pos, font)
             for c in g:
                 c.draw(resultGlyph.getPen())
             self._transformGlyph(resultGlyph, dc.get("transform"))
@@ -115,13 +115,17 @@ class CharacterGlyph(Glyph):
             # self.frozenPreview.append(resultGlyph)
             yield resultGlyph
 
-        # if len(self._RGlyph):
-        #     layerGlyphs = []
-        #     for layerName in self._glyphVariations.layerNames():
-        #         layerGlyphs.append(font._RFont.getLayer(layerName)[self.name])
-        #     if len(layerGlyphs):
-        #         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
-        #         yield resultGlyph
+        if len(self._RGlyph):
+            layerGlyphs = []
+            layerNames = self._axes.names
+            for layerName in layerNames:
+                try:
+                    g = font._RFont.getLayer(layerName)[self.name]
+                except: continue
+                layerGlyphs.append(g)
+            if len(layerGlyphs):
+                resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
+                yield resultGlyph
             # g.draw(resultGlyph.getPen())
 
         # return resultGlyph
