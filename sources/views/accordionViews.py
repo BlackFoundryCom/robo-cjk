@@ -601,6 +601,110 @@ class SelectFontVariationSheet():
         
     def closeSheet(self, sender):
         self.w.close()
+
+class AxesGroup(Group):
+
+    def __init__(self, posSize, RCJKI, controller, glyphtype, axes = []):
+        super().__init__(posSize)
+        self.RCJKI = RCJKI
+        self.controller = controller
+        self.glyphtype = glyphtype
+        self.axes = axes
+
+        self.axes = [dict(Axis=x.name, MinValue=x.minValue, PreviewValue=0, MaxValue=x.maxValue) for x in self.RCJKI.currentGlyph._axes]
+
+        slider = SliderListCell(minValue = 0, maxValue = 1)
+        self.axesList = List((0, 0, -0, -20),
+            self.axes,
+            columnDescriptions = [
+                    {"title": "Axis", "editable": True, "width": 100},
+                    {"title": "MinValue", "editable": True, "width": 40},
+                    {"title": "PreviewValue", "cell": slider},
+                    {"title": "MaxValue", "editable": True, "width": 40}
+                    ],
+            selectionCallback = self.axesListSelectionCallback,
+            editCallback = self.axesListEditCallback,
+            doubleClickCallback = self.axesListDoubleClickCallback,
+            drawFocusRing = False,
+            showColumnTitles = False
+                    )
+
+        self.addAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addAxisButtonCallback)
+        self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
+
+    def axesListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            return
+
+    def axesListEditCallback(self, sender):
+        pass
+
+    def axesListDoubleClickCallback(self, sender):
+        pass
+
+    def addAxisButtonCallback(self, sender):
+        pass
+
+    def removeAxisButtonCallback(self, sender):
+        pass
+
+class SourcesGroup(Group):
+
+    def __init__(self, posSize, RCJKI, controller, glyphtype, sources):
+        super().__init__(posSize)
+        self.RCJKI = RCJKI
+        self.controller = controller
+        self.glyphtype = glyphtype
+        self.sources = sources
+
+        self.sources = [{"On/Off":x.on, "name":x.axisName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+        for i, source in enumerate(self.sources):
+            source.update(self.RCJKI.currentGlyph._glyphVariations[i].location)
+        # self.sources = [{"On/Off":x.on, "name":x.axisName, **x.location} for x in self.RCJKI.currentGlyph._glyphVariations]
+
+        checkbox = CheckBoxListCell()
+        listDescription = [
+                    {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox},
+                    {"title": "name", "editable": True, "width": 120},
+                    *[dict(title=x.name, editable = True, width = 60) for x in self.RCJKI.currentGlyph._axes]
+                    ]
+        if self.RCJKI.currentGlyph.type == "atomicElement":
+            listDescription = [
+                    {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox},
+                    {"title": "layerName", "editable": True, "width": 120},
+                    *[dict(title=x.name, editable = True, width = 60) for x in self.RCJKI.currentGlyph._axes]
+                    ]
+
+        self.sourcesList = List((0, 0, -0, -20),
+            self.sources,
+            columnDescriptions = listDescription,
+            selectionCallback = self.sourcesListSelectionCallback,
+            editCallback = self.sourcesListEditCallback,
+            doubleClickCallback = self.sourcesListDoubleClickCallback,
+            drawFocusRing = False,
+            showColumnTitles = True
+            )
+
+        self.addSourceButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addSourceButtonCallback)
+        self.removeSourceButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeSourceButtonCallback)
+
+    def sourcesListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            return
+
+    def sourcesListEditCallback(self, sender):
+        pass
+
+    def sourcesListDoubleClickCallback(self, sender):
+        pass
+
+    def addSourceButtonCallback(self, sender):
+        pass
+
+    def removeSourceButtonCallback(self, sender):
+        pass
         
 class GlyphVariationAxesGroup(Group):
     
@@ -1222,7 +1326,7 @@ class Inspector:
 
 class CharacterGlyphInspector(Inspector):
 
-    def __init__(self, RCJKI, glyphVariationsAxes = [], deepComponentAxes = []):
+    def __init__(self, RCJKI, glyphVariationsAxes = [], deepComponentAxes = [], axes = []):
         self.RCJKI = RCJKI
         self.glyphVariationsAxes = glyphVariationsAxes
         self.deepComponentAxes = deepComponentAxes
@@ -1232,6 +1336,10 @@ class CharacterGlyphInspector(Inspector):
         
         self.compositionRulesItem = CompositionRulesGroup((0, 0, -0, -0), self.RCJKI, self)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
+
+        self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, deepComponentAxes)
         self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
@@ -1240,6 +1348,10 @@ class CharacterGlyphInspector(Inspector):
         descriptions = [
                        dict(label="Composition Rules", view=self.compositionRulesItem, size=100, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
+
+                       dict(label="Font axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
+
                        dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
@@ -1253,7 +1365,7 @@ class CharacterGlyphInspector(Inspector):
         
 class DeepComponentInspector(Inspector):
 
-    def __init__(self, RCJKI, glyphVariationsAxes = [], atomicElementAxes = []):
+    def __init__(self, RCJKI, glyphVariationsAxes = [], atomicElementAxes = [], axes = []):
         self.RCJKI = RCJKI
         self.w = Window((0, 0, 300, 870), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
@@ -1261,6 +1373,10 @@ class DeepComponentInspector(Inspector):
         
         self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -0, -0), self.RCJKI, self)
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
+
+        self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
         self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
@@ -1270,6 +1386,10 @@ class DeepComponentInspector(Inspector):
         descriptions = [
                        dict(label="Related glyphs", view=self.relatedGlyphsItem, size=140, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
+
+                       dict(label="Glyph axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
+
                        dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Atomic element list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
@@ -1284,18 +1404,26 @@ class DeepComponentInspector(Inspector):
         
 class AtomicElementInspector(Inspector):
 
-    def __init__(self, RCJKI, glyphVariationsAxes = []):
+    def __init__(self, RCJKI, glyphVariationsAxes = [], axes = []):
         self.RCJKI = RCJKI
         self.w = Window((0, 0, 300, 600), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "atomicElement"
         
         self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
+
+        self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+
         self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "atomicElement", glyphVariationsAxes)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
+
+                       dict(label="Glyph axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
+
                        dict(label="Atomic element axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]
