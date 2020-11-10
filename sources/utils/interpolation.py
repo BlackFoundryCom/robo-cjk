@@ -40,7 +40,7 @@ def makeTransform(x, y, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesC
 def normalizedValue(v, minv, maxv):
     return (v-minv)/(maxv-minv)
     
-# def deepdeepolation(masterDeepComponent, sourceDeepComponents, deepComponentAxisInfos={}):
+# def deepinterpolation(masterDeepComponent, sourceDeepComponents, deepComponentAxisInfos={}):
 #     deepComponentAxisInfos = {k:normalizedValue(v, sourceDeepComponents[k].minValue, sourceDeepComponents[k].maxValue) for k, v in deepComponentAxisInfos.items()}
 
 #     deltaDC = []
@@ -90,7 +90,7 @@ def normalizedValue(v, minv, maxv):
         
 # from fontTools.ufoLib.pointPen import PointToSegmentPen
 
-# def deepolation(newGlyph, masterGlyph, layersInfo = {}, axisMinValue = 0., axisMaxValue = 1.):
+# def interpolation(newGlyph, masterGlyph, layersInfo = {}, axisMinValue = 0., axisMaxValue = 1.):
 #     if not deepCompatible(masterGlyph, list(layersInfo.keys())):
 #         return None
 #     pen = PointToSegmentPen(newGlyph.getPen())

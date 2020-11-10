@@ -125,7 +125,7 @@ class RoboCJKController(object):
         self.gitHostLockerPassword = ''
         self.privateLocker = True
         self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition, (0, 180, 1000, 600))
-        self.drawOnlyDeepolation = False
+        self.drawOnlyInterpolation = False
         self.textCenterWindows = []
         # self.teamManager = teamManager.TeamManagerController(self)
         self.locked = False
@@ -446,7 +446,7 @@ class RoboCJKController(object):
         if hasattr(self.currentGlyph, 'type'):
             self.drawer.draw(
                 notification,
-                onlyPreview = self.drawOnlyDeepolation
+                onlyPreview = self.drawOnlyInterpolation
                 )
 
     def observerDrawPreview(self, notification):
@@ -454,7 +454,7 @@ class RoboCJKController(object):
         self.drawer.draw(
             notification, 
             customColor=(0, 0, 0, 1), 
-            onlyPreview = self.drawOnlyDeepolation
+            onlyPreview = self.drawOnlyInterpolation
             )
 
     @refresh

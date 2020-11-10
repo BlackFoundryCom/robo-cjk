@@ -507,12 +507,12 @@ class PreviewGroup(Group):
             sizeStyle = "small",
             callback = self.roundToGridCheckBoxCallback
             )
-        self.drawOnlyDeepolationCheckBox = CheckBox(
+        self.drawOnlyInterpolationCheckBox = CheckBox(
             (125, -20, 140, 20), 
-            "Draw only deepolation", 
-            value = self.RCJKI.drawOnlyDeepolation, 
+            "Draw only interpolation", 
+            value = self.RCJKI.drawOnlyInterpolation, 
             sizeStyle = "small",
-            callback = self.drawOnlyDeepolationCheckBoxCallback)
+            callback = self.drawOnlyInterpolationCheckBoxCallback)
 
         self.glyphwidth = self.RCJKI.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
         
@@ -521,8 +521,8 @@ class PreviewGroup(Group):
         self.RCJKI.updateDeepComponent(update = False)
     
     @refresh    
-    def drawOnlyDeepolationCheckBoxCallback(self, sender):
-        self.RCJKI.drawOnlyDeepolation = sender.get()
+    def drawOnlyInterpolationCheckBoxCallback(self, sender):
+        self.RCJKI.drawOnlyInterpolation = sender.get()
         
     def draw(self):
         try:

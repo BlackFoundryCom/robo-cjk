@@ -209,7 +209,7 @@ class Movie:
                     
                 # # d = {l:rands[j][g]/1000 for (j, l) in enumerate(axes)}
 
-                # # glyph = deepolation(NewFont().newGlyph('temp'), ufo[gname], layersInfo = d)
+                # # glyph = interpolation(NewFont().newGlyph('temp'), ufo[gname], layersInfo = d)
                 # # glyph = self.RCJKI.currentFont.get(gname)
                 # glyph.preview.computeDeepComponentsPreview(ld)
                 #########
