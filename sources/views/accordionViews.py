@@ -770,11 +770,11 @@ class GlyphVariationAxesGroup(Group):
             # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
-        elif edited[0] in [1, 3]:
-            self.RCJKI.currentGlyph._glyphVariations[axis].minValue = minValue
-            self.RCJKI.currentGlyph._glyphVariations[axis].maxValue = maxValue
+        elif edited[0] in [1, 3]: #change min/max value
+            self.RCJKI.currentGlyph._axes.get(axis).minValue = minValue
+            self.RCJKI.currentGlyph._axes.get(axis).maxValue = maxValue
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
-        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(x["PreviewValue"], x["MinValue"], x["MaxValue"])} for x in sender.get()]
+        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in sender.get()]
         # self.RCJKI.currentGlyph.sourcesList = sender.get()
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()

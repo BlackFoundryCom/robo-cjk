@@ -76,7 +76,7 @@ class DeepComponent(Glyph):
         if not position:
             position = self.getLocation()
         # print(position, "\n")
-        # position = self.normalizedValueToMinMaxValue(position)
+        position = self.normalizedValueToMinMaxValue(position)
         # print(position, "\n----------\n")
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations])

@@ -83,7 +83,7 @@ class CharacterGlyph(Glyph):
     def preview(self, position:dict={}, font = None):
         if not position:
             position = self.getLocation()
-        # position = self.normalizedValueToMinMaxValue(position)
+        position = self.normalizedValueToMinMaxValue(position)
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations])
 

@@ -1,4 +1,4 @@
 connectors.cfg
-dev_rcjk2mysql
+# dev_rcjk2mysql
 # dev_rcjk2mysql/*
 __pycache__

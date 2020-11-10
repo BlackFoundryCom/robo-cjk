@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 import sys, os
 
 from controllers import roboCJK
-sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
+# sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
 
 RCJKI = roboCJK.RoboCJKController()
 RCJKI._launchInterface()
