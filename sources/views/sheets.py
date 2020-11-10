@@ -25,6 +25,7 @@ from utils import files, interpolation
 from AppKit import NumberFormatter, NSColor
 from mojo.UI import PostBannerNotification
 from mojo.extensions import getExtensionDefault, setExtensionDefault
+from mojo.UI import SetCurrentLayerByName
 
 import json, os
 blackrobocjk_locker = "com.black-foundry.blackrobocjk_locker"
@@ -91,10 +92,13 @@ class SelectLayerSheet():
     def addLayer(self, sender):
         newAxisName = self.sheet.newAxisNameEditText.get()
         newLayerName = self.sheet.layerList.get()[self.sheet.layerList.getSelection()[0]]
-        if newAxisName in self.RCJKI.currentGlyph._glyphVariations.axes:
+
+        currentGlyph = self.RCJKI.currentFont.getGlyphFromLayer(self.RCJKI.currentGlyph.name, "foreground")
+        if newAxisName in currentGlyph._axes.names:
             PostBannerNotification('Impossible', "Layer name already exist")
             return
-        self.RCJKI.currentGlyph.addGlyphVariation(newAxisName, newLayerName)
+        SetCurrentLayerByName("foreground")
+        currentGlyph.addGlyphVariation(newAxisName, newLayerName)
         self.RCJKI.updateListInterface()
         self.RCJKI.updateDeepComponent(update = False)
         self.sheet.close()

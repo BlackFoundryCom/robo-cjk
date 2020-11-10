@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from fontTools.pens.recordingPen import RecordingPen
+from utils import interpolation
 
 class DictClass:
 
@@ -237,8 +238,8 @@ class Coord(DictClass):
 class Transform(DictClass):
 
     def __init__(self, 
-            rcenterx: int = 0,
-            rcentery: int = 0,
+            tcenterx: int = 0,
+            tcentery: int = 0,
             rotation: int = 0,
             scalex: int = 1,
             scaley: int = 1,
@@ -249,19 +250,42 @@ class Transform(DictClass):
         super().__init__()
         # for k, v in kwargs.items():
         #     setattr(self, k, v)
-        self.rcenterx = rcenterx
-        self.rcentery = rcentery
+        self.tcenterx = tcenterx
+        self.tcentery = tcentery
         self.rotation = self._normalizeRotation(rotation)
         self.scalex = scalex
         self.scaley = scaley
         self.x = x
         self.y = y
+        for k, v in kwargs.items():
+            if k == "rcenterx":
+                self.tcenterx = v
+            elif k == "rcentery":
+                self.tcentery = v
 
     def _normalizeRotation(self, rotation):
         r = rotation
         if r:
-            r = int(rotation%(360*rotation/abs(rotation)))
+            if abs(r) != 360:
+                r = int(rotation%(360*rotation/abs(rotation)))
         return r
+
+    def convertOffsetFromRCenterToTCenter(self):
+        """Take a set of transformation parameters that use a center only for rotation
+        ("rcenter"), and return the new x, y offset for the equivalent transform that
+        uses a center for rotation and scaling ("tcenter"), so that
+
+            t1 = makeTransform(x, y, rotation, scalex, scaley, tcenterx, tcentery)
+            t2 = makeTransform(newx, newy, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesCenter=True)
+
+        return the same transformation (bar floating point rounding errors).
+        """
+        t = interpolation.makeTransform(self.x, self.y, self.rotation, self.scalex, self.scaley, self.tcenterx, self.tcentery, scaleUsesCenter=False)
+        tmp = interpolation.makeTransform(self.x, self.y, self.rotation, self.scalex, self.scaley, self.tcenterx, self.tcentery, scaleUsesCenter=True)
+        self.x = self.x + t[4] - tmp[4]
+        self.y = self.y + t[5] - tmp[5]
+        return self.x, self.y
+
 
 class DeepComponent(DictClass):
 
@@ -359,6 +383,15 @@ class DeepComponents:
             else:
                 self._deepComponents.append(DeepComponent(**dict(deepComponent)))
 
+    def _init_with_old_format(self, deepComponents:list = []):
+        self._deepComponents = []
+        for deepComponent in deepComponents:
+            if deepComponent.get("name"):
+                self._deepComponents.append(DeepComponentNamed(**dict(deepComponent)))
+            else:
+                self._deepComponents.append(DeepComponent(**dict(deepComponent)))
+        self._convertOffsetFromRCenterToTCenter()
+
     def add(self, name: str, items: dict = {}):
         """
         Add new deep component
@@ -392,6 +425,10 @@ class DeepComponents:
         Add new deep component 
         """
         self.addDeepComponent(item)
+
+    def _convertOffsetFromRCenterToTCenter(self):
+        for deepComponent in self._deepComponents:
+            deepComponent.transform.convertOffsetFromRCenterToTCenter()
 
     def __repr__(self):
         return str(self._deepComponents)
@@ -468,7 +505,7 @@ class VariationGlyphsInfos:
 
     def __repr__(self):
         return str({x:getattr(self, x) for x in vars(self)})
-        return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
+        # return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
     def _toDict(self):
         return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList()}
@@ -487,6 +524,8 @@ class VariationGlyphs(list):
         for k, v in data.items():
             variation = {"location": {k:v.get("maxValue")}, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
             self.addVariation(variation)
+        for variation in self:
+            variation.deepComponents._convertOffsetFromRCenterToTCenter()
 
     # def __iter__(self):
     #     for x in super(VariationGlyphs, self).__iter__():
@@ -559,8 +598,8 @@ class VariationGlyphs(list):
         return [x["deepComponents"] for x in self]
 
 if __name__ == "__main__":
-    dc = [{'coord': {'HGHT': 618.4000000000001, 'HWGT': 96.86, 'LLNGG': 101.0, 'RLNG': 0.0, 'VWGT': 75.8, 'WDTH': 0.82}, 'rotation': 0, 'scalex': 1.0, 'scaley': 1.0, 'x': -241, 'y': 70, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_53E3_00'}, {'coord': {'HGHT': 0.454, 'HWGT': 0.385, 'LLNG': 0.0, 'RLNG': 0.0, 'VWGT': 0.37, 'WDTH': 0.658}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 176, 'y': 90, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_65E5_00'}, {'coord': {'WGHT': 0.316}, 'rotation': 0, 'scalex': 0.5559999999999998, 'scaley': 1.008, 'x': 392, 'y': -372, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_4E00_00'}]
-    gv = {'WGHT': {'minValue': 0.0, 'maxValue': 1.0, 'layerName': 'WGHT', 'content': {'outlines': [], 'deepComponents': [{'coord': {'HGHT': 603.1, 'HWGT': 110.54, 'LLNGG': 78.60000000000001, 'RLNG': 0.0, 'VWGT': 107.12, 'WDTH': 0.803}, 'rotation': 0, 'scalex': 1.0, 'scaley': 1.0, 'x': -251, 'y': 70, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'HGHT': 0.454, 'HWGT': 0.534, 'LLNG': 0.0, 'RLNG': 0.0, 'VWGT': 0.504, 'WDTH': 0.658}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 176, 'y': 90, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'WGHT': 0.548}, 'rotation': 0, 'scalex': 0.5559999999999998, 'scaley': 1.008, 'x': 392, 'y': -372, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 500}}}
+    dc = [{'coord': {'HGHT': 618.4000000000001, 'HWGT': 96.86, 'LLNGG': 101.0, 'RLNG': 0.0, 'VWGT': 75.8, 'WDTH': 0.82}, 'rotation': 0, 'scalex': 1.0, 'scaley': 1.0, 'x': -241, 'y': 70, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_53E3_00'}, {'coord': {'HGHT': 0.454, 'HWGT': 0.385, 'LLNG': 0.0, 'RLNG': 0.0, 'VWGT': 0.37, 'WDTH': 0.658}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 176, 'y': 90, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_65E5_00'}, {'coord': {'WGHT': 0.316}, 'rotation': 0, 'scalex': 0.5559999999999998, 'scaley': 1.008, 'x': 392, 'y': -372, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'DC_4E00_00'}]
+    gv = {'WGHT': {'minValue': 0.0, 'maxValue': 1.0, 'layerName': 'WGHT', 'content': {'outlines': [], 'deepComponents': [{'coord': {'HGHT': 603.1, 'HWGT': 110.54, 'LLNGG': 78.60000000000001, 'RLNG': 0.0, 'VWGT': 107.12, 'WDTH': 0.803}, 'rotation': 0, 'scalex': 1.0, 'scaley': 1.0, 'x': -251, 'y': 70, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'HGHT': 0.454, 'HWGT': 0.534, 'LLNG': 0.0, 'RLNG': 0.0, 'VWGT': 0.504, 'WDTH': 0.658}, 'rotation': 0, 'scalex': 1, 'scaley': 1, 'x': 176, 'y': 90, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'WGHT': 0.548}, 'rotation': 0, 'scalex': 0.5559999999999998, 'scaley': 1.008, 'x': 392, 'y': -372, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 500}}}
 
     deepComponents = DeepComponents(dc)
     axes = Axes()
@@ -574,8 +613,8 @@ if __name__ == "__main__":
     print("\n\n")
 
 
-    dc = [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 981, 'y': -120, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 880, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -100, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -121, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}]
-    gv = {'HGHT': {'minValue': 1000.0, 'maxValue': 100.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 0.07199999999999995, 'x': 980, 'y': 340, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 412, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 360, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 0.07199999999999995, 'x': 0, 'y': 340, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'HWGT': {'minValue': 20.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.08, 'x': 980, 'y': -160, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.2, 'scaley': 1, 'x': 0, 'y': 920, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.2, 'scaley': 1, 'x': 0, 'y': 40, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.08, 'x': 0, 'y': -160, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'LLNGG': {'minValue': 0.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 980, 'y': -120, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 880, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -100, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.2, 'x': 0, 'y': -320, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'RLNG': {'minValue': 0.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.2, 'x': 980, 'y': -320, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 880, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -100, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': -10, 'y': -120, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'VWGT': {'minValue': 20.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.2, 'scaley': 1, 'x': 840, 'y': -120, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1.08, 'x': -40, 'y': 880, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1.08, 'x': -40, 'y': -100, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.2, 'scaley': 1, 'x': -40, 'y': -120, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'WDTH': {'minValue': 0.0, 'maxValue': 1.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 510, 'y': -120, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 0.06999999999999995, 'x': 460, 'y': 880, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 0.06999999999999995, 'x': 460, 'y': -100, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 460, 'y': -120, 'rcenterx': 0, 'rcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}}
+    dc = [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 981, 'y': -120, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 880, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -100, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -121, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0, 'name': 'stem'}]
+    gv = {'HGHT': {'minValue': 1000.0, 'maxValue': 100.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 0.07199999999999995, 'x': 980, 'y': 340, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 412, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 360, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 0.07199999999999995, 'x': 0, 'y': 340, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'HWGT': {'minValue': 20.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.08, 'x': 980, 'y': -160, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.2, 'scaley': 1, 'x': 0, 'y': 920, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.2, 'scaley': 1, 'x': 0, 'y': 40, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.08, 'x': 0, 'y': -160, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'LLNGG': {'minValue': 0.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 980, 'y': -120, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 880, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -100, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.2, 'x': 0, 'y': -320, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'RLNG': {'minValue': 0.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1.2, 'x': 980, 'y': -320, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': 880, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1, 'x': 0, 'y': -100, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': -10, 'y': -120, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'VWGT': {'minValue': 20.0, 'maxValue': 200.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.2, 'scaley': 1, 'x': 840, 'y': -120, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1.08, 'x': -40, 'y': 880, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 1.08, 'x': -40, 'y': -100, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.2, 'scaley': 1, 'x': -40, 'y': -120, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}, 'WDTH': {'minValue': 0.0, 'maxValue': 1.0, 'layerName': '', 'content': {'outlines': [], 'deepComponents': [{'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 510, 'y': -120, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 0.06999999999999995, 'x': 460, 'y': 880, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': -90, 'scalex': 0.02, 'scaley': 0.06999999999999995, 'x': 460, 'y': -100, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}, {'coord': {'DIAG': 500.0}, 'rotation': 0, 'scalex': 0.02, 'scaley': 1, 'x': 460, 'y': -120, 'tcenterx': 0, 'tcentery': 0, 'maxValue': 1.0, 'minValue': 0.0}], 'width': 1000}}}
 
 
     axes = Axes()

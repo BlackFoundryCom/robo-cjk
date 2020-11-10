@@ -17,6 +17,25 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import math
+from fontTools.misc.transform import Transform
+
+def makeTransform(x, y, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesCenter=True):
+    rotation = math.radians(rotation)
+    if not scaleUsesCenter:
+        tcenterx *= scalex
+        tcentery *= scaley
+        t = Transform()
+        t = t.translate(x + tcenterx, y + tcentery)
+        t = t.rotate(rotation)
+        t = t.translate(-tcenterx, -tcentery)
+        t = t.scale(scalex, scaley)
+    else:
+        t = Transform()
+        t = t.translate(x + tcenterx, y + tcentery)
+        t = t.rotate(rotation)
+        t = t.scale(scalex, scaley)
+        t = t.translate(-tcenterx, -tcentery)
+    return t
 
 def normalizedValue(v, minv, maxv):
     return (v-minv)/(maxv-minv)

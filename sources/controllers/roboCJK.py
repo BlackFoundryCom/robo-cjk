@@ -403,60 +403,21 @@ class RoboCJKController(object):
         if glyph is None: return
         changed = False
         if glyph.name != self.currentGlyph.name:
-            # self.currentFont.locker.unlock(self.currentGlyph)
             changed = True
             self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
-        # d = self.currentGlyph._glyphVariations
         if changed:
             self.currentGlyph.sourcesList = []
             for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
                 self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
-            # if self.currentGlyph.type == "atomicElement":
-            #     self.currentGlyph.sourcesList = []
-            #     for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
-            #         self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
-            #     # {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
-            #     # self.currentGlyph.sourcesList = [
-            #         # {"Axis":axisName, "Layer":layer.layerName, "PreviewValue":0, "MinValue":layer.minValue, "MaxValue":layer.maxValue} for axisName, layer in  d.items()
-            #         # ]
-            # else:
-            #     for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
-            #         self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
-            #     # self.currentGlyph.sourcesList = [
-            #     #     {"Axis":axisName, "Layer":layerName, "PreviewValue":0, "MinValue":layerName.minValue, "MaxValue":layerName.maxValue} for axisName, layerName in  d.items()
-            #     #     ]
-
-            # print("self.currentGlyph.sourcesList", self.currentGlyph.sourcesList)
             self.currentGlyph.sourcesList = self.sortDeepComponentAxesList(self.currentGlyph.sourcesList)
             self.currentViewSourceList.glyphVariationAxesList.set(self.currentGlyph.sourcesList)
             self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
-            # self.closeComponentWindow()
         else:
             installTool(self.transformationTool)
-            # if self.currentFont.dataBase:
-            #     if self.currentGlyph.type =='characterGlyph':
-            #         # self.closeCharacterWindow()
-            #         if self.currentGlyph.name.startswith("uni"):
-            #             # if self.componentWindow is None:
-            #             #     self.componentWindow = roboCJKView.ComponentWindow(self)
-            #             self.componentWindow.setUI()
-            #             self.componentWindow.open()
-            #         else:
-            #             # self.closeComponentWindow()
-            #     elif self.currentGlyph.type == 'deepComponent':
-            #         # self.closeComponentWindow()
-            #         if self.currentGlyph.name.startswith("DC_"):
-            #             # if self.characterWindow is None:
-            #             #     self.characterWindow = roboCJKView.CharacterWindow(self)
-            #             # self.characterWindow.setUI()
-            #             # self.characterWindow.open()
-            #         else:
-            #             # self.closeCharacterWindow()
 
-        ####### A remettre
         self.openGlyphInspector()
         self.updateDeepComponent()
 
