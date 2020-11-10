@@ -83,6 +83,7 @@ class CharacterGlyph(Glyph):
     def preview(self, position:dict={}, font = None):
         if not position:
             position = self.getLocation()
+        # position = self.normalizedValueToMinMaxValue(position)
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations])
 
@@ -176,7 +177,11 @@ class CharacterGlyph(Glyph):
             self._glyphVariations = VariationGlyphs()
 
     def duplicateSelectedElements(self): # TODO
-        for selectedElement in self._getSelectedElement():
+        # for selectedElement in self._getSelectedElement():
+        element = self._getElements()
+        if element is None: return
+        for index in self.selectedElement:
+            selectedElement = element[index]
             if selectedElement.get("name"):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 

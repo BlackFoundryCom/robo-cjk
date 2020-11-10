@@ -175,6 +175,9 @@ class Glyph(RGlyph):
     #         t = t.translate(-tcenterx, -tcentery)
     #     return t
 
+    def normalizedValue(self, v, minv, maxv):
+        return (v-minv)/(maxv-minv)
+
     def _transformGlyph(self, glyph, transform):
         t = interpolation.makeTransform(**transform)
         # for c in glyph:
@@ -186,6 +189,15 @@ class Glyph(RGlyph):
         if self.selectedSourceAxis:
             loc = {self.selectedSourceAxis:1}
         return loc
+
+    def normalizedValueToMinMaxValue(self, loc):
+        position = {}
+        for k, v in loc.items():
+            axis = self._axes.get(k)
+            if axis is not None:
+                position[k] = self.normalizedValue(v, axis.minValue, axis.maxValue)
+        return position
+
 
     def save(self):
         # print("glyohsave", self.name, self.stateColor)

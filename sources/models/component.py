@@ -198,6 +198,11 @@ class Axes(list):
         return [x._toDict() for x in self]
         # return [x._toDict() for x in self]
 
+    def get(self, name):
+        for x in self:
+            if x.name == name:
+                return x
+
     # def __repr__(self):
     #     return str(self.getList())
 

@@ -75,6 +75,9 @@ class DeepComponent(Glyph):
     def preview(self, position:dict={}, font = None):
         if not position:
             position = self.getLocation()
+        # print(position, "\n")
+        # position = self.normalizedValueToMinMaxValue(position)
+        # print(position, "\n----------\n")
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations])
 
@@ -153,7 +156,10 @@ class DeepComponent(Glyph):
             self._glyphVariations = VariationGlyphs()
 
     def duplicateSelectedElements(self): # TODO
-        for selectedElement in self._getSelectedElement():
+        element = self._getElements()
+        if element is None: return
+        for index in self.selectedElement:
+            selectedElement = element[index]
             if selectedElement.get("name"):
                 self.addAtomicElementNamed(selectedElement["name"], copy.deepcopy(selectedElement))
 
