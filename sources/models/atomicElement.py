@@ -58,7 +58,7 @@ class AtomicElement(Glyph):
         #     position = self.getLocation()
         position = self.normalizedValueToMinMaxValue(position)
         locations = [{}]
-        locations.extend([x["location"] for x in self._glyphVariations.getList()])
+        locations.extend([x["location"] for x in self._glyphVariations.getList()  if x["on"]])
 
         # self.frozenPreview = []
         if font is None:
@@ -118,7 +118,7 @@ class AtomicElement(Glyph):
         for i, x in enumerate(self._axes):
             if x.name == axisName:
                 index = i
-        self._glyphVariations.removeAxis(index)
+        self._glyphVariations.removeVariation(index)
         self._axes.removeAxis(index)
 
     def save(self):

@@ -341,11 +341,13 @@ class RoboCJKController(object):
             self.closeimportDCFromCG()
         self.currentGlyph = self.currentFont[glyph.name]
         if changed:
-            self.currentGlyph.sourcesList = []
-            for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
-                self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
-            self.currentGlyph.sourcesList = self.sortDeepComponentAxesList(self.currentGlyph.sourcesList)
-            self.currentViewSourceList.glyphVariationAxesList.set(self.currentGlyph.sourcesList)
+            # self.currentGlyph.sourcesList = []
+            # for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
+            #     self.currentGlyph.sourcesList.append({"Axis":axis["name"], "Layer":variation["layerName"], "PreviewValue":{axis["name"]:0}, "MinValue":axis["minValue"], "MaxValue":axis["maxValue"]})
+            # self.currentGlyph.sourcesList = self.sortDeepComponentAxesList(self.currentGlyph.sourcesList)
+            # self.currentViewSourceList.glyphVariationAxesList.set(self.currentGlyph.sourcesList)
+            self.glyphInspectorWindow.sourcesItem.setList()
+            self.glyphInspectorWindow.axesItem.setList()
             self.currentViewSourceValue.set("")
         if self.currentGlyph.type =='atomicElement':
             uninstallTool(self.transformationTool)
@@ -632,7 +634,9 @@ class RoboCJKController(object):
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
             self.updateDeepComponent()
-            self.currentViewSourceList.glyphVariationAxesList.setSelection([])
+            # self.currentViewSourceList.glyphVariationAxesList.setSelection([])
+            self.glyphInspectorWindow.sourcesItem.sourcesList.setSelection([])
+            self.glyphInspectorWindow.axesItem.axesList.setSelection([])
         self.currentGlyph.keyDown((modifiers, inputKey, character))
 
     def glyphAdditionContextualMenuItems(self, notification):
@@ -693,21 +697,23 @@ class RoboCJKController(object):
     @lockedProtect
     @refresh
     def updateListInterface(self):
-        l = []
-        if self.isAtomic:
-            for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
-                l.append({"Axis":axis.name, "Layer":variation.layerName, "PreviewValue":0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
+        # l = []
+        # if self.isAtomic:
+        #     for axis, variation in zip(self.currentGlyph._axes, self.currentGlyph._glyphVariations):
+        #         l.append({"Axis":axis.name, "Layer":variation.layerName, "PreviewValue":0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
             
-        elif self.isDeepComponent:
-            if self.currentGlyph._axes:
-                l = [{'Axis':x.name, 'PreviewValue':0, "MinValue":x.minValue, "MaxValue":x.maxValue} for x in self.currentGlyph._axes]
+        # elif self.isDeepComponent:
+        #     if self.currentGlyph._axes:
+        #         l = [{'Axis':x.name, 'PreviewValue':0, "MinValue":x.minValue, "MaxValue":x.maxValue} for x in self.currentGlyph._axes]
             
-        elif self.isCharacterGlyph:
-            if self.currentGlyph._glyphVariations:
-                l = [{'Axis':x.name, 'PreviewValue':0, "MinValue":x.minValue, "MaxValue":x.maxValue} for x in self.currentGlyph._axes]
+        # elif self.isCharacterGlyph:
+        #     if self.currentGlyph._glyphVariations:
+        #         l = [{'Axis':x.name, 'PreviewValue':0, "MinValue":x.minValue, "MaxValue":x.maxValue} for x in self.currentGlyph._axes]
 
         self.currentViewSourceList.glyphVariationAxesList.set(l)
-        self.currentGlyph.sourcesList = l
+        self.glyphInspectorWindow.sourcesItem.setList()
+        self.glyphInspectorWindow.axesItem.setList()
+        # self.currentGlyph.sourcesList = l
 
     def userValue(self, value, minValue, maxValue):
         return minValue + (maxValue - minValue) * value

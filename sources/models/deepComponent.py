@@ -79,11 +79,11 @@ class DeepComponent(Glyph):
         position = self.normalizedValueToMinMaxValue(position)
         # print(position, "\n----------\n")
         locations = [{}]
-        locations.extend([x["location"] for x in self._glyphVariations])
+        locations.extend([x["location"] for x in self._glyphVariations if x["on"]])
 
         model = VariationModel(locations)
         masterDeepComponents = self._deepComponents
-        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")]
+        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
 
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
@@ -174,7 +174,7 @@ class DeepComponent(Glyph):
         for i, x in enumerate(self._axes):
             if x.name == axisName:
                 index = i
-        self._glyphVariations.removeAxis(index)
+        self._glyphVariations.removeVariation(index)
         self._axes.removeAxis(index)
 
     def updateAtomicElementCoord(self, axisName, value):

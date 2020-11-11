@@ -602,6 +602,56 @@ class SelectFontVariationSheet():
     def closeSheet(self, sender):
         self.w.close()
 
+
+from AppKit import NumberFormatter
+numberFormatter = NumberFormatter()
+
+class AxisSheet:
+
+    def __init__(self, parentWindow, RCJKI, controller, glyphType):
+        self.RCJKI = RCJKI
+        self.controller = controller
+        self.glyphType = glyphType
+        self.w = Sheet((300, 140), parentWindow)
+
+        if glyphType != "characterGlyph":
+            self.w.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
+            self.w.axisName = EditText((100, 20, 150, 20), "", sizeStyle = 'small')
+        else:
+            self.fontVariations = [axis for axis in self.RCJKI.currentFont.fontVariations if axis not in self.RCJKI.currentGlyph._axes.names]
+            self.w.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
+            self.w.axisName = PopUpButton((100, 20, 150, 20), self.fontVariations, sizeStyle = 'small')
+        # else:
+        #     self.layers = [l.name for l in self.RCJKI.currentFont._RFont.layers]
+        #     self.w.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
+        #     self.w.axisName = PopUpButton((100, 20, 150, 20), self.layers, sizeStyle = 'small')
+
+        self.w.minValueTitle = TextBox((10, 50, 90, 20), "Min value", sizeStyle = 'small')
+        self.w.minValue = EditText((100, 50, 150, 20), 0, sizeStyle = 'small', formatter = numberFormatter)
+
+        self.w.maxValueTitle = TextBox((10, 80, 90, 20), "Max Value", sizeStyle = 'small')
+        self.w.maxValue = EditText((100, 80, 150, 20), 1, sizeStyle = 'small', formatter = numberFormatter)
+
+        self.w.apply = Button((150, -20, -0, 20), "Add", sizeStyle = 'small',callback = self.applyCallback)
+        self.w.cancel = Button((00, -20, 150, 20), "Cancel", sizeStyle = 'small',callback = self.cancelCallback)
+        self.w.setDefaultButton(self.w.apply)
+        self.w.open()
+
+    def applyCallback(self, sender):
+        if self.glyphType != "characterGlyph":
+            axisName = self.w.axisName.get()
+        else: 
+            axisName = self.fontVariations[self.w.axisName.get()]
+        minValue = int(self.w.minValue.get())
+        maxValue = int(self.w.maxValue.get())
+        if not all([x!="" for x in [axisName, minValue, maxValue]]): return
+        self.RCJKI.currentGlyph.addAxis(axisName, minValue, maxValue)
+        self.controller.setList()
+        self.w.close()
+
+    def cancelCallback(self, sender):
+        self.w.close()        
+
 class AxesGroup(Group):
 
     def __init__(self, posSize, RCJKI, controller, glyphtype, axes = []):
@@ -611,15 +661,13 @@ class AxesGroup(Group):
         self.glyphtype = glyphtype
         self.axes = axes
 
-        self.axes = [dict(Axis=x.name, MinValue=x.minValue, PreviewValue=0, MaxValue=x.maxValue) for x in self.RCJKI.currentGlyph._axes]
-
         self.sliderValueTitle = TextBox((-160, 3, -100, 20), "Axis value:", sizeStyle = 'small')
         self.sliderValueEditText = EditText((-100, 0, -0, 20), '', callback = self.sliderValueEditTextCallback)
 
         self.selectedSourceAxis = None
         slider = SliderListCell(minValue = 0, maxValue = 1)
         self.axesList = List((0, 20, -0, -20),
-            self.axes,
+            [],
             columnDescriptions = [
                     {"title": "Axis", "editable": True, "width": 100},
                     {"title": "MinValue", "editable": True, "width": 40},
@@ -628,12 +676,20 @@ class AxesGroup(Group):
                     ],
             selectionCallback = self.axesListSelectionCallback,
             editCallback = self.axesListEditCallback,
+            allowsMultipleSelection = False,
             drawFocusRing = False,
             showColumnTitles = False
                     )
 
+        self.setList()
+
         self.addAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addAxisButtonCallback)
         self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
+
+    def setList(self):
+        self.axes = [dict(Axis=x.name, MinValue=x.minValue, PreviewValue=0, MaxValue=x.maxValue) for x in self.RCJKI.currentGlyph._axes]
+        self.axesList.set(self.axes)
+        self.RCJKI.currentGlyph.sourcesList = self.axes
 
     @lockedProtect
     def sliderValueEditTextCallback(self, sender):
@@ -720,10 +776,63 @@ class AxesGroup(Group):
         self.controller.updatePreview()
 
     def addAxisButtonCallback(self, sender):
-        pass
+        AxisSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
 
     def removeAxisButtonCallback(self, sender):
-        pass
+        sel = self.axesList.getSelection()
+        if not sel: return
+        selectedAxisIndex = sel[0]
+        self.RCJKI.currentGlyph.removeAxis(selectedAxisIndex)
+        self.setList()
+        self.controller.sourcesItem.setList()
+
+class SourcesSheet:
+
+    def __init__(self, parentWindow, RCJKI, controller, glyphType):
+        self.RCJKI = RCJKI
+        self.controller = controller
+        self.glyphType = glyphType
+        height = 60 + 30*len(self.RCJKI.currentGlyph._axes)
+        self.w = Sheet((300, height), parentWindow)
+
+        y = 10
+        if glyphType != "atomicElement":
+            self.w.sourceNameTitle = TextBox((10, y, 90, 20), 'Source name', sizeStyle = 'small')
+            self.w.sourceName = EditText((100, y, -0, 20), "", sizeStyle = "small")
+        else:
+            self.layers = [l.name for l in self.RCJKI.currentFont._RFont.layers]
+            self.w.sourceNameTitle = TextBox((10, y, 90, 20), "Axis name", sizeStyle = 'small')
+            self.w.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
+        y += 25
+
+        for axis in self.RCJKI.currentGlyph._axes:
+            textbox = TextBox((10, y, 90, 20), axis.name, sizeStyle = 'small')
+            editText = EditText((100, y, -0, 20), 0, sizeStyle = "small", formatter = numberFormatter)
+            setattr(self.w, "%sName"%axis.name, textbox)
+            setattr(self.w, axis.name, editText)
+            y += 25
+
+        self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
+        self.w.apply = Button((150, -20, 150, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
+        self.w.setDefaultButton(self.w.apply)
+        self.w.open()
+
+    def applyCallback(self, sender):
+        sourceName = ""
+        layerName = ""
+        if glyphType != "atomicElement":
+            sourceName = self.w.sourceName.get()
+        else:
+            layerName = self.layers[self.w.sourceName.get()]
+        if not sourceName and not layerName: return
+        location = {x.name:getattr(self.w, x.name).get() for x in self.RCJKI.currentGlyph._axes if getattr(self.w, x.name).get()}
+        self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName)
+        self.controller.setList()
+        self.w.close()
+
+    def cancelCallback(self, sender):
+        self.w.close()
+
 
 class SourcesGroup(Group):
 
@@ -740,9 +849,9 @@ class SourcesGroup(Group):
 
     def setList(self):
         if self.RCJKI.currentGlyph.type == "atomicElement":
-            self.sources = [{"On/Off":x.on, "layerName":x.axisName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+            self.sources = [{"On/Off":x.on, "layerName":x.sourceName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         else:    
-            self.sources = [{"On/Off":x.on, "name":x.axisName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+            self.sources = [{"On/Off":x.on, "name":x.sourceName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         for i, source in enumerate(self.sources):
             source.update(self.RCJKI.currentGlyph._glyphVariations[i].location)
 
@@ -795,10 +904,14 @@ class SourcesGroup(Group):
         self.controller.updatePreview()
 
     def addSourceButtonCallback(self, sender):
-        pass
-
+        SourcesSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
+        
     def removeSourceButtonCallback(self, sender):
-        pass
+        sel = self.sourcesList.getSelection()
+        if not sel: return
+        selectedAxisIndex = sel[0]
+        self.RCJKI.currentGlyph.removeSource(selectedAxisIndex)
+        self.setList()
         
 class GlyphVariationAxesGroup(Group):
     
@@ -1434,7 +1547,7 @@ class CharacterGlyphInspector(Inspector):
         self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
         self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
-        self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
+        # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, deepComponentAxes)
         self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
@@ -1446,7 +1559,7 @@ class CharacterGlyphInspector(Inspector):
                        dict(label="Font axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
 
-                       dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       # dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
@@ -1471,7 +1584,7 @@ class DeepComponentInspector(Inspector):
         self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
         self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
-        self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
+        # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
         self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
@@ -1484,7 +1597,7 @@ class DeepComponentInspector(Inspector):
                        dict(label="Glyph axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
 
-                       dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
+                       # dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Atomic element list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
@@ -1509,7 +1622,7 @@ class AtomicElementInspector(Inspector):
         self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
         self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
-        self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "atomicElement", glyphVariationsAxes)
+        # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "atomicElement", glyphVariationsAxes)
         self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
 
         descriptions = [
@@ -1518,7 +1631,7 @@ class AtomicElementInspector(Inspector):
                        dict(label="Glyph axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
 
-                       dict(label="Atomic element axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
+                       # dict(label="Atomic element axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
                        ]
 

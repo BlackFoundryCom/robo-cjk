@@ -187,8 +187,9 @@ class Glyph(RGlyph):
     def getLocation(self):
         loc = {}
         if self.selectedSourceAxis:
-            axis = self._axes.get(self.selectedSourceAxis)
-            loc = {self.selectedSourceAxis:axis.maxValue}
+            for source in self._glyphVariations:
+                if source.sourceName == self.selectedSourceAxis:
+                    loc = source.location
         return loc
 
     def normalizedValueToMinMaxValue(self, loc):
@@ -198,7 +199,6 @@ class Glyph(RGlyph):
             if axis is not None:
                 position[k] = self.normalizedValue(v, axis.minValue, axis.maxValue)
         return position
-
 
     def save(self):
         # print("glyohsave", self.name, self.stateColor)
@@ -250,6 +250,27 @@ class Glyph(RGlyph):
                         glyphVariation.content.deepComponents[index].coord.add(axis, 0)
 
         self.removeDeepComponents(deepComponentToRemove)
+
+    def addAxis(self, axisName="", minValue="", maxValue=""):
+        self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue))
+
+    def removeAxis(self, index):
+        axisName = self._axes[index].name
+        self._axes.removeAxis(index)
+        self._glyphVariations.removeAxis(axisName)
+
+    def addSource(self, sourceName="", location={}, layerName = ""):
+        deepComponents = []
+        for deepcomponent in self._deepComponents:
+            items = {}
+            for k, v in deepcomponent.items():
+                if k != "name":
+                    items[k] = v
+            deepComponents.append(items)
+        self._glyphVariations.addVariation(dict(sourceName=sourceName, location=location, layerName=layerName, deepComponents = deepComponents))
+
+    def removeSource(self, selectedAxisIndex):
+        self._glyphVariations.removeVariation(selectedAxisIndex)
 
     def removeDeepComponents(self, deepComponents:list = []):
         self._deepComponents.removeDeepComponents(deepComponents)

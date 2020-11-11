@@ -465,13 +465,16 @@ class DeepComponents:
 
 class VariationGlyphsInfos:
 
-    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}, axisName: str = "", on: bool = 1):
+    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}, sourceName: str = "", on: bool = 1, **kwargs):
         # print("_init_ variation glyphs", location, layerName, deepComponents)
         self.location = MathDict(location) #location is a dict specifiying the design space location {"wght":1, "wdth":1}
         self.layerName = layerName
         self.deepComponents = DeepComponents(deepComponents)
-        self.axisName = axisName
+        self.sourceName = sourceName
         self.on = on
+        for k, v in kwargs.items():
+            if k == "axisName":
+                self.sourceName = v
 
         # print(self.location)
         # print(self.layerName)
@@ -487,7 +490,7 @@ class VariationGlyphsInfos:
 
     # @layerName.setter
     # def layerName(self, name):
-    #     self._layerName = name    
+    #     self._layerName = name  
 
     def activate(self):
         self.on = True
@@ -508,7 +511,9 @@ class VariationGlyphsInfos:
         self.location[name] = position
 
     def removeLocation(self, name:str):
-        del self.location[name]
+        if name in self.location:
+            del self.location[name]
+            self.desactivate()
 
     def addDeepComponent(self, deepComponent):
         self.deepComponents.addDeepComponent(deepComponent)
@@ -521,7 +526,7 @@ class VariationGlyphsInfos:
         # return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
     def _toDict(self):
-        return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "axisName":self.axisName, "on":self.on}
+        return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on}
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -546,6 +551,9 @@ class VariationGlyphs(list):
     #         yield x._toDict()
 
     def addVariation(self, variation):
+        loc = variation.get('location')
+        if loc in self.locations or not loc:
+            variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
 
     # def __iter__(self):
@@ -560,8 +568,12 @@ class VariationGlyphs(list):
         return [x._toDict() for x in self]
         # return {x: getattr(self, x)._toDict() for x in vars(self)}  
     
-    def removeAxis(self, index):
+    def removeVariation(self, index):
         self.pop(index)
+
+    def removeAxis(self, axisName):
+        for variation in self:
+            variation.removeLocation(axisName)
 
     def renameAxisInsideLocation(self, oldName, newName):
         for variation in self:
@@ -603,7 +615,10 @@ class VariationGlyphs(list):
     # @property
     def layerNames(self):
         return [x["layerName"] for x in self if x["layerName"]]
-    
+
+    @property
+    def locations(self):
+        return [x.location for x in self]
 
     @property
     def axes(self):
