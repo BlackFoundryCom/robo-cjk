@@ -180,8 +180,9 @@ class DeepComponent(Glyph):
     def updateAtomicElementCoord(self, axisName, value):
         if self.selectedSourceAxis:
             index = 0
-            for i, x in enumerate(self._axes):
-                if x.name == self.selectedSourceAxis:
+            print(self.selectedSourceAxis)
+            for i, x in enumerate(self._glyphVariations):
+                if x.sourceName == self.selectedSourceAxis:
                     index = i
             self._glyphVariations[i].deepComponents[self.selectedElement[0]].coord[axisName] = value
             # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[axisName] = value

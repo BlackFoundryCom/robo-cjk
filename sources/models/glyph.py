@@ -261,12 +261,13 @@ class Glyph(RGlyph):
 
     def addSource(self, sourceName="", location={}, layerName = ""):
         deepComponents = []
-        for deepcomponent in self._deepComponents:
-            items = {}
-            for k, v in deepcomponent.items():
-                if k != "name":
-                    items[k] = v
-            deepComponents.append(items)
+        if self.type != "atomicElement":
+            for deepcomponent in self._deepComponents:
+                items = {}
+                for k, v in deepcomponent.items():
+                    if k != "name":
+                        items[k] = v
+                deepComponents.append(items)
         self._glyphVariations.addVariation(dict(sourceName=sourceName, location=location, layerName=layerName, deepComponents = deepComponents))
 
     def removeSource(self, selectedAxisIndex):
@@ -298,8 +299,8 @@ class Glyph(RGlyph):
     def _getElements(self):
         if self.selectedSourceAxis:
             index = 0
-            for i, x in enumerate(self._axes):
-                if x.name == self.selectedSourceAxis:
+            for i, x in enumerate(self._glyphVariations):
+                if x.sourceName == self.selectedSourceAxis:
                     index = i
             return self._glyphVariations[index].deepComponents
         else:

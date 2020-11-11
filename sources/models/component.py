@@ -556,6 +556,12 @@ class VariationGlyphs(list):
             variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
 
+    def setLocationToIndex(self, location, index):
+        variation = self[index]
+        if location in self.locations or not location:
+            variation.desactivate()
+        variation.location = location
+
     # def __iter__(self):
     #     for x in self:
     #         yield x._toDict()

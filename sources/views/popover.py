@@ -242,8 +242,8 @@ class EditPopoverAlignTool(EditPopover):
             
         elif self.RCJKI.isDeepComponent and self.glyph.selectedSourceAxis:
             index = 0
-            for i, x in enumerate(self.RCJKI.currentGlyph._axes):
-                if x.name == self.glyph.selectedSourceAxis:
+            for i, x in enumerate(self.RCJKI.currentGlyph._glyphVariations):
+                if x.sourceName == self.glyph.selectedSourceAxis:
                     index = i
             return self.RCJKI.currentGlyph._glyphVariations[index].deepComponents
             # return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
@@ -253,8 +253,8 @@ class EditPopoverAlignTool(EditPopover):
             
         elif self.RCJKI.isCharacterGlyph and self.glyph.selectedSourceAxis:
             index = 0
-            for i, x in enumerate(self.RCJKI.currentGlyph._axes):
-                if x.name == self.glyph.selectedSourceAxis:
+            for i, x in enumerate(self.RCJKI.currentGlyph._glyphVariations):
+                if x.sourceName == self.glyph.selectedSourceAxis:
                     index = i
             return self.RCJKI.currentGlyph._glyphVariations[index].deepComponents
             # return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]

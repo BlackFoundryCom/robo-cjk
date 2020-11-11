@@ -647,6 +647,7 @@ class AxisSheet:
         if not all([x!="" for x in [axisName, minValue, maxValue]]): return
         self.RCJKI.currentGlyph.addAxis(axisName, minValue, maxValue)
         self.controller.setList()
+        self.controller.controller.sourcesItem.setList()
         self.w.close()
 
     def cancelCallback(self, sender):
@@ -740,6 +741,7 @@ class AxesGroup(Group):
         if not sel: 
             return
         edited = sender.getEditedColumnAndRow()
+        if not sender.get(): return
         values = sender.get()[sel[0]]
         axis = values["Axis"]
         minValue = float(values["MinValue"])
@@ -805,11 +807,19 @@ class SourcesSheet:
             self.w.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
         y += 25
 
+        self.axes = {}
         for axis in self.RCJKI.currentGlyph._axes:
             textbox = TextBox((10, y, 90, 20), axis.name, sizeStyle = 'small')
-            editText = EditText((100, y, -0, 20), 0, sizeStyle = "small", formatter = numberFormatter)
+            minValue = TextBox((100, y+5, 50, 20), axis.minValue, sizeStyle = 'small', alignment="right")
+            editText = EditText((150, y, -50, 20), axis.maxValue, sizeStyle = "small", 
+                # formatter = numberFormatter, 
+                callback = self.valuesCallback)
+            maxValue = TextBox((-50, y+5, 50, 20), axis.maxValue, sizeStyle = 'small', alignment="left")
             setattr(self.w, "%sName"%axis.name, textbox)
+            setattr(self.w, "%sminValue"%axis.name, minValue)
             setattr(self.w, axis.name, editText)
+            setattr(self.w, "%smaxValue"%axis.name, maxValue)
+            self.axes[editText] = axis
             y += 25
 
         self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
@@ -817,15 +827,34 @@ class SourcesSheet:
         self.w.setDefaultButton(self.w.apply)
         self.w.open()
 
+    def valuesCallback(self, sender):
+        axis = self.axes[sender]
+        minValue = axis.minValue
+        maxValue = axis.maxValue
+        value = sender.get()
+        if not isinstance(value, (int, float)): return
+        if value > max(minValue, maxValue):
+            value = max(minValue, maxValue)
+        elif value < min(minValue, maxValue):
+            value = min(minValue, maxValue)
+        sender.set(value)
+
     def applyCallback(self, sender):
         sourceName = ""
         layerName = ""
-        if glyphType != "atomicElement":
+        if self.glyphType != "atomicElement":
             sourceName = self.w.sourceName.get()
         else:
             layerName = self.layers[self.w.sourceName.get()]
         if not sourceName and not layerName: return
-        location = {x.name:getattr(self.w, x.name).get() for x in self.RCJKI.currentGlyph._axes if getattr(self.w, x.name).get()}
+        location = {}
+        for axis in self.RCJKI.currentGlyph._axes.names:
+            try:
+                value = float(getattr(self.w, axis).get())
+                if value:
+                    location[axis] = value
+            except:
+                continue
         self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName)
         self.controller.setList()
         self.w.close()
@@ -849,20 +878,20 @@ class SourcesGroup(Group):
 
     def setList(self):
         if self.RCJKI.currentGlyph.type == "atomicElement":
-            self.sources = [{"On/Off":x.on, "layerName":x.sourceName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+            self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         else:    
             self.sources = [{"On/Off":x.on, "name":x.sourceName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         for i, source in enumerate(self.sources):
             source.update(self.RCJKI.currentGlyph._glyphVariations[i].location)
 
         checkbox = CheckBoxListCell()
-        listDescription = [
+        self.listDescription = [
                     {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox},
                     {"title": "name", "editable": True, "width": 120},
                     *[dict(title=x.name, editable = True, width = 60) for x in self.RCJKI.currentGlyph._axes]
                     ]
         if self.RCJKI.currentGlyph.type == "atomicElement":
-            listDescription = [
+            self.listDescription = [
                     {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox},
                     {"title": "layerName", "editable": True, "width": 120},
                     *[dict(title=x.name, editable = True, width = 60) for x in self.RCJKI.currentGlyph._axes]
@@ -873,7 +902,7 @@ class SourcesGroup(Group):
 
         self.sourcesList = List((0, 0, -0, -20),
             self.sources,
-            columnDescriptions = listDescription,
+            columnDescriptions = self.listDescription,
             editCallback = self.sourcesListEditCallback,
             doubleClickCallback = self.sourcesListDoubleClickCallback,
             drawFocusRing = False,
@@ -882,7 +911,33 @@ class SourcesGroup(Group):
 
     @lockedProtect
     def sourcesListEditCallback(self, sender):
-        pass
+        sel = sender.getSelection()
+        if not sel: 
+            return
+        edited = sender.getEditedColumnAndRow()
+        values = sender.get()
+        index = sel[0]
+        variation = self.RCJKI.currentGlyph._glyphVariations[index]
+        if edited[0] == -1: #On off
+            value = values[sel[0]]["On/Off"]
+            variation.on = value
+        elif edited[0] == 1: #name
+            if self.RCJKI.currentGlyph.type == "atomicElement":
+                name = values[edited[1]]['layerName']
+                variation.layerName = name
+            else:
+                name = values[edited[1]]['name']
+                variation.sourceName = name
+        else:
+            locations = {}
+            for axis in self.listDescription[2:]:
+                axisName = axis["title"]
+                value = values[edited[1]][axisName]
+                locations[axisName] = float(value)
+            self.RCJKI.currentGlyph._glyphVariations.setLocationToIndex(locations, index)
+            self.setList()
+        self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
 
     @lockedProtect
     def sourcesListDoubleClickCallback(self, sender):
