@@ -192,10 +192,10 @@ class Glyph(RGlyph):
                     loc = source.location
         return loc
 
-    def normalizedValueToMinMaxValue(self, loc):
+    def normalizedValueToMinMaxValue(self, loc, g):
         position = {}
         for k, v in loc.items():
-            axis = self._axes.get(k)
+            axis = g._axes.get(k)
             if axis is not None:
                 position[k] = self.normalizedValue(v, axis.minValue, axis.maxValue)
         return position

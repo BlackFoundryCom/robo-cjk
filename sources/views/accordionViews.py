@@ -662,13 +662,63 @@ class AxesGroup(Group):
         self.glyphtype = glyphtype
         self.axes = axes
 
+        self.resetSliderToZero = Button((5, 3, 100, 20), 'Reset sliders', sizeStyle = "small", callback = self.resetSliderToZeroCallback)
+
         self.sliderValueTitle = TextBox((-160, 3, -100, 20), "Axis value:", sizeStyle = 'small')
         self.sliderValueEditText = EditText((-100, 0, -0, 20), '', callback = self.sliderValueEditTextCallback)
 
         self.selectedSourceAxis = None
+        # slider = SliderListCell(minValue = 0, maxValue = 1)
+        # self.axesList = List((0, 20, -0, -20),
+        #     [],
+        #     columnDescriptions = [
+        #             {"title": "Axis", "editable": True, "width": 100},
+        #             {"title": "MinValue", "editable": True, "width": 40},
+        #             {"title": "PreviewValue", "cell": slider},
+        #             {"title": "MaxValue", "editable": True, "width": 40}
+        #             ],
+        #     selectionCallback = self.axesListSelectionCallback,
+        #     editCallback = self.axesListEditCallback,
+        #     allowsMultipleSelection = False,
+        #     drawFocusRing = False,
+        #     showColumnTitles = False
+        #             )
+
+        self.setList()
+
+        self.addAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addAxisButtonCallback)
+        self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
+
+    @lockedProtect
+    def resetSliderToZeroCallback(self, sender):
+        sel = self.axesList.getSelection()
+        newList = []
+        for i, e in enumerate(self.axesList.get()):
+            minValue = float(e["MinValue"])
+            maxValue = float(e["MaxValue"])
+            newList.append({
+                "Axis":e["Axis"],
+                "MinValue":e["MinValue"],
+                "PreviewValue":self.RCJKI.systemValue(0, minValue, maxValue),
+                "MaxValue":e["MaxValue"],
+                })
+            self.axesList.set(newList)
+
+        self.RCJKI.currentGlyph.sourcesList = self.axesList.get()
+        self.RCJKI.updateDeepComponent(update = False)
+        self.axesList.setSelection(sel)
+        self.controller.updatePreview()
+
+    def setList(self):
+        self.axes = [dict(Axis=x.name, MinValue=x.minValue, PreviewValue=0, MaxValue=x.maxValue) for x in self.RCJKI.currentGlyph._axes]
+        # self.axesList.set(self.axes)
+
+        if hasattr(self, "axesList"):
+            delattr(self, "axesList")
+
         slider = SliderListCell(minValue = 0, maxValue = 1)
         self.axesList = List((0, 20, -0, -20),
-            [],
+            self.axes,
             columnDescriptions = [
                     {"title": "Axis", "editable": True, "width": 100},
                     {"title": "MinValue", "editable": True, "width": 40},
@@ -682,14 +732,6 @@ class AxesGroup(Group):
             showColumnTitles = False
                     )
 
-        self.setList()
-
-        self.addAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addAxisButtonCallback)
-        self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
-
-    def setList(self):
-        self.axes = [dict(Axis=x.name, MinValue=x.minValue, PreviewValue=0, MaxValue=x.maxValue) for x in self.RCJKI.currentGlyph._axes]
-        self.axesList.set(self.axes)
         self.RCJKI.currentGlyph.sourcesList = self.axes
 
     @lockedProtect
@@ -856,6 +898,7 @@ class SourcesSheet:
             except:
                 continue
         self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName)
+        self.RCJKI.currentGlyph.selectedSourceAxis = sourceName
         self.controller.setList()
         self.w.close()
 
@@ -1356,7 +1399,8 @@ class DeepComponentAxesGroup(Group):
     @lockedProtect
     def deepComponentAxesListEditCallback(self, sender):
         sel = sender.getSelection()
-        if not sel: return         
+        if not sel: 
+            return         
         # minValue = self.RCJKI.currentGlyph._axes[]
 
         selectedAtomicElementName = self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].name

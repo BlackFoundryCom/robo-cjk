@@ -75,16 +75,12 @@ class DeepComponent(Glyph):
     def preview(self, position:dict={}, font = None):
         if not position:
             position = self.getLocation()
-        # print(position, "\n")
-        position = self.normalizedValueToMinMaxValue(position)
-        # print(position, "\n----------\n")
+        # position = self.normalizedValueToMinMaxValue(position)
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations if x["on"]])
-
         model = VariationModel(locations)
         masterDeepComponents = self._deepComponents
         axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
-
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
             variations = []
@@ -96,20 +92,19 @@ class DeepComponent(Glyph):
         # self.frozenPreview = []
         if font is None:
             font = self.getParent()
-
         for i, dc in enumerate(result):
             name = dc.get("name")
-            position = dc.get("coord")
-            resultGlyph = RCJKGlyph(**dc.get("transform"))
             if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
-            g = font[name].preview(position, font)
+            g = font[name]
+            position = dc.get("coord")#self.normalizedValueToMinMaxValue(dc.get("coord"), g)
+            resultGlyph = RCJKGlyph(**dc.get("transform"))
+            g = g.preview(position, font)
             for c in g:
                 c.draw(resultGlyph.getPen())
             self._transformGlyph(resultGlyph, dc.get("transform"))
             # g.draw(resultGlyph.getPen())
             # self.frozenPreview.append(resultGlyph)
             yield resultGlyph
-
         # resultGlyph.removeOverlap()
         # return resultGlyph
 

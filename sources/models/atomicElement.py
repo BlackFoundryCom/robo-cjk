@@ -56,9 +56,14 @@ class AtomicElement(Glyph):
     def preview(self, position:dict={}, font=None):
         # if not position:
         #     position = self.getLocation()
-        position = self.normalizedValueToMinMaxValue(position)
+        # print(position)
+        position = self.normalizedValueToMinMaxValue(position, self)
+        # print(position)
+
         locations = [{}]
-        locations.extend([x["location"] for x in self._glyphVariations.getList()  if x["on"]])
+        locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations.getList() if x["on"]])
+        # print(locations,'\n')
+        # locations.extend([{k:self.normalizedValueToMinMaxValue(v, self) for k, v in x["location"].items()} for x in self._glyphVariations.getList() if x["on"]])
 
         # self.frozenPreview = []
         if font is None:

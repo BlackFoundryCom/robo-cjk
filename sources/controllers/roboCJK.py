@@ -478,7 +478,6 @@ class RoboCJKController(object):
             self.currentViewSliderList.deepComponentName.set("")
             if self.currentGlyph.selectedElement: 
                 self.setListWithSelectedElement()
-
                 if point['clickCount'] == 2:
                     popover.EditPopoverAlignTool(
                         self, 
@@ -513,21 +512,18 @@ class RoboCJKController(object):
             dc = data[i]
             dc_name = self.currentGlyph._deepComponents[i].name
             glyph = self.currentFont.get(dc_name)
-            
             for axis, variation in zip(glyph._axes, glyph._glyphVariations):
                 minValue = axis.minValue
                 maxValue = axis.maxValue
                 axisName = axis.name
-                value = dc["coord"][axisName]
+                value = dc["coord"].get(axisName, minValue)
                 l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
-
         l = self.sortDeepComponentAxesList(l)
+        element.deepComponentAxesList.setSelection([])
         element.deepComponentAxesList.set(l)
         if hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):
                 element.deepComponentName.set(data[self.currentGlyph.selectedElement[0]].name)
         self.sliderValue = None
-
-        
 
     @refresh
     def mouseUp(self, info):

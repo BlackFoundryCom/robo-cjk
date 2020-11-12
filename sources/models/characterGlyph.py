@@ -83,7 +83,7 @@ class CharacterGlyph(Glyph):
     def preview(self, position:dict={}, font = None):
         if not position:
             position = self.getLocation()
-        position = self.normalizedValueToMinMaxValue(position)
+        # position = self.normalizedValueToMinMaxValue(position)
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations if x["on"]])
 
@@ -104,10 +104,12 @@ class CharacterGlyph(Glyph):
             font = self.getParent()
         for i, dc in enumerate(result):
             name = dc.get("name")
-            pos = dc.get("coord")
-            resultGlyph = RCJKGlyph(**dc.get("transform"))
+            
             if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
-            g = font[name].preview(pos, font)
+            g = font[name]
+            pos = dc.get("coord")#self.normalizedValueToMinMaxValue(dc.get("coord"), g)
+            resultGlyph = RCJKGlyph(**dc.get("transform"))
+            g = g.preview(pos, font)
             for c in g:
                 c.draw(resultGlyph.getPen())
             self._transformGlyph(resultGlyph, dc.get("transform"))
