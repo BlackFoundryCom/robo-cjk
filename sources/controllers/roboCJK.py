@@ -712,7 +712,10 @@ class RoboCJKController(object):
         # self.currentGlyph.sourcesList = l
 
     def userValue(self, value, minValue, maxValue):
-        return minValue + (maxValue - minValue) * value
+        value = minValue + (maxValue - minValue) * value 
+        if math.ceil(value) - value < 0.001:
+            value = math.ceil(value)
+        return value
 
     def systemValue(self, value, minValue, maxValue):
         return (value - minValue) / (maxValue - minValue + 1e-10)

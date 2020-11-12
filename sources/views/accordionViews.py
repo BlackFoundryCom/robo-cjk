@@ -651,7 +651,74 @@ class AxisSheet:
         self.w.close()
 
     def cancelCallback(self, sender):
-        self.w.close()        
+        self.w.close()  
+
+def str_to_int_or_float(s):
+    try:
+        if isinstance(s, (float, int)):
+            return s
+        elif '.' in s or ',' in s:
+            return float(s)
+        else:
+            return int(s)
+    except ValueError as e:
+        return None      
+
+class ModifyAxisSheet:
+
+    def __init__(self, parentWindow, RCJKI, controller, axisList, axisIndex):
+        self.RCJKI = RCJKI
+        self.controller = controller
+        self.axisList = axisList
+        self.axisIndex = axisIndex
+        self.w = Sheet((300, 200), parentWindow)
+
+        self.w.minValueTitle = TextBox((10, 10, 100, 20), "minValue", sizeStyle='small')
+        self.w.minValue = EditText((110, 10, 100, 20), axisList["MinValue"], sizeStyle='small')
+
+        self.w.maxValueTitle = TextBox((10, 40, 100, 20), "maxValue", sizeStyle='small')
+        self.w.maxValue = EditText((110, 40, 100, 20), axisList["MaxValue"], sizeStyle='small')
+
+        self.changeDesignSpace = 1
+        self.w.changeDesignSpaceCheckBox = CheckBox((10, -50, -10, 20), 'Change design space values', value = self.changeDesignSpace, callback = self.changeDesignSpaceCallback, sizeStyle="small")
+
+        self.w.cancel = Button((0, -20, 150, 20), "cancel", sizeStyle = "small", callback = self.cancelCallback)
+        self.w.apply = Button((150, -20, 150, 20), "apply", sizeStyle = "small", callback = self.applyCallback)
+        self.w.setDefaultButton(self.w.apply)
+        self.w.open()
+
+    def changeDesignSpaceCallback(self, sender):
+        self.changeDesignSpace = sender.get()
+
+    def applyCallback(self, sender):
+        axisName = self.axisList["Axis"]
+        oldMinValue = str_to_int_or_float(self.axisList["MinValue"])
+        oldMaxValue = str_to_int_or_float(self.axisList["MaxValue"])
+
+        newMinValue = self.w.minValue.get()
+        newMaxVamue = self.w.maxValue.get()
+
+        try:
+            newMinValue = str_to_int_or_float(newMinValue)
+            newMaxVamue = str_to_int_or_float(newMaxVamue)
+        except: return
+
+        self.RCJKI.currentGlyph._axes[self.axisIndex].minValue = newMinValue
+        self.RCJKI.currentGlyph._axes[self.axisIndex].maxValue = newMaxVamue
+        if self.changeDesignSpace:
+            for variation in self.RCJKI.currentGlyph._glyphVariations:
+                if axisName in variation.location:
+                    systemValue = self.RCJKI.systemValue(variation.location[axisName], oldMinValue, oldMaxValue)
+                    newValue = self.RCJKI.userValue(systemValue, newMinValue, newMaxVamue)
+                    variation.location[axisName] = newValue
+
+        self.controller.setList()
+        self.controller.controller.sourcesItem.setList()
+
+        self.w.close()
+
+    def cancelCallback(self, sender):
+        self.w.close()
 
 class AxesGroup(Group):
 
@@ -686,8 +753,15 @@ class AxesGroup(Group):
 
         self.setList()
 
+        self.modifyAxisButton = Button((0, -40, 150, 20), "Modify axis", sizeStyle="small", callback = self.modifyAxisCallback)
+
         self.addAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addAxisButtonCallback)
         self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
+
+    def modifyAxisCallback(self, sender):
+        sel = self.axesList.getSelection()
+        if not sel: return
+        ModifyAxisSheet(self.controller.w, self.RCJKI, self, self.axesList[sel[0]], sel[0])
 
     @lockedProtect
     def resetSliderToZeroCallback(self, sender):
@@ -717,7 +791,7 @@ class AxesGroup(Group):
             delattr(self, "axesList")
 
         slider = SliderListCell(minValue = 0, maxValue = 1)
-        self.axesList = List((0, 20, -0, -20),
+        self.axesList = List((0, 20, -0, -40),
             self.axes,
             columnDescriptions = [
                     {"title": "Axis", "editable": True, "width": 100},
@@ -783,19 +857,21 @@ class AxesGroup(Group):
         if not sel: 
             return
         edited = sender.getEditedColumnAndRow()
-        if not sender.get(): return
-        values = sender.get()[sel[0]]
+        senderGet = sender.get()
+        if not senderGet: return
+
+        values = senderGet[sel[0]]
         axis = values["Axis"]
         minValue = float(values["MinValue"])
         maxValue = float(values["MaxValue"])
-        sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
+        sliderValue = round(senderGet[sel[0]]['PreviewValue'], 3)
         if edited[0] == 0:
-            name =  sender.get()[edited[1]]['Axis']
-            if len([x for x in sender.get() if x['Axis'] == name]) > 1:
+            name =  senderGet[edited[1]]['Axis']
+            if len([x for x in senderGet if x['Axis'] == name]) > 1:
                 i = 0
                 while True:
-                    name = sender.get()[edited[1]]['Axis'] + "_" + str(i).zfill(2)
-                    if name not in [x["Axis"] for x in sender.get()]:
+                    name = senderGet[edited[1]]['Axis'] + "_" + str(i).zfill(2)
+                    if name not in [x["Axis"] for x in senderGet]:
                         print(name)
                         break
                     i += 1
@@ -811,11 +887,13 @@ class AxesGroup(Group):
             # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
-        elif (edited[0] in [1, 3] and self.glyphtype != "atomicElement") or (edited[0] in [2, 4] and self.glyphtype == "atomicElement"): #change min/max value
-            self.RCJKI.currentGlyph._axes.get(axis).minValue = minValue
-            self.RCJKI.currentGlyph._axes.get(axis).maxValue = maxValue
+        elif (edited[0] in [1, 3] and self.glyphtype != "atomicElement") or (edited[0] in [1, 3] and self.glyphtype == "atomicElement"): #change min/max value
+            senderGet[sel[0]]["MinValue"] = self.RCJKI.currentGlyph._axes.get(axis).minValue
+            senderGet[sel[0]]["MaxValue"] = self.RCJKI.currentGlyph._axes.get(axis).maxValue
+            # self.RCJKI.currentGlyph._axes.get(axis).minValue = minValue
+            # self.RCJKI.currentGlyph._axes.get(axis).maxValue = maxValue
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
-        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in sender.get()]
+        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
 
