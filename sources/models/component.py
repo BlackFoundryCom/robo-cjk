@@ -525,8 +525,12 @@ class VariationGlyphsInfos:
         return str({x:getattr(self, x) for x in vars(self)})
         # return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
-    def _toDict(self):
-        return {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on}
+    def _toDict(self, exception = []):
+        d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on}
+        for e in exception:
+            if e in d:
+                del d[e]
+        return d
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -566,12 +570,12 @@ class VariationGlyphs(list):
     #     for x in self:
     #         yield x._toDict()
 
-    def getList(self):
+    def getList(self, exception = []):
         """
         Return a list reprensentation on the class
         """
         # return [x for x in self]
-        return [x._toDict() for x in self]
+        return [x._toDict(exception) for x in self]
         # return {x: getattr(self, x)._toDict() for x in vars(self)}  
     
     def removeVariation(self, index):

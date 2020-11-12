@@ -247,7 +247,7 @@ class DeepComponent(Glyph):
 
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
-        lib[variationGlyphsKey] = self._glyphVariations.getList()
+        lib[variationGlyphsKey] = self._glyphVariations.getList(exception=["layerName"])
 
         self.lib.update(lib)
         self.markColor = color

@@ -136,7 +136,7 @@ class AtomicElement(Glyph):
     
         # lib[glyphVariationsKey] = self._glyphVariations.getList()
         lib[axesKey] = self._axes.getList()
-        lib[variationGlyphsKey] = self._glyphVariations.getList()
+        lib[variationGlyphsKey] = self._glyphVariations.getList(exception=["sourceName"])
 
         self.lib.update(lib)
         self.markColor = color
