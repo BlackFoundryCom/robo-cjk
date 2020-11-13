@@ -1056,7 +1056,7 @@ class SourcesGroup(Group):
             for axis in self.listDescription[2:]:
                 axisName = axis["title"]
                 value = values[edited[1]][axisName]
-                locations[axisName] = float(value)
+                locations[axisName] = str_to_int_or_float(value)
             self.RCJKI.currentGlyph._glyphVariations.setLocationToIndex(locations, index)
             self.setList()
         self.RCJKI.updateDeepComponent(update = False)
