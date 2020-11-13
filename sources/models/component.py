@@ -547,7 +547,7 @@ class VariationGlyphs(list):
 
     def _init_with_old_format(self, data):
         for k, v in data.items():
-            variation = {"location": {k:v.get("maxValue")}, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
+            variation = {"location": {k:v.get("maxValue")}, "sourceName":k, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
             self.addVariation(variation)
         for variation in self:
             variation.deepComponents._convertOffsetFromRCenterToTCenter()
