@@ -119,7 +119,8 @@ class DeepComponent(Glyph):
             if not self.selectedElement:
                 resultGlyph = RGlyph()
                 g = g.preview(position, font, forceRefresh=True)
-                for c in g.glyph:
+                for c in g:
+                    c = c.glyph
                     c.draw(resultGlyph.getPen())
                 preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
             elif self.selectedElement and not self.reinterpolate:
@@ -127,7 +128,8 @@ class DeepComponent(Glyph):
             else:
                 resultGlyph = RGlyph()
                 g = g.preview(position, font, forceRefresh=True)
-                for c in g.glyph:
+                for c in g:
+                    c = c.glyph
                     c.draw(resultGlyph.getPen())
                 preview[self.selectedElement[i]].resultGlyph = resultGlyph   
                 preview[self.selectedElement[i]].transformation = dc.get("transform")

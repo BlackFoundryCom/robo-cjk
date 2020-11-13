@@ -85,8 +85,10 @@ class AtomicElement(Glyph):
         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
         # resultGlyph.removeOverlap()
         # self.frozenPreview.append(resultGlyph)
-        self.previewGlyph.append((resultGlyph))
-        return self.ResultGlyph(resultGlyph)
+        self.previewGlyph.append(self.ResultGlyph(resultGlyph))
+        for e in self.previewGlyph:
+            yield e
+        # return self.ResultGlyph(resultGlyph)
 
     @property
     def foreground(self):
