@@ -1001,9 +1001,9 @@ class SourcesGroup(Group):
 
     def setList(self):
         if self.RCJKI.currentGlyph.type == "atomicElement":
-            self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:"" for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+            self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         else:    
-            self.sources = [{"On/Off":x.on, "name":x.sourceName, **{y.name:"" for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+            self.sources = [{"On/Off":x.on, "name":x.sourceName, **{y.name:0 for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         for i, source in enumerate(self.sources):
             source.update(self.RCJKI.currentGlyph._glyphVariations[i].location)
 
