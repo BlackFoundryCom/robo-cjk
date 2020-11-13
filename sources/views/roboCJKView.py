@@ -141,9 +141,9 @@ def getRelatedGlyphs(font, glyphName, regenerated = []):
         getRelatedGlyphs(font, dc['name'], regenerated)
 
 # This function is outside of any class
-def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
+def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     font = RCJKI.currentFont
-    g = font[glyphName]._RGlyph
+    g = glyph._RGlyph
     # font[glyphName]._initWithLib()
     # locked, alreadyLocked = font.locker.lock(g)
     locked, alreadyLocked = font.lockGlyph(g)
@@ -153,7 +153,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         if not alreadyLocked:
             RCJKI.gitEngine.pull()
             # font.getGlyphs()
-            getRelatedGlyphs(font, glyphName)
+            getRelatedGlyphs(font, glyph.name)
             # font.getGlyph(font[glyphName])
             # g = font.get(glyphName, font._RFont)._RGlyph
     else:
@@ -164,7 +164,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         CurrentGlyphWindow().close()
     except: pass
     # font.get(glyphName, font._RFont).update()
-    glyph = font.get(glyphName, font._RFont)
+    glyph = font.get(glyph.name, font._RFont)
     glyph.update()
     g = glyph._RGlyph
     OpenGlyphWindow(g)
@@ -396,7 +396,7 @@ class CharacterWindow:
                 self.RCJKI.gitEngine.commit("new glyph")
                 self.RCJKI.gitEngine.push()
         finally:
-            openGlyphWindowIfLockAcquired(self.RCJKI, name)
+            openGlyphWindowIfLockAcquired(self.RCJKI, self.RCJKI.currentFont[name])
 
     def setRefGlyph(self, sender):
         sel = sender.getSelection()
@@ -505,7 +505,7 @@ class ComponentWindow():
         # loc = {}
         # if self.glyph.selectedSourceAxis:
         #     loc = {self.glyph.selectedSourceAxis:1}
-        for atomicInstance in self.glyph.preview():
+        for atomicInstance in self.glyph.preview({},forceRefresh=False):
             mjdt.drawGlyph(atomicInstance.getTransformedGlyph()) 
         mjdt.restore()
 
@@ -1435,7 +1435,7 @@ class RoboCJKView(BaseWindowController):
             CurrentGlyphWindow().close()
         except:pass
         self.RCJKI.currentGlyph = self.currentFont[glyphName]
-        openGlyphWindowIfLockAcquired(self.RCJKI, glyphName)
+        openGlyphWindowIfLockAcquired(self.RCJKI, self.RCJKI.currentGlyph)
 
     def GlyphsListEditCallback(self, sender):
         sel = sender.getSelection()
@@ -1852,7 +1852,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         # loc = {}
         # if self.refGlyph.selectedSourceAxis:
             # loc = {self.refGlyph.selectedSourceAxis:1}
-        for i, atomicElement in enumerate(self.refGlyph.preview()):
+        for i, atomicElement in enumerate(self.refGlyph.preview({}, forceRefresh=False)):
             if i == self.index:
                 mjdt.fill(.7, 0, .15, 1)
             else:

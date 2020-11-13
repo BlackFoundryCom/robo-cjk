@@ -48,7 +48,6 @@ axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
 
 class RCJKGlyph(RGlyph):
-
     def __init__(self, **kwargs):
         super().__init__()
         for k, v in kwargs.items():
@@ -67,12 +66,17 @@ class DeepComponent(Glyph):
         self.selectedElement = []
         self.name = name
         self.type = "deepComponent"
-        # self.preview = glyphPreview
+        self.previewGlyph = []
         # self.preview = glyphPreview.DeepComponentPreview(self)
         self._setStackUndo()
         self.save()
 
-    def preview(self, position:dict={}, font = None):
+    def preview(self, position:dict={}, font = None, forceRefresh=True):
+        if not forceRefresh and self.previewGlyph: 
+            print('DC has previewGlyph', self.previewGlyph)
+            for e in self.previewGlyph: yield e
+            return
+            
         if not position:
             position = self.getLocation()
         # position = self.normalizedValueToMinMaxValue(position)
@@ -90,6 +94,7 @@ class DeepComponent(Glyph):
 
         # resultGlyph = RGlyph()
         # self.frozenPreview = []
+        self.previewGlyph = []
         if font is None:
             font = self.getParent()
         for i, dc in enumerate(result):
@@ -98,12 +103,14 @@ class DeepComponent(Glyph):
             g = font[name]
             position = dc.get("coord")#self.normalizedValueToMinMaxValue(dc.get("coord"), g)
             resultGlyph = RCJKGlyph(**dc.get("transform"))
-            g = g.preview(position, font)
+            g = g.preview(position, font, forceRefresh=True)
             for c in g:
                 c.draw(resultGlyph.getPen())
             self._transformGlyph(resultGlyph, dc.get("transform"))
             # g.draw(resultGlyph.getPen())
             # self.frozenPreview.append(resultGlyph)
+            self.previewGlyph.append(resultGlyph)
+            print(i, resultGlyph)
             yield resultGlyph
         # resultGlyph.removeOverlap()
         # return resultGlyph
@@ -159,6 +166,7 @@ class DeepComponent(Glyph):
             selectedElement = element[index]
             if selectedElement.get("name"):
                 self.addAtomicElementNamed(selectedElement["name"], copy.deepcopy(selectedElement))
+        self.previewGlyph = []
 
     def addGlyphVariation(self, newAxisName):
         self._axes.addAxis({"name":newAxisName, "minValue":0, "maxValue":1})

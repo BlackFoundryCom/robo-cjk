@@ -130,7 +130,7 @@ class Drawer():
         loc = {}
         if glyph.sourcesList: 
             loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
-        for g in glyph.preview(loc):
+        for g in glyph.preview(loc, forceRefresh=False):
             mjdt.drawGlyph(self.roundGlyph(g))  
         mjdt.restore()
 
@@ -141,7 +141,7 @@ class Drawer():
         # if glyph.selectedSourceAxis:
         #     loc = {glyph.selectedSourceAxis:1}
         # for i, atomicInstance in enumerate(glyph.preview()):
-        for i, atomicInstance in enumerate(glyph.preview()):
+        for i, atomicInstance in enumerate(glyph.preview(forceRefresh=False)):
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
                 mjdt.save()

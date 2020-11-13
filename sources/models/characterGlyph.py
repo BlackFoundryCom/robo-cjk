@@ -190,7 +190,8 @@ class CharacterGlyph(Glyph):
             selectedElement = element[index]
             if selectedElement.get("name"):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
-
+        self.previewGlyph = []
+        
     def updateDeepComponentCoord(self, nameAxis, value):
         if self.selectedSourceAxis:
             index = 0

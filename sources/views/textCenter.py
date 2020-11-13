@@ -339,7 +339,7 @@ class TextCenter:
         mjdt.fill(0, 0, 0, 1)
         mjdt.stroke(0, 0, 0, 0)
         mjdt.strokeWidth(scale)
-        for c in glyph.preview(sourcesList):
+        for c in glyph.preview(sourcesList, forceRefresh=False):
             mjdt.drawGlyph(c)
         mjdt.restore()
 

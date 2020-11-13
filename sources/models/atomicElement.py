@@ -49,11 +49,14 @@ class AtomicElement(Glyph):
         self.selectedSourceAxis = None
         self.name = name
         self.type = "atomicElement"
-        # self.preview = glyphPreview
+        self.previewGlyph = []
         # self.preview = glyphPreview.AtomicElementPreview(self)
         self.save()
 
-    def preview(self, position:dict={}, font=None):
+    def preview(self, position:dict={}, font=None, forceRefresh=True):
+        if not forceRefresh and self.previewGlyph: 
+            print('AE has previewGlyph', self.previewGlyph)
+            return self.previewGlyph
         # if not position:
         #     position = self.getLocation()
         # print(position)
@@ -66,6 +69,7 @@ class AtomicElement(Glyph):
         # locations.extend([{k:self.normalizedValueToMinMaxValue(v, self) for k, v in x["location"].items()} for x in self._glyphVariations.getList() if x["on"]])
 
         # self.frozenPreview = []
+        self.previewGlyph = []
         if font is None:
             font = self.getParent()
         model = VariationModel(locations)
@@ -81,6 +85,7 @@ class AtomicElement(Glyph):
         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
         # resultGlyph.removeOverlap()
         # self.frozenPreview.append(resultGlyph)
+        self.previewGlyph.append(resultGlyph)
         return resultGlyph
 
     @property

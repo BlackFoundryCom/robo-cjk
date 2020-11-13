@@ -461,6 +461,7 @@ class RoboCJKController(object):
 
     @refresh
     def mouseDown(self, point):
+        print('mouseDown')
         if self.isAtomic:
             return
         event = extractNSEvent(point)
@@ -527,6 +528,7 @@ class RoboCJKController(object):
 
     @refresh
     def mouseUp(self, info):
+        print('mouseUp')
         removeObserver(self, 'mouseDragged')
         if self.isAtomic:
             return
@@ -542,6 +544,7 @@ class RoboCJKController(object):
             self.setListWithSelectedElement()
         if not self.isAtomic:
             self.glyphInspectorWindow.deepComponentListItem.setList()
+
     
     def doUndo(self):
         def _getKeys(glyph):
@@ -594,6 +597,7 @@ class RoboCJKController(object):
 
     @refresh
     def keyDown(self, info):
+        print('keyDown')
         if self.isAtomic:
             return
         event = extractNSEvent(info)

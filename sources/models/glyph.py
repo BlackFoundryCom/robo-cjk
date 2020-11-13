@@ -319,12 +319,15 @@ class Glyph(RGlyph):
                 selectedElement.rotation += int(rotation)
             else:
                 selectedElement.rotation = -int(rotation)
+        self.previewGlyph = []
 
     # @compute
     def setPositionToSelectedElements(self, position: list):
         for selectedElement in self._getSelectedElement():
             selectedElement.x += position[0]
             selectedElement.y += position[1]
+        self.previewGlyph = []
+        print('setPositionToSelectedElements')
 
     # @compute
     def setScaleToSelectedElements(self, scale: list):
@@ -343,6 +346,7 @@ class Glyph(RGlyph):
                 x, y = -x, -y
             selectedElement.scalex += x
             selectedElement.scaley += y
+        self.previewGlyph = []
 
     # @compute
     def setTransformationCenterToSelectedElements(self, center):
@@ -356,13 +360,14 @@ class Glyph(RGlyph):
             # for variations in self._glyphVariations.values():
             #     variations[index].tcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
             #     variations[index].tcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
+        self.previewGlyph = []
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
         # preview = self.frozenPreview
         # if not preview:
         #     preview = self.preview({})
-        for index, atomicInstanceGlyph in enumerate(self.preview({})):
+        for index, atomicInstanceGlyph in enumerate(self.preview({},forceRefresh=False)):
             atomicInstanceGlyph.selectedContour = False
             if atomicInstanceGlyph.pointInside((px, py)):
                 atomicInstanceGlyph.selectedContour = True
@@ -374,7 +379,7 @@ class Glyph(RGlyph):
         # preview = self.frozenPreview
         # if not preview:
         #     preview = self.preview({})
-        for index, atomicInstanceGlyph in enumerate(self.preview({})):
+        for index, atomicInstanceGlyph in enumerate(self.preview({},forceRefresh=False)):
             inside = False
             atomicInstanceGlyph.selectedContour = False
             for c in atomicInstanceGlyph:

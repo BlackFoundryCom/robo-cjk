@@ -322,7 +322,7 @@ class SelectDeepComponentSheet():
         # # loc = {}
         # # if self.glyph.selectedSourceAxis:
         #     loc = {self.glyph.selectedSourceAxis:1}
-        for atomicinstance in self.glyph.preview():
+        for atomicinstance in self.glyph.preview(forceRefresh=False):
             mjdt.drawGlyph(atomicinstance) 
         mjdt.restore()
 
