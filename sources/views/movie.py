@@ -132,6 +132,7 @@ class Movie:
         # glyph.preview.computeDeepComponentsPreview(ld)
         origineGlyph = RGlyph()
         for atomicInstance in glyph.preview():
+            atomicInstance = atomicInstance.glyph
             atomicInstance.draw(origineGlyph.getPen())
         # origineGlyph = glyph.preview.variationPreview.copy()
         origineGlyph.name = "interpo"
@@ -227,6 +228,7 @@ class Movie:
                 ratioX = ratioY = (rands[k][g])/1000
                 resultGlyph = RGlyph()
                 for c in glyph.preview():
+                    c = c.glyph
                     c.draw(resultGlyph.getPen())
                 interpoGlyph = interpolation.interpol_glyph_glyph_ratioX_ratioY_scaleX_scaleY(origineGlyph, resultGlyph, ratioX, ratioY, 1, 1, NewFont(showUI = False))
                 db.drawGlyph(interpoGlyph)

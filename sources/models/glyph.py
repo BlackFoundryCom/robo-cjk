@@ -73,6 +73,25 @@ def _getKeys(glyph):
 
 class Glyph(RGlyph):
 
+    class ResultGlyph:
+
+        def __init__(self, resultGlyph, transformation={}):
+            self.resultGlyph = resultGlyph
+            self._transformation = transformation
+
+        @property
+        def transformation(self):
+            return self._transformation
+
+        @transformation.setter
+        def transformation(self, t):
+            self._transformation = t
+
+        @property
+        def glyph(self):
+            return interpolation._transformGlyph(self.resultGlyph.copy(), self.transformation)
+
+
     def __init__(self):
         super().__init__()
         self.type = None
@@ -84,6 +103,8 @@ class Glyph(RGlyph):
         self.model = None
         self.deltas = None
 
+        self.redrawSelectedElement = False
+        self.reinterpolate = False
         # self.frozenPreview = []
 
     def _setStackUndo(self):
@@ -178,11 +199,12 @@ class Glyph(RGlyph):
     def normalizedValue(self, v, minv, maxv):
         return (v-minv)/(maxv-minv)
 
-    def _transformGlyph(self, glyph, transform):
-        t = interpolation.makeTransform(**transform)
-        # for c in glyph:
-        glyph.transformBy(tuple(t))
-        return glyph
+    # def _transformGlyph(self, glyph, transform={}):
+    #     if not transform: return glyph
+    #     t = interpolation.makeTransform(**transform)
+    #     # for c in glyph:
+    #     glyph.transformBy(tuple(t))
+    #     return glyph
 
     def getLocation(self):
         loc = {}
@@ -319,15 +341,16 @@ class Glyph(RGlyph):
                 selectedElement.rotation += int(rotation)
             else:
                 selectedElement.rotation = -int(rotation)
-        self.previewGlyph = []
+        self.redrawSelectedElement = True
 
     # @compute
     def setPositionToSelectedElements(self, position: list):
         for selectedElement in self._getSelectedElement():
             selectedElement.x += position[0]
             selectedElement.y += position[1]
-        self.previewGlyph = []
-        print('setPositionToSelectedElements')
+        # self.previewGlyph = []
+        # self.redrawSelectedElement = True
+        self.redrawSelectedElement = True
 
     # @compute
     def setScaleToSelectedElements(self, scale: list):
@@ -346,7 +369,7 @@ class Glyph(RGlyph):
                 x, y = -x, -y
             selectedElement.scalex += x
             selectedElement.scaley += y
-        self.previewGlyph = []
+        self.redrawSelectedElement = True
 
     # @compute
     def setTransformationCenterToSelectedElements(self, center):
@@ -360,17 +383,18 @@ class Glyph(RGlyph):
             # for variations in self._glyphVariations.values():
             #     variations[index].tcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
             #     variations[index].tcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
-        self.previewGlyph = []
+        self.redrawSelectedElement = True
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
         # preview = self.frozenPreview
         # if not preview:
         #     preview = self.preview({})
-        for index, atomicInstanceGlyph in enumerate(self.preview({},forceRefresh=False)):
-            atomicInstanceGlyph.selectedContour = False
-            if atomicInstanceGlyph.pointInside((px, py)):
-                atomicInstanceGlyph.selectedContour = True
+        for index, atomicInstanceGlyph in enumerate(self.preview(forceRefresh=False, axisPreview = True)):
+            # atomicInstanceGlyph = interpolation._transformGlyph(*atomicInstanceGlyph)
+            # atomicInstanceGlyph.glyph.selectedContour = False
+            if atomicInstanceGlyph.glyph.pointInside((px, py)):
+                # atomicInstanceGlyph.glyph.selectedContour = True
                 if index not in self.selectedElement:
                     self.selectedElement.append(index)
                 if not multipleSelection: return
@@ -381,12 +405,13 @@ class Glyph(RGlyph):
         #     preview = self.preview({})
         for index, atomicInstanceGlyph in enumerate(self.preview({},forceRefresh=False)):
             inside = False
-            atomicInstanceGlyph.selectedContour = False
-            for c in atomicInstanceGlyph:
+            # atomicInstanceGlyph = interpolation._transformGlyph(*atomicInstanceGlyph)
+            # atomicInstanceGlyph.glyph.selectedContour = False
+            for c in atomicInstanceGlyph.glyph:
                 for p in c.points:
                     if p.x > x and p.x < w and p.y > y and p.y < h:
                         inside = True
-                        atomicInstanceGlyph.selectedContour = True
+                        # atomicInstanceGlyph.glyph.selectedContour = True
             if inside:
                 if index in self.selectedElement: continue
                 self.selectedElement.append(index)

@@ -32,7 +32,7 @@ except:
     pass
 import copy
 from imp import reload
-from utils import files
+from utils import files, interpolation
 # reload(files)
 numberFormatter = NumberFormatter()
 
@@ -136,11 +136,13 @@ class UfoText(Textbox):
                 if not self.sourceList:
                     # rglyph.preview.computeDeepComponents(update = False)
                     for atomicInstance in rglyph.preview(self.sourceList):
+                        atomicInstance = atomicInstance.glyph
                         atomicInstance.draw(glyph.getPen())
                         # for c in atomicInstance.getTransformedGlyph():
                         #     glyph.appendContour(c)
                 else:
                     for atomicInstance in rglyph.preview():
+                        atomicInstance = atomicInstance.glyph
                         atomicInstance.draw(glyph.getPen())
 
                 yield (x, y), glyph
@@ -151,11 +153,13 @@ class UfoText(Textbox):
                     if not self.sourceList:
                         # g.preview.computeDeepComponents(update = False)
                         for atomicInstance in g.preview(self.sourceList):
+                            atomicInstance = atomicInstance.glyph
                             atomicInstance.draw(glyph.getPen())
                             # for c in atomicInstance.getTransformedGlyph():
                             #     glyph.appendContour(c)
                     else:
                         for atomicInstance in g.preview():
+                            atomicInstance = atomicInstance.glyph
                             atomicInstance.draw(glyph.getPen())
 
                     yield (x, y), glyph
@@ -953,6 +957,7 @@ class NewPDF:
                             glyphsVariations[variation] = []
                         resultGlyph = []
                         for c in glyph1.preview({variation:1}):
+                            c = c.glyph
                             c.markColor = glyph1.markColor
                             c.name = glyph1.name
                             resultGlyph.append(c)
@@ -978,6 +983,7 @@ class NewPDF:
                             glyphsVariations[variation] = []
                         resultGlyph = []
                         for c in glyph1.preview({variation:0}):
+                            c = c.glyph
                             c.markColor = glyph1.markColor
                             c.name = glyph1.name
                             resultGlyph.append(c)

@@ -221,6 +221,7 @@ class RoboCJKController(object):
             removeObserver(self, "mouseDown")
             removeObserver(self, "mouseUp")
             removeObserver(self, "keyDown")
+            removeObserver(self, "keyUp")
             removeObserver(self, "didUndo")
         else:
             addObserver(self, "fontDidSave", "fontDidSave")
@@ -234,6 +235,7 @@ class RoboCJKController(object):
             addObserver(self, "mouseDown", "mouseDown")
             addObserver(self, "mouseUp", "mouseUp")
             addObserver(self, "keyDown", "keyDown")
+            addObserver(self, "keyUp", "keyUp")
             addObserver(self, "didUndo", "didUndo")
         self.observers = not self.observers
 
@@ -267,7 +269,8 @@ class RoboCJKController(object):
                 g1 = f[glyph.name]
                 g1.clear()
                 for ai in ais:
-                    for c in ai.transformedGlyph:
+                    # g._transformGlyph()
+                    for c in ai.glyph:
                         g1.appendContour(c)
 
         for axis in self.currentFont.fontVariations:
@@ -461,7 +464,6 @@ class RoboCJKController(object):
 
     @refresh
     def mouseDown(self, point):
-        print('mouseDown')
         if self.isAtomic:
             return
         event = extractNSEvent(point)
@@ -528,7 +530,8 @@ class RoboCJKController(object):
 
     @refresh
     def mouseUp(self, info):
-        print('mouseUp')
+        self.currentGlyph.redrawSelectedElement = False
+        self.currentGlyph.reinterpolate = False
         removeObserver(self, 'mouseDragged')
         if self.isAtomic:
             return
@@ -595,9 +598,12 @@ class RoboCJKController(object):
             self.updateDeepComponent()
             view.sourcesList.set(self.currentGlyph.sourcesList)
 
+    def keyUp(self, info):
+        self.currentGlyph.redrawSelectedElement = False
+        self.currentGlyph.reinterpolate = False
+
     @refresh
     def keyDown(self, info):
-        print('keyDown')
         if self.isAtomic:
             return
         event = extractNSEvent(info)

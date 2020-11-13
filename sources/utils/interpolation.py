@@ -37,6 +37,12 @@ def makeTransform(x, y, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesC
         t = t.translate(-tcenterx, -tcentery)
     return t
 
+def _transformGlyph(glyph, transform={}):
+        if not transform: return glyph
+        t = makeTransform(**transform)
+        # for c in glyph:
+        glyph.transformBy(tuple(t))
+        return glyph
 def normalizedValue(v, minv, maxv):
     return (v-minv)/(maxv-minv)
     

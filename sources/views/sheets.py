@@ -323,7 +323,7 @@ class SelectDeepComponentSheet():
         # # if self.glyph.selectedSourceAxis:
         #     loc = {self.glyph.selectedSourceAxis:1}
         for atomicinstance in self.glyph.preview(forceRefresh=False):
-            mjdt.drawGlyph(atomicinstance) 
+            mjdt.drawGlyph(atomicinstance.glyph) 
         mjdt.restore()
 
 numberFormatter = NumberFormatter()

@@ -23,7 +23,7 @@ from mojo.roboFont import *
 from AppKit import NSColor, NSNoBorder, NumberFormatter
 import mojo.drawingTools as mjdt
 from imp import reload
-from utils import decorators
+from utils import decorators, interpolation
 # reload(decorators)
 from utils import files
 # reload(files)
@@ -69,7 +69,7 @@ class GlyphPreviewCanvas(CanvasGroup):
         mjdt.scale(scale, scale)
         mjdt.translate(((200-(self.glyph.width*scale))/scale)*.5, 450)
         for g in self.glyph.preview({}, forceRefresh=False):
-            mjdt.drawGlyph(g)
+            mjdt.drawGlyph(g.glyph)
         mjdt.restore()
         # outlines, items, width = self.instantiateCharacterGlyph(self.glyph, {"WGHT":1})
         # print(outlines, items, width)

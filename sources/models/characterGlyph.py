@@ -46,14 +46,6 @@ deepComponentsKey = 'robocjk.deepComponents'
 axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
 
-class RCJKGlyph(RGlyph):
-
-    def __init__(self, **kwargs):
-        super().__init__()
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-        self.selectedContour = False
-
 class CharacterGlyph(Glyph):
 
     
@@ -69,6 +61,8 @@ class CharacterGlyph(Glyph):
         self.name = name
         self.type = "characterGlyph"
         self.outlinesPreview = None
+        self.previewGlyph = []
+        self.axisPreview = []
         # self.preview = glyphPreview
         # self.preview = glyphPreview.CharacterGlyphPreview(self)
 
@@ -80,17 +74,30 @@ class CharacterGlyph(Glyph):
         self._setStackUndo()
         self.save()
 
-    def preview(self, position:dict={}, font = None):
+    def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
+        if not self.redrawSelectedElement:
+            if axisPreview and self.axisPreview:
+                # print('DC has axisPreview', self.axisPreview)
+                for e in self.axisPreview: yield e
+                return
+            elif not forceRefresh and self.previewGlyph and not axisPreview: 
+                # print('DC has previewGlyph', self.previewGlyph)
+                for e in self.previewGlyph: yield e
+                return
+
         if not position:
             position = self.getLocation()
-        # position = self.normalizedValueToMinMaxValue(position)
+
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations if x["on"]])
-
         model = VariationModel(locations)
-        masterDeepComponents = self._deepComponents
-        axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
 
+        if self.selectedElement:
+            masterDeepComponents = [x for i, x in enumerate(self._deepComponents) if i in self.selectedElement]
+            axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
+        else:
+            masterDeepComponents = self._deepComponents
+            axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
             variations = []
@@ -98,26 +105,44 @@ class CharacterGlyph(Glyph):
                 variations.append(gv[i])
             result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
 
-        # resultGlyph = RGlyph()
-        # self.frozenPreview = []
+        if axisPreview:
+            if not self.selectedElement:
+                preview = self.axisPreview = []
+            if self.selectedElement:
+                preview = self.axisPreview
+        else:
+            if not self.selectedElement:
+                preview = self.previewGlyph = []
+            if self.selectedElement:
+                preview = self.previewGlyph
+
         if font is None:
             font = self.getParent()
         for i, dc in enumerate(result):
             name = dc.get("name")
-            
             if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
             g = font[name]
-            pos = dc.get("coord")#self.normalizedValueToMinMaxValue(dc.get("coord"), g)
-            resultGlyph = RCJKGlyph(**dc.get("transform"))
-            g = g.preview(pos, font)
-            for c in g:
-                c.draw(resultGlyph.getPen())
-            self._transformGlyph(resultGlyph, dc.get("transform"))
-            # g.draw(resultGlyph.getPen())
-            # self.frozenPreview.append(resultGlyph)
-            yield resultGlyph
+            pos = dc.get("coord")
 
-        if len(self._RGlyph):
+            if not self.selectedElement:
+                resultGlyph = RGlyph()
+                g = g.preview(pos, font, forceRefresh=True)
+                for c in g:
+                    c = c.glyph
+                    c.draw(resultGlyph.getPen())
+                preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
+            elif self.selectedElement and not self.reinterpolate:
+                preview[self.selectedElement[i]].transformation = dc.get("transform")
+            else:
+                resultGlyph = RGlyph()
+                g = g.preview(pos, font, forceRefresh=True)
+                for c in g:
+                    c = c.glyph
+                    c.draw(resultGlyph.getPen())
+                preview[self.selectedElement[i]].resultGlyph = resultGlyph   
+                preview[self.selectedElement[i]].transformation = dc.get("transform")
+
+        if len(self._RGlyph) and not self.selectedElement:
             layerGlyphs = []
             layerNames = self._axes.names
             for layerName in layerNames:
@@ -129,7 +154,10 @@ class CharacterGlyph(Glyph):
                 layerGlyphs.append(g)
             if len(layerGlyphs):
                 resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
-                yield resultGlyph
+                preview.append(self.ResultGlyph(resultGlyph))
+
+        for resultGlyph in preview:
+            yield resultGlyph
             # g.draw(resultGlyph.getPen())
 
         # return resultGlyph
@@ -190,8 +218,10 @@ class CharacterGlyph(Glyph):
             selectedElement = element[index]
             if selectedElement.get("name"):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
-        self.previewGlyph = []
-        
+                # self.selectedElement = [len(self._deepComponents)-1]
+        self.redrawSelectedElement = True
+        self.selectedElement = []
+            
     def updateDeepComponentCoord(self, nameAxis, value):
         if self.selectedSourceAxis:
             index = 0
@@ -226,6 +256,8 @@ class CharacterGlyph(Glyph):
         self._deepComponents.addDeepComponent(d)
         if self._axes:
             self._glyphVariations.addDeepComponent(d)
+        self.redrawSelectedElement = True
+        self.selectedElement = []
 
         # self.preview.computeDeepComponentsPreview(update = False)
         # self.preview.computeDeepComponents(update = False)
@@ -244,6 +276,8 @@ class CharacterGlyph(Glyph):
     def removeDeepComponentAtIndexToGlyph(self):
         if not self.selectedElement: return
         self.removeDeepComponents(self.selectedElement)
+        self.selectedElement = []
+        self.redrawSelectedElement = True
         self.selectedElement = []
 
     def save(self):

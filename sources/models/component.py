@@ -438,6 +438,9 @@ class DeepComponents:
     def __repr__(self):
         return str(self._deepComponents)
 
+    def __len__(self):
+        return len(self._deepComponents)
+
     def __iter__(self):
         for deepComponent in self._deepComponents:
             yield deepComponent._toDict()

@@ -54,9 +54,9 @@ class AtomicElement(Glyph):
         self.save()
 
     def preview(self, position:dict={}, font=None, forceRefresh=True):
-        if not forceRefresh and self.previewGlyph: 
-            print('AE has previewGlyph', self.previewGlyph)
-            return self.previewGlyph
+        # if not forceRefresh and self.previewGlyph: 
+        #     print('AE has previewGlyph', self.previewGlyph)
+        #     return self.previewGlyph
         # if not position:
         #     position = self.getLocation()
         # print(position)
@@ -85,8 +85,8 @@ class AtomicElement(Glyph):
         resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
         # resultGlyph.removeOverlap()
         # self.frozenPreview.append(resultGlyph)
-        self.previewGlyph.append(resultGlyph)
-        return resultGlyph
+        self.previewGlyph.append((resultGlyph))
+        return self.ResultGlyph(resultGlyph)
 
     @property
     def foreground(self):

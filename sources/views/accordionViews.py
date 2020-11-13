@@ -23,7 +23,7 @@ from mojo.roboFont import *
 from mojo.canvas import Canvas, CanvasGroup
 import mojo.drawingTools as mjdt
 from AppKit import NSColor, NSFont
-from utils import decorators, files
+from utils import decorators, files, interpolation
 from views import sheets
 import os, copy
 
@@ -155,7 +155,7 @@ class CompositionRulesGroup(Group):
         mjdt.scale(.04)
         mjdt.fill(0, 0, 0, 1)
         for c in self.glyph.preview({}, forceRefresh=False):
-            mjdt.drawGlyph(c) 
+            mjdt.drawGlyph(c.glyph) 
         mjdt.restore()
 
     def componentsListSelectionCallback(self, sender):
@@ -240,7 +240,7 @@ class CompositionRulesGroup(Group):
         # dcglyph.preview.computeDeepComponentsPreview(axes)
         dcglyphPreview = []
         for c in dcglyph.preview(self.deepComponentSettings['coord'], forceRefresh=False):
-            dcglyphPreview.append(dcglyph._transformGlyph(c, self.deepComponentSettings['transform']))
+            dcglyphPreview.append(interpolation._transformGlyph(c.resultGlyph, self.deepComponentSettings['transform']))
         self.RCJKI.drawer.existingInstance = dcglyphPreview
         # self.RCJKI.drawer.existingInstancePos = [0, 0]
 
@@ -525,7 +525,6 @@ class PreviewGroup(Group):
         self.RCJKI.drawOnlyInterpolation = sender.get()
         
     def draw(self):
-        return
         try:
             mjdt.save()
             mjdt.fill(1, 1, 1, .7)
@@ -545,7 +544,7 @@ class PreviewGroup(Group):
             if glyph.sourcesList: 
                 loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
             for g in glyph.preview(loc, forceRefresh=False):
-                mjdt.drawGlyph(g)  
+                mjdt.drawGlyph(g.glyph)  
             mjdt.restore()
             mjdt.restore()
         except:pass
@@ -897,6 +896,8 @@ class AxesGroup(Group):
         self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
+        self.RCJKI.currentGlyph.redrawSelectedElement = True
+        # self.RCJKI.currentGlyph.previewGlyph = []
 
     def addAxisButtonCallback(self, sender):
         AxisSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
@@ -1494,6 +1495,8 @@ class DeepComponentAxesGroup(Group):
         self.setSliderValue2Glyph(sender, minValue, maxValue)
         self.sliderValueEditText.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
         self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.currentGlyph.redrawSelectedElement = True
+        self.RCJKI.currentGlyph.reinterpolate = True
 
     def setSliderValue2Glyph(self, sender, minValue, maxValue):
         def _getKeys(glyph):
@@ -1686,7 +1689,7 @@ class TransformationGroup(Group):
         # loc = {}
         # if glyph.selectedSourceAxis:
         #     loc = {glyph.selectedSourceAxis:1}
-        preview = [x for x in glyph.preview(forceRefresh=False)]
+        preview = [g.glyph for x in glyph.preview(forceRefresh=False)]
         for i, x in zip(selection, glyph._getSelectedElement()):
             elements.append(SelectedElements(x, preview[i]))
         alignments = ["left", "bottom", "right", "top"]

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import mojo.drawingTools as mjdt
+from utils import interpolation
 from AppKit import NSFont, NSColor, NSFontAttributeName, NSForegroundColorAttributeName
 
 attributes = {
@@ -131,7 +132,7 @@ class Drawer():
         if glyph.sourcesList: 
             loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
         for g in glyph.preview(loc, forceRefresh=False):
-            mjdt.drawGlyph(self.roundGlyph(g))  
+            mjdt.drawGlyph(self.roundGlyph(g.glyph))  
         mjdt.restore()
 
     def drawAxisPreview(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
@@ -141,20 +142,23 @@ class Drawer():
         # if glyph.selectedSourceAxis:
         #     loc = {glyph.selectedSourceAxis:1}
         # for i, atomicInstance in enumerate(glyph.preview()):
-        for i, atomicInstance in enumerate(glyph.preview(forceRefresh=False)):
+        for i, atomicInstance in enumerate(glyph.preview(forceRefresh=False, axisPreview=True)):
+            transformIntance = atomicInstance._transformation
+            atomicInstance = atomicInstance.glyph
+
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
                 mjdt.save()
                 mjdt.stroke(1, 0, 0, 1)
                 mjdt.strokeWidth(1*scale)
-                tx = atomicInstance.x+atomicInstance.tcenterx
-                ty = atomicInstance.y+atomicInstance.tcentery
+                tx = transformIntance['x']+transformIntance['tcenterx']
+                ty = transformIntance['y']+transformIntance['tcentery']
                 mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
                 mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
                 mjdt.stroke(None)
                 mjdt.fill(1, 0, 0, 1)
                 mjdt.fontSize(8*scale)
-                mjdt.textBox(f"{int(atomicInstance.tcenterx)} {int(atomicInstance.tcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
+                mjdt.textBox(f"{int(transformIntance['tcenterx'])} {int(transformIntance['tcentery'])}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
                 mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
 
