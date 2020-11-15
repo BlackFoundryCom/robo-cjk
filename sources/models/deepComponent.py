@@ -211,11 +211,11 @@ class DeepComponent(Glyph):
             for i, x in enumerate(self._glyphVariations):
                 if x.sourceName == self.selectedSourceAxis:
                     index = i
-            self._glyphVariations[i].deepComponents[self.selectedElement[0]].coord[axisName] = value
+            self._glyphVariations[index].deepComponents[self.selectedElement[0]].coord[axisName] = value
             # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[axisName] = value
         else:
             self._deepComponents[self.selectedElement[0]].coord[axisName] = value
-    
+
     @glyphAddRemoveUndo
     def addAtomicElementNamed(self, atomicElementName, items = False):
         if not items:
