@@ -1731,20 +1731,20 @@ class CharacterGlyphInspector(Inspector):
         self.RCJKI = RCJKI
         self.glyphVariationsAxes = glyphVariationsAxes
         self.deepComponentAxes = deepComponentAxes
-        self.w = Window((0, 0, 300, 850), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
+        self.w = Window((0, 0, 400, 850), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "characterGlyph"
         
-        self.compositionRulesItem = CompositionRulesGroup((0, 0, -0, -0), self.RCJKI, self)
-        self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
+        self.compositionRulesItem = CompositionRulesGroup((0, 0, -10, -0), self.RCJKI, self)
+        self.previewItem = PreviewGroup((0, 0, -10, -0), self.RCJKI)
 
-        self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
-        self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+        self.axesItem = AxesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
-        self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, deepComponentAxes)
-        self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
-        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
+        self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -10, -0), self.RCJKI, deepComponentAxes)
+        self.deepComponentListItem = DeepComponentListGroup((0, 0, -10, -0), self.RCJKI)
+        self.propertiesItem = PropertiesGroup((0, 0, -10, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Composition Rules", view=self.compositionRulesItem, size=100, collapsed=False, canResize=True),
@@ -1768,21 +1768,21 @@ class DeepComponentInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = [], atomicElementAxes = [], axes = []):
         self.RCJKI = RCJKI
-        self.w = Window((0, 0, 300, 870), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
+        self.w = Window((0, 0, 400, 870), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "deepComponent"
         
-        self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -0, -0), self.RCJKI, self)
-        self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
+        self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -10, -0), self.RCJKI, self)
+        self.previewItem = PreviewGroup((0, 0, -10, -0), self.RCJKI)
 
-        self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
-        self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+        self.axesItem = AxesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
-        self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -0, -0), self.RCJKI, atomicElementAxes)
-        self.deepComponentListItem = DeepComponentListGroup((0, 0, -0, -0), self.RCJKI)
-        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
-        self.transformationItem = TransformationGroup((0, 0, -0, -0), self.RCJKI, self)
+        self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -10, -0), self.RCJKI, atomicElementAxes)
+        self.deepComponentListItem = DeepComponentListGroup((0, 0, -10, -0), self.RCJKI)
+        self.propertiesItem = PropertiesGroup((0, 0, -10, -0), self.RCJKI, self)
+        self.transformationItem = TransformationGroup((0, 0, -10, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Related glyphs", view=self.relatedGlyphsItem, size=140, collapsed=False, canResize=True),
@@ -1807,17 +1807,17 @@ class AtomicElementInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = [], axes = []):
         self.RCJKI = RCJKI
-        self.w = Window((0, 0, 300, 600), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
+        self.w = Window((0, 0, 400, 600), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "atomicElement"
         
-        self.previewItem = PreviewGroup((0, 0, -0, -0), self.RCJKI)
+        self.previewItem = PreviewGroup((0, 0, -10, -0), self.RCJKI)
 
-        self.axesItem = AxesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, axes)
-        self.sourcesItem = SourcesGroup((0, 0, -0, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+        self.axesItem = AxesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "atomicElement", glyphVariationsAxes)
-        self.propertiesItem = PropertiesGroup((0, 0, -0, -0), self.RCJKI, self)
+        self.propertiesItem = PropertiesGroup((0, 0, -10, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
