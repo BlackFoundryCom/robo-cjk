@@ -19,6 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 
 from mojo.UI import AccordionView, UpdateCurrentGlyphView
 from vanilla import *
+from vanilla.dialogs import askYesNo
 from mojo.roboFont import *
 from mojo.canvas import Canvas, CanvasGroup
 import mojo.drawingTools as mjdt
@@ -905,6 +906,8 @@ class AxesGroup(Group):
         AxisSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
 
     def removeAxisButtonCallback(self, sender):
+        answer = askYesNo("Are you sure you want to delete this axis?")
+        if not answer: return
         sel = self.axesList.getSelection()
         if not sel: return
         selectedAxisIndex = sel[0]
@@ -1093,6 +1096,8 @@ class SourcesGroup(Group):
         SourcesSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
         
     def removeSourceButtonCallback(self, sender):
+        answer = askYesNo("Are you sure you want to delete this source?")
+        if not answer: return
         sel = self.sourcesList.getSelection()
         if not sel: return
         selectedAxisIndex = sel[0]
