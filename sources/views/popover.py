@@ -75,9 +75,10 @@ def tryfunc(func):
     def wrapper(self, *args, **kwargs):
         try:
             func(self, *args, **kwargs)
+            self.RCJKI.currentGlyph.redrawSelectedElement = True
             self.RCJKI.updateDeepComponent(update = False)
-        except:
-            pass
+        except Exception as e:
+            print(e)
     return wrapper
 
 def resetDict(func):

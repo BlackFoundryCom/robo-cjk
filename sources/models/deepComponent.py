@@ -77,6 +77,19 @@ class DeepComponent(Glyph):
                 for e in self.previewGlyph: yield e
                 return
 
+        redrawAndTransformAll = False
+        redrawAndTransformSelected = False
+        onlyTransformSelected = False
+
+        if self.selectedElement and not self.reinterpolate:
+            onlyTransformSelected = True
+        elif self.selectedElement and self.reinterpolate and not axisPreview:
+            redrawAndTransformAll = True
+        elif self.selectedElement:
+            redrawAndTransformSelected = True
+        else:
+            redrawAndTransformAll = True
+
         if not position:
             position = self.getLocation()
 
@@ -84,29 +97,27 @@ class DeepComponent(Glyph):
         locations.extend([x["location"] for x in self._glyphVariations if x["on"]])
         model = VariationModel(locations)
         
-        if self.selectedElement:
-            masterDeepComponents = [x for i, x in enumerate(self._deepComponents) if i in self.selectedElement]
-            axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
-        else:
+        if redrawAndTransformAll:
+            if axisPreview:
+                preview = self.axisPreview = []
+            else:
+                preview = self.previewGlyph = []
             masterDeepComponents = self._deepComponents
             axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
+        else:
+            if axisPreview:
+                preview = self.axisPreview
+            else:
+                preview = self.previewGlyph
+            masterDeepComponents = [x for i, x in enumerate(self._deepComponents) if i in self.selectedElement]
+            axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
+        
         result = []
         for i, deepComponent in enumerate(masterDeepComponents):
             variations = []
             for gv in axesDeepComponents:
                 variations.append(gv[i])
             result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
-
-        if axisPreview:
-            if not self.selectedElement:
-                preview = self.axisPreview = []
-            if self.selectedElement:
-                preview = self.axisPreview
-        else:
-            if not self.selectedElement:
-                preview = self.previewGlyph = []
-            if self.selectedElement:
-                preview = self.previewGlyph
 
         if font is None:
             font = self.getParent()
@@ -116,16 +127,9 @@ class DeepComponent(Glyph):
             g = font[name]
             position = dc.get("coord")
             
-            if not self.selectedElement:
-                resultGlyph = RGlyph()
-                g = g.preview(position, font, forceRefresh=True)
-                for c in g:
-                    c = c.glyph
-                    c.draw(resultGlyph.getPen())
-                preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
-            elif self.selectedElement and not self.reinterpolate:
+            if onlyTransformSelected: 
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
-            else:
+            elif redrawAndTransformSelected: 
                 resultGlyph = RGlyph()
                 g = g.preview(position, font, forceRefresh=True)
                 for c in g:
@@ -133,9 +137,17 @@ class DeepComponent(Glyph):
                     c.draw(resultGlyph.getPen())
                 preview[self.selectedElement[i]].resultGlyph = resultGlyph   
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
+            else: 
+                resultGlyph = RGlyph()
+                g = g.preview(position, font, forceRefresh=True)
+                for c in g:
+                    c = c.glyph
+                    c.draw(resultGlyph.getPen())
+                preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
 
         for resultGlyph in preview:
             yield resultGlyph
+
 
     @property
     def atomicElements(self):

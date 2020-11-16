@@ -896,7 +896,9 @@ class AxesGroup(Group):
         self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
+        # self.RCJKI.currentGlyph.previewGlyph = []
         self.RCJKI.currentGlyph.redrawSelectedElement = True
+        self.RCJKI.currentGlyph.reinterpolate = True
         # self.RCJKI.currentGlyph.previewGlyph = []
 
     def addAxisButtonCallback(self, sender):
@@ -909,6 +911,9 @@ class AxesGroup(Group):
         self.RCJKI.currentGlyph.removeAxis(selectedAxisIndex)
         self.setList()
         self.controller.sourcesItem.setList()
+        self.RCJKI.currentGlyph.selectedSourceAxis = None
+        self.RCJKI.updateDeepComponent(update = False)
+        self.controller.updatePreview()
 
 class SourcesSheet:
 
@@ -1078,8 +1083,11 @@ class SourcesGroup(Group):
             self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
+        self.RCJKI.axisPreview = []
+        self.RCJKI.currentGlyph.redrawSelectedElement = True
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
+
 
     def addSourceButtonCallback(self, sender):
         SourcesSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
@@ -1090,6 +1098,11 @@ class SourcesGroup(Group):
         selectedAxisIndex = sel[0]
         self.RCJKI.currentGlyph.removeSource(selectedAxisIndex)
         self.setList()
+        self.RCJKI.currentGlyph.selectedSourceAxis = None
+        self.RCJKI.updateDeepComponent()
+        self.controller.updatePreview()
+        self.sourcesList.setSelection([])
+        self.controller.axesItem.axesList.setSelection([])
         
 # class GlyphVariationAxesGroup(Group):
     

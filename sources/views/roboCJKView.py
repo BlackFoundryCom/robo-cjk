@@ -558,6 +558,7 @@ class RoboCJKView(BaseWindowController):
             "Login & load projects", 
             callback = self.loadProjectButtonCallback,
             )
+        self.w.setDefaultButton(self.w.loadProjectButton)
         self.w.saveProjectButton = Button(
             (210, 10, 200, 20), 
             "Save project", 
