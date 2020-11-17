@@ -1134,7 +1134,7 @@ class DesignFrameDrawer:
         glyph.round()
         glyph.moveBy((0, ty))
 
-        self.elements.append((glyph, (0, .75, 1, .1), 'fill'))
+        self.elements.append((glyph, (0.4, .75, 1, .1), 'fill'))
         # db.drawGlyph(glyph)
 
     def _makeHorSecLine(self, 
@@ -1153,7 +1153,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeVerSecLine(self, 
@@ -1172,7 +1172,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeHorGrid(self,
@@ -1192,7 +1192,7 @@ class DesignFrameDrawer:
             dist += h / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
 
     def _makeVerGrid(self,
                     glyph: RGlyph, 
@@ -1211,7 +1211,7 @@ class DesignFrameDrawer:
             dist += w / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
 
 
     def _findProximity(self, 
