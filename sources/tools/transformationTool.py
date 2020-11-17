@@ -93,5 +93,4 @@ class TransformationTool(BaseEventTool):
         UpdateCurrentGlyphView()
 
     def mouseUp(self, point):
-        self.RCJKI.currentGlyph.redrawSelectedElement = False
         self.RCJKI.currentGlyph.reinterpolate = False

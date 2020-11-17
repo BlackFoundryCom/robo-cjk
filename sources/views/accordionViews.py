@@ -860,6 +860,7 @@ class AxesGroup(Group):
         self.controller.updatePreview()
 
     @lockedProtect
+    # @refreshPreview
     def axesListEditCallback(self, sender):
         # pr = cProfile.Profile()
         # pr.enable()
@@ -885,7 +886,8 @@ class AxesGroup(Group):
         self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
-        self.RCJKI.currentGlyph.redrawSelectedElement = True
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.currentGlyph.reinterpolate = True
 
         # pr.disable()
@@ -1064,6 +1066,7 @@ class SourcesGroup(Group):
         self.controller.updatePreview()
 
     @lockedProtect
+    # @refreshPreview
     def sourcesListDoubleClickCallback(self, sender):
         if not sender.getSelection(): 
             self.RCJKI.currentGlyph.selectedSourceAxis = None
@@ -1080,7 +1083,8 @@ class SourcesGroup(Group):
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
         self.RCJKI.axisPreview = []
-        self.RCJKI.currentGlyph.redrawSelectedElement = True
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
 
@@ -1488,6 +1492,7 @@ class DeepComponentAxesGroup(Group):
             self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
         
     @lockedProtect
+    # @refreshPreview
     def deepComponentAxesListEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: 
@@ -1506,7 +1511,8 @@ class DeepComponentAxesGroup(Group):
         self.setSliderValue2Glyph(sender, minValue, maxValue)
         self.sliderValueEditText.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
         self.RCJKI.updateDeepComponent(update = False)
-        self.RCJKI.currentGlyph.redrawSelectedElement = True
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.currentGlyph.reinterpolate = True
         # location = {}
         # for v in self.RCJKI.currentGlyph._glyphVariations:
@@ -1819,7 +1825,8 @@ class TransformationGroup(Group):
                     self.selectedDeepComponentTransform[t] = f.get()
                 else:
                     self.selectedDeepComponentTransform[t] = f.get()/1000
-                self.RCJKI.currentGlyph.redrawSelectedElement = True
+                self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+                self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.updateDeepComponent(update = False)
 
     def alignSelectedElements(self, glyph, align = "left"):

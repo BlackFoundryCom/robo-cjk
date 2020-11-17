@@ -534,7 +534,6 @@ class RoboCJKController(object):
 
     @refresh
     def mouseUp(self, info):
-        self.currentGlyph.redrawSelectedElement = False
         self.currentGlyph.reinterpolate = False
         removeObserver(self, 'mouseDragged')
         if self.isAtomic:
@@ -603,7 +602,6 @@ class RoboCJKController(object):
             view.sourcesList.set(self.currentGlyph.sourcesList)
 
     def keyUp(self, info):
-        self.currentGlyph.redrawSelectedElement = False
         self.currentGlyph.reinterpolate = False
 
     @refresh

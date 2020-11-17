@@ -83,17 +83,41 @@ class CharacterGlyph(Glyph):
 
     def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
         locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.getLocation().items()])
-        # print('locationKey', self.previewLocationsStore.keys(), locationKey)
-        if locationKey in self.previewLocationsStore:
-            print('I have cache', locationKey)
-            self.previewGlyph = self.previewLocationsStore[locationKey]
-            for p in self.previewGlyph:
-                yield p
-            return
+        # print(locationKey)
+        #### 3 CONDITIONS DE DESSIN POSSIBLE EN CAS D'ÉLEMENT SELECTIONNÉ ####
+        redrawAndTransformAll = False
+        redrawAndTransformSelected = False
+        onlyTransformSelected = False
 
-        pr = cProfile.Profile()
-        pr.enable()
-        if not self.redrawSelectedElement:
+        if self.selectedElement and not self.reinterpolate:
+            onlyTransformSelected = True
+        elif self.selectedElement and self.reinterpolate and not axisPreview and not self.redrawSelectedElementSource:
+            redrawAndTransformAll = True
+        elif self.selectedElement:
+            redrawAndTransformSelected = True
+        else:
+            redrawAndTransformAll = True
+        ############################################################
+
+
+        #### S'IL N'Y A PAS DE SELECTION, RECHERCHE D'UN CACHE ####
+        # previewLocationsStore = False
+        # if locationKey in self.previewLocationsStore:
+        #     previewLocationsStore = self.previewLocationsStore[locationKey]
+
+        previewLocationsStore = self.previewLocationsStore.get(locationKey, False)
+        # print("previewLocationsStore", previewLocationsStore, '\n')
+        # print("redrawSelectedElementSource", self.redrawSelectedElementSource, '\n')
+        if axisPreview:
+            redrawSeletedElement = self.redrawSelectedElementSource
+        else:
+            redrawSeletedElement = self.redrawSelectedElementPreview
+        if not redrawSeletedElement:
+            if previewLocationsStore:
+                print('I have cache', locationKey)
+                for p in previewLocationsStore:
+                    yield p
+                return
             if axisPreview and self.axisPreview:
                 # print('DC has axisPreview', self.axisPreview)
                 for e in self.axisPreview: yield e
@@ -102,39 +126,58 @@ class CharacterGlyph(Glyph):
                 # print('DC has previewGlyph', self.previewGlyph)
                 for e in self.previewGlyph: yield e
                 return
+        ############################################################
 
-        redrawAndTransformAll = False
-        redrawAndTransformSelected = False
-        onlyTransformSelected = False
 
-        if self.selectedElement and not self.reinterpolate:
-            onlyTransformSelected = True
-        elif self.selectedElement and self.reinterpolate and not axisPreview:
-            redrawAndTransformAll = True
-        elif self.selectedElement:
-            redrawAndTransformSelected = True
+        #### S'IL N'Y A UNE SELECTION MAIS PAS D'INSTRUCTION DE REDESSIN, RECHERCHE D'UN CACHE ####
+        if not redrawAndTransformAll and not redrawAndTransformSelected and not onlyTransformSelected:
+            if previewLocationsStore:
+                print('I have cache', locationKey)
+                for p in previewLocationsStore:
+                    yield p
+                return
+            ############################################################
         else:
-            redrawAndTransformAll = True
+            #### IL Y A DES INSTRUCTION DE REDESSIN ####
+            if axisPreview:
+                preview = self.axisPreview
+            else:
+                preview = self.previewGlyph
+
+            """ Dans cette condition on ne ce soucis pas du cache, on redessine tout"""
+            if redrawAndTransformAll:
+                if axisPreview:
+                    preview = self.axisPreview = []
+                else:
+                    preview = self.previewGlyph = []
+            else:
+                """Dans cette condition on récupère ce qu'il y a dans le cache et on travaillera 
+                dessus après, soit pour modifier les instructions de transformation de l'element selectionné
+                soit pour recalculer l'element et ses instructions de transformation. Les autres elements du cache ne seront
+                pas recalculé"""
+                if previewLocationsStore:
+                    if axisPreview:
+                        preview = self.axisPreview = previewLocationsStore
+                    else:
+                        preview = self.previewGlyph = previewLocationsStore     
+                    print("will redraw only the selectedElement")               
 
         if not position:
             position = self.getLocation()
+
+        print("I will draw")
+
+        pr = cProfile.Profile()
+        pr.enable()
 
         locations = [{}]
         locations.extend([x["location"] for x in self._glyphVariations if x["on"]])
         model = VariationModel(locations)
 
         if redrawAndTransformAll:
-            if axisPreview:
-                preview = self.axisPreview = []
-            else:
-                preview = self.previewGlyph = []
             masterDeepComponents = self._deepComponents
             axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
         else:
-            if axisPreview:
-                preview = self.axisPreview
-            else:
-                preview = self.previewGlyph
             masterDeepComponents = [x for i, x in enumerate(self._deepComponents) if i in self.selectedElement]
             axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
         
@@ -185,8 +228,12 @@ class CharacterGlyph(Glyph):
                 resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
                 preview.append(self.ResultGlyph(resultGlyph))
 
-        self.previewGlyph = preview
         self.previewLocationsStore[','.join([k+':'+str(v) for k,v in position.items()])] = preview
+
+        if axisPreview:
+            self.redrawSelectedElementSource = False
+        else:
+            self.redrawSelectedElementPreview = False
 
         for resultGlyph in preview:
             yield resultGlyph
@@ -255,7 +302,8 @@ class CharacterGlyph(Glyph):
             if selectedElement.get("name"):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
                 # self.selectedElement = [len(self._deepComponents)-1]
-        self.redrawSelectedElement = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
         self.selectedElement = []
             
     def updateDeepComponentCoord(self, nameAxis, value):
@@ -292,7 +340,8 @@ class CharacterGlyph(Glyph):
         self._deepComponents.addDeepComponent(d)
         if self._axes:
             self._glyphVariations.addDeepComponent(d)
-        self.redrawSelectedElement = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
         self.selectedElement = []
 
         # self.preview.computeDeepComponentsPreview(update = False)
@@ -313,7 +362,8 @@ class CharacterGlyph(Glyph):
         if not self.selectedElement: return
         self.removeDeepComponents(self.selectedElement)
         self.selectedElement = []
-        self.redrawSelectedElement = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
         self.selectedElement = []
 
     def save(self):

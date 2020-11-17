@@ -104,7 +104,8 @@ class Glyph(RGlyph):
         self.model = None
         self.deltas = None
 
-        self.redrawSelectedElement = False
+        self.redrawSelectedElementSource = False
+        self.redrawSelectedElementPreview = False
         self.reinterpolate = False
 
         self._glyphVariations = VariationGlyphs()
@@ -360,7 +361,8 @@ class Glyph(RGlyph):
                 selectedElement.rotation += int(rotation)
             else:
                 selectedElement.rotation = -int(rotation)
-        self.redrawSelectedElement = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
     # @compute
     def setPositionToSelectedElements(self, position: list):
@@ -368,8 +370,9 @@ class Glyph(RGlyph):
             selectedElement.x += position[0]
             selectedElement.y += position[1]
         # self.previewGlyph = []
-        # self.redrawSelectedElement = True
-        self.redrawSelectedElement = True
+        # self.redrawSelectedElementSource = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
     # @compute
     def setScaleToSelectedElements(self, scale: list):
@@ -388,7 +391,8 @@ class Glyph(RGlyph):
                 x, y = -x, -y
             selectedElement.scalex += x
             selectedElement.scaley += y
-        self.redrawSelectedElement = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
     # @compute
     def setTransformationCenterToSelectedElements(self, center):
@@ -402,7 +406,8 @@ class Glyph(RGlyph):
             # for variations in self._glyphVariations.values():
             #     variations[index].tcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
             #     variations[index].tcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
-        self.redrawSelectedElement = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
