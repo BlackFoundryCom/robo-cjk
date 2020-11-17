@@ -492,6 +492,7 @@ class RoboCJKController(object):
             addObserver(self, 'mouseDragged', 'mouseDragged')
         if not self.isAtomic:
             self.glyphInspectorWindow.deepComponentListItem.setList()
+            self.glyphInspectorWindow.transformationItem.setTransformationsField()
 
     def mouseDragged(self, point):
         try:

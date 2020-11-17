@@ -860,52 +860,23 @@ class AxesGroup(Group):
         edited = sender.getEditedColumnAndRow()
         senderGet = sender.get()
         if not senderGet: return
-
-        values = senderGet[sel[0]]
         
-        # print(axis)
-        # minValue = float(values["MinValue"])
-        # maxValue = float(values["MaxValue"])
         sliderValue = round(senderGet[sel[0]]['PreviewValue'], 3)
         if edited[0] in [0, 1, 3]:
-            # name =  senderGet[edited[1]]['Axis']
-            # if len([x for x in senderGet if x['Axis'] == name]) > 1:
-            #     i = 0
-            #     while True:
-            #         name = senderGet[edited[1]]['Axis'] + "_" + str(i).zfill(2)
-            #         if name not in [x["Axis"] for x in senderGet]:
-            #             print(name)
-            #             break
-            #         i += 1
-            # if name != self.selectedSourceAxis:
-            #     if self.RCJKI.currentGlyph.type != 'characterGlyph':
-                    
-            #         self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
-            #         self.RCJKI.currentGlyph.selectedSourceAxis = name
-            # glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
+
             l = []
             for axis in self.RCJKI.currentGlyph._axes:
                 l.append({'Axis':axis.name, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
-            # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
-            # senderGet[sel[0]]["MinValue"] = self.RCJKI.currentGlyph._axes.get(axis).minValue
-            # senderGet[sel[0]]["MaxValue"] = self.RCJKI.currentGlyph._axes.get(axis).maxValue
-        # elif (edited[0] in [1, 3] and self.glyphtype != "atomicElement") or (edited[0] in [1, 3] and self.glyphtype == "atomicElement"): #change min/max value
-        #     senderGet[sel[0]]["MinValue"] = self.RCJKI.currentGlyph._axes.get(axis).minValue
-        #     senderGet[sel[0]]["MaxValue"] = self.RCJKI.currentGlyph._axes.get(axis).maxValue
-            # self.RCJKI.currentGlyph._axes.get(axis).minValue = minValue
-            # self.RCJKI.currentGlyph._axes.get(axis).maxValue = maxValue
-        # print('je prend cet axis %s'%axis)
+
         axis = sender.get()[sel[0]]["Axis"]
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, self.RCJKI.currentGlyph._axes.get(axis).minValue, self.RCJKI.currentGlyph._axes.get(axis).maxValue))
         self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
-        # self.RCJKI.currentGlyph.previewGlyph = []
         self.RCJKI.currentGlyph.redrawSelectedElement = True
         self.RCJKI.currentGlyph.reinterpolate = True
-        # self.RCJKI.currentGlyph.previewGlyph = []
 
     def addAxisButtonCallback(self, sender):
         AxisSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
@@ -1676,6 +1647,85 @@ class TransformationGroup(Group):
             callback = self.alignBottomButtonCallback
             )
 
+        self.xTitle = TextBox(
+            (5, 55, 50, 20),
+            "x", 
+            sizeStyle = 'small')
+        self.xInput = EditText(
+            (55, 55, 50, 20),
+            '', 
+            sizeStyle='small', 
+            callback = self.setTransformCallback, 
+            formatter = numberFormatter)
+
+        self.yTitle = TextBox(
+            (110, 55, 50, 20),
+            "y", 
+            sizeStyle = 'small')
+        self.yInput = EditText(
+            (160, 55, 50, 20),
+            '', 
+            sizeStyle='small', 
+            callback = self.setTransformCallback, 
+            formatter = numberFormatter)
+
+        self.scalexTitle = TextBox(
+            (5, 80, 50, 20),
+            "scalex", 
+            sizeStyle = 'small')
+        self.scalexInput = EditText(
+            (55, 80, 50, 20),
+            '', 
+            sizeStyle='small', 
+            callback = self.setTransformCallback, 
+            formatter = numberFormatter)
+
+        self.scaleyTitle = TextBox(
+            (110, 80, 50, 20),
+            "scaley", 
+            sizeStyle = 'small')
+        self.scaleyInput = EditText(
+            (160, 80, 50, 20),
+            '', 
+            sizeStyle='small', 
+            callback = self.setTransformCallback, 
+            formatter = numberFormatter)
+
+        self.rotationTitle = TextBox(
+            (5, 105, 50, 20),
+            "rotation", 
+            sizeStyle = 'small')
+        self.rotationInput = EditText(
+            (55, 105, 50, 20),
+            '', 
+            sizeStyle='small', 
+            callback = self.setTransformCallback, 
+            formatter = numberFormatter)
+
+        self.tcenterxTitle = TextBox(
+            (5, 130, 50, 20),
+            "tcenterx", 
+            sizeStyle = 'small')
+        self.tcenterxInput = EditText(
+            (55, 130, 50, 20),
+            '', 
+            sizeStyle='small', 
+            callback = self.setTransformCallback, 
+            formatter = numberFormatter)
+
+        self.tcenteryTitle = TextBox(
+            (110, 130, 50, 20),
+            "tcentery", 
+            sizeStyle = 'small')
+        self.tcenteryInput = EditText(
+            (160, 130, 50, 20),
+            '', 
+            sizeStyle='small', 
+            callback = self.setTransformCallback, 
+            formatter = numberFormatter)
+
+        self.selectedDeepComponentTransform = None
+
     def alignLeftButtonCallback(self, sender):
         self.alignSelectedElements(self.RCJKI.currentGlyph, "left")
         self.RCJKI.updateDeepComponent(update = False)
@@ -1695,6 +1745,60 @@ class TransformationGroup(Group):
         self.alignSelectedElements(self.RCJKI.currentGlyph, "bottom")
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
+
+    def setTransformationsField(self):
+        sel = self.RCJKI.currentGlyph.selectedElement
+        if not self.RCJKI.currentGlyph.selectedElement: 
+            self.xInput.set("")
+            self.yInput.set("")
+            self.scalexInput.set("")
+            self.scaleyInput.set("")
+            self.rotationInput.set("")
+            self.tcenterxInput.set("")
+            self.tcenteryInput.set("")
+            self.selectedDeepComponentTransform = None
+            return
+
+        self.selectedDeepComponentTransform = self.RCJKI.currentGlyph._deepComponents[sel[0]].transform
+        if self.RCJKI.currentGlyph.selectedSourceAxis:
+            for dcs in self.RCJKI.currentGlyph._glyphVariations:
+                if dcs.sourceName == self.RCJKI.currentGlyph.selectedSourceAxis:
+                    self.selectedDeepComponentTransform = dcs.deepComponents[sel[0]].transform
+
+        x = self.selectedDeepComponentTransform["x"]
+        y = self.selectedDeepComponentTransform["y"]
+        scalex = self.selectedDeepComponentTransform["scalex"]
+        scaley = self.selectedDeepComponentTransform["scaley"]
+        rotation = self.selectedDeepComponentTransform["rotation"]
+        tcenterx = self.selectedDeepComponentTransform["tcenterx"]
+        tcentery = self.selectedDeepComponentTransform["tcentery"]
+
+        self.xInput.set(x)
+        self.yInput.set(y)
+        self.scalexInput.set(scalex*1000)
+        self.scaleyInput.set(scaley*1000)
+        self.rotationInput.set(rotation)
+        self.tcenterxInput.set(tcenterx)
+        self.tcenteryInput.set(tcentery)
+
+    def setTransformCallback(self, sender):
+        if not self.selectedDeepComponentTransform:
+            self.setTransformationsField()
+        fields = [self.xInput, self.yInput, self.scalexInput, self.scaleyInput, self.rotationInput, self.tcenterxInput, self.tcenteryInput]
+        transform = ["x", "y", "scalex", "scaley", "rotation", "tcenterx", "tcentery"]
+        for f, t in zip(fields, transform):
+            if not f.get():
+                if t not in ["scalex", "scaley"]:
+                    f.set(self.selectedDeepComponentTransform[t])
+                else:
+                    f.set(self.selectedDeepComponentTransform[t]*1000)
+            else:
+                if t not in ["scalex", "scaley"]:
+                    self.selectedDeepComponentTransform[t] = f.get()
+                else:
+                    self.selectedDeepComponentTransform[t] = f.get()/1000
+                self.RCJKI.currentGlyph.redrawSelectedElement = True
+        self.RCJKI.updateDeepComponent(update = False)
 
     def alignSelectedElements(self, glyph, align = "left"):
 
@@ -1755,6 +1859,7 @@ class CharacterGlyphInspector(Inspector):
         self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -10, -0), self.RCJKI, deepComponentAxes)
         self.deepComponentListItem = DeepComponentListGroup((0, 0, -10, -0), self.RCJKI)
         self.propertiesItem = PropertiesGroup((0, 0, -10, -0), self.RCJKI, self)
+        self.transformationItem = TransformationGroup((0, 0, -10, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Composition Rules", view=self.compositionRulesItem, size=100, collapsed=False, canResize=True),
@@ -1766,7 +1871,8 @@ class CharacterGlyphInspector(Inspector):
                        # dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
-                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
+                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
+                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True)
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
@@ -1805,7 +1911,7 @@ class DeepComponentInspector(Inspector):
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Atomic element list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
-                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=80, collapsed=False, canResize=True)
+                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True)
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
