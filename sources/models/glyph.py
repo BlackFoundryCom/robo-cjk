@@ -30,6 +30,7 @@ import math
 
 # reload(deepComponent)
 DeepComponents = component.DeepComponents
+VariationGlyphs = component.VariationGlyphs
 
 INPROGRESS = (1, 0, 0, 1)
 CHECKING1 = (1, .5, 0, 1)
@@ -105,7 +106,18 @@ class Glyph(RGlyph):
 
         self.redrawSelectedElement = False
         self.reinterpolate = False
+
+        self._glyphVariations = VariationGlyphs()
+        self.previewLocationsStore = {}
+
         # self.frozenPreview = []
+
+    def createPreviewLocationsStore(self):
+        # print('locations', self.locations)
+        self.previewLocationsStore = {','.join([k+':'+str(v) for k,v in loc.items()]): list(self.preview(loc)) for loc in [{}]+self.locations}
+
+    def updatePreviewLocationStore(self, loc):
+        self.previewLocationsStore[','.join([k+':'+str(v) for k,v in loc.items()])] = list(self.preview(loc))
 
     def _setStackUndo(self):
         # if self.type != 'atomicElement':
@@ -213,6 +225,13 @@ class Glyph(RGlyph):
                 if source.sourceName == self.selectedSourceAxis:
                     loc = source.location
         return loc
+
+    def _locations(self):
+        return [source.location for source in self._glyphVariations]
+
+    @property
+    def locations(self):
+        return self._locations()
 
     def normalizedValueToMinMaxValue(self, loc, g):
         position = {}

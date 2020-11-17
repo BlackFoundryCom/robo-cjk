@@ -28,6 +28,10 @@ from utils import decorators, files, interpolation
 from views import sheets
 import os, copy
 
+import cProfile, pstats, io
+from pstats import SortKey
+
+
 lockedProtect = decorators.lockedProtect
 refresh = decorators.refresh
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
@@ -155,6 +159,7 @@ class CompositionRulesGroup(Group):
         mjdt.translate(20, 25)
         mjdt.scale(.04)
         mjdt.fill(0, 0, 0, 1)
+        # for c in self.glyph.previewGlyph:
         for c in self.glyph.preview({}, forceRefresh=False):
             mjdt.drawGlyph(c.glyph) 
         mjdt.restore()
@@ -240,6 +245,7 @@ class CompositionRulesGroup(Group):
         # axes = [{"Axis":axisName, "Layer":layer, "PreviewValue":self.deepComponentSettings['coord'][axisName]} for axisName, layer in dcglyph._glyphVariations.items()]
         # dcglyph.preview.computeDeepComponentsPreview(axes)
         dcglyphPreview = []
+        # for c in dcglyph.previewGlyph:
         for c in dcglyph.preview(self.deepComponentSettings['coord'], forceRefresh=False):
             dcglyphPreview.append(interpolation._transformGlyph(c.resultGlyph, self.deepComponentSettings['transform']))
         self.RCJKI.drawer.existingInstance = dcglyphPreview
@@ -544,6 +550,7 @@ class PreviewGroup(Group):
             glyph = self.RCJKI.currentGlyph
             if glyph.sourcesList: 
                 loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
+            # for g in glyph.glyphPreview:
             for g in glyph.preview(loc, forceRefresh=False):
                 mjdt.drawGlyph(g.glyph)  
             mjdt.restore()
@@ -854,6 +861,9 @@ class AxesGroup(Group):
 
     @lockedProtect
     def axesListEditCallback(self, sender):
+        # pr = cProfile.Profile()
+        # pr.enable()
+
         sel = sender.getSelection()
         if not sel: 
             return
@@ -877,6 +887,13 @@ class AxesGroup(Group):
         self.controller.updatePreview()
         self.RCJKI.currentGlyph.redrawSelectedElement = True
         self.RCJKI.currentGlyph.reinterpolate = True
+
+        # pr.disable()
+        # s = io.StringIO()
+        # sortby = SortKey.CUMULATIVE
+        # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        # ps.print_stats()
+        # print('axesListEditCallback (AccordionViews.py)', s.getvalue())
 
     def addAxisButtonCallback(self, sender):
         AxisSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
@@ -1491,6 +1508,11 @@ class DeepComponentAxesGroup(Group):
         self.RCJKI.updateDeepComponent(update = False)
         self.RCJKI.currentGlyph.redrawSelectedElement = True
         self.RCJKI.currentGlyph.reinterpolate = True
+        # location = {}
+        # for v in self.RCJKI.currentGlyph._glyphVariations:
+        #     if v.sourceName == self.RCJKI.currentGlyph.selectedSourceAxis:
+        #         location = v.location
+        # self.RCJKI.currentGlyph.updatePreviewLocationStore(location)
 
     def setSliderValue2Glyph(self, sender, minValue, maxValue):
         def _getKeys(glyph):
@@ -1817,6 +1839,7 @@ class TransformationGroup(Group):
         # if glyph.selectedSourceAxis:
         #     loc = {glyph.selectedSourceAxis:1}
         preview = [g.glyph for x in glyph.preview(forceRefresh=False)]
+        # preview = [g.glyph for g in glyph.previewGlyph]
         for i, x in zip(selection, glyph._getSelectedElement()):
             elements.append(SelectedElements(x, preview[i]))
         alignments = ["left", "bottom", "right", "top"]

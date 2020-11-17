@@ -132,6 +132,7 @@ class Drawer():
         if glyph.sourcesList: 
             loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
         for g in glyph.preview(loc, forceRefresh=False):
+        # for g in glyph.previewGlyph:
             mjdt.drawGlyph(self.roundGlyph(g.glyph))  
         mjdt.restore()
 
@@ -143,6 +144,7 @@ class Drawer():
         #     loc = {glyph.selectedSourceAxis:1}
         # for i, atomicInstance in enumerate(glyph.preview()):
         for i, atomicInstance in enumerate(glyph.preview(forceRefresh=False, axisPreview=True)):
+        # for i, atomicInstance in enumerate(glyph.previewGlyph):
             transformIntance = atomicInstance._transformation
             atomicInstance = atomicInstance.glyph
 

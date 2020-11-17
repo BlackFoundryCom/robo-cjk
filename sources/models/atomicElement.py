@@ -22,6 +22,7 @@ from mojo.roboFont import *
 from imp import reload
 from models import glyph, component, glyphPreview
 from utils import interpolation, decorators
+from fontMath import mathGlyph
 # reload(decorators)
 # reload(interpolation)
 # reload(glyph)
@@ -54,6 +55,11 @@ class AtomicElement(Glyph):
         self.save()
 
     def preview(self, position:dict={}, font=None, forceRefresh=True):
+        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.getLocation().items()])
+        if locationKey in self.previewLocationsStore:
+            for p in self.previewLocationsStore[locationKey]:
+                yield p
+            return
         # if not forceRefresh and self.previewGlyph: 
         #     print('AE has previewGlyph', self.previewGlyph)
         #     return self.previewGlyph
@@ -81,13 +87,17 @@ class AtomicElement(Glyph):
             except Exception as e: 
                 print(e)
                 continue
-            layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[self.name])
-        resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
+            layerGlyphs.append(mathGlyph.MathGlyph(font._RFont.getLayer(variation["layerName"])[self.name]))
+        resultGlyph = model.interpolateFromMasters(position, [mathGlyph.MathGlyph(self._RGlyph), *layerGlyphs])
         # resultGlyph.removeOverlap()
         # self.frozenPreview.append(resultGlyph)
-        self.previewGlyph.append(self.ResultGlyph(resultGlyph))
-        for e in self.previewGlyph:
-            yield e
+        resultGlyph = self.ResultGlyph(resultGlyph)
+        self.previewGlyph = [resultGlyph]
+        self.previewLocationsStore[','.join([k+':'+str(v) for k,v in position.items()])] = [resultGlyph]
+        yield resultGlyph
+        # self.previewGlyph.append(self.ResultGlyph(resultGlyph))
+        # for e in self.previewGlyph:
+        #     yield e
         # return self.ResultGlyph(resultGlyph)
 
     @property
