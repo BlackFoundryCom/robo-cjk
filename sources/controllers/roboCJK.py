@@ -303,9 +303,12 @@ class RoboCJKController(object):
             # self.currentFont.saveGlyph(self.currentGlyph)
 
         self.currentFont.clearRFont()
-        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.atomicElementPreview, gae)
-        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.deepComponentPreview, gdc)
-        self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.characterGlyphPreview, gcg)        
+        self.w.atomicElementPreview.update()
+        self.w.deepComponentPreview.update()
+        self.w.characterGlyphPreview.update()
+        # self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.atomicElementPreview, gae)
+        # self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.deepComponentPreview, gdc)
+        # self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.characterGlyphPreview, gcg)        
 
     def closeimportDCFromCG(self):
         if self.importDCFromCG is not None:

@@ -66,7 +66,15 @@ class DeepComponent(Glyph):
         self._setStackUndo()
         self.save()
 
-    def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
+    def preview(self, position:dict={}, deltasStore:dict={}, font = None, forceRefresh=True, axisPreview = False):
+        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.getLocation().items()])
+        if locationKey in self.previewLocationsStore:
+            print('I have cache', locationKey)
+            self.previewGlyph = self.previewLocationsStore[locationKey]
+            for p in self.previewGlyph:
+                yield p
+            return
+
         if not self.redrawSelectedElement:
             if axisPreview and self.axisPreview:
                 # print('DC has axisPreview', self.axisPreview)
@@ -76,6 +84,9 @@ class DeepComponent(Glyph):
                 # print('DC has previewGlyph', self.previewGlyph)
                 for e in self.previewGlyph: yield e
                 return
+
+        # print('deltasStore', deltasStore)
+        # print('position', position)
 
         redrawAndTransformAll = False
         redrawAndTransformSelected = False
@@ -113,11 +124,16 @@ class DeepComponent(Glyph):
             axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
         
         result = []
+        deltasList = []
         for i, deepComponent in enumerate(masterDeepComponents):
             variations = []
             for gv in axesDeepComponents:
                 variations.append(gv[i])
-            result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+            deltas = model.getDeltas([deepComponent, *variations])
+            
+            # result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+            result.append(model.interpolateFromDeltas(position, deltas))
+            deltasList.append(deltas)
 
         if font is None:
             font = self.getParent()
@@ -125,25 +141,23 @@ class DeepComponent(Glyph):
             name = dc.get("name")
             if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
             g = font[name]
-            position = dc.get("coord")
             
             if onlyTransformSelected: 
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
-            elif redrawAndTransformSelected: 
+            else:
                 resultGlyph = RGlyph()
-                g = g.preview(position, font, forceRefresh=True)
+                pos = dc.get("coord")
+                g = g.preview(pos, font, forceRefresh=True)
+
                 for c in g:
                     c = c.glyph
                     c.draw(resultGlyph.getPen())
-                preview[self.selectedElement[i]].resultGlyph = resultGlyph   
-                preview[self.selectedElement[i]].transformation = dc.get("transform")
-            else: 
-                resultGlyph = RGlyph()
-                g = g.preview(position, font, forceRefresh=True)
-                for c in g:
-                    c = c.glyph
-                    c.draw(resultGlyph.getPen())
-                preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
+
+                if redrawAndTransformSelected: 
+                    preview[self.selectedElement[i]].resultGlyph = resultGlyph   
+                    preview[self.selectedElement[i]].transformation = dc.get("transform")
+                else: 
+                    preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
 
         for resultGlyph in preview:
             yield resultGlyph

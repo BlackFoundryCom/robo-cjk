@@ -911,7 +911,7 @@ class RoboCJKView(BaseWindowController):
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
         glyph.markColor = STATE_COLORS[state]
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.atomicElementPreview.update()
 
     def deepComponentDesignStepPopUpButtonCallback(self, sender):
@@ -922,7 +922,7 @@ class RoboCJKView(BaseWindowController):
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
         glyph.markColor = STATE_COLORS[state]
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.deepComponentPreview.update()
 
     def characterGlyphDesignStepPopUpButtonCallback(self, sender):
@@ -935,7 +935,7 @@ class RoboCJKView(BaseWindowController):
         glyph.markColor = STATE_COLORS[state]
         if STATE_COLORS[state] == DONE:
             self.RCJKI.decomposeGlyphToBackupLayer(glyph)
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.characterGlyphPreview.update()
 
     def atomicElementSearchBoxCallback(self, sender):
@@ -1456,7 +1456,7 @@ class RoboCJKView(BaseWindowController):
             if sender == self.w.characterGlyph:
                 charSet = [dict(char = files.unicodeName2Char(x["name"]), name = x["name"]) for x in sender.get()]
                 sender.set(charSet)
-            self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+            self.setGlyphToCanvas(sender, self.currentGlyph)
 
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
@@ -1519,7 +1519,8 @@ class RoboCJKView(BaseWindowController):
             state.set(0)
         # self.currentFont[self.prevGlyphName].update()
         
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        glyph.createPreviewLocationsStore()
+        self.setGlyphToCanvas(sender, glyph)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
         # else:
@@ -1530,15 +1531,15 @@ class RoboCJKView(BaseWindowController):
         else:
             self.w.lockerInfoTextBox.set("")
 
-    def setGlyphNameToCanvas(self, sender, glyphName):
+    def setGlyphToCanvas(self, sender, glyph):
         if sender == self.w.atomicElement:
-            self.w.atomicElementPreview.glyphName = glyphName
+            self.w.atomicElementPreview.glyph = glyph
             self.w.atomicElementPreview.update()
         elif sender == self.w.deepComponent:
-            self.w.deepComponentPreview.glyphName = glyphName
+            self.w.deepComponentPreview.glyph = glyph
             self.w.deepComponentPreview.update()
         elif sender == self.w.characterGlyph:
-            self.w.characterGlyphPreview.glyphName = glyphName
+            self.w.characterGlyphPreview.glyph = glyph
             self.w.characterGlyphPreview.update()
 
     @property
@@ -1702,7 +1703,7 @@ class RoboCJKView(BaseWindowController):
             self.w.atomicElement.setSelection([])
             self.w.atomicElement.set(self.currentFont.atomicElementSet)
             self.prevGlyphName = ""
-            self.setGlyphNameToCanvas(self.w.atomicElement, self.prevGlyphName)
+            self.setGlyphToCanvas(self.w.atomicElement, self.currentGlyph)
             self.w.lockerInfoTextBox.set("")
 
     def removeDeepComponentCallback(self, sender):
@@ -1711,7 +1712,7 @@ class RoboCJKView(BaseWindowController):
             self.w.deepComponent.setSelection([])
             self.w.deepComponent.set(self.currentFont.deepComponentSet)
             self.prevGlyphName = ""
-            self.setGlyphNameToCanvas(self.w.deepComponent, self.prevGlyphName)
+            self.setGlyphToCanvas(self.w.deepComponent, self.currentGlyph)
             self.w.lockerInfoTextBox.set("")
 
     def removeCharacterGlyphCallback(self, sender):
@@ -1767,7 +1768,7 @@ class RoboCJKView(BaseWindowController):
         self.w.characterGlyph.setSelection([])
         self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
         self.prevGlyphName = ""
-        self.setGlyphNameToCanvas(self.w.characterGlyph, self.prevGlyphName)
+        self.setGlyphToCanvas(self.w.characterGlyph, self.currentGlyph)
         self.w.lockerInfoTextBox.set("")
 
     def dumpName(self, glyphType, sets):

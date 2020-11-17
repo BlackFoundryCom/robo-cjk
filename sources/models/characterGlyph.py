@@ -46,6 +46,10 @@ deepComponentsKey = 'robocjk.deepComponents'
 axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
 
+import cProfile, pstats, io
+from pstats import SortKey
+
+
 class CharacterGlyph(Glyph):
 
     
@@ -63,6 +67,7 @@ class CharacterGlyph(Glyph):
         self.outlinesPreview = None
         self.previewGlyph = []
         self.axisPreview = []
+        
         # self.preview = glyphPreview
         # self.preview = glyphPreview.CharacterGlyphPreview(self)
 
@@ -71,10 +76,23 @@ class CharacterGlyph(Glyph):
         # lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
         # self.stackUndo_lib = [lib]
         # self.indexStackUndo_lib = 0
+
         self._setStackUndo()
         self.save()
 
+
     def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
+        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.getLocation().items()])
+        # print('locationKey', self.previewLocationsStore.keys(), locationKey)
+        if locationKey in self.previewLocationsStore:
+            print('I have cache', locationKey)
+            self.previewGlyph = self.previewLocationsStore[locationKey]
+            for p in self.previewGlyph:
+                yield p
+            return
+
+        pr = cProfile.Profile()
+        pr.enable()
         if not self.redrawSelectedElement:
             if axisPreview and self.axisPreview:
                 # print('DC has axisPreview', self.axisPreview)
@@ -121,37 +139,37 @@ class CharacterGlyph(Glyph):
             axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
         
         result = []
+        deltasList = []
         for i, deepComponent in enumerate(masterDeepComponents):
             variations = []
             for gv in axesDeepComponents:
                 variations.append(gv[i])
-            result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+            deltas = model.getDeltas([deepComponent, *variations])
+            # result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+            result.append(model.interpolateFromDeltas(position, deltas))
+            deltasList.append(deltas)
 
+        
         if font is None:
             font = self.getParent()
         for i, dc in enumerate(result):
             name = dc.get("name")
             if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
             g = font[name]
-            pos = dc.get("coord")
             
             if onlyTransformSelected:
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
-            elif redrawAndTransformSelected:
-                resultGlyph = RGlyph()
-                g = g.preview(pos, font, forceRefresh=True)
-                for c in g:
-                    c = c.glyph
-                    c.draw(resultGlyph.getPen())
-                preview[self.selectedElement[i]].resultGlyph = resultGlyph   
-                preview[self.selectedElement[i]].transformation = dc.get("transform")
             else:
                 resultGlyph = RGlyph()
-                g = g.preview(pos, font, forceRefresh=True)
+                g = g.preview(position=dc.get('coord'), deltasStore=deltasList[i], font=font, forceRefresh=True)
                 for c in g:
                     c = c.glyph
                     c.draw(resultGlyph.getPen())
-                preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
+                if redrawAndTransformSelected:
+                    preview[self.selectedElement[i]].resultGlyph = resultGlyph   
+                    preview[self.selectedElement[i]].transformation = dc.get("transform")
+                else:
+                    preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
 
         if len(self._RGlyph) and not self.selectedElement:
             layerGlyphs = []
@@ -167,8 +185,18 @@ class CharacterGlyph(Glyph):
                 resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
                 preview.append(self.ResultGlyph(resultGlyph))
 
+        self.previewGlyph = preview
+        self.previewLocationsStore[','.join([k+':'+str(v) for k,v in position.items()])] = preview
+
         for resultGlyph in preview:
             yield resultGlyph
+
+        pr.disable()
+        s = io.StringIO()
+        sortby = SortKey.CUMULATIVE
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        # print(s.getvalue())
 
     @property
     def foreground(self):
