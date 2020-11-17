@@ -862,38 +862,43 @@ class AxesGroup(Group):
         if not senderGet: return
 
         values = senderGet[sel[0]]
-        axis = values["Axis"]
-        minValue = float(values["MinValue"])
-        maxValue = float(values["MaxValue"])
+        
+        # print(axis)
+        # minValue = float(values["MinValue"])
+        # maxValue = float(values["MaxValue"])
         sliderValue = round(senderGet[sel[0]]['PreviewValue'], 3)
-        if edited[0] == 0:
-            name =  senderGet[edited[1]]['Axis']
-            if len([x for x in senderGet if x['Axis'] == name]) > 1:
-                i = 0
-                while True:
-                    name = senderGet[edited[1]]['Axis'] + "_" + str(i).zfill(2)
-                    if name not in [x["Axis"] for x in senderGet]:
-                        print(name)
-                        break
-                    i += 1
-            if name != self.selectedSourceAxis:
-                if self.RCJKI.currentGlyph.type != 'characterGlyph':
+        if edited[0] in [0, 1, 3]:
+            # name =  senderGet[edited[1]]['Axis']
+            # if len([x for x in senderGet if x['Axis'] == name]) > 1:
+            #     i = 0
+            #     while True:
+            #         name = senderGet[edited[1]]['Axis'] + "_" + str(i).zfill(2)
+            #         if name not in [x["Axis"] for x in senderGet]:
+            #             print(name)
+            #             break
+            #         i += 1
+            # if name != self.selectedSourceAxis:
+            #     if self.RCJKI.currentGlyph.type != 'characterGlyph':
                     
-                    self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
-                    self.RCJKI.currentGlyph.selectedSourceAxis = name
-            glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
+            #         self.RCJKI.currentGlyph.renameVariationAxis(self.selectedSourceAxis, name)
+            #         self.RCJKI.currentGlyph.selectedSourceAxis = name
+            # glyphVariations = self.RCJKI.currentGlyph._glyphVariations.axes
             l = []
             for axis in self.RCJKI.currentGlyph._axes:
                 l.append({'Axis':axis.name, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
             # l = [{'Axis':axis, 'PreviewValue':0, "MinValue":value.minValue, "MaxValue":value.maxValue} for axis, value in self.RCJKI.currentGlyph._glyphVariations.items()]
             sender.set(l)
             sender.setSelection(sel)
-        elif (edited[0] in [1, 3] and self.glyphtype != "atomicElement") or (edited[0] in [1, 3] and self.glyphtype == "atomicElement"): #change min/max value
-            senderGet[sel[0]]["MinValue"] = self.RCJKI.currentGlyph._axes.get(axis).minValue
-            senderGet[sel[0]]["MaxValue"] = self.RCJKI.currentGlyph._axes.get(axis).maxValue
+            # senderGet[sel[0]]["MinValue"] = self.RCJKI.currentGlyph._axes.get(axis).minValue
+            # senderGet[sel[0]]["MaxValue"] = self.RCJKI.currentGlyph._axes.get(axis).maxValue
+        # elif (edited[0] in [1, 3] and self.glyphtype != "atomicElement") or (edited[0] in [1, 3] and self.glyphtype == "atomicElement"): #change min/max value
+        #     senderGet[sel[0]]["MinValue"] = self.RCJKI.currentGlyph._axes.get(axis).minValue
+        #     senderGet[sel[0]]["MaxValue"] = self.RCJKI.currentGlyph._axes.get(axis).maxValue
             # self.RCJKI.currentGlyph._axes.get(axis).minValue = minValue
             # self.RCJKI.currentGlyph._axes.get(axis).maxValue = maxValue
-        self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
+        # print('je prend cet axis %s'%axis)
+        axis = sender.get()[sel[0]]["Axis"]
+        self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, self.RCJKI.currentGlyph._axes.get(axis).minValue, self.RCJKI.currentGlyph._axes.get(axis).maxValue))
         self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
