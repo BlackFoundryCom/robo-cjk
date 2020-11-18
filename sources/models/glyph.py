@@ -301,10 +301,15 @@ class Glyph(RGlyph):
         self._axes.removeAxis(index)
         self._glyphVariations.removeAxis(axisName)
 
-    def addSource(self, sourceName="", location={}, layerName = ""):
+    def addSource(self, sourceName="", location={}, layerName = "", copyFrom = ""):
+
         deepComponents = []
         if self.type != "atomicElement":
-            for deepcomponent in self._deepComponents:
+            if not copyFrom or copyFrom == "master":
+                dcs = self._deepComponents
+            else:
+                dcs = self._glyphVariations.getFromSourceName(copyFrom).deepComponents
+            for deepcomponent in dcs:
                 items = {}
                 for k, v in deepcomponent.items():
                     if k != "name":

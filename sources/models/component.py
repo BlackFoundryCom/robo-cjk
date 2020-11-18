@@ -573,6 +573,11 @@ class VariationGlyphs(list):
     #     for x in self:
     #         yield x._toDict()
 
+    def getFromSourceName(self, sourceName):
+        for x in self:
+            if x.sourceName == sourceName:
+                return x
+
     def getList(self, exception = []):
         """
         Return a list reprensentation on the class
@@ -628,6 +633,11 @@ class VariationGlyphs(list):
     # @property
     def layerNames(self):
         return [x["layerName"] for x in self if x["layerName"]]
+
+    @property
+    def sourceNames(self):
+        return [x.sourceName for x in self]
+    
 
     @property
     def locations(self):

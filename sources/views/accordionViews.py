@@ -919,7 +919,7 @@ class SourcesSheet:
         self.RCJKI = RCJKI
         self.controller = controller
         self.glyphType = glyphType
-        height = 60 + 30*len(self.RCJKI.currentGlyph._axes)
+        height = 80 + 30*len(self.RCJKI.currentGlyph._axes)
         self.w = Sheet((300, height), parentWindow)
 
         y = 10
@@ -946,6 +946,10 @@ class SourcesSheet:
             setattr(self.w, "%smaxValue"%axis.name, maxValue)
             self.axes[editText] = axis
             y += 25
+
+        self.w.copyfromTitle = TextBox((10, y, 90, 20), "copy from", sizeStyle = 'small')
+        self.sources = ["master"]+self.RCJKI.currentGlyph._glyphVariations.sourceNames
+        self.w.copyfromPopupButton = PopUpButton((100, y, -10, 20), self.sources, sizeStyle = 'small')
 
         self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
         self.w.apply = Button((150, -20, 150, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
@@ -980,9 +984,13 @@ class SourcesSheet:
                     location[axis] = value
             except:
                 continue
-        self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName)
+        copyFrom = self.w.copyfromPopupButton.getItem()
+        self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName, copyFrom = copyFrom)
         self.RCJKI.currentGlyph.selectedSourceAxis = sourceName
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.controller.setList()
+        self.controller.sourcesList.setSelection([len(self.controller.sourcesList)-1])
         self.w.close()
 
     def cancelCallback(self, sender):
