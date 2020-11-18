@@ -850,12 +850,15 @@ class AxesGroup(Group):
     @lockedProtect
     def axesListSelectionCallback(self, sender):
         sel = sender.getSelection()
+        senderGet = sender.get()
         if not sel:
             self.selectedSourceAxis = None
             self.sliderValueEditText.set('')
         else:
-            self.selectedSourceAxis = sender.get()[sel[0]]["Axis"]
-            self.sliderValueEditText.set(round(sender.get()[sel[0]]["PreviewValue"], 3))
+            self.selectedSourceAxis = senderGet[sel[0]]["Axis"]
+            sliderValue = round(senderGet[sel[0]]["PreviewValue"], 3)
+            axis = senderGet[sel[0]]["Axis"]
+            self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, self.RCJKI.currentGlyph._axes.get(axis).minValue, self.RCJKI.currentGlyph._axes.get(axis).maxValue))
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
 
