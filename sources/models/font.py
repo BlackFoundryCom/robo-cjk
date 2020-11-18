@@ -83,7 +83,7 @@ class Font():
         self._deepComponentSet = []
         self._characterGlyphSet = []
 
-    def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker):
+    def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker, robocjkVersion):
         self.fontPath = fontPath
         
         self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
@@ -113,6 +113,7 @@ class Font():
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, 'r') as file:
                 self.fontLib = json.load(file)
+            self.fontLib['robocjk.version'] = robocjkVersion
             self._initFontLib(self.fontLib)
             self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
 
