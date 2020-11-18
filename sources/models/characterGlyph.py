@@ -165,6 +165,8 @@ class CharacterGlyph(Glyph):
         if not position:
             position = self.getLocation()
 
+        position =self.normalizedValueToMinMaxValue(position, self)
+
         print("I will draw")
 
         pr = cProfile.Profile()
@@ -204,7 +206,7 @@ class CharacterGlyph(Glyph):
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
             else:
                 resultGlyph = RGlyph()
-                g = g.preview(position=self.normalizedValueToMinMaxValue(dc.get('coord'), g), deltasStore=deltasList[i], font=font, forceRefresh=True)
+                g = g.preview(position=dc.get('coord'), deltasStore=deltasList[i], font=font, forceRefresh=True)
                 for c in g:
                     c = c.glyph
                     c.draw(resultGlyph.getPen())

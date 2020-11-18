@@ -145,6 +145,8 @@ class DeepComponent(Glyph):
         if not position:
             position = self.getLocation()
 
+        position =self.normalizedValueToMinMaxValue(position, self)
+
         locations = [{}]
         locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations if x["on"]])
         model = VariationModel(locations)
@@ -179,7 +181,7 @@ class DeepComponent(Glyph):
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
             else:
                 resultGlyph = RGlyph()
-                pos = self.normalizedValueToMinMaxValue(dc.get('coord'), g)
+                pos = dc.get('coord')
                 g = g.preview(pos, font, forceRefresh=True)
 
                 for c in g:
