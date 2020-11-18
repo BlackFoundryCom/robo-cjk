@@ -559,9 +559,24 @@ class VariationGlyphs(list):
 
     def addVariation(self, variation):
         loc = variation.get('location')
+        print(loc, "\n", self.locations, "\n\n")
         if loc in self.locations or not loc:
             variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
+
+    def activateSource(self, index, value):
+        if not value:
+            self[index].on = False
+            return False
+        loc = self[index].location
+        locations = [x.location for x in self if x.on]
+        if loc in locations:
+            self[index].on = False
+            return False
+        else:
+            self[index].on = True
+            return True
+
 
     def setLocationToIndex(self, location, index):
         variation = self[index]
@@ -613,12 +628,12 @@ class VariationGlyphs(list):
         for x in self:
             x.removeDeepComponents(indexes)
 
-    def activateSource(self, index):
-        self[index].activate()
+    # def activateSource(self, index):
+    #     self[index].activate()
 
     def activateSources(self, indexes: list):
         for index in indexes:
-            self.activateSource(index)
+            self.activateSource(index, 1)
 
     def desactivateSource(self, index):
         self[index].desactivate()

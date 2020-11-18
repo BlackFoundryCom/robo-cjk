@@ -919,7 +919,10 @@ class SourcesSheet:
         self.RCJKI = RCJKI
         self.controller = controller
         self.glyphType = glyphType
-        height = 80 + 30*len(self.RCJKI.currentGlyph._axes)
+        if glyphType != "atomicElement":
+            height = 80 + 30*len(self.RCJKI.currentGlyph._axes)
+        else:
+            height = 60 + 30*len(self.RCJKI.currentGlyph._axes)
         self.w = Sheet((300, height), parentWindow)
 
         y = 10
@@ -947,9 +950,10 @@ class SourcesSheet:
             self.axes[editText] = axis
             y += 25
 
-        self.w.copyfromTitle = TextBox((10, y, 90, 20), "copy from", sizeStyle = 'small')
-        self.sources = ["master"]+self.RCJKI.currentGlyph._glyphVariations.sourceNames
-        self.w.copyfromPopupButton = PopUpButton((100, y, -10, 20), self.sources, sizeStyle = 'small')
+        if glyphType != "atomicElement":
+            self.w.copyfromTitle = TextBox((10, y, 90, 20), "copy from", sizeStyle = 'small')
+            self.sources = ["master"]+self.RCJKI.currentGlyph._glyphVariations.sourceNames
+            self.w.copyfromPopupButton = PopUpButton((100, y, -10, 20), self.sources, sizeStyle = 'small')
 
         self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
         self.w.apply = Button((150, -20, 150, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
@@ -980,11 +984,14 @@ class SourcesSheet:
         for axis in self.RCJKI.currentGlyph._axes.names:
             try:
                 value = float(getattr(self.w, axis).get())
-                if value:
+                if value != "":
                     location[axis] = value
             except:
                 continue
-        copyFrom = self.w.copyfromPopupButton.getItem()
+        if self.glyphType != "atomicElement":
+            copyFrom = self.w.copyfromPopupButton.getItem()
+        else:
+            copyFrom = ""
         self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName, copyFrom = copyFrom)
         self.RCJKI.currentGlyph.selectedSourceAxis = sourceName
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
@@ -1054,7 +1061,10 @@ class SourcesGroup(Group):
         variation = self.RCJKI.currentGlyph._glyphVariations[index]
         if edited[0] == -1: #On off
             value = values[sel[0]]["On/Off"]
-            variation.on = value
+            v = self.RCJKI.currentGlyph._glyphVariations.activateSource(index, value)
+            l = sender.get()
+            l[index]["On/Off"] = v
+            sender.set(l)
         elif edited[0] == 1: #name
             if self.RCJKI.currentGlyph.type == "atomicElement":
                 name = values[edited[1]]['layerName']
