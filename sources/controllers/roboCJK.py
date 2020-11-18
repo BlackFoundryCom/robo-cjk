@@ -113,6 +113,8 @@ class RoboCJKController(object):
     hiddenSavePath = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'mySQLSave')
     files.makepath(hiddenSavePath)
 
+    _version = 1.0
+
     def __init__(self):
         self.observers = False
         self.drawer = drawer.Drawer(self)

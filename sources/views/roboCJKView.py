@@ -1391,12 +1391,22 @@ class RoboCJKView(BaseWindowController):
             self.RCJKI.currentFont = font.Font()
             if not self.RCJKI.mysql:
                 fontPath = os.path.join(self.RCJKI.projectRoot, self.currentrcjkFile)
+                if 'fontLib.json' in os.listdir(fontPath):
+                    libPath = os.path.join(fontPath, 'fontLib.json')
+                    with open(libPath, 'r') as file:
+                        fontLib = json.load(file)
+                        version = fontLib.get('robocjk.version', False)
+                        if version:
+                            if version > self.RCJKI._version:
+                                message("Warning you are not using the good RoboCJK version")
+                                return
                 self.RCJKI.currentFont._init_for_git(fontPath, 
                     self.RCJKI.gitUserName, 
                     self.RCJKI.gitPassword, 
                     self.RCJKI.gitHostLocker, 
                     self.RCJKI.gitHostLockerPassword, 
-                    self.RCJKI.privateLocker
+                    self.RCJKI.privateLocker,
+                    self.RCJKI._version
                     )
                 if 'database.json' in os.listdir(fontPath):
                     with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
