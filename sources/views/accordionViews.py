@@ -1469,6 +1469,7 @@ class DeepComponentAxesGroup(Group):
             value = float(value.replace(",", "."))
         except:
             return
+
         newList = []
         selectedAtomicElementName = self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].name
         atomicElement = self.RCJKI.currentFont[selectedAtomicElementName]
@@ -1476,6 +1477,8 @@ class DeepComponentAxesGroup(Group):
             if self.deepComponentAxesList[sel[0]]['Axis'] == x.name:
                 minValue = x.minValue
                 maxValue = x.maxValue
+                if value > max(minValue, maxValue) or value < min(minValue, maxValue):
+                    return
         # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
         for i, e in enumerate(self.deepComponentAxesList.get()):
             if i != sel[0]:
@@ -1488,10 +1491,13 @@ class DeepComponentAxesGroup(Group):
                     "MaxValue": maxValue,
                     })
             self.deepComponentAxesList.set(newList)
-
+        
         self.deepComponentAxesList.setSelection(sel)
         self.setSliderValue2Glyph(self.deepComponentAxesList, minValue, maxValue)
         self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
+        self.RCJKI.currentGlyph.reinterpolate = True
     
     @lockedProtect    
     def deepComponentAxesListSelectionCallback(self, sender):

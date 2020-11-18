@@ -276,7 +276,7 @@ class DeepComponent(Glyph):
     def updateAtomicElementCoord(self, axisName, value):
         if self.selectedSourceAxis:
             index = 0
-            print(self.selectedSourceAxis)
+            # print(self.selectedSourceAxis)
             for i, x in enumerate(self._glyphVariations):
                 if x.sourceName == self.selectedSourceAxis:
                     index = i
