@@ -113,7 +113,7 @@ class RoboCJKController(object):
     hiddenSavePath = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'mySQLSave')
     files.makepath(hiddenSavePath)
 
-    _version = 1.0
+    _version = 1.1
 
     def __init__(self):
         self.observers = False
@@ -525,7 +525,7 @@ class RoboCJKController(object):
                 minValue = axis.minValue
                 maxValue = axis.maxValue
                 axisName = axis.name
-                value = dc["coord"].get(axisName, minValue)
+                value = self.systemValue(dc["coord"].get(axisName, minValue), minValue, maxValue)
                 l.append({'Axis':axisName, 'PreviewValue':value, 'MinValue':minValue, 'MaxValue':maxValue})
         l = self.sortDeepComponentAxesList(l)
         element.deepComponentAxesList.setSelection([])

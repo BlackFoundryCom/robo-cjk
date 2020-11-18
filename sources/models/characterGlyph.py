@@ -171,7 +171,7 @@ class CharacterGlyph(Glyph):
         pr.enable()
 
         locations = [{}]
-        locations.extend([x["location"] for x in self._glyphVariations if x["on"]])
+        locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations if x["on"]])
         model = VariationModel(locations)
 
         if redrawAndTransformAll:
@@ -204,7 +204,7 @@ class CharacterGlyph(Glyph):
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
             else:
                 resultGlyph = RGlyph()
-                g = g.preview(position=dc.get('coord'), deltasStore=deltasList[i], font=font, forceRefresh=True)
+                g = g.preview(position=self.normalizedValueToMinMaxValue(dc.get('coord'), g), deltasStore=deltasList[i], font=font, forceRefresh=True)
                 for c in g:
                     c = c.glyph
                     c.draw(resultGlyph.getPen())
