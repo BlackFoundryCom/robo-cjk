@@ -559,7 +559,6 @@ class VariationGlyphs(list):
 
     def addVariation(self, variation):
         loc = variation.get('location')
-        print(loc, "\n", self.locations, "\n\n")
         if loc in self.locations or not loc:
             variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
