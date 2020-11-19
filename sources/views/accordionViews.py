@@ -786,7 +786,10 @@ class AxesGroup(Group):
                 })
             self.axesList.set(newList)
 
-        self.RCJKI.currentGlyph.sourcesList = self.axesList.get()
+        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in newList]
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
+        self.RCJKI.currentGlyph.reinterpolate = True
         self.RCJKI.updateDeepComponent(update = False)
         self.axesList.setSelection(sel)
         self.controller.updatePreview()
@@ -813,8 +816,8 @@ class AxesGroup(Group):
             drawFocusRing = False,
             showColumnTitles = False
                     )
-        
-        self.RCJKI.currentGlyph.sourcesList = {}
+
+        self.RCJKI.currentGlyph.sourcesList = []
 
     @lockedProtect
     def sliderValueEditTextCallback(self, sender):
