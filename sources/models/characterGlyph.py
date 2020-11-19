@@ -91,7 +91,7 @@ class CharacterGlyph(Glyph):
 
         if self.selectedElement and not self.reinterpolate:
             onlyTransformSelected = True
-        elif self.selectedElement and self.reinterpolate and not axisPreview and not self.redrawSelectedElementSource:
+        elif self.selectedElement and self.reinterpolate and not axisPreview:
             redrawAndTransformAll = True
         elif self.selectedElement:
             redrawAndTransformSelected = True
