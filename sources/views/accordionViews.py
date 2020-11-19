@@ -1536,7 +1536,10 @@ class DeepComponentAxesGroup(Group):
 
         # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sender.getSelection()[0]]['Axis'])
         self.setSliderValue2Glyph(sender, minValue, maxValue)
-        self.sliderValueEditText.set(self.RCJKI.userValue(round(sender.get()[sel[0]]["PreviewValue"], 3), minValue, maxValue))
+        if not self.RCJKI.selectedSourceAxis:
+            self.sliderValueEditText.set(self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].coord[self.deepComponentAxesList[sel[0]]['Axis']] )
+        else:
+            self.sliderValueEditText.set(self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(self.RCJKI.selectedSourceAxis).deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].coord[self.deepComponentAxesList[sel[0]]['Axis']] )
         self.RCJKI.updateDeepComponent(update = False)
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True

@@ -727,9 +727,15 @@ class RoboCJKController(object):
 
     def userValue(self, value, minValue, maxValue):
         value = minValue + (maxValue - minValue) * value 
-        if math.ceil(value) - value < 0.001:
-            value = math.ceil(value)
+        # if math.ceil(value) - value < 0.001:
+        #     value = math.ceil(value)
         return value
 
     def systemValue(self, value, minValue, maxValue):
-        return (value - minValue) / (maxValue - minValue + 1e-10)
+        if maxValue  - minValue == 0:
+            return 0
+        return (value - minValue) / (maxValue - minValue)
+
+
+
+
