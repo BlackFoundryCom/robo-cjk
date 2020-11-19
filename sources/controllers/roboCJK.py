@@ -510,11 +510,10 @@ class RoboCJKController(object):
         if not self.currentGlyph.selectedSourceAxis:
             data = self.currentGlyph._deepComponents
         else:
-            index = 0
-            for i, x in enumerate(self.currentGlyph._axes):
-                if x.name == self.currentGlyph.selectedSourceAxis:
-                    index = i
-            data = self.currentGlyph._glyphVariations[index].deepComponents
+            for x in self.currentGlyph._glyphVariations:
+                if x.sourceName == self.currentGlyph.selectedSourceAxis:
+                    data = x.deepComponents
+                    break
         l = []
         if len(self.currentGlyph.selectedElement) == 1:
             i = self.currentGlyph.selectedElement[0]
