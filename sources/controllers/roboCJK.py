@@ -285,32 +285,20 @@ class RoboCJKController(object):
         if self.glyphInspectorWindow is not None:
             self.glyphInspectorWindow.closeWindow()
             self.glyphInspectorWindow = None
-        self.closeComponentWindow()
-        self.closeCharacterWindow()
         try:
             posSize = CurrentGlyphWindow().window().getPosSize()
             setExtensionDefault(blackrobocjk_glyphwindowPosition, posSize)
             self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
         except:pass
 
-        gae = self.roboCJKView.w.atomicElementPreview.glyphName
-        gdc = self.roboCJKView.w.deepComponentPreview.glyphName
-        gcg =  self.roboCJKView.w.characterGlyphPreview.glyphName
         if not self.mysql:
             self.currentFont.save()
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
         else:
             pass
-            # self.currentFont.saveGlyph(self.currentGlyph)
 
-        self.currentFont.clearRFont()
-        self.w.atomicElementPreview.update()
-        self.w.deepComponentPreview.update()
-        self.w.characterGlyphPreview.update()
-        # self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.atomicElementPreview, gae)
-        # self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.deepComponentPreview, gdc)
-        # self.roboCJKView.setGlyphNameToCanvas(self.roboCJKView.w.characterGlyphPreview, gcg)        
+        self.currentFont.clearRFont()        
 
     def closeimportDCFromCG(self):
         if self.importDCFromCG is not None:
@@ -370,15 +358,15 @@ class RoboCJKController(object):
     def exportDataBase(self):
         self.currentFont.exportDataBase()
 
-    def closeCharacterWindow(self):
-        if self.characterWindow is not None:
-            self.characterWindow.close()
-            self.characterWindow = None
+    # def closeCharacterWindow(self):
+    #     if self.characterWindow is not None:
+    #         self.characterWindow.close()
+    #         self.characterWindow = None
 
-    def closeComponentWindow(self):
-        if self.componentWindow is not None:
-            self.componentWindow.close()
-            self.componentWindow = None
+    # def closeComponentWindow(self):
+    #     if self.componentWindow is not None:
+    #         self.componentWindow.close()
+    #         self.componentWindow = None
 
     @property 
     def currentView(self):
