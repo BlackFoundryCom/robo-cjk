@@ -1491,13 +1491,35 @@ class DeepComponentAxesGroup(Group):
                     "MaxValue": maxValue,
                     })
             self.deepComponentAxesList.set(newList)
-        
         self.deepComponentAxesList.setSelection(sel)
-        self.setSliderValue2Glyph(self.deepComponentAxesList, minValue, maxValue)
+        self.setEditTextValue2Glyph(value)
         self.RCJKI.updateDeepComponent(update = False)
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.currentGlyph.reinterpolate = True
+
+    def setEditTextValue2Glyph(self, value):
+        def _getKeys(glyph):
+            return 'robocjk.deepComponents', 'robocjk.variationGlyphs', 'robocjk.axes'
+
+        if self.RCJKI.currentGlyph.type in ['characterGlyph', 'deepComponent']:
+            lib = RLib()
+            deepComponentsKey, glyphVariationsKey, axesKey = _getKeys(self.RCJKI.currentGlyph)
+            lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
+            lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
+            lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList())
+            self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
+            self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
+            self.RCJKI.currentGlyph.indexStackUndo_lib += 1
+            
+        # self.RCJKI.sliderValue = round(float(self.deepComponentAxesList[sender.getSelection()[0]]['PreviewValue']), 3)
+        self.RCJKI.sliderValue = value
+        sliderName = self.deepComponentAxesList[self.deepComponentAxesList.getSelection()[0]]['Axis']
+        self.RCJKI.sliderName = sliderName
+        if self.RCJKI.isDeepComponent:
+            self.RCJKI.currentGlyph.updateAtomicElementCoord(self.RCJKI.sliderName, value)
+        elif self.RCJKI.isCharacterGlyph:
+            self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, value)
     
     @lockedProtect    
     def deepComponentAxesListSelectionCallback(self, sender):
@@ -1516,7 +1538,11 @@ class DeepComponentAxesGroup(Group):
                     maxValue = x.maxValue
             # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
             sliderValue = round(sender.get()[sel[0]]['PreviewValue'], 3)
-            self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
+            if not self.RCJKI.currentGlyph.selectedSourceAxis:
+                self.sliderValueEditText.set(self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].coord[self.deepComponentAxesList[sel[0]]['Axis']] )
+            else:
+                self.sliderValueEditText.set(self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(self.RCJKI.currentGlyph.selectedSourceAxis).deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].coord[self.deepComponentAxesList[sel[0]]['Axis']] )
+            # self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, minValue, maxValue))
         
     @lockedProtect
     # @refreshPreview
@@ -1536,10 +1562,10 @@ class DeepComponentAxesGroup(Group):
 
         # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sender.getSelection()[0]]['Axis'])
         self.setSliderValue2Glyph(sender, minValue, maxValue)
-        if not self.RCJKI.selectedSourceAxis:
+        if not self.RCJKI.currentGlyph.selectedSourceAxis:
             self.sliderValueEditText.set(self.RCJKI.currentGlyph._deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].coord[self.deepComponentAxesList[sel[0]]['Axis']] )
         else:
-            self.sliderValueEditText.set(self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(self.RCJKI.selectedSourceAxis).deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].coord[self.deepComponentAxesList[sel[0]]['Axis']] )
+            self.sliderValueEditText.set(self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(self.RCJKI.currentGlyph.selectedSourceAxis).deepComponents[self.RCJKI.currentGlyph.selectedElement[0]].coord[self.deepComponentAxesList[sel[0]]['Axis']] )
         self.RCJKI.updateDeepComponent(update = False)
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
