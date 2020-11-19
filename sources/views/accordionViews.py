@@ -813,8 +813,8 @@ class AxesGroup(Group):
             drawFocusRing = False,
             showColumnTitles = False
                     )
-
-        self.RCJKI.currentGlyph.sourcesList = self.axes
+        
+        self.RCJKI.currentGlyph.sourcesList = {}
 
     @lockedProtect
     def sliderValueEditTextCallback(self, sender):
