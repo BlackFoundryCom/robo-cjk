@@ -114,7 +114,6 @@ class CharacterGlyph(Glyph):
             redrawSeletedElement = self.redrawSelectedElementPreview
         if not redrawSeletedElement:
             if previewLocationsStore:
-                print('I have cache', locationKey)
                 for p in previewLocationsStore:
                     yield p
                 return
@@ -132,7 +131,6 @@ class CharacterGlyph(Glyph):
         #### S'IL N'Y A UNE SELECTION MAIS PAS D'INSTRUCTION DE REDESSIN, RECHERCHE D'UN CACHE ####
         if not redrawAndTransformAll and not redrawAndTransformSelected and not onlyTransformSelected:
             if previewLocationsStore:
-                print('I have cache', locationKey)
                 for p in previewLocationsStore:
                     yield p
                 return
@@ -160,14 +158,12 @@ class CharacterGlyph(Glyph):
                         preview = self.axisPreview = previewLocationsStore
                     else:
                         preview = self.previewGlyph = previewLocationsStore     
-                    print("will redraw only the selectedElement")               
 
         if not position:
             position = self.getLocation()
 
         position =self.normalizedValueToMinMaxValue(position, self)
 
-        print("I will draw")
 
         pr = cProfile.Profile()
         pr.enable()
