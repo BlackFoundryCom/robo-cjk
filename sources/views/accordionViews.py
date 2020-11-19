@@ -781,7 +781,7 @@ class AxesGroup(Group):
             newList.append({
                 "Axis":e["Axis"],
                 "MinValue":e["MinValue"],
-                "PreviewValue":self.RCJKI.systemValue(0, minValue, maxValue),
+                "PreviewValue":0,#self.RCJKI.systemValue(0, minValue, maxValue),
                 "MaxValue":e["MaxValue"],
                 })
             self.axesList.set(newList)
