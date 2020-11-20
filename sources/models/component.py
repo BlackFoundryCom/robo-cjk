@@ -563,7 +563,7 @@ class VariationGlyphs(list):
 
     def addVariation(self, variation):
         loc = variation.get('location')
-        if loc in [x.location for x in self if x.on] or not loc:
+        if loc in self.locations or not loc:
             variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
 
@@ -572,7 +572,7 @@ class VariationGlyphs(list):
             self[index].on = False
             return False
         loc = self[index].location
-        locations = [x.location for x in self if x.on]
+        locations = self.locations
         if loc in locations:
             self[index].on = False
             return False
@@ -656,11 +656,10 @@ class VariationGlyphs(list):
     def sourceNames(self):
         return [x.sourceName for x in self]
     
-
     @property
     def locations(self):
-        return [x.location for x in self]
-
+        return [x.location for x in self if x.on]
+    
     @property
     def axes(self):
         """

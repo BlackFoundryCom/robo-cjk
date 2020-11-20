@@ -1069,6 +1069,16 @@ class SourcesGroup(Group):
         if edited[0] == -1: #On off
             value = values[sel[0]]["On/Off"]
             v = self.RCJKI.currentGlyph._glyphVariations.activateSource(index, value)
+
+            empty = True
+            loc = self.RCJKI.currentGlyph._glyphVariations[index].location
+            for k, x in loc.items():
+                if x != self.RCJKI.currentGlyph._axes.get(k).minValue:
+                    empty = False
+                    break
+            if empty:
+                v = False
+
             l = sender.get()
             l[index]["On/Off"] = v
             sender.set(l)
