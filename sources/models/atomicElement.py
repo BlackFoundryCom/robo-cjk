@@ -42,6 +42,22 @@ glyphVariationsKey = 'robocjk.glyphVariationGlyphs'
 axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
 
+class CustomMathGlyph(mathGlyph.MathGlyph):
+
+    def __init__(self, glyph):
+        super().__init__(None)
+        p = mathGlyph.MathGlyphPen(self)
+        glyph.drawPoints(p)
+        self.anchors = [dict(anchor) for anchor in glyph.anchors]
+        self.guidelines = []
+        self.image = mathGlyph._expandImage(glyph.image)
+        self.lib = copy.deepcopy(dict(glyph.lib))
+        self.name = glyph.name
+        self.unicodes = list(glyph.unicodes)
+        self.width = glyph.width
+        self.height = glyph.height
+        self.note = glyph.note
+
 class AtomicElement(Glyph):
     def __init__(self, name):
         super().__init__()
@@ -87,8 +103,8 @@ class AtomicElement(Glyph):
             except Exception as e: 
                 print(e)
                 continue
-            layerGlyphs.append(mathGlyph.MathGlyph(font._RFont.getLayer(variation["layerName"])[self.name]))
-        resultGlyph = model.interpolateFromMasters(position, [mathGlyph.MathGlyph(self._RGlyph), *layerGlyphs])
+            layerGlyphs.append(CustomMathGlyph(font._RFont.getLayer(variation["layerName"])[self.name]))
+        resultGlyph = model.interpolateFromMasters(position, [CustomMathGlyph(self._RGlyph), *layerGlyphs])
         # resultGlyph.removeOverlap()
         # self.frozenPreview.append(resultGlyph)
         resultGlyph = self.ResultGlyph(resultGlyph)
