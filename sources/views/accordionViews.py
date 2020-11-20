@@ -1952,30 +1952,31 @@ class CharacterGlyphInspector(Inspector):
 
         self.type = "characterGlyph"
         
-        self.compositionRulesItem = CompositionRulesGroup((0, 0, -10, -0), self.RCJKI, self)
-        self.previewItem = PreviewGroup((0, 0, -10, -0), self.RCJKI)
+        self.compositionRulesItem = CompositionRulesGroup((10, 0, -10, -0), self.RCJKI, self)
+        self.previewItem = PreviewGroup((10, 0, -10, -0), self.RCJKI)
 
-        self.axesItem = AxesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, axes)
-        self.sourcesItem = SourcesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+        self.axesItem = AxesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
-        self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -10, -0), self.RCJKI, deepComponentAxes)
-        self.deepComponentListItem = DeepComponentListGroup((0, 0, -10, -0), self.RCJKI)
-        self.propertiesItem = PropertiesGroup((0, 0, -10, -0), self.RCJKI, self)
-        self.transformationItem = TransformationGroup((0, 0, -10, -0), self.RCJKI, self)
+        self.deepComponentAxesItem = DeepComponentAxesGroup((10, 0, -10, -0), self.RCJKI, deepComponentAxes)
+        self.deepComponentListItem = DeepComponentListGroup((10, 0, -10, -0), self.RCJKI)
+        self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
+        self.transformationItem = TransformationGroup((10, 0, -10, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Composition Rules", view=self.compositionRulesItem, size=100, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
 
-                       dict(label="Font axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Font axes", view=self.axesItem, minSize=80, size=100, collapsed=False, canResize=True),
                        dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
 
                        # dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
+                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
-                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True)
+                       
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
@@ -1991,17 +1992,17 @@ class DeepComponentInspector(Inspector):
 
         self.type = "deepComponent"
         
-        self.relatedGlyphsItem = RelatedGlyphsGroup((0, 0, -10, -0), self.RCJKI, self)
-        self.previewItem = PreviewGroup((0, 0, -10, -0), self.RCJKI)
+        self.relatedGlyphsItem = RelatedGlyphsGroup((10, 0, -10, -0), self.RCJKI, self)
+        self.previewItem = PreviewGroup((10, 0, -10, -0), self.RCJKI)
 
-        self.axesItem = AxesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, axes)
-        self.sourcesItem = SourcesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+        self.axesItem = AxesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
-        self.deepComponentAxesItem = DeepComponentAxesGroup((0, 0, -10, -0), self.RCJKI, atomicElementAxes)
-        self.deepComponentListItem = DeepComponentListGroup((0, 0, -10, -0), self.RCJKI)
-        self.propertiesItem = PropertiesGroup((0, 0, -10, -0), self.RCJKI, self)
-        self.transformationItem = TransformationGroup((0, 0, -10, -0), self.RCJKI, self)
+        self.deepComponentAxesItem = DeepComponentAxesGroup((10, 0, -10, -0), self.RCJKI, atomicElementAxes)
+        self.deepComponentListItem = DeepComponentListGroup((10, 0, -10, -0), self.RCJKI)
+        self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
+        self.transformationItem = TransformationGroup((10, 0, -10, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Related glyphs", view=self.relatedGlyphsItem, size=140, collapsed=False, canResize=True),
@@ -2013,8 +2014,9 @@ class DeepComponentInspector(Inspector):
                        # dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Atomic element list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
+                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
-                       dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True)
+                       
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
@@ -2030,13 +2032,13 @@ class AtomicElementInspector(Inspector):
 
         self.type = "atomicElement"
         
-        self.previewItem = PreviewGroup((0, 0, -10, -0), self.RCJKI)
+        self.previewItem = PreviewGroup((10, 0, -10, -0), self.RCJKI)
 
-        self.axesItem = AxesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, axes)
-        self.sourcesItem = SourcesGroup((0, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
+        self.axesItem = AxesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, axes)
+        self.sourcesItem = SourcesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "atomicElement", glyphVariationsAxes)
-        self.propertiesItem = PropertiesGroup((0, 0, -10, -0), self.RCJKI, self)
+        self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
 
         descriptions = [
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
