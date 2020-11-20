@@ -1885,11 +1885,14 @@ class TransformationGroup(Group):
         fields = [self.xInput, self.yInput, self.scalexInput, self.scaleyInput, self.rotationInput, self.tcenterxInput, self.tcenteryInput]
         transform = ["x", "y", "scalex", "scaley", "rotation", "tcenterx", "tcentery"]
         for f, t in zip(fields, transform):
-            if not f.get():
+            if f.get() == "":
                 if t not in ["scalex", "scaley"]:
-                    f.set(self.selectedDeepComponentTransform[t])
+                    self.selectedDeepComponentTransform[t] = 0
                 else:
-                    f.set(self.selectedDeepComponentTransform[t]*1000)
+                    self.selectedDeepComponentTransform[t] = 1000
+                f.set(self.selectedDeepComponentTransform[t])
+                self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+                self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
             else:
                 if t not in ["scalex", "scaley"]:
                     self.selectedDeepComponentTransform[t] = f.get()
