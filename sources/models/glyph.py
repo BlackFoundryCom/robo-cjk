@@ -132,10 +132,13 @@ class Glyph(RGlyph):
         # self.transformationWithMouse = False
 
     def __bool__(self):
-        if bool(self._glyphVariations):
-            return True
+        if self.type != "atomicElement":
+            if bool(self._glyphVariations):
+                return True
+            else:
+                return bool(self._deepComponents)
         else:
-            return bool(self._deepComponents)
+            return bool(self._glyphVariations)
 
     # def instantiate(self, location):
     #     if self.model is None:
@@ -295,6 +298,7 @@ class Glyph(RGlyph):
 
     def addAxis(self, axisName="", minValue="", maxValue=""):
         self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue))
+        self._glyphVariations.addAxisToLocations(axisName = axisName, minValue=minValue)
 
     def removeAxis(self, index):
         axisName = self._axes[index].name

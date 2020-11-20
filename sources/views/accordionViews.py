@@ -936,7 +936,7 @@ class SourcesSheet:
             self.w.sourceNameTitle = TextBox((10, y, 90, 20), 'Source name', sizeStyle = 'small')
             self.w.sourceName = EditText((100, y, -0, 20), "", sizeStyle = "small")
         else:
-            self.layers = [l.name for l in self.RCJKI.currentFont._RFont.layers]
+            self.layers = [l.name for l in self.RCJKI.currentFont._RFont.layers if l.name != 'foreground' and l.name not in self.RCJKI.currentGlyph._glyphVariations.layerNames()]
             self.w.sourceNameTitle = TextBox((10, y, 90, 20), "Axis name", sizeStyle = 'small')
             self.w.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
         y += 25
@@ -984,6 +984,7 @@ class SourcesSheet:
         if self.glyphType != "atomicElement":
             sourceName = self.w.sourceName.get()
         else:
+            if not self.layers: return
             layerName = self.layers[self.w.sourceName.get()]
         if not sourceName and not layerName: return
         location = {}
@@ -2012,7 +2013,7 @@ class AtomicElementInspector(Inspector):
 
     def __init__(self, RCJKI, glyphVariationsAxes = [], axes = []):
         self.RCJKI = RCJKI
-        self.w = Window((0, 0, 400, 600), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
+        self.w = Window((0, 0, 400, 780), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "atomicElement"
         

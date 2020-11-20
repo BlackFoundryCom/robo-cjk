@@ -557,9 +557,13 @@ class VariationGlyphs(list):
     #         # print(dir(x))
     #         yield x._toDict()
 
+    def addAxisToLocations(self, axisName="", minValue=0):
+        for variation in self:
+            variation.location[axisName] = minValue
+
     def addVariation(self, variation):
         loc = variation.get('location')
-        if loc in self.locations or not loc:
+        if loc in [x.location for x in self if x.on] or not loc:
             variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
 
