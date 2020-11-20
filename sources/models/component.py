@@ -516,7 +516,7 @@ class VariationGlyphsInfos:
     def removeLocation(self, name:str):
         if name in self.location:
             del self.location[name]
-            self.desactivate()
+            # self.desactivate()
 
     def addDeepComponent(self, deepComponent):
         self.deepComponents.addDeepComponent(deepComponent)
@@ -540,15 +540,15 @@ class VariationGlyphsInfos:
 
 class VariationGlyphs(list):
 
-    def __init__(self, variationGlyphs=[]):
+    def __init__(self, variationGlyphs=[], axes = []):
         for variation in variationGlyphs:
-            self.addVariation(variation)
+            self.addVariation(variation, axes)
         # print("variationGlyphs", variationGlyphs)
 
-    def _init_with_old_format(self, data):
+    def _init_with_old_format(self, data, axes):
         for k, v in data.items():
             variation = {"location": {k:v.get("maxValue")}, "sourceName":k, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
-            self.addVariation(variation)
+            self.addVariation(variation, axes)
         for variation in self:
             variation.deepComponents._convertOffsetFromRCenterToTCenter()
 
@@ -561,18 +561,19 @@ class VariationGlyphs(list):
         for variation in self:
             variation.location[axisName] = minValue
 
-    def addVariation(self, variation):
-        loc = variation.get('location')
-        if loc in self.locations or not loc:
+    def addVariation(self, variation, axes):
+        loc = self._normalizedLocation(variation.get('location'), axes)
+        locations = [self._normalizedLocation(x, axes) for x in self.locations]
+        if loc in locations or not loc:
             variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
 
-    def activateSource(self, index, value):
+    def activateSource(self, index, value, axes):
         if not value:
             self[index].on = False
             return False
-        loc = self[index].location
-        locations = self.locations
+        loc = self._normalizedLocation(self[index].location, axes)
+        locations = [self._normalizedLocation(x, axes) for x in self.locations]
         if loc in locations:
             self[index].on = False
             return False
@@ -581,11 +582,16 @@ class VariationGlyphs(list):
             return True
 
 
-    def setLocationToIndex(self, location, index):
+    def setLocationToIndex(self, location, index, axes):
         variation = self[index]
-        if location in self.locations or not location:
+        locations = [self._normalizedLocation(x, axes) for x in self.locations]
+        loc = self._normalizedLocation(location, axes)
+        if loc in locations or not loc:
             variation.desactivate()
         variation.location = location
+
+    def _normalizedLocation(self, location, axes):
+        return {k:v for k,v in location.items() if v != axes.get(k).minValue}
 
     # def __iter__(self):
     #     for x in self:
@@ -610,6 +616,26 @@ class VariationGlyphs(list):
     def removeAxis(self, axisName):
         for variation in self:
             variation.removeLocation(axisName)
+            # if variation.location in self.locations or not variation.location:
+                # variation.desactivate()
+
+    def desactivateDoubleLocations(self, axes):
+        toDesactivate = []
+        locations = [self._normalizedLocation(x, axes) for x in self.locations]
+        for i, variation in enumerate(self):
+            location = self._normalizedLocation(variation.location, axes)
+            if locations.count(location) > 1:
+                toDesactivate.append(i)
+        for i in toDesactivate:
+            self[i].desactivate()
+        for variation in self:
+            empty = True
+            for k, v in variation.location.items():
+                if v != axes.get(k).minValue:
+                    empty = False
+                    break
+            if empty:
+                variation.desactivate()
 
     def renameAxisInsideLocation(self, oldName, newName):
         for variation in self:
@@ -634,16 +660,16 @@ class VariationGlyphs(list):
     # def activateSource(self, index):
     #     self[index].activate()
 
-    def activateSources(self, indexes: list):
-        for index in indexes:
-            self.activateSource(index, 1)
+    # def activateSources(self, indexes: list):
+    #     for index in indexes:
+    #         self.activateSource(index, 1)
 
-    def desactivateSource(self, index):
-        self[index].desactivate()
+    # def desactivateSource(self, index):
+    #     self[index].desactivate()
 
-    def desactivateSources(self, indexes: list):
-        for index in indexes:
-            self.desactivateSource(index)
+    # def desactivateSources(self, indexes: list):
+    #     for index in indexes:
+    #         self.desactivateSource(index)
 
     # def __repr__(self):
     #     return str(self.getList())

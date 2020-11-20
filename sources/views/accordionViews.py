@@ -1068,7 +1068,7 @@ class SourcesGroup(Group):
         variation = self.RCJKI.currentGlyph._glyphVariations[index]
         if edited[0] == -1: #On off
             value = values[sel[0]]["On/Off"]
-            v = self.RCJKI.currentGlyph._glyphVariations.activateSource(index, value)
+            v = self.RCJKI.currentGlyph._glyphVariations.activateSource(index, value, self.RCJKI.currentGlyph._axes)
 
             empty = True
             loc = self.RCJKI.currentGlyph._glyphVariations[index].location
@@ -1095,7 +1095,7 @@ class SourcesGroup(Group):
                 axisName = axis["title"]
                 value = values[edited[1]][axisName]
                 locations[axisName] = str_to_int_or_float(value)
-            self.RCJKI.currentGlyph._glyphVariations.setLocationToIndex(locations, index)
+            self.RCJKI.currentGlyph._glyphVariations.setLocationToIndex(locations, index, self.RCJKI.currentGlyph._axes)
             self.setList()
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
@@ -1969,7 +1969,7 @@ class CharacterGlyphInspector(Inspector):
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
 
                        dict(label="Font axes", view=self.axesItem, minSize=80, size=100, collapsed=False, canResize=True),
-                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=100, collapsed=False, canResize=True),
 
                        # dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),

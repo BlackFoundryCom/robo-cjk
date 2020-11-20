@@ -278,14 +278,14 @@ class CharacterGlyph(Glyph):
             if hasAxisKey:
                 self._deepComponents = DeepComponents(deepComponents)
                 self._axes = Axes(axes)
-                self._glyphVariations = VariationGlyphs(variationGlyphs)
+                self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes)
             else:
                 self._deepComponents = DeepComponents()
                 self._deepComponents._init_with_old_format(deepComponents)
                 self._axes = Axes()      
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
-                self._glyphVariations._init_with_old_format(variationGlyphs)
+                self._glyphVariations._init_with_old_format(variationGlyphs, self._axes)
         except:
             self._deepComponents = DeepComponents()
             self._axes = Axes()   
@@ -353,7 +353,7 @@ class CharacterGlyph(Glyph):
     def addCharacterGlyphNamedVariationToGlyph(self, name):
         if name in self._axes: return
         self._axes.addAxis({"name":name, "minValue":0, "maxValue":1})
-        self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{name:1}})
+        self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{name:1}}, self._axes)
 
     @glyphAddRemoveUndo
     def removeDeepComponentAtIndexToGlyph(self):
