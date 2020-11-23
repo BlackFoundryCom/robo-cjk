@@ -35,6 +35,18 @@ def makeEmptyPopover(size, pos, view):
     offsetX, offsetY = view.offset()
     return (p, (pos.x+offsetX, pos.y+offsetY))
 
+def str_to_int_or_float(s):
+    try:
+        if isinstance(s, (float, int)):
+            return s
+        elif '.' in s or ',' in s:
+            return float(s)
+        else:
+            return int(s)
+    except ValueError as e:
+        return None      
+
+
 class EditPopover(object):
     def __init__(self, size, point):
         eventTool = getActiveEventTool()
@@ -77,6 +89,9 @@ def tryfunc(func):
             func(self, *args, **kwargs)
             self.RCJKI.currentGlyph.redrawSelectedElementSource = True
             self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
+            self.RCJKI.currentGlyph.reinterpolate = True
+            self.RCJKI.setListWithSelectedElement()
+            self.RCJKI.glyphInspectorWindow.transformationItem.setTransformationsField()
             self.RCJKI.updateDeepComponent(update = False)
         except Exception as e:
             print(e)
@@ -88,7 +103,6 @@ def resetDict(func):
         lib = self.getLib()
         lib[self.glyph.selectedElement[0]].set(self.infos)
     return wrapper
-
 
 class EditPopoverAlignTool(EditPopover):
 
@@ -200,7 +214,8 @@ class EditPopoverAlignTool(EditPopover):
 
         y+=20
         # if self.RCJKI.currentGlyph.type == "deepComponent":
-        d = [dict(layer = k, value = round(self.RCJKI.userValue(v, *self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(k)), 3)) for k, v in self.infos["coord"].items()]
+        # d = [dict(layer = k, value = round(self.RCJKI.userValue(v, *self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(k)), 3)) for k, v in self.infos["coord"].items()]
+        d = [dict(layer = k, value = v) for k, v in self.infos["coord"].items()]
         # else:
         #     d = [dict(layer = k, value = v) for k, v in self.infos["coord"].items()]
         self.popover.coord = List(
@@ -237,6 +252,21 @@ class EditPopoverAlignTool(EditPopover):
             )
         buttonAsthetic(self.popover.paste)
         self.open()
+
+    def setUI(self):
+        lib = self.getLib()
+        self.infos = lib[self.glyph.selectedElement[0]]
+        if hasattr(self.popover, "Title"):
+            self.popover.Title.set(self.infos["name"])
+        self.popover.xEditText.set(self.infos["transform"]["x"])
+        self.popover.scalexEditText.set(self.infos["transform"]["scalex"]*1000)
+        self.popover.rotationEditText.set(self.infos["transform"]["rotation"])
+        self.popover.yEditText.set(self.infos["transform"]["y"])
+        self.popover.scaleyEditText.set(self.infos["transform"]["scaley"]*1000)
+        self.popover.tcenterxEditText.set(self.infos["transform"]["tcenterx"])
+        self.popover.tcenteryEditText.set(self.infos["transform"]["tcentery"])
+        d = [dict(layer = k, value = v) for k, v in self.infos["coord"].items()]
+        self.popover.coord.set(d)
 
     def getLib(self):
         if self.RCJKI.isDeepComponent and not self.glyph.selectedSourceAxis:
@@ -285,6 +315,7 @@ class EditPopoverAlignTool(EditPopover):
             self.infos["coord"] = c["coord"]
         if self.infos.get("name") == c.get("name"):
             self.infos["coord"] = c["coord"]
+        self.setUI()
 
     @tryfunc
     @resetDict
@@ -324,8 +355,6 @@ class EditPopoverAlignTool(EditPopover):
         self.RCJKI.currentGlyph._deepComponents[self.glyph.selectedElement[0]]["transform"]["tcenterx"] = float(sender.get())
         for variation in self.RCJKI.currentGlyph._glyphVariations:
             variation.deepComponents[self.glyph.selectedElement[0]]["transform"]["tcenterx"] = float(sender.get())
-        # for variation in self.RCJKI.currentGlyph._glyphVariations.values():
-        #     variation[self.glyph.selectedElement[0]].tcenterx = float(sender.get())
 
     @tryfunc
     @resetDict
@@ -335,8 +364,6 @@ class EditPopoverAlignTool(EditPopover):
         self.RCJKI.currentGlyph._deepComponents[self.glyph.selectedElement[0]]["transform"]["tcentery"] = float(sender.get())
         for variation in self.RCJKI.currentGlyph._glyphVariations:
             variation.deepComponents[self.glyph.selectedElement[0]]["transform"]["tcentery"] = float(sender.get())
-        # for variation in self.RCJKI.currentGlyph._glyphVariations.values():
-        #     variation[self.glyph.selectedElement[0]].tcentery = float(sender.get())
 
     @tryfunc
     @resetDict
@@ -344,8 +371,5 @@ class EditPopoverAlignTool(EditPopover):
     def coordEditCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        # if self.RCJKI.currentGlyph.type == "deepComponent":
-        d = {e["layer"]:float(str(self.RCJKI.systemValue(float(e["value"]), *self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(e["layer"]))).replace(',','.')) for e in sender.get()}
-        # else:
-        #     d = {e["layer"]:float(str(e["value"]).replace(',','.')) for e in sender.get()}
+        d = {e["layer"]:str_to_int_or_float(e["value"]) for e in sender.get()}
         self.infos["coord"] = d
