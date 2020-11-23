@@ -132,6 +132,12 @@ class RoboCJKController(object):
         # self.teamManager = teamManager.TeamManagerController(self)
         self.locked = False
 
+        self.glyphView = canvasGroups.GlyphView(
+            self,
+            posSize = (20, -80, 300, -20), 
+            delegate = self
+            )
+
         self.roundToGrid = False
         self.transformationToolIsActiv = False
         self.importDCFromCG = None
@@ -290,6 +296,7 @@ class RoboCJKController(object):
             setExtensionDefault(blackrobocjk_glyphwindowPosition, posSize)
             self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
         except:pass
+        self.window.removeGlyphEditorSubview(self.glyphView)
 
         if not self.mysql:
             self.currentFont.save()
@@ -350,6 +357,7 @@ class RoboCJKController(object):
         else:
             installTool(self.transformationTool)
 
+        self.addSubView()
         self.openGlyphInspector()
         self.updateDeepComponent()
 
@@ -418,27 +426,27 @@ class RoboCJKController(object):
             else:
                 self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
 
-    def draw(self):
-        mjdt.save()
-        mjdt.fill(1, 1, 1, .7)
-        mjdt.roundedRect(0, 0, 300, [525, 425][self.currentGlyph.type == "atomicElement"], 10)
-        scale = .15
-        glyphwidth = self.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
-        mjdt.translate((glyphwidth*scale/2), [300, 200][self.currentGlyph.type == "atomicElement"])
-        mjdt.fill(.15)
+    # def draw(self):
+    #     mjdt.save()
+    #     mjdt.fill(1, 1, 1, .7)
+    #     mjdt.roundedRect(0, 0, 300, [525, 425][self.currentGlyph.type == "atomicElement"], 10)
+    #     scale = .15
+    #     glyphwidth = self.currentFont._RFont.lib.get('robocjk.defaultGlyphWidth', 1000)
+    #     mjdt.translate((glyphwidth*scale/2), [300, 200][self.currentGlyph.type == "atomicElement"])
+    #     mjdt.fill(.15)
 
         
-        mjdt.scale(scale, scale)
-        mjdt.translate(0, abs(self.currentFont._RFont.info.descender))
-        self.drawer.drawGlyph(
-            self.currentGlyph,
-            scale,
-            (0, 0, 0, 1),
-            (0, 0, 0, 0),
-            (0, 0, 0, 1),
-            drawSelectedElements = False
-            )
-        mjdt.restore()
+    #     mjdt.scale(scale, scale)
+    #     mjdt.translate(0, abs(self.currentFont._RFont.info.descender))
+    #     self.drawer.drawGlyph(
+    #         self.currentGlyph,
+    #         scale,
+    #         (0, 0, 0, 1),
+    #         (0, 0, 0, 0),
+    #         (0, 0, 0, 1),
+    #         drawSelectedElements = False
+    #         )
+    #     mjdt.restore()
 
     def observerDraw(self, notification):
         if hasattr(self.currentGlyph, 'type'):
@@ -634,6 +642,7 @@ class RoboCJKController(object):
             # self.currentViewSourceList.glyphVariationAxesList.setSelection([])
             self.glyphInspectorWindow.sourcesItem.sourcesList.setSelection([])
             self.glyphInspectorWindow.axesItem.axesList.setSelection([])
+            self.glyphView.setSelectedSource()
         self.currentGlyph.keyDown((modifiers, inputKey, character))
 
     def glyphAdditionContextualMenuItems(self, notification):
@@ -722,6 +731,32 @@ class RoboCJKController(object):
         if maxValue  - minValue == 0:
             return 0
         return (value - minValue) / (maxValue - minValue)
+
+    @refresh
+    def addSubView(self):
+        self.window = CurrentGlyphWindow()
+        if self.window is None: return
+        self.glyphView.show(True)
+        self.window.addGlyphEditorSubview(self.glyphView)
+        self.glyphView.setSelectedSource()
+
+    def opaque(self):
+        return False
+
+    def acceptsFirstResponder(self):
+        return False
+
+    def acceptsMouseMoved(self):
+        return True
+
+    def becomeFirstResponder(self):
+        return False
+
+    def resignFirstResponder(self):
+        return False
+
+    def shouldDrawBackground(self):
+        return False
 
 
 

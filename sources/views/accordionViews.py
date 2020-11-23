@@ -24,12 +24,14 @@ from mojo.roboFont import *
 from mojo.canvas import Canvas, CanvasGroup
 import mojo.drawingTools as mjdt
 from AppKit import NSColor, NSFont
-from utils import decorators, files, interpolation
+from utils import decorators, files, interpolation, vanillaPlus
 from views import sheets
 import os, copy
 
 import cProfile, pstats, io
 from pstats import SortKey
+
+SmartTextBox = vanillaPlus.SmartTextBox
 
 
 lockedProtect = decorators.lockedProtect
@@ -40,18 +42,7 @@ alignTopButtonImagePath = os.path.join(os.getcwd(), "resources", "alignTopButton
 alignRightButtonImagePath = os.path.join(os.getcwd(), "resources", "alignRightButton.pdf")
 alignBottomButtonImagePath = os.path.join(os.getcwd(), "resources", "alignBottomButton.pdf")
 
-class SmartTextBox(TextBox):
-    def __init__(self, posSize, text="", alignment="natural", 
-        selectable=False, callback=None, sizeStyle=40.0,
-        red=0,green=0,blue=0, alpha=1.0):
-        super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, 
-            selectable=selectable, sizeStyle=sizeStyle)
-        
-    def _setSizeStyle(self, sizeStyle):
-        value = sizeStyle
-        self._nsObject.cell().setControlSize_(value)
-        font = NSFont.systemFontOfSize_(value)
-        self._nsObject.setFont_(font)
+
 
 class EditingSheet():
 
@@ -1016,6 +1007,7 @@ class SourcesSheet:
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.controller.setList()
         self.controller.sourcesList.setSelection([len(self.controller.sourcesList)-1])
+        self.RCJKI.glyphView.setSelectedSource()
         self.w.close()
 
     def cancelCallback(self, sender):
@@ -1133,6 +1125,7 @@ class SourcesGroup(Group):
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
+        self.RCJKI.glyphView.setSelectedSource()
 
 
     def addSourceButtonCallback(self, sender):

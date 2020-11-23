@@ -25,7 +25,7 @@ import mojo.drawingTools as mjdt
 from imp import reload
 from utils import decorators, interpolation
 # reload(decorators)
-from utils import files
+from utils import files, vanillaPlus
 # reload(files)
 
 from views import sheets, drawer
@@ -47,6 +47,31 @@ CHECKING3 = (0., .5, 1., 1.)
 DONE = (0., 1., .5, 1.)
 STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
 
+SmartTextBox = vanillaPlus.SmartTextBox
+
+class GlyphView(CanvasGroup):
+
+    def __init__(self, RCJKI, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.RCJKI = RCJKI
+        self.selectedSource = SmartTextBox((0, 0, -0, -0), "")
+
+    def setSelectedSource(self):
+        selectedSource = self.RCJKI.currentGlyph.selectedSourceAxis
+        color = (0, 9, 0, 1)
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            if not selectedSource:
+                color = (0, .5, .25, .6)
+            else: color = (.5, .25, 0, .3)
+        if self.RCJKI.currentGlyph.type == "characterGlyph":
+            if not selectedSource:
+                color = (.25, 0, .5, .8)
+            else: color = (.5, 0, .25, .6)
+        if not selectedSource:
+            selectedSource = "Master"
+        
+        self.selectedSource.set(selectedSource)  
+        self.selectedSource.setColor(*color)      
 
 class GlyphPreviewCanvas(CanvasGroup):
 
