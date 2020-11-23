@@ -339,8 +339,8 @@ class TextCenter:
         mjdt.fill(0, 0, 0, 1)
         mjdt.stroke(0, 0, 0, 0)
         mjdt.strokeWidth(scale)
-        for c in glyph.preview(sourcesList, forceRefresh=False):
-            mjdt.drawGlyph(c)
+        for c in glyph.preview(sourcesList, forceRefresh=True):
+            mjdt.drawGlyph(c.glyph)
         mjdt.restore()
 
         # def drawVariation(glyph, sourcelist, drawer):
