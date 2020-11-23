@@ -286,7 +286,7 @@ class CharacterGlyph(Glyph):
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(variationGlyphs, self._axes)
-        except:
+        except Exception as e:
             self._deepComponents = DeepComponents()
             self._axes = Axes()   
             self._glyphVariations = VariationGlyphs()

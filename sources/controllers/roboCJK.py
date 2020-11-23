@@ -552,39 +552,33 @@ class RoboCJKController(object):
     def doUndo(self):
         def _getKeys(glyph):
             if glyph.type == "characterGlyph":
-                return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
+                return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
             else:
-                return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
-        if self.currentGlyph.type == "characterGlyph":
-            view = self.characterGlyphView
-        else:
-            view = self.deepComponentView
+                return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
 
         if len(self.currentGlyph.stackUndo_lib) >= 1:
             if self.currentGlyph.indexStackUndo_lib > 0:
                 self.currentGlyph.indexStackUndo_lib -= 1
 
                 if self.currentGlyph.indexStackUndo_lib == len(self.currentGlyph.stackUndo_lib)-1:    
-                    deepComponentsKey, glyphVariationsKey = _getKeys(self.currentGlyph)
+                    deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self.currentGlyph)
                     # glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
                     lib = RLib()
                     lib[deepComponentsKey] = copy.deepcopy(self.currentGlyph._deepComponents.getList())
+                    lib[axesKey] = copy.deepcopy(self.currentGlyph._axes.getList())
                     lib[glyphVariationsKey] = copy.deepcopy(self.currentGlyph._glyphVariations.getList())
                     self.currentGlyph.stackUndo_lib.append(lib)
             else:
                 self.currentGlyph.indexStackUndo_lib = 0
-
             lib = copy.deepcopy(self.currentGlyph.stackUndo_lib[self.currentGlyph.indexStackUndo_lib])
             self.currentGlyph._initWithLib(lib)
 
             self.updateDeepComponent()
-            view.sourcesList.set(self.currentGlyph.sourcesList)
+            self.glyphInspectorWindow.sourcesItem.setList()
+            self.glyphInspectorWindow.axesItem.setList()
+            self.setListWithSelectedElement()
 
     def doRedo(self):
-        if self.currentGlyph.type == "characterGlyph":
-            view = self.characterGlyphView
-        else:
-            view = self.deepComponentView
         if self.currentGlyph.stackUndo_lib:
 
             if self.currentGlyph.indexStackUndo_lib < len(self.currentGlyph.stackUndo_lib)-1:
@@ -596,7 +590,9 @@ class RoboCJKController(object):
             self.currentGlyph._initWithLib(lib)
 
             self.updateDeepComponent()
-            view.sourcesList.set(self.currentGlyph.sourcesList)
+            self.glyphInspectorWindow.sourcesItem.setList()
+            self.glyphInspectorWindow.axesItem.setList()
+            self.setListWithSelectedElement()
 
     def keyUp(self, info):
         self.currentGlyph.reinterpolate = False
