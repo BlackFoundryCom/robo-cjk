@@ -876,8 +876,6 @@ class RoboCJKView(BaseWindowController):
             callback = self.characterGlyphDesignStepPopUpButtonCallback
             )
         self.w.characterGlyphDesignStepPopUpButton.enable(False)
-
-        self.w.testButton = Button((10, -40, 100, 20), 'test', callback = self.testButtonCallback)
         
         self.lists = [
             self.w.atomicElement,
@@ -887,9 +885,6 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.toggleObservers()
         self.w.bind('close', self.windowCloses)
         self.w.open()
-
-    def testButtonCallback(self, sender):
-        Test(self.RCJKI)
 
     def codeEditorButtonCallback(self, sender):
         scriptingWindow.ScriptingWindow(self.RCJKI)
@@ -1879,91 +1874,3 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             self.index = None
             return
         self.index = sel[0]
-
-from fontTools.varLib.models import VariationModel
-from models import component
-from pprint import pprint
-
-class Test:
-
-    def __init__(self, RCJKI):
-        self.RCJKI = RCJKI
-        g = self.RCJKI.currentFont["uni547E"]
-        self.computeCharacterGlyphPreview(g, {"WGHT":.5})
-        # print(g._deepComponents)
-
-    def computeCharacterGlyphPreview(self, glyph, position:dict, font = None):
-        locations = [{}]
-        locations.extend([x["location"] for x in glyph._glyphVariations])
-
-        model = VariationModel(locations)
-        masterDeepComponents = glyph._deepComponents.getList()
-        axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getList()]
-
-        result = []
-        for i, deepComponent in enumerate(masterDeepComponents):
-            variations = []
-            for gv in axesDeepComponents:
-                variations.append(gv[i])
-            result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
-
-        pprint(result)
-        print(len(result))
-        print("---")
-
-        resultGlyph = RGlyph()
-        if font is None:
-            font = glyph.getParent()
-        for i, dc in enumerate(result):
-            name = dc.get("name")
-            position = dc.get("coord")
-            g = self.computeDeepComponentPreview(font[name], position, font)
-            g.draw(resultGlyph.getPen())
-        print(len(resultGlyph), resultGlyph)
-
-        return resultGlyph
-
-    def computeDeepComponentPreview(self, glyph, position:dict, font = None):
-        locations = [{}]
-        locations.extend([x["location"] for x in glyph._glyphVariations.getList()])
-
-        model = VariationModel(locations)
-        masterDeepComponents = glyph._deepComponents.getList()
-        axesDeepComponents = [variation.get("deepComponents") for variation in glyph._glyphVariations.getList()]
-
-        result = []
-        for i, deepComponent in enumerate(masterDeepComponents):
-            variations = []
-            for gv in axesDeepComponents:
-                variations.append(gv[i])
-            result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
-
-        pprint(result)
-        print(len(result))
-        print("---")
-
-        resultGlyph = RGlyph()
-        if font is None:
-            font = glyph.getParent()
-        for i, dc in enumerate(result):
-            name = dc.get("name")
-            position = dc.get("coord")
-            g = self.computeAtomicElementPreview(font[name], position, font)
-            g.draw(resultGlyph.getPen())
-
-        return resultGlyph
-        # print(len(resultGlyph), resultGlyph)
-
-    def computeAtomicElementPreview(self, glyph, position:dict, font):
-        locations = [{}]
-        locations.extend([x["location"] for x in glyph._glyphVariations.getList()])
-
-        model = VariationModel(locations)
-
-        layerGlyphs = []
-        for variation in glyph._glyphVariations.getList():
-            layerGlyphs.append(font._RFont.getLayer(variation["layerName"])[glyph.name])
-        result = model.interpolateFromMasters(position, [glyph._RGlyph, *layerGlyphs])
-        print(result)
-        return result
-

@@ -140,87 +140,8 @@ class Glyph(RGlyph):
         else:
             return bool(self._glyphVariations)
 
-    # def instantiate(self, location):
-    #     if self.model is None:
-    #         return self  # XXX raise error?
-    #     if self.deltas is None:
-    #         self.deltas = self.model.getDeltas([self] + self.variations)
-    #     location = normalizeLocation(location, self.axes)
-    #     return self.model.interpolateFromDeltas(location, self.deltas)
-
-    # def _doBinaryOperatorScalar(self, scalar, op):
-    #     result = self.__class__()
-    #     result.name = self.name
-    #     result.unicodes = self.unicodes
-    #     result.width = op(self.width, scalar)
-    #     # result.outline = op(self.outline, scalar)
-    #     # result.components = [op(compo, scalar) for compo in self.components]
-    #     return result
-
-    # def _doBinaryOperator(self, other, op):
-    #     result = self.__class__()
-    #     result.name = self.name
-    #     result.unicodes = self.unicodes
-    #     result.width = op(self.width, other.width)
-    #     # result.outline = op(self.outline, other.outline)
-    #     # result.components = [
-    #     #     op(compo1, compo2)
-    #     #     for compo1, compo2 in zip(self.components, other.components)
-    #     # ]
-    #     return result
-
-    # @property
-    # def designState(self):
-    #     self.designState = STATE_COLORS.get(self.stateColor, "")
-    #     return self._designState
-
-    # @designState.setter
-    # def designState(self, value):
-    #     self._designState = value    
-
-    # @property
-    # def stateColor(self):
-    #     mark = self._RGlyph.markColor
-    #     if mark is None:
-    #         mark = (1, 1, 1, 1)
-    #     return mark
-
-    # @stateColor.setter
-    # def stateColor(self, value:tuple):
-    #     self._RGlyph.markColor = value
-    # def _transformGlyph(self, glyph, transform):
-    #     glyph.scaleBy((transform["scalex"], transform["scaley"]))
-    #     glyph.rotateBy(transform["rotation"], (transform["tcenterx"], transform["tcentery"]))
-    #     glyph.moveBy((transform["x"], transform["y"]))
-    #     return glyph
-
-    # def makeTransform(self, x, y, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesCenter=False):
-    #     rotation = math.radians(rotation)
-    #     if not scaleUsesCenter:
-    #         tcenterx *= scalex
-    #         tcentery *= scaley
-    #         t = Transform()
-    #         t = t.translate(x + tcenterx, y + tcentery)
-    #         t = t.rotate(rotation)
-    #         t = t.translate(-tcenterx, -tcentery)
-    #         t = t.scale(scalex, scaley)
-    #     else:
-    #         t = Transform()
-    #         t = t.translate(x + tcenterx, y + tcentery)
-    #         t = t.rotate(rotation)
-    #         t = t.scale(scalex, scaley)
-    #         t = t.translate(-tcenterx, -tcentery)
-    #     return t
-
     def normalizedValue(self, v, minv, maxv):
         return (v-minv)/(maxv-minv)
-
-    # def _transformGlyph(self, glyph, transform={}):
-    #     if not transform: return glyph
-    #     t = interpolation.makeTransform(**transform)
-    #     # for c in glyph:
-    #     glyph.transformBy(tuple(t))
-    #     return glyph
 
     def getLocation(self):
         loc = {}
@@ -413,9 +334,6 @@ class Glyph(RGlyph):
             for variation in self._glyphVariations:
                 variation.deepComponents[index]["transform"]["tcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
                 variation.deepComponents[index]["transform"]["tcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
-            # for variations in self._glyphVariations.values():
-            #     variations[index].tcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
-            #     variations[index].tcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
         self.redrawSelectedElementSource = True
         self.redrawSelectedElementPreview = True
 
