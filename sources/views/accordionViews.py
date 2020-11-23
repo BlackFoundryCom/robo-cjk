@@ -936,17 +936,24 @@ class SourcesSheet:
             self.w.sourceNameTitle = TextBox((10, y, 90, 20), 'Source name', sizeStyle = 'small')
             self.w.sourceName = EditText((100, y, -0, 20), "", sizeStyle = "small")
         else:
-            self.layers = [l.name for l in self.RCJKI.currentFont._RFont.layers if l.name != 'foreground' and l.name not in self.RCJKI.currentGlyph._glyphVariations.layerNames()]
+            layers = []
+            for l in self.RCJKI.currentFont._RFont.layers:
+                fl = self.RCJKI.currentFont._RFont.getLayer(l.name)
+                if self.RCJKI.currentGlyph.name in fl.keys():
+                    if len(fl[self.RCJKI.currentGlyph.name]):
+                        layers.append(l)
+            self.layers = [l.name for l in layers if l.name != 'foreground' and l.name not in self.RCJKI.currentGlyph._glyphVariations.layerNames()]
             self.w.sourceNameTitle = TextBox((10, y, 90, 20), "Axis name", sizeStyle = 'small')
             self.w.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
         y += 25
 
         self.axes = {}
-        for axis in self.RCJKI.currentGlyph._axes:
+        for i, axis in enumerate(self.RCJKI.currentGlyph._axes):
             textbox = TextBox((10, y, 90, 20), axis.name, sizeStyle = 'small')
             minValue = TextBox((100, y+5, 50, 20), axis.minValue, sizeStyle = 'small', alignment="right")
-            editText = EditText((150, y, -50, 20), axis.maxValue, sizeStyle = "small", 
+            editText = EditText((150, y, -50, 20), [axis.minValue, axis.maxValue][i + 1 == len(self.RCJKI.currentGlyph._axes)], sizeStyle = "small", 
                 # formatter = numberFormatter, 
+                continuous = False,
                 callback = self.valuesCallback)
             maxValue = TextBox((-50, y+5, 50, 20), axis.maxValue, sizeStyle = 'small', alignment="left")
             setattr(self.w, "%sName"%axis.name, textbox)
@@ -971,6 +978,10 @@ class SourcesSheet:
         minValue = axis.minValue
         maxValue = axis.maxValue
         value = sender.get()
+        if value == "":
+            sender.set(minValue)
+            return
+        value = str_to_int_or_float(value)
         if not isinstance(value, (int, float)): return
         if value > max(minValue, maxValue):
             value = max(minValue, maxValue)
