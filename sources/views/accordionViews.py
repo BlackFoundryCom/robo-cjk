@@ -1022,6 +1022,8 @@ class SourcesGroup(Group):
         self.controller = controller
         self.glyphtype = glyphtype
 
+        self.activateAllSource = Button((0, 0, 150, 20), "Activate all sources", sizeStyle = "small", callback = self.activateAllSourceCallback)
+
         self.setList()
         
         self.addSourceButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addSourceButtonCallback)
@@ -1051,7 +1053,7 @@ class SourcesGroup(Group):
         if hasattr(self, "sourcesList"):
             delattr(self, "sourcesList")
 
-        self.sourcesList = List((0, 0, -0, -20),
+        self.sourcesList = List((0, 20, -0, -20),
             self.sources,
             columnDescriptions = self.listDescription,
             editCallback = self.sourcesListEditCallback,
@@ -1059,6 +1061,11 @@ class SourcesGroup(Group):
             drawFocusRing = False,
             showColumnTitles = True
             )
+
+    def activateAllSourceCallback(self, sender):
+        for i, _ in enumerate(self.RCJKI.currentGlyph._glyphVariations):
+            self.RCJKI.currentGlyph._glyphVariations.activateSource(i, True, self.RCJKI.currentGlyph._axes)
+        self.setList()
 
     @lockedProtect
     def sourcesListEditCallback(self, sender):
