@@ -84,6 +84,9 @@ class Font():
         self._characterGlyphSet = []
 
     def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker, robocjkVersion):
+        self.admin = False
+        if gitHostLockerPassword:
+            self.admin = True
         self.fontPath = fontPath
         
         self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
@@ -212,6 +215,8 @@ class Font():
     #     self.insertFullRFont()
 
     def clearRFont(self):
+        # for k, v in copy.deepcopy(self._RFont.lib.asDict()).items():
+        #     self.fontLib[k] = v
         self._RFont = NewFont(
                 familyName=self.fontName, 
                 styleName='Regular', 
@@ -953,14 +958,15 @@ class Font():
     def save(self):
         if not self.mysql:
             # self._fullRFont.save()
-        
-            libPath = os.path.join(self.fontPath, 'fontLib.json')
-            with open(libPath, "w") as file:
-                lib = self._fullRFont.lib.asDict()
-                if "public.glyphOrder" in lib:
-                    del lib["public.glyphOrder"]
-                file.write(json.dumps(lib,
-                    indent=4, separators=(',', ': ')))
+            
+            if self.admin:
+                libPath = os.path.join(self.fontPath, 'fontLib.json')
+                with open(libPath, "w") as file:
+                    lib = self._fullRFont.lib.asDict()
+                    if "public.glyphOrder" in lib:
+                        del lib["public.glyphOrder"]
+                    file.write(json.dumps(lib,
+                        indent=4, separators=(',', ': ')))
 
             for rglyph in self._RFont.getLayer('foreground'):
                 if not self.locker.userHasLock(rglyph): continue

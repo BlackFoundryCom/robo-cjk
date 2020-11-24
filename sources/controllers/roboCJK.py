@@ -298,6 +298,9 @@ class RoboCJKController(object):
         except:pass
         self.window.removeGlyphEditorSubview(self.glyphView)
 
+        self.currentFont.fontLib.update(self.currentFont._RFont.lib.asDict())
+        self.currentFont._fullRFont.lib.update(self.currentFont._RFont.lib)
+
         if not self.mysql:
             self.currentFont.save()
             if self.currentGlyph is not None:
