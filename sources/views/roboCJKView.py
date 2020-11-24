@@ -1415,6 +1415,13 @@ class RoboCJKView(BaseWindowController):
                 if 'database.json' in os.listdir(fontPath):
                     with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
                         self.RCJKI.currentFont.dataBase = json.load(file)
+
+                self.RCJKI.currentFont.deepComponents2Chars = {}
+                for k, v in self.RCJKI.currentFont.dataBase.items():
+                    for dc in v:
+                        if dc not in self.RCJKI.currentFont.deepComponents2Chars:
+                            self.RCJKI.currentFont.deepComponents2Chars[dc] = set()
+                        self.RCJKI.currentFont.deepComponents2Chars[dc].add(k)
             else:
                 # self.RCJKI.dataBase = True
                 self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName,self.RCJKI.mysql_password, self.RCJKI.hiddenSavePath)

@@ -198,19 +198,17 @@ class CompositionRulesGroup(Group):
         self.setExistingInstances(self.deepComponentName)
 
     def setExistingInstances(self, deepComponentName):
-        self.existingDeepComponentInstances = {}
+        self.existingDeepComponentInstances = []
         f = self.RCJKI.currentFont
-        for n in f.staticCharacterGlyphSet():
-            g = f.get(n)
-            for i, x in enumerate(g._deepComponents):
-                if x['name'] == deepComponentName:
-                    variations = [copy.deepcopy(y.deepComponents[i]) for y in g._glyphVariations]
-                    try:
-                        self.existingDeepComponentInstances[chr(int(n[3:], 16))] = [copy.deepcopy(x), variations]
-                    except:
-                        self.existingDeepComponentInstances[n] = [copy.deepcopy(x), variations]
-                    break
-        self.existingInstancesList.set(list(self.existingDeepComponentInstances.keys()))
+
+        dcdatabase = set(["uni%s"%hex(ord(x))[2:].upper() for x in self.RCJKI.currentFont.deepComponents2Chars.get(chr(int(deepComponentName.split("_")[1], 16)), set())])
+        self.existingDeepComponentInstances = []
+        for n in f.staticCharacterGlyphSet()&dcdatabase:
+            try:
+                self.existingDeepComponentInstances.append(chr(int(n[3:], 16)))
+            except:
+                self.existingDeepComponentInstances.append(n)
+        self.existingInstancesList.set(self.existingDeepComponentInstances)
 
     def variantListDoubleClickCallback(self, sender):
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
@@ -226,32 +224,43 @@ class CompositionRulesGroup(Group):
             self.deepComponentVariationSettings = []
             return
         char = sender.get()[sel[0]]
-        self.deepComponentSettings, self.deepComponentVariationSettings = self.existingDeepComponentInstances[char]
+        self.deepComponentSettings, self.deepComponentVariationSettings = {},[]#self.existingDeepComponentInstances[char]
+
+        f = self.RCJKI.currentFont
+        try:
+            g = f.get("uni%s"%hex(ord(char))[2:].upper())
+        except:
+            g = f.get(char)
+        for i, x in enumerate(g._deepComponents):
+            if x['name'] == self.deepComponentName:
+                self.deepComponentVariationSettings = [copy.deepcopy(y.deepComponents[i]) for y in g._glyphVariations]
+                self.deepComponentSettings = copy.deepcopy(g._deepComponents[i])
+                break
+        if not "name" in self.deepComponentSettings: 
+            self.RCJKI.drawer.existingInstance = None
+            self.RCJKI.drawer.existingInstancePos = [0, 0]
+            self.deepComponentSettings = []
+            self.deepComponentVariationSettings = []
+            return
         dcname = self.deepComponentSettings['name']
         dcglyph = self.RCJKI.currentFont.get(dcname)
-        axes = []
-        for axis, var in zip(dcglyph._axes, dcglyph._glyphVariations):
-            d = {"Axis":axis.name, "Layer":var.layerName, "PreviewValue":self.deepComponentSettings['coord'][axis.name]}
-            axes.append(d)
-        # axes = [{"Axis":axisName, "Layer":layer, "PreviewValue":self.deepComponentSettings['coord'][axisName]} for axisName, layer in dcglyph._glyphVariations.items()]
-        # dcglyph.preview.computeDeepComponentsPreview(axes)
         dcglyphPreview = []
-        # for c in dcglyph.previewGlyph:
-        for c in dcglyph.preview(self.deepComponentSettings['coord'], forceRefresh=False):
-            dcglyphPreview.append(interpolation._transformGlyph(c.resultGlyph, self.deepComponentSettings['transform']))
+        for c in dcglyph.preview(self.deepComponentSettings['coord'], forceRefresh=True):
+            dcglyphPreview.append(interpolation._transformGlyph(c.glyph, self.deepComponentSettings['transform']))
         self.RCJKI.drawer.existingInstance = dcglyphPreview
-        # self.RCJKI.drawer.existingInstancePos = [0, 0]
 
     def existingInstancesListDoubleClickCallback(self, sender):
         sel = sender.getSelection()
         if not sel: return
-        dcname = self.deepComponentSettings.name
+        dcname = self.deepComponentSettings["name"]
         self.RCJKI.currentGlyph.addDeepComponentNamed(dcname, self.deepComponentSettings)
 
-        for variation in self.RCJKI.currentGlyph._glyphVariations:
-            if variation in self.deepComponentVariationSettings:
-                dc = copy.deepcopy(self.deepComponentVariationSettings[variation])
-                self.RCJKI.currentGlyph._glyphVariations[variation][-1].set(dc._toDict())
+        if len(self.deepComponentVariationSettings) == len(self.RCJKI.currentGlyph._glyphVariations):
+            for i, variation in enumerate(self.RCJKI.currentGlyph._glyphVariations):
+                # names = [x.sourceName for x in self.deepComponentVariationSettings]
+                # if variation.sourceName in names:
+                dc = copy.deepcopy(self.deepComponentVariationSettings[i])
+                self.RCJKI.currentGlyph._glyphVariations[i].deepComponents[-1].set(dc._toDict())
 
         self.deselectButtonCallback(None)
 
