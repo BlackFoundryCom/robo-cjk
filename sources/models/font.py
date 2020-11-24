@@ -78,6 +78,7 @@ class Font():
         self._glyphs = {}
         self._RFont = {}
         self.dataBase = {}
+        self.deepComponents2Chars = {}
 
         self._atomicElementSet = []
         self._deepComponentSet = []

@@ -299,6 +299,10 @@ class RoboCJKController(object):
         if self.currentGlyph.type != "atomicElement":
             self.window.removeGlyphEditorSubview(self.glyphView)
 
+        self.drawer.refGlyph = None 
+        self.drawer.refGlyphPos = [0, 0]
+        self.drawer.refGlyphScale = [1, 1]  
+
         self.currentFont.fontLib.update(self.currentFont._RFont.lib.asDict())
         self.currentFont._fullRFont.lib.update(self.currentFont._RFont.lib)
 
