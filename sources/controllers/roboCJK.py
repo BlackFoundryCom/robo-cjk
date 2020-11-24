@@ -296,7 +296,8 @@ class RoboCJKController(object):
             setExtensionDefault(blackrobocjk_glyphwindowPosition, posSize)
             self.glyphWindowPosSize = getExtensionDefault(blackrobocjk_glyphwindowPosition)
         except:pass
-        self.window.removeGlyphEditorSubview(self.glyphView)
+        if self.currentGlyph.type != "atomicElement":
+            self.window.removeGlyphEditorSubview(self.glyphView)
 
         self.currentFont.fontLib.update(self.currentFont._RFont.lib.asDict())
         self.currentFont._fullRFont.lib.update(self.currentFont._RFont.lib)
@@ -360,7 +361,8 @@ class RoboCJKController(object):
         else:
             installTool(self.transformationTool)
 
-        self.addSubView()
+        if self.currentGlyph.type != "atomicElement":
+            self.addSubView()
         self.openGlyphInspector()
         self.updateDeepComponent()
 
