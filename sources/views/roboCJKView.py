@@ -1864,7 +1864,7 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
                 mjdt.fill(.7, 0, .15, 1)
             else:
                 mjdt.fill(0, 0, 0, 1)
-            mjdt.drawGlyph(atomicElement.getTransformedGlyph())
+            mjdt.drawGlyph(atomicElement.glyph)
         mjdt.restore()
 
     @updateView
