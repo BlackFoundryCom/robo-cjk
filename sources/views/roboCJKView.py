@@ -1831,14 +1831,14 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             name = files.unicodeName(sender.get())
         except:
             name = str(sender.get())
-        if not name in self.RCJKI.currentFont.characterGlyphSet:
+        if not set([name]) & self.RCJKI.currentFont.staticCharacterGlyphSet():
             return
         self.charName = name
         self.refGlyph = self.RCJKI.currentFont[name]
         # self.refGlyph.preview.computeDeepComponents(update = False)
         self.deepComponents = self.refGlyph._deepComponents
         self.glyphVariations = self.refGlyph._glyphVariations
-        self.deepComponentsName = [chr(int(dc.name.split("_")[1], 16)) for dc in self.deepComponents]
+        self.deepComponentsName = [chr(int(dc["name"].split("_")[1], 16)) for dc in self.deepComponents]
         self.w.deepComponentList.set(self.deepComponentsName)
 
     @updateView
@@ -1851,10 +1851,10 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         dc = copy.deepcopy(self.deepComponents[self.index])
         self.RCJKI.currentGlyph.addDeepComponentNamed(dc.name, dc)
 
-        for variation in self.RCJKI.currentGlyph._glyphVariations:
-            if variation in self.glyphVariations:
-                dc = copy.deepcopy(self.glyphVariations[variation][self.index])
-                self.RCJKI.currentGlyph._glyphVariations[variation][-1].set(dc._toDict())
+        if len(self.glyphVariations) == len(self.RCJKI.currentGlyph._glyphVariations):
+            for i, variation in enumerate(self.RCJKI.currentGlyph._glyphVariations):
+                dc = copy.deepcopy(self.glyphVariations[i].deepComponents[self.index])
+                self.RCJKI.currentGlyph._glyphVariations[i].deepComponents[-1].set(dc._toDict())
 
         self.RCJKI.updateDeepComponent()
 

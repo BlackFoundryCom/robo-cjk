@@ -257,8 +257,6 @@ class CompositionRulesGroup(Group):
 
         if len(self.deepComponentVariationSettings) == len(self.RCJKI.currentGlyph._glyphVariations):
             for i, variation in enumerate(self.RCJKI.currentGlyph._glyphVariations):
-                # names = [x.sourceName for x in self.deepComponentVariationSettings]
-                # if variation.sourceName in names:
                 dc = copy.deepcopy(self.deepComponentVariationSettings[i])
                 self.RCJKI.currentGlyph._glyphVariations[i].deepComponents[-1].set(dc._toDict())
 
