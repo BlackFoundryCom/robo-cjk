@@ -138,12 +138,12 @@ def getRelatedGlyphs(font, glyphName, regenerated = []):
         regenerated.append(glyphName)
     if not hasattr(g, "_deepComponents"): return
     for dc in g._deepComponents:
-        getRelatedGlyphs(font, dc.name, regenerated)
+        getRelatedGlyphs(font, dc['name'], regenerated)
 
 # This function is outside of any class
-def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
+def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     font = RCJKI.currentFont
-    g = font[glyphName]._RGlyph
+    g = glyph._RGlyph
     # font[glyphName]._initWithLib()
     # locked, alreadyLocked = font.locker.lock(g)
     locked, alreadyLocked = font.lockGlyph(g)
@@ -153,7 +153,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         if not alreadyLocked:
             RCJKI.gitEngine.pull()
             # font.getGlyphs()
-            getRelatedGlyphs(font, glyphName)
+            getRelatedGlyphs(font, glyph.name)
             # font.getGlyph(font[glyphName])
             # g = font.get(glyphName, font._RFont)._RGlyph
     else:
@@ -164,380 +164,11 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyphName):
         CurrentGlyphWindow().close()
     except: pass
     # font.get(glyphName, font._RFont).update()
-    glyph = font.get(glyphName, font._RFont)
+    glyph = font.get(glyph.name, font._RFont)
     glyph.update()
     g = glyph._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
-    if glyph.type != "atomicElement":
-        RCJKI.currentView.setglyphState()
-    
-
-    # glyph.save()
-    # font[glyphName]
-    # # glyphType = glyph.type
-    # # rglyph = glyph._RGlyph
-    # g.lib.update(glyph.lib)
-    # # font.getGlyph(glyph.name)
-
-class CharacterWindow:
-
-    filterRules = [
-        "In font",
-        "Not in font",
-        "Can be designed with current deep components",
-        "Can't be designed with current deep components",
-        "All",
-        "Have outlines", 
-        # "Custom list"
-        ]
-
-    def __init__(self, RCJKI):
-        self.RCJKI = RCJKI
-        self.w = FloatingWindow(
-            (0, 0, 240, 100),
-            minSize = (240, 120),
-            maxSize = (240, 800),
-            closable = False,
-            textured = True,
-            )
-        self.w.backgroundCanvas = CanvasGroup((0, 0, -0, -0), delegate = self)
-        self.filter = 0
-        self.preview = 1
-        self.w.filter = PopUpButton(
-            (0, 0, -0, 20),
-            self.filterRules,
-            callback = self.filterCallback,
-            sizeStyle = "mini"
-            )
-        self.w.component = SmartTextBox(
-            (0, 16, 80, -0),
-            "",
-            sizeStyle = 65,
-            alignment = "center"
-            )
-        self.w.charactersList = List(
-            (80, 16, 40, -0), 
-            [],
-            selectionCallback = self.charactersListSelectionCallback,
-            doubleClickCallback = self.charactersListDoubleClickCallback,
-            drawFocusRing = False
-            )
-        self.w.previewCheckBox = CheckBox(
-            (130, 20, -10, 20),
-            'Preview',
-            value = self.preview,
-            sizeStyle = "small",
-            callback = self.previewCheckBoxCallback
-            )
-        self.w.previewCheckBox.show(self.preview)
-        self.w.sliders = Group((120, 45, -0, -0))
-        self.w.sliders.show(False)
-
-        self.w.sliders.x = Slider((0, 0, -0, 20),
-            minValue = -1000,
-            maxValue = 1000,
-            value = 0,
-            callback = self.sliderCallback)
-        self.w.sliders.y = Slider((0, 20, -0, 20),
-            minValue = -1000,
-            maxValue = 1000,
-            value = 0,
-            callback = self.sliderCallback)
-        self.w.sliders.scaleX = EditText((0, 45, 60, 20),
-            100,
-            formatter = NumberFormatter(),
-            sizeStyle = "small",
-            callback = self.scaleCallback)
-        self.w.sliders.scaleY = EditText((60, 45, -0, 20),
-            100,
-            formatter = NumberFormatter(),
-            sizeStyle = "small",
-            callback = self.scaleCallback)
-        self.w.sliders.canvas = Canvas((0, 65, -0, -0), delegate = self)
-        self.char = ""
-
-    def draw(self):
-        pass
-
-    def mouseDragged(self, point):
-        x, y = self.RCJKI.drawer.refGlyphPos
-        dx = point.deltaX()
-        dy = point.deltaY()
-        x += dx
-        y -= dy
-        sensibility = 1
-        self.RCJKI.drawer.refGlyphPos = [x*sensibility, y*sensibility]  
-        self.w.sliders.x.set(x)
-        self.w.sliders.y.set(y)
-        UpdateCurrentGlyphView()
-
-    def sliderCallback(self, sender):
-        self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
-        UpdateCurrentGlyphView()
-
-    def scaleCallback(self, sender):
-        self.RCJKI.drawer.refGlyphScale = [self.w.sliders.scaleX.get()/100, self.w.sliders.scaleY.get()/100]  
-        UpdateCurrentGlyphView()        
-
-    def filterCallback(self, sender):
-        self.filter = sender.get()
-        self.filterCharacters()
-
-    def filterCharacters(self):
-        l = []
-
-        if self.filter == 4:
-            l = list(self.relatedChars)
-            title = "Related Characters"
-
-        elif self.filter in [0, 1]:
-            names = [files.unicodeName(c) for c in self.relatedChars]
-            if self.filter == 0:
-                result = set(names) & set(self.RCJKI.currentFont.characterGlyphSet)
-            else:
-                result = set(names) - set(self.RCJKI.currentFont.characterGlyphSet)
-            title = self.filterRules[self.filter]
-            l = [chr(int(n[3:], 16)) for n in result]
-
-        elif self.filter in [2, 3]:
-            DCSet = set([x for x in self.RCJKI.currentFont.deepComponentSet if self.RCJKI.currentFont[x]._RGlyph.lib["robocjk.deepComponents"]])
-            for c in self.relatedChars:
-                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
-                # compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.selectDatabaseKey(hex(ord(c))[2:].upper())]
-                inside = len(set(compo) - DCSet) == 0
-                if self.filter == 2 and inside:
-                    l.append(c)
-                elif self.filter == 3 and not inside:
-                    l.append(c)
-            # if self.filter == 2:
-            #     result = set([files.unicodeName(c) for c in l]) - set(self.RCJKI.currentFont.characterGlyphSet)
-            #     l = [chr(int(n[3:], 16)) for n in result]
-            title = " ".join(self.filterRules[self.filter].split(' ')[:3])
-
-        elif self.filter == 5:
-            names = [files.unicodeName(c) for c in self.relatedChars]
-            l = []
-            for name in names:
-                try:
-                    if len(self.RCJKI.currentFont[name]):
-                        l.append(chr(int(name[3:], 16)))
-                except:pass
-            title = self.filterRules[self.filter]
-            # l = [chr(int(name[3:], 16)) for name in names if len(self.RCJKI.currentFont[name])]
-
-        self.RCJKI.drawer.refGlyph = None
-        self.RCJKI.drawer.refGlyphPos = [0, 0]   
-        UpdateCurrentGlyphView()
-        self.w.charactersList.set(l)
-        self.w.setTitle("%s %s"%(len(l), title))
-
-    def setUI(self):
-        self.relatedChars = set()
-        try:
-            _, code, _ = self.RCJKI.currentGlyph.name.split("_") 
-            char = chr(int(code, 16))
-            for k, v in self.RCJKI.currentFont.dataBase.items():
-                if char in v:
-                    self.relatedChars.add(k)
-        except: pass
-        self.filterCharacters()
-        self.w.component.set(char)
-
-    def open(self):
-        self.w.open()
-
-    def close(self):
-        self.RCJKI.drawer.refGlyph = None
-        self.RCJKI.drawer.refGlyphPos = [0, 0]
-        self.w.close()
-
-    def charactersListSelectionCallback(self, sender):
-        self.w.previewCheckBox.show(self.filter in [0, 5])
-        self.w.sliders.show(self.filter in [0, 5])
-        if self.preview:
-            self.setRefGlyph(sender)
-
-        sel = sender.getSelection()
-        if not sel:
-            return
-        char = sender.get()[sel[0]]
-        if char != self.char:
-            self.w.sliders.x.set(0)
-            self.w.sliders.y.set(0)
-            self.RCJKI.drawer.refGlyphPos = [0, 0]
-
-            self.w.sliders.scaleX.set(100)
-            self.w.sliders.scaleY.set(100)
-            self.RCJKI.drawer.refGlyphScale = [1, 1]  
-            self.char = char
-
-        if self.filter in [0, 3]:
-            if files.unicodeName(char) in self.RCJKI.currentFont.characterGlyphSet:
-                self.w.previewCheckBox.show(True)
-        UpdateCurrentGlyphView()
-
-    def charactersListDoubleClickCallback(self, sender):
-        sel = sender.getSelection()
-        if not sel: return
-        char = sender.get()[sel[0]]
-        name = files.unicodeName(char)
-        font = self.RCJKI.currentFont
-        if not self.RCJKI.currentFont.mysqlFont:
-            self.RCJKI.gitEngine.createGitignore()
-            self.RCJKI.gitEngine.pull()
-        try:
-            font[name]
-        except:
-            font.newGlyph("characterGlyph", name)
-            # font.locker.batchLock([font[name]])
-            font.batchLockGlyphs([font[name]])
-            if not self.RCJKI.currentFont.mysqlFont:
-                self.RCJKI.gitEngine.commit("new glyph")
-                self.RCJKI.gitEngine.push()
-        finally:
-            openGlyphWindowIfLockAcquired(self.RCJKI, name)
-
-    def setRefGlyph(self, sender):
-        sel = sender.getSelection()
-        if not sel:
-            self.RCJKI.drawer.refGlyph = None
-            self.RCJKI.drawer.refGlyphPos = [0, 0]
-            return
-        char = sender.get()[sel[0]]
-        if self.preview:
-            try:
-                glyph = self.RCJKI.currentFont[files.unicodeName(char)]
-            except:
-                glyph = None
-            self.RCJKI.drawer.refGlyph = glyph
-            self.RCJKI.drawer.refGlyphPos = [self.w.sliders.x.get(), self.w.sliders.y.get()]  
-            UpdateCurrentGlyphView()
-        
-    def previewCheckBoxCallback(self, sender):
-        self.preview = sender.get()
-        self.w.sliders.show(self.preview)
-        if self.preview:
-            self.setRefGlyph(self.w.charactersList)
-        else:
-            self.RCJKI.drawer.refGlyph = None 
-            self.RCJKI.drawer.refGlyphPos = [0, 0]
-            UpdateCurrentGlyphView()
-
-class ComponentWindow():
-
-    def __init__(self, RCJKI):
-        self.RCJKI = RCJKI
-        self.glyph = None
-        self.w = FloatingWindow(
-            (0, 0, 240, 80),
-            "Composition Rules",
-            closable = False,
-            textured = True,
-            )
-        self.w.char = SmartTextBox(
-            (0, 0, 80, -0),
-            "",
-            sizeStyle = 65,
-            alignment = "center"
-            )
-        self.w.editButton = ImageButton(
-            (0, -15, 15, -0),
-            EditButtonImagePath,
-            bordered = False,
-            callback = self.editButtonCallback
-            )
-        self.w.componentList = List(
-            (80, 0, 40, -0), 
-            [],
-            selectionCallback = self.componentListCallback
-            )
-        self.w.variantComponentList = List(
-            (120, 0, 40, -0), 
-            [],
-            selectionCallback = self.variantComponentListCallback,
-            doubleClickCallback = self.variantComponentListdoubleClickCallback
-            )
-        self.w.canvas2 = CanvasGroup(
-            (160, 0, -0, -0), 
-            delegate = self
-            )
-
-    def open(self):
-        self.w.open()
-
-    def close(self):
-        self.w.close()
-
-    def setUI(self):
-        if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni'):
-            try:
-                self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
-            except:
-                print('this glyph has no Unicode')
-                return
-        char = chr(self.RCJKI.currentGlyph.unicode)
-        # if not self.RCJKI.currentFont.mysqlFont:
-            
-        #     if char in self.RCJKI.currentFont.dataBase:
-        #         self.w.componentList.set(self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:]))
-        # else:
-        #     d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]))
-        #     # d = self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, "53E3")
-        #     print(d)
-        # d = self.RCJKI.currentFont.selectDatabaseKey(hex(ord(char))[2:])
-        d = self.RCJKI.currentFont.dataBase.get(char, [])
-        if d is None:
-            d = []
-        # print( )
-        self.w.componentList.set(d)
-        self.w.char.set(char)
-
-    def editButtonCallback(self, sender):
-        EditingSheet(self, self.RCJKI)
-
-    def draw(self):
-        if self.glyph is None: return
-        mjdt.save()
-        mjdt.translate(20, 25)
-        mjdt.scale(.04)
-        mjdt.fill(0, 0, 0, 1)
-        for atomicInstance in self.glyph.preview.axisPreview:
-            mjdt.drawGlyph(atomicInstance.getTransformedGlyph()) 
-        mjdt.restore()
-
-    def componentListCallback(self, sender):
-        sel = sender.getSelection()
-        if not sel: return
-        char = sender.get()[sel[0]]
-        self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())
-        dcName = "DC_%s_00"%self.code
-        if dcName not in self.RCJKI.currentFont.deepComponentSet: 
-            self.w.variantComponentList.set([])
-            return
-        index = self.RCJKI.currentFont.deepComponentSet.index(dcName)
-        l = ["00"]
-        i = 1
-        while True:
-            name = "DC_%s_%s"%(self.code, str(i).zfill(2))
-            if not name in self.RCJKI.currentFont.deepComponentSet:
-                break
-            l.append(str(i).zfill(2))
-            i += 1
-        self.w.variantComponentList.set(l)
-
-    def variantComponentListCallback(self, sender):
-        sel = sender.getSelection()
-        if not sel: return
-        index = sender.get()[sel[0]]
-        self.deepComponentName = "DC_%s_%s"%(self.code, index)
-        self.glyph = self.RCJKI.currentFont[self.deepComponentName]
-        self.glyph.preview.computeDeepComponents(update = False)
-        self.w.canvas2.update()
-
-    def variantComponentListdoubleClickCallback(self, sender):
-        self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
-        self.RCJKI.updateDeepComponent(update = False)
 
 
 class RoboCJKView(BaseWindowController):
@@ -555,6 +186,7 @@ class RoboCJKView(BaseWindowController):
             "Login & load projects", 
             callback = self.loadProjectButtonCallback,
             )
+        self.w.setDefaultButton(self.w.loadProjectButton)
         self.w.saveProjectButton = Button(
             (210, 10, 200, 20), 
             "Save project", 
@@ -902,7 +534,7 @@ class RoboCJKView(BaseWindowController):
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
         glyph.markColor = STATE_COLORS[state]
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.atomicElementPreview.update()
 
     def deepComponentDesignStepPopUpButtonCallback(self, sender):
@@ -913,7 +545,7 @@ class RoboCJKView(BaseWindowController):
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
         glyph.markColor = STATE_COLORS[state]
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.deepComponentPreview.update()
 
     def characterGlyphDesignStepPopUpButtonCallback(self, sender):
@@ -926,7 +558,7 @@ class RoboCJKView(BaseWindowController):
         glyph.markColor = STATE_COLORS[state]
         if STATE_COLORS[state] == DONE:
             self.RCJKI.decomposeGlyphToBackupLayer(glyph)
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.characterGlyphPreview.update()
 
     def atomicElementSearchBoxCallback(self, sender):
@@ -1187,7 +819,7 @@ class RoboCJKView(BaseWindowController):
                 f.insertGlyph(g, name=n)
                 continue
 
-            g.preview.computeDeepComponents()
+            # g.preview.computeDeepComponents()
             f.newGlyph(n)
             f[n].width = g.width
 
@@ -1411,6 +1043,13 @@ class RoboCJKView(BaseWindowController):
                 if 'database.json' in os.listdir(fontPath):
                     with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
                         self.RCJKI.currentFont.dataBase = json.load(file)
+
+                self.RCJKI.currentFont.deepComponents2Chars = {}
+                for k, v in self.RCJKI.currentFont.dataBase.items():
+                    for dc in v:
+                        if dc not in self.RCJKI.currentFont.deepComponents2Chars:
+                            self.RCJKI.currentFont.deepComponents2Chars[dc] = set()
+                        self.RCJKI.currentFont.deepComponents2Chars[dc].add(k)
             else:
                 # self.RCJKI.dataBase = True
                 self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName,self.RCJKI.mysql_password, self.RCJKI.hiddenSavePath)
@@ -1437,7 +1076,7 @@ class RoboCJKView(BaseWindowController):
             CurrentGlyphWindow().close()
         except:pass
         self.RCJKI.currentGlyph = self.currentFont[glyphName]
-        openGlyphWindowIfLockAcquired(self.RCJKI, glyphName)
+        openGlyphWindowIfLockAcquired(self.RCJKI, self.RCJKI.currentGlyph)
 
     def GlyphsListEditCallback(self, sender):
         sel = sender.getSelection()
@@ -1457,7 +1096,7 @@ class RoboCJKView(BaseWindowController):
             if sender == self.w.characterGlyph:
                 charSet = [dict(char = files.unicodeName2Char(x["name"]), name = x["name"]) for x in sender.get()]
                 sender.set(charSet)
-            self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+            self.setGlyphToCanvas(sender, self.currentGlyph)
 
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
@@ -1520,7 +1159,8 @@ class RoboCJKView(BaseWindowController):
             state.set(0)
         # self.currentFont[self.prevGlyphName].update()
         
-        self.setGlyphNameToCanvas(sender, self.prevGlyphName)
+        glyph.createPreviewLocationsStore()
+        self.setGlyphToCanvas(sender, glyph)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
         # else:
@@ -1531,15 +1171,15 @@ class RoboCJKView(BaseWindowController):
         else:
             self.w.lockerInfoTextBox.set("")
 
-    def setGlyphNameToCanvas(self, sender, glyphName):
+    def setGlyphToCanvas(self, sender, glyph):
         if sender == self.w.atomicElement:
-            self.w.atomicElementPreview.glyphName = glyphName
+            self.w.atomicElementPreview.glyph = glyph
             self.w.atomicElementPreview.update()
         elif sender == self.w.deepComponent:
-            self.w.deepComponentPreview.glyphName = glyphName
+            self.w.deepComponentPreview.glyph = glyph
             self.w.deepComponentPreview.update()
         elif sender == self.w.characterGlyph:
-            self.w.characterGlyphPreview.glyphName = glyphName
+            self.w.characterGlyphPreview.glyph = glyph
             self.w.characterGlyphPreview.update()
 
     @property
@@ -1573,10 +1213,6 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
     def duplicateAtomicElementCallback(self, sender):
-        PostBannerNotification(
-                'Impossible', "There is a bug on this function, not fixed yet"
-                )
-        return
         newGlyphName = self._duplicateGlyph(self.w.atomicElement, self.RCJKI.currentFont.atomicElementSet)
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
@@ -1666,7 +1302,7 @@ class RoboCJKView(BaseWindowController):
                     elif glyphType == 'deepComponent':
                         d =  glyph._deepComponents
                     for ae in d:
-                        if ae.name == glyphName:
+                        if ae["name"] == glyphName:
                             GlyphsthatUse.add(name)
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
@@ -1707,7 +1343,7 @@ class RoboCJKView(BaseWindowController):
             self.w.atomicElement.setSelection([])
             self.w.atomicElement.set(self.currentFont.atomicElementSet)
             self.prevGlyphName = ""
-            self.setGlyphNameToCanvas(self.w.atomicElement, self.prevGlyphName)
+            self.setGlyphToCanvas(self.w.atomicElement, self.currentGlyph)
             self.w.lockerInfoTextBox.set("")
 
     def removeDeepComponentCallback(self, sender):
@@ -1716,7 +1352,7 @@ class RoboCJKView(BaseWindowController):
             self.w.deepComponent.setSelection([])
             self.w.deepComponent.set(self.currentFont.deepComponentSet)
             self.prevGlyphName = ""
-            self.setGlyphNameToCanvas(self.w.deepComponent, self.prevGlyphName)
+            self.setGlyphToCanvas(self.w.deepComponent, self.currentGlyph)
             self.w.lockerInfoTextBox.set("")
 
     def removeCharacterGlyphCallback(self, sender):
@@ -1772,7 +1408,7 @@ class RoboCJKView(BaseWindowController):
         self.w.characterGlyph.setSelection([])
         self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
         self.prevGlyphName = ""
-        self.setGlyphNameToCanvas(self.w.characterGlyph, self.prevGlyphName)
+        self.setGlyphToCanvas(self.w.characterGlyph, self.currentGlyph)
         self.w.lockerInfoTextBox.set("")
 
     def dumpName(self, glyphType, sets):
@@ -1823,14 +1459,14 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             name = files.unicodeName(sender.get())
         except:
             name = str(sender.get())
-        if not name in self.RCJKI.currentFont.characterGlyphSet:
+        if not set([name]) & self.RCJKI.currentFont.staticCharacterGlyphSet():
             return
         self.charName = name
         self.refGlyph = self.RCJKI.currentFont[name]
-        self.refGlyph.preview.computeDeepComponents(update = False)
+        # self.refGlyph.preview.computeDeepComponents(update = False)
         self.deepComponents = self.refGlyph._deepComponents
         self.glyphVariations = self.refGlyph._glyphVariations
-        self.deepComponentsName = [chr(int(dc.name.split("_")[1], 16)) for dc in self.deepComponents]
+        self.deepComponentsName = [chr(int(dc["name"].split("_")[1], 16)) for dc in self.deepComponents]
         self.w.deepComponentList.set(self.deepComponentsName)
 
     @updateView
@@ -1843,10 +1479,10 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         dc = copy.deepcopy(self.deepComponents[self.index])
         self.RCJKI.currentGlyph.addDeepComponentNamed(dc.name, dc)
 
-        for variation in self.RCJKI.currentGlyph._glyphVariations:
-            if variation in self.glyphVariations:
-                dc = copy.deepcopy(self.glyphVariations[variation][self.index])
-                self.RCJKI.currentGlyph._glyphVariations[variation][-1].set(dc._toDict())
+        if len(self.glyphVariations) == len(self.RCJKI.currentGlyph._glyphVariations):
+            for i, variation in enumerate(self.RCJKI.currentGlyph._glyphVariations):
+                dc = copy.deepcopy(self.glyphVariations[i].deepComponents[self.index])
+                self.RCJKI.currentGlyph._glyphVariations[i].deepComponents[-1].set(dc._toDict())
 
         self.RCJKI.updateDeepComponent()
 
@@ -1855,12 +1491,15 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
         mjdt.save()
         mjdt.translate(20, 21)
         mjdt.scale(.09)
-        for i, atomicElement in enumerate(self.refGlyph.preview.axisPreview):
+        # loc = {}
+        # if self.refGlyph.selectedSourceAxis:
+            # loc = {self.refGlyph.selectedSourceAxis:1}
+        for i, atomicElement in enumerate(self.refGlyph.preview({}, forceRefresh=False)):
             if i == self.index:
                 mjdt.fill(.7, 0, .15, 1)
             else:
                 mjdt.fill(0, 0, 0, 1)
-            mjdt.drawGlyph(atomicElement.getTransformedGlyph())
+            mjdt.drawGlyph(atomicElement.glyph)
         mjdt.restore()
 
     @updateView

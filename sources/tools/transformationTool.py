@@ -91,3 +91,6 @@ class TransformationTool(BaseEventTool):
 
         self.deltax, self.deltay = point
         UpdateCurrentGlyphView()
+
+    def mouseUp(self, point):
+        self.RCJKI.currentGlyph.reinterpolate = False

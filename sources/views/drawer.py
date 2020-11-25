@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import mojo.drawingTools as mjdt
+from utils import interpolation
 from AppKit import NSFont, NSColor, NSFontAttributeName, NSForegroundColorAttributeName
 
 attributes = {
@@ -54,11 +55,11 @@ class Drawer():
         return g
 
     def drawGlyph(self, glyph, scale, color, strokecolor, customColor, drawSelectedElements = True):
-        if glyph.preview.variationPreview is None:
+        if glyph.selectedSourceAxis:
             if glyph.type == 'atomicElement':
                 if not len(glyph): return
-            else:
-                glyph.preview.computeDeepComponents(update = False)
+            # else:
+            #     glyph.preview.computeDeepComponents(update = False)
             self.drawAxisPreview(
                 glyph,
                 color,
@@ -73,20 +74,20 @@ class Drawer():
         view = info["view"]
         scale = info['scale']
         color = customColor
-        if self.RCJKI.currentGlyph.preview.variationPreview:
-            if info["notificationName"] == "draw":
-                previewColor = [(0, 0, 0, 0), (0, 0, 0, .7)][onlyPreview]
-                previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
-            else:    
-                previewColor = [(0, 0, 0, 0), (0, 0, 0, 1)][onlyPreview]
-                previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
+        # if self.RCJKI.currentGlyph.preview.variationPreview:
+        if info["notificationName"] == "draw":
+            previewColor = [(0, 0, 0, 0), (0, 0, 0, .7)][onlyPreview]
+            previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
+        else:    
+            previewColor = [(0, 0, 0, 0), (0, 0, 0, 1)][onlyPreview]
+            previewStrokeColor = [(0, 0, 0, .2), (0, 0, 0, 0)][onlyPreview]
 
-            self.drawVariationPreview(
-                self.RCJKI.currentGlyph,
-                scale, 
-                color = previewColor, 
-                strokecolor = previewStrokeColor
-                )
+        self.drawVariationPreview(
+            self.RCJKI.currentGlyph,
+            scale, 
+            color = previewColor, 
+            strokecolor = previewStrokeColor
+            )
 
         if self.RCJKI.currentGlyph.type == "atomicElement": return
 
@@ -103,7 +104,8 @@ class Drawer():
             mjdt.fill(1, .8, 0, .8)
             mjdt.translate(*self.existingInstancePos)
             mjdt.scale(*self.existingInstanceScale)
-            mjdt.drawGlyph(self.roundGlyph(self.existingInstance))
+            for c in self.existingInstance:
+                mjdt.drawGlyph(self.roundGlyph(c))
             mjdt.restore()
 
         if onlyPreview: return
@@ -126,40 +128,53 @@ class Drawer():
         mjdt.fill(*color)
         mjdt.stroke(*strokecolor)
         mjdt.strokeWidth(scale)
-        mjdt.drawGlyph(self.roundGlyph(glyph.preview.variationPreview))  
+        loc = {}
+        if glyph.sourcesList: 
+            loc = {x["Axis"]:x["PreviewValue"] for x in glyph.sourcesList}
+        for g in glyph.preview(loc, forceRefresh=False):
+        # for g in glyph.previewGlyph:
+            mjdt.drawGlyph(self.roundGlyph(g.glyph))  
         mjdt.restore()
 
     def drawAxisPreview(self, glyph, color, scale, customColor, view = False, flatComponentColor = (.8, .6, 0, .7), drawSelectedElements = True):
         mjdt.save()
         index = None
-        for i, atomicInstance in enumerate(glyph.preview.axisPreview):
+        # loc = {}
+        # if glyph.selectedSourceAxis:
+        #     loc = {glyph.selectedSourceAxis:1}
+        # for i, atomicInstance in enumerate(glyph.preview()):
+        for i, atomicInstance in enumerate(glyph.preview(forceRefresh=False, axisPreview=True)):
+        # for i, atomicInstance in enumerate(glyph.previewGlyph):
+            transformIntance = atomicInstance._transformation
+            atomicInstance = atomicInstance.glyph
+
             mjdt.fill(*color)
             if drawSelectedElements and i in glyph.selectedElement:
                 mjdt.save()
                 mjdt.stroke(1, 0, 0, 1)
                 mjdt.strokeWidth(1*scale)
-                tx = atomicInstance.x+atomicInstance.rcenterx
-                ty = atomicInstance.y+atomicInstance.rcentery
+                tx = transformIntance['x']+transformIntance['tcenterx']
+                ty = transformIntance['y']+transformIntance['tcentery']
                 mjdt.line((tx-5*scale, ty), (tx+5*scale, ty))
                 mjdt.line((tx, ty-5*scale), (tx, ty+5*scale))
                 mjdt.stroke(None)
                 mjdt.fill(1, 0, 0, 1)
                 mjdt.fontSize(8*scale)
-                mjdt.textBox(f"{int(atomicInstance.rcenterx)} {int(atomicInstance.rcentery)}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
+                mjdt.textBox(f"{int(transformIntance['tcenterx'])} {int(transformIntance['tcentery'])}", ((tx-30*scale, ty-30*scale, 60*scale, 20*scale)), align = "center")
                 mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
 
-            for c in atomicInstance.glyph:
+            for c in atomicInstance:
                 if c.clockwise:
                     mjdt.stroke(1, 0, 0, 1)
                     mjdt.strokeWidth(2*scale)
             mjdt.save()
             # mjdt.drawGlyph(atomicInstance.getTransformedGlyph(round = self.RCJKI.roundToGrid)) 
-            mjdt.drawGlyph(atomicInstance.transformedGlyph) 
+            mjdt.drawGlyph(atomicInstance) 
             mjdt.restore()
             if customColor is None and view: 
                 if i != index:
-                    self.drawIndexOfElements(i, atomicInstance.transformedGlyph, view)
+                    self.drawIndexOfElements(i, atomicInstance, view)
             index = i
         if customColor is None:
             mjdt.fill(customColor)
@@ -173,7 +188,7 @@ class Drawer():
             if self.RCJKI.currentFont[c.baseGlyph].type == "atomicElement":
                 mjdt.drawGlyph(self.roundGlyph(self.RCJKI.currentFont[c.baseGlyph]))
             else:
-                self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents(update = False)
+                # self.RCJKI.currentFont[c.baseGlyph].preview.computeDeepComponents(update = False)
                 self.drawAxisPreview(self.RCJKI.currentFont[c.baseGlyph],
                                             flatComponentColor,
                                             scale,

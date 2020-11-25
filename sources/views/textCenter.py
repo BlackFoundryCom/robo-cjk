@@ -21,6 +21,7 @@ from vanilla import *
 from mojo.UI import MultiLineView, AccordionView
 from mojo.events import addObserver, removeObserver
 from utils import files
+import mojo.drawingTools as mjdt
 
 class displayModeGroup(Group):
 
@@ -330,49 +331,58 @@ class TextCenter:
 
     def draw(self, info):
         self.w.pointSize.set(self.w.multiLineView.getPointSize())
-        glyph = self.RCJKI.currentFont.get(info["glyph"].name, self.RCJKI.currentFont._RFont)
+        glyph = self.RCJKI.currentFont[info["glyph"].name]#, self.RCJKI.currentFont._RFont)
         scale = info["scale"]
+        sourcesList = {x["Axis"]:x["PreviewValue"] for x in self.sourcesList}
 
-        def drawVariation(glyph, sourcelist, drawer):
-            glyph.preview.computeDeepComponentsPreview(sourcelist, update = False)
-            drawer.drawVariationPreview(
-                    glyph,
-                    scale,
-                    (0, 0, 0, 1),
-                    (0, 0, 0, 0)
-                        )
+        mjdt.save()
+        mjdt.fill(0, 0, 0, 1)
+        mjdt.stroke(0, 0, 0, 0)
+        mjdt.strokeWidth(scale)
+        for c in glyph.preview(sourcesList, forceRefresh=True):
+            mjdt.drawGlyph(c.glyph)
+        mjdt.restore()
 
-        def drawPreview(glyph, drawer):
-            glyph.preview.computeDeepComponents(update = False)
-            drawer.drawAxisPreview(
-                    glyph,
-                    (0, 0, 0, 1),
-                    scale,
-                    (0, 0, 0, 1)
-                    )
+        # def drawVariation(glyph, sourcelist, drawer):
+        #     glyph.preview.computeDeepComponentsPreview(sourcelist, update = False)
+        #     drawer.drawVariationPreview(
+        #             glyph,
+        #             scale,
+        #             (0, 0, 0, 1),
+        #             (0, 0, 0, 0)
+        #                 )
 
-        if glyph.type in ['deepComponent', 'characterGlyph']:
-            if self.sourcesList:# and glyph.glyphVariations:
-                try:
-                    drawVariation(glyph, self.sourcesList, self.RCJKI.drawer)
-                except:
-                    drawPreview(glyph, self.RCJKI.drawer)
-                # glyph.preview.computeDeepComponentsPreview(self.sourcesList, update = False)
-                # self.RCJKI.drawer.drawVariationPreview(
-                #         glyph,
-                #         scale,
-                #         (0, 0, 0, 1),
-                #         (0, 0, 0, 0)
-                #         )
-            else:
-                drawPreview(glyph, self.RCJKI.drawer)
-                # glyph.preview.computeDeepComponents(update = False)
-                # self.RCJKI.drawer.drawAxisPreview(
-                #     glyph,
-                #     (0, 0, 0, 1),
-                #     scale,
-                #     (0, 0, 0, 1)
-                #     )
+        # def drawPreview(glyph, drawer):
+        #     glyph.preview.computeDeepComponents(update = False)
+        #     drawer.drawAxisPreview(
+        #             glyph,
+        #             (0, 0, 0, 1),
+        #             scale,
+        #             (0, 0, 0, 1)
+        #             )
+
+        # if glyph.type in ['deepComponent', 'characterGlyph']:
+        #     if self.sourcesList:# and glyph.glyphVariations:
+        #         try:
+        #             drawVariation(glyph, self.sourcesList, self.RCJKI.drawer)
+        #         except:
+        #             drawPreview(glyph, self.RCJKI.drawer)
+        #         # glyph.preview.computeDeepComponentsPreview(self.sourcesList, update = False)
+        #         # self.RCJKI.drawer.drawVariationPreview(
+        #         #         glyph,
+        #         #         scale,
+        #         #         (0, 0, 0, 1),
+        #         #         (0, 0, 0, 0)
+        #         #         )
+        #     else:
+        #         drawPreview(glyph, self.RCJKI.drawer)
+        #         # glyph.preview.computeDeepComponents(update = False)
+        #         # self.RCJKI.drawer.drawAxisPreview(
+        #         #     glyph,
+        #         #     (0, 0, 0, 1),
+        #         #     scale,
+        #         #     (0, 0, 0, 1)
+        #         #     )
 
     def windowWillClose(self, sender):
         self.RCJKI.textCenterWindows.pop(self.RCJKI.textCenterWindows.index(self))

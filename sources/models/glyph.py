@@ -25,9 +25,12 @@ glyphUndo = decorators.glyphUndo
 from models import deepComponent, component
 # reload(component)
 import copy
+import math
+# from fontTools.misc.transform import Transform
 
 # reload(deepComponent)
 DeepComponents = component.DeepComponents
+VariationGlyphs = component.VariationGlyphs
 
 INPROGRESS = (1, 0, 0, 1)
 CHECKING1 = (1, .5, 0, 1)
@@ -41,20 +44,54 @@ STATE_COLORS = {
     CHECKING3:"CHECKING3", 
     DONE:"DONE"}
 
-def compute(func):
-    def wrapper(self, *args, **kwargs):
-        func(self, *args, **kwargs)
-        self.preview.computeDeepComponents(update = False)
-        self.preview.computeDeepComponentsPreview(update = False)
-    return wrapper
+# def compute(func):
+#     def wrapper(self, *args, **kwargs):
+#         func(self, *args, **kwargs)
+#         # self.preview.computeDeepComponents(update = False)
+#         # self.preview.computeDeepComponentsPreview(update = False)
+#     return wrapper
 
 def _getKeys(glyph):
     if glyph.type == "characterGlyph":
-        return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
     else:
-        return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
+
+# import operator
+# class _MathMixin:
+
+#     def __add__(self, other):
+#         return self._doBinaryOperator(other, operator.add)
+
+#     def __sub__(self, other):
+#         return self._doBinaryOperator(other, operator.sub)
+
+#     def __mul__(self, scalar):
+#         return self._doBinaryOperatorScalar(scalar, operator.mul)
+
+#     def __rmul__(self, scalar):
+#         return self._doBinaryOperatorScalar(scalar, operator.mul)
 
 class Glyph(RGlyph):
+
+    class ResultGlyph:
+
+        def __init__(self, resultGlyph, transformation={}):
+            self.resultGlyph = resultGlyph
+            self._transformation = transformation
+
+        @property
+        def transformation(self):
+            return self._transformation
+
+        @transformation.setter
+        def transformation(self, t):
+            self._transformation = t
+
+        @property
+        def glyph(self):
+            return interpolation._transformGlyph(self.resultGlyph.copy(), self.transformation)
+
 
     def __init__(self):
         super().__init__()
@@ -64,41 +101,70 @@ class Glyph(RGlyph):
         self.sourcesList = []
         self._designState = ""
 
+        self.model = None
+        self.deltas = None
+
+        self.redrawSelectedElementSource = False
+        self.redrawSelectedElementPreview = False
+        self.reinterpolate = False
+
+        self._glyphVariations = VariationGlyphs()
+        self.previewLocationsStore = {}
+
+        # self.frozenPreview = []
+
+    def createPreviewLocationsStore(self):
+        # print('locations', self.locations)
+        self.previewLocationsStore = {','.join([k+':'+str(v) for k,v in loc.items()]): list(self.preview(loc)) for loc in [{}]+self.locations}
+
+    def updatePreviewLocationStore(self, loc):
+        self.previewLocationsStore[','.join([k+':'+str(v) for k,v in loc.items()])] = list(self.preview(loc))
+
     def _setStackUndo(self):
         # if self.type != 'atomicElement':
         lib = RLib()
-        deepComponentsKey, glyphVariationsKey = _getKeys(self)
+        deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self)
         lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
+        lib[axesKey] = copy.deepcopy(self._axes)
         lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
         self.stackUndo_lib = [lib]
         self.indexStackUndo_lib = 0
         # self.transformationWithMouse = False
 
     def __bool__(self):
-        if bool(self._glyphVariations):
-            return True
+        if self.type != "atomicElement":
+            if bool(self._glyphVariations):
+                return True
+            else:
+                return bool(self._deepComponents)
         else:
-            return bool(self._deepComponents)
+            return bool(self._glyphVariations)
 
-    # @property
-    # def designState(self):
-    #     self.designState = STATE_COLORS.get(self.stateColor, "")
-    #     return self._designState
+    def normalizedValue(self, v, minv, maxv):
+        return (v-minv)/(maxv-minv)
 
-    # @designState.setter
-    # def designState(self, value):
-    #     self._designState = value    
+    def getLocation(self):
+        loc = {}
+        if self.selectedSourceAxis:
+            for source in self._glyphVariations:
+                if source.sourceName == self.selectedSourceAxis:
+                    loc = source.location
+        return loc
 
-    # @property
-    # def stateColor(self):
-    #     mark = self._RGlyph.markColor
-    #     if mark is None:
-    #         mark = (1, 1, 1, 1)
-    #     return mark
+    def _locations(self):
+        return [source.location for source in self._glyphVariations]
 
-    # @stateColor.setter
-    # def stateColor(self, value:tuple):
-    #     self._RGlyph.markColor = value
+    @property
+    def locations(self):
+        return self._locations()
+
+    def normalizedValueToMinMaxValue(self, loc, g):
+        position = {}
+        for k, v in loc.items():
+            axis = g._axes.get(k)
+            if axis is not None:
+                position[k] = self.normalizedValue(v, axis.minValue, axis.maxValue)
+        return position
 
     def save(self):
         # print("glyohsave", self.name, self.stateColor)
@@ -122,6 +188,7 @@ class Glyph(RGlyph):
         return self._RGlyph.components
 
     def update(self):
+        return #should readapt this fonction to the new format
         if self.type == 'atomicElement':
             return
         deepComponentToRemove = []
@@ -150,6 +217,35 @@ class Glyph(RGlyph):
 
         self.removeDeepComponents(deepComponentToRemove)
 
+    def addAxis(self, axisName="", minValue="", maxValue=""):
+        self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue))
+        self._glyphVariations.addAxisToLocations(axisName = axisName, minValue=minValue)
+
+    def removeAxis(self, index):
+        axisName = self._axes[index].name
+        self._axes.removeAxis(index)
+        self._glyphVariations.removeAxis(axisName)
+        self._glyphVariations.desactivateDoubleLocations(self._axes)
+
+    def addSource(self, sourceName="", location={}, layerName = "", copyFrom = ""):
+
+        deepComponents = []
+        if self.type != "atomicElement":
+            if not copyFrom or copyFrom == "master":
+                dcs = self._deepComponents
+            else:
+                dcs = self._glyphVariations.getFromSourceName(copyFrom).deepComponents
+            for deepcomponent in dcs:
+                items = {}
+                for k, v in deepcomponent.items():
+                    if k != "name":
+                        items[k] = v
+                deepComponents.append(items)
+        self._glyphVariations.addVariation(dict(sourceName=sourceName, location=location, layerName=layerName, deepComponents = deepComponents), self._axes)
+
+    def removeSource(self, selectedAxisIndex):
+        self._glyphVariations.removeVariation(selectedAxisIndex)
+
     def removeDeepComponents(self, deepComponents:list = []):
         self._deepComponents.removeDeepComponents(deepComponents)
         self._glyphVariations.removeDeepComponents(deepComponents)
@@ -175,7 +271,11 @@ class Glyph(RGlyph):
 
     def _getElements(self):
         if self.selectedSourceAxis:
-            return self._glyphVariations[self.selectedSourceAxis]
+            index = 0
+            for i, x in enumerate(self._glyphVariations):
+                if x.sourceName == self.selectedSourceAxis:
+                    index = i
+            return self._glyphVariations[index].deepComponents
         else:
             return self._deepComponents
 
@@ -183,23 +283,29 @@ class Glyph(RGlyph):
         element = self._getElements()
         if element is None: return
         for index in self.selectedElement:
-            yield element[index]
+            yield element[index].transform
     
-    @compute
+    # @compute
     def setRotationAngleToSelectedElements(self, rotation: int, append: bool = True):
         for selectedElement in self._getSelectedElement():
             if append:
                 selectedElement.rotation += int(rotation)
             else:
                 selectedElement.rotation = -int(rotation)
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
-    @compute
+    # @compute
     def setPositionToSelectedElements(self, position: list):
         for selectedElement in self._getSelectedElement():
             selectedElement.x += position[0]
             selectedElement.y += position[1]
+        # self.previewGlyph = []
+        # self.redrawSelectedElementSource = True
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
-    @compute
+    # @compute
     def setScaleToSelectedElements(self, scale: list):
         x, y = scale
         for selectedElement in self._getSelectedElement():
@@ -216,36 +322,48 @@ class Glyph(RGlyph):
                 x, y = -x, -y
             selectedElement.scalex += x
             selectedElement.scaley += y
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
-    @compute
+    # @compute
     def setTransformationCenterToSelectedElements(self, center):
         tx, ty = center
         for index in self.selectedElement:
-            self._deepComponents[index].rcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
-            self._deepComponents[index].rcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
-            for variations in self._glyphVariations.values():
-                variations[index].rcenterx = int((tx-self._deepComponents[index].x)/self._deepComponents[index].scalex)
-                variations[index].rcentery = int((ty-self._deepComponents[index].y)/self._deepComponents[index].scaley)
+            self._deepComponents[index]["transform"]["tcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
+            self._deepComponents[index]["transform"]["tcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
+            for variation in self._glyphVariations:
+                variation.deepComponents[index]["transform"]["tcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
+                variation.deepComponents[index]["transform"]["tcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
 
     def pointIsInside(self, point, multipleSelection = False):
         px, py = point
-        for index, atomicInstanceGlyph in enumerate(self.preview.axisPreview):
-            atomicInstanceGlyph.selected = False
-            if atomicInstanceGlyph.getTransformedGlyph().pointInside((px, py)):
-                atomicInstanceGlyph.selected = True
+        # preview = self.frozenPreview
+        # if not preview:
+        #     preview = self.preview({})
+        for index, atomicInstanceGlyph in enumerate(self.preview(forceRefresh=False, axisPreview = True)):
+            # atomicInstanceGlyph = interpolation._transformGlyph(*atomicInstanceGlyph)
+            # atomicInstanceGlyph.glyph.selectedContour = False
+            if atomicInstanceGlyph.glyph.pointInside((px, py)):
+                # atomicInstanceGlyph.glyph.selectedContour = True
                 if index not in self.selectedElement:
                     self.selectedElement.append(index)
                 if not multipleSelection: return
 
     def selectionRectTouch(self, x: int, w: int, y: int, h: int):
-        for index, atomicInstanceGlyph in enumerate(self.preview.axisPreview):
+        # preview = self.frozenPreview
+        # if not preview:
+        #     preview = self.preview({})
+        for index, atomicInstanceGlyph in enumerate(self.preview({},forceRefresh=False)):
             inside = False
-            atomicInstanceGlyph.selected = False
-            for c in atomicInstanceGlyph.getTransformedGlyph():
+            # atomicInstanceGlyph = interpolation._transformGlyph(*atomicInstanceGlyph)
+            # atomicInstanceGlyph.glyph.selectedContour = False
+            for c in atomicInstanceGlyph.glyph:
                 for p in c.points:
                     if p.x > x and p.x < w and p.y > y and p.y < h:
                         inside = True
-                        atomicInstanceGlyph.selected = True
+                        # atomicInstanceGlyph.glyph.selectedContour = True
             if inside:
                 if index in self.selectedElement: continue
                 self.selectedElement.append(index)
@@ -253,5 +371,11 @@ class Glyph(RGlyph):
     def getDeepComponentMinMaxValue(self, axisName):
         if not self.selectedElement: return
         selectedAtomicElementName = self._deepComponents[self.selectedElement[0]].name
-        atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
-        return atomicElement.minValue, atomicElement.maxValue
+        for x in self.currentFont[selectedAtomicElementName ]._axes:
+            if x.name == axisName:
+                return x.minValue, x.maxValue
+        # atomicElement = self.currentFont[selectedAtomicElementName ]._glyphVariations[axisName]
+        # return atomicElement.minValue, atomicElement.maxValue
+
+
+

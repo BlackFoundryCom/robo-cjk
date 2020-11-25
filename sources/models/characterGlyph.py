@@ -31,22 +31,32 @@ from models import deepComponent
 
 DeepComponentNamed = component.DeepComponentNamed
 DeepComponents = component.DeepComponents
+Axes = component.Axes
 VariationGlyphs = component.VariationGlyphs
 
 import copy
+from fontTools.varLib.models import VariationModel
 
 # Deprecated keys
-deepComponentsKeyOld = 'robocjk.characterGlyph.deepComponents'
-glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
+# deepComponentsKeyOld = 'robocjk.characterGlyph.deepComponents'
+glyphVariationsKey = 'robocjk.fontVariationGlyphs'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
-variationGlyphsKey = 'robocjk.fontVariationGlyphs'
+axesKey = 'robocjk.axes'
+variationGlyphsKey = 'robocjk.variationGlyphs'
+
+import cProfile, pstats, io
+from pstats import SortKey
+
 
 class CharacterGlyph(Glyph):
+
+    
     def __init__(self, name):
         super().__init__()
         self._deepComponents = DeepComponents()
+        self._axes = Axes()
         self._glyphVariations = VariationGlyphs()
         self.selectedSourceAxis = None
         self.computedDeepComponents = []
@@ -55,15 +65,183 @@ class CharacterGlyph(Glyph):
         self.name = name
         self.type = "characterGlyph"
         self.outlinesPreview = None
-        self.preview = glyphPreview.CharacterGlyphPreview(self)
+        self.previewGlyph = []
+        self.axisPreview = []
+        
+        # self.preview = glyphPreview
+        # self.preview = glyphPreview.CharacterGlyphPreview(self)
 
         # lib = RLib()
         # lib[deepComponentsKey] = copy.deepcopy(self._deepComponents)
         # lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations)
         # self.stackUndo_lib = [lib]
         # self.indexStackUndo_lib = 0
+
         self._setStackUndo()
         self.save()
+
+
+    def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
+        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.getLocation().items()])
+        # print(locationKey)
+        #### 3 CONDITIONS DE DESSIN POSSIBLE EN CAS D'ÉLEMENT SELECTIONNÉ ####
+        redrawAndTransformAll = False
+        redrawAndTransformSelected = False
+        onlyTransformSelected = False
+
+        if self.selectedElement and not self.reinterpolate:
+            onlyTransformSelected = True
+        elif self.selectedElement and self.reinterpolate and not axisPreview:
+            redrawAndTransformAll = True
+        elif self.selectedElement:
+            redrawAndTransformSelected = True
+        else:
+            redrawAndTransformAll = True
+        ############################################################
+
+
+        #### S'IL N'Y A PAS DE SELECTION, RECHERCHE D'UN CACHE ####
+        # previewLocationsStore = False
+        # if locationKey in self.previewLocationsStore:
+        #     previewLocationsStore = self.previewLocationsStore[locationKey]
+
+        previewLocationsStore = self.previewLocationsStore.get(locationKey, False)
+        # print("previewLocationsStore", previewLocationsStore, '\n')
+        # print("redrawSelectedElementSource", self.redrawSelectedElementSource, '\n')
+        if axisPreview:
+            redrawSeletedElement = self.redrawSelectedElementSource
+        else:
+            redrawSeletedElement = self.redrawSelectedElementPreview
+        if not redrawSeletedElement:
+            if previewLocationsStore:
+                for p in previewLocationsStore:
+                    yield p
+                return
+            if axisPreview and self.axisPreview:
+                # print('DC has axisPreview', self.axisPreview)
+                for e in self.axisPreview: yield e
+                return
+            elif not forceRefresh and self.previewGlyph and not axisPreview: 
+                # print('DC has previewGlyph', self.previewGlyph)
+                for e in self.previewGlyph: yield e
+                return
+        ############################################################
+
+
+        #### S'IL N'Y A UNE SELECTION MAIS PAS D'INSTRUCTION DE REDESSIN, RECHERCHE D'UN CACHE ####
+        if not redrawAndTransformAll and not redrawAndTransformSelected and not onlyTransformSelected:
+            if previewLocationsStore:
+                for p in previewLocationsStore:
+                    yield p
+                return
+            ############################################################
+        else:
+            #### IL Y A DES INSTRUCTION DE REDESSIN ####
+            if axisPreview:
+                preview = self.axisPreview
+            else:
+                preview = self.previewGlyph
+
+            """ Dans cette condition on ne ce soucis pas du cache, on redessine tout"""
+            if redrawAndTransformAll:
+                if axisPreview:
+                    preview = self.axisPreview = []
+                else:
+                    preview = self.previewGlyph = []
+            else:
+                """Dans cette condition on récupère ce qu'il y a dans le cache et on travaillera 
+                dessus après, soit pour modifier les instructions de transformation de l'element selectionné
+                soit pour recalculer l'element et ses instructions de transformation. Les autres elements du cache ne seront
+                pas recalculé"""
+                if previewLocationsStore:
+                    if axisPreview:
+                        preview = self.axisPreview = previewLocationsStore
+                    else:
+                        preview = self.previewGlyph = previewLocationsStore     
+
+        if not position:
+            position = self.getLocation()
+
+        position =self.normalizedValueToMinMaxValue(position, self)
+
+
+        pr = cProfile.Profile()
+        pr.enable()
+
+        locations = [{}]
+        locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations if x["on"]])
+        model = VariationModel(locations)
+
+        if redrawAndTransformAll:
+            masterDeepComponents = self._deepComponents
+            axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
+        else:
+            masterDeepComponents = [x for i, x in enumerate(self._deepComponents) if i in self.selectedElement]
+            axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
+        
+        result = []
+        deltasList = []
+        for i, deepComponent in enumerate(masterDeepComponents):
+            variations = []
+            for gv in axesDeepComponents:
+                variations.append(gv[i])
+            deltas = model.getDeltas([deepComponent, *variations])
+            # result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
+            result.append(model.interpolateFromDeltas(position, deltas))
+            deltasList.append(deltas)
+
+        
+        if font is None:
+            font = self.getParent()
+        for i, dc in enumerate(result):
+            name = dc.get("name")
+            if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
+            g = font[name]
+            
+            if onlyTransformSelected:
+                preview[self.selectedElement[i]].transformation = dc.get("transform")
+            else:
+                resultGlyph = RGlyph()
+                g = g.preview(position=dc.get('coord'), deltasStore=deltasList[i], font=font, forceRefresh=True)
+                for c in g:
+                    c = c.glyph
+                    c.draw(resultGlyph.getPen())
+                if redrawAndTransformSelected:
+                    preview[self.selectedElement[i]].resultGlyph = resultGlyph   
+                    preview[self.selectedElement[i]].transformation = dc.get("transform")
+                else:
+                    preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
+
+        if len(self._RGlyph) and not self.selectedElement:
+            layerGlyphs = []
+            layerNames = self._axes.names
+            for layerName in layerNames:
+                try:
+                    g = font._RFont.getLayer(layerName)[self.name]
+                except Exception as e: 
+                    print(e)
+                    continue
+                layerGlyphs.append(g)
+            if len(layerGlyphs):
+                resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
+                preview.append(self.ResultGlyph(resultGlyph))
+
+        self.previewLocationsStore[','.join([k+':'+str(v) for k,v in position.items()])] = preview
+
+        if axisPreview:
+            self.redrawSelectedElementSource = False
+        else:
+            self.redrawSelectedElementPreview = False
+
+        for resultGlyph in preview:
+            yield resultGlyph
+
+        pr.disable()
+        s = io.StringIO()
+        sortby = SortKey.CUMULATIVE
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        # print(s.getvalue())
 
     @property
     def foreground(self):
@@ -81,56 +259,91 @@ class CharacterGlyph(Glyph):
         try:
             if lib:
                 if variationGlyphsKey not in lib.keys():
-                    deepComponents = lib[deepComponentsKeyOld]
+                    deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[glyphVariationsKey]
                 else:
                     deepComponents = lib[deepComponentsKey]
                     variationGlyphs = lib[variationGlyphsKey]
+                hasAxisKey = axesKey in lib.keys()
+                axes = lib.get(axesKey)
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
-                    deepComponents = self._RGlyph.lib[deepComponentsKeyOld]
+                    deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
                 else:
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
-
-            self._deepComponents = DeepComponents(deepComponents)      
-            self._glyphVariations = VariationGlyphs(variationGlyphs)
-        except:
+                hasAxisKey = axesKey in self._RGlyph.lib.keys()
+                axes = self._RGlyph.lib.get(axesKey)
+            if hasAxisKey:
+                self._deepComponents = DeepComponents(deepComponents)
+                self._axes = Axes(axes)
+                self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes)
+            else:
+                self._deepComponents = DeepComponents()
+                self._deepComponents._init_with_old_format(deepComponents)
+                self._axes = Axes()      
+                self._axes._init_with_old_format(variationGlyphs)
+                self._glyphVariations = VariationGlyphs()
+                self._glyphVariations._init_with_old_format(variationGlyphs, self._axes)
+        except Exception as e:
             self._deepComponents = DeepComponents()
+            self._axes = Axes()   
             self._glyphVariations = VariationGlyphs()
 
-    def duplicateSelectedElements(self):
-        for selectedElement in self._getSelectedElement():
+    def duplicateSelectedElements(self): # TODO
+        # for selectedElement in self._getSelectedElement():
+        element = self._getElements()
+        if element is None: return
+        for index in self.selectedElement:
+            selectedElement = element[index]
             if selectedElement.get("name"):
                 self.addDeepComponentNamed(selectedElement["name"], copy.deepcopy(selectedElement))
-
+                # self.selectedElement = [len(self._deepComponents)-1]
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
+        self.selectedElement = []
+            
     def updateDeepComponentCoord(self, nameAxis, value):
-        try:
-            if self.selectedSourceAxis is not None:
-                self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
-            else:
-                self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
-        except: pass
+        if self.selectedSourceAxis:
+            index = 0
+            for i, x in enumerate(self._glyphVariations):
+                if x.sourceName == self.selectedSourceAxis:
+                    index = i
+            self._glyphVariations[i].deepComponents[self.selectedElement[0]].coord[nameAxis] = value
+            # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
+        else:
+            self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
 
     def removeVariationAxis(self, name):
-        self._glyphVariations.removeAxis(name)
+        index = 0
+        for i, x in enumerate(self._axes):
+            if x.name == name:
+                index = i
+        self._glyphVariations.removeVariation(index)
+        self._axes.removeAxis(index)
 
     @glyphAddRemoveUndo
     def addDeepComponentNamed(self, deepComponentName, items = False):
         if not items:
             d = DeepComponentNamed(deepComponentName)
-            for axis in self.currentFont[deepComponentName]._glyphVariations.axes:
-                d.coord.add(axis, self.currentFont[deepComponentName]._glyphVariations[axis].minValue)
+            dcglyph = self.currentFont[deepComponentName]
+            for i, axis in enumerate(dcglyph._axes):
+                value = dcglyph._axes[i].minValue
+                d.coord.add(axis.name, value)
         else:
             d = items
             d.name = deepComponentName
 
         self._deepComponents.addDeepComponent(d)
-        self._glyphVariations.addDeepComponent(d)
+        if self._axes:
+            self._glyphVariations.addDeepComponent(d)
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
+        self.selectedElement = []
 
-        self.preview.computeDeepComponentsPreview(update = False)
-        self.preview.computeDeepComponents(update = False)
+        # self.preview.computeDeepComponentsPreview(update = False)
+        # self.preview.computeDeepComponents(update = False)
 
         # font = self.getParent()
         # glyph = font[self.name]
@@ -138,13 +351,17 @@ class CharacterGlyph(Glyph):
 
 
     def addCharacterGlyphNamedVariationToGlyph(self, name):
-        if name in self._glyphVariations.axes: return
-        self._glyphVariations.addAxis(name, self._deepComponents)
+        if name in self._axes: return
+        self._axes.addAxis({"name":name, "minValue":0, "maxValue":1})
+        self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{name:1}}, self._axes)
 
     @glyphAddRemoveUndo
     def removeDeepComponentAtIndexToGlyph(self):
         if not self.selectedElement: return
         self.removeDeepComponents(self.selectedElement)
+        self.selectedElement = []
+        self.redrawSelectedElementSource = True
+        self.redrawSelectedElementPreview = True
         self.selectedElement = []
 
     def save(self):
@@ -152,19 +369,20 @@ class CharacterGlyph(Glyph):
         self.lib.clear()
         lib = RLib()
 
-        for axis, variations in self._glyphVariations.items():
-            variations.layerName = axis
-            try:
-                axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
-                variations.writeOutlines(axisGlyph)
-                variations.setAxisWidth(axisGlyph.width)
-            except:
-                pass
+        # for axis, variations in self._glyphVariations.items():
+        #     variations.layerName = axis
+        #     try:
+        #         axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
+        #         variations.writeOutlines(axisGlyph)
+        #         variations.setAxisWidth(axisGlyph.width)
+        #     except:
+        #         pass
 
         # lib[deepComponentsKeyOld] = self._deepComponents.getList()
-        # lib[glyphVariationsKey] = self._glyphVariations.getDict()
+        # lib[glyphVariationsKey] = self._glyphVariations.getList()
 
         lib[deepComponentsKey] = self._deepComponents.getList()
-        lib[variationGlyphsKey] = self._glyphVariations.getDict()
+        lib[axesKey] = self._axes.getList()
+        lib[variationGlyphsKey] = self._glyphVariations.getList()
         self.lib.update(lib)
         self.markColor = color

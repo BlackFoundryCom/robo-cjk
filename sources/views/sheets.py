@@ -25,6 +25,7 @@ from utils import files, interpolation
 from AppKit import NumberFormatter, NSColor
 from mojo.UI import PostBannerNotification
 from mojo.extensions import getExtensionDefault, setExtensionDefault
+from mojo.UI import SetCurrentLayerByName
 
 import json, os
 blackrobocjk_locker = "com.black-foundry.blackrobocjk_locker"
@@ -91,10 +92,13 @@ class SelectLayerSheet():
     def addLayer(self, sender):
         newAxisName = self.sheet.newAxisNameEditText.get()
         newLayerName = self.sheet.layerList.get()[self.sheet.layerList.getSelection()[0]]
-        if newAxisName in self.RCJKI.currentGlyph._glyphVariations.axes:
+
+        currentGlyph = self.RCJKI.currentFont.getGlyphFromLayer(self.RCJKI.currentGlyph.name, "foreground")
+        if newAxisName in currentGlyph._axes.names:
             PostBannerNotification('Impossible', "Layer name already exist")
             return
-        self.RCJKI.currentGlyph.addGlyphVariation(newAxisName, newLayerName)
+        SetCurrentLayerByName("foreground")
+        currentGlyph.addGlyphVariation(newAxisName, newLayerName)
         self.RCJKI.updateListInterface()
         self.RCJKI.updateDeepComponent(update = False)
         self.sheet.close()
@@ -182,6 +186,7 @@ class SelectAtomicElementSheet():
         if self.atomicElementName is None: return
         self.RCJKI.currentGlyph.addAtomicElementNamed(self.atomicElementName)
         self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.glyphInspectorWindow.deepComponentListItem.setList()
 
     def draw(self):
         if self.previewGlyph is None: return
@@ -297,7 +302,7 @@ class SelectDeepComponentSheet():
 
     def getDeepComponentPreview(self, deepComponentName):
         self.glyph = self.RCJKI.currentFont[deepComponentName]
-        self.glyph.preview.computeDeepComponents(update = False)
+        # self.glyph.preview.computeDeepComponents(update = False)
         self.parent.sheet.canvasPreview.update()
     
     def closeSheet(self, sender):
@@ -306,6 +311,7 @@ class SelectDeepComponentSheet():
     def addDeepComponentList(self, sender):
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
         self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.glyphInspectorWindow.deepComponentListItem.setList()
 
     def draw(self):
         if self.glyph is None: return
@@ -313,8 +319,11 @@ class SelectDeepComponentSheet():
         mjdt.translate(75, 35)
         mjdt.scale(.15)
         mjdt.fill(0, 0, 0, 1)
-        for atomicinstance in self.glyph.preview.axisPreview:
-            mjdt.drawGlyph(atomicinstance.getTransformedGlyph()) 
+        # # loc = {}
+        # # if self.glyph.selectedSourceAxis:
+        #     loc = {self.glyph.selectedSourceAxis:1}
+        for atomicinstance in self.glyph.preview(forceRefresh=False):
+            mjdt.drawGlyph(atomicinstance.glyph) 
         mjdt.restore()
 
 numberFormatter = NumberFormatter()
@@ -323,7 +332,7 @@ class FontInfosSheet():
 
     def __init__(self, RCJKI, parentWindow, posSize):
         self.RCJKI = RCJKI
-        if not self.RCJKI.get("currentFont"): return
+        # if not self.RCJKI.get("currentFont"): return
         fontvariations = self.RCJKI.currentFont.fontVariations
         if 'robocjk.defaultGlyphWidth' not in self.RCJKI.currentFont._fullRFont.lib:
             self.RCJKI.currentFont._fullRFont.lib['robocjk.defaultGlyphWidth'] = 1000
@@ -494,7 +503,9 @@ class NewCharacterGlyph:
         self.deepComponentList = []
         for n in self.RCJKI.currentFont.deepComponentSet:
             if not n.startswith("DC"): continue
-            if not int(n.split('_')[1], 16) in range(0x110000): continue
+            try:
+                int(n.split('_')[1], 16) in range(0x110000)
+            except:continue
             cell = dict(sel = 0, char = chr(int(n.split('_')[1], 16)))
             if cell not in self.deepComponentList:
                 self.deepComponentList.append(cell)
@@ -969,7 +980,7 @@ class LockController:
         mjdt.scale(s, s)
         mjdt.translate(350, 350)
         if glyph.type != "atomicElement":
-            glyph.preview.computeDeepComponents(update = False)
+            # glyph.preview.computeDeepComponents(update = False)
             self.RCJKI.drawer.drawAxisPreview(
                 glyph,
                 (0, 0, 0, 1),

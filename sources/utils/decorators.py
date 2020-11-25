@@ -73,9 +73,9 @@ glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
 
 def _getKeys(glyph):
     if glyph.type == "characterGlyph":
-        return 'robocjk.deepComponents', 'robocjk.fontVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
     else:
-        return 'robocjk.deepComponents', 'robocjk.glyphVariationGlyphs'
+        return 'robocjk.deepComponents', 'robocjk.axes', 'robocjk.variationGlyphs'
 
 def glyphUndo(func):
     def wrapper(self, *args, **kwargs):
@@ -84,9 +84,10 @@ def glyphUndo(func):
             if self.type in ["characterGlyph", "deepComponent"]:
                 if not (modifiers[4] and character == 'z') and not (modifiers[0] and modifiers[4] and character == 'Z'):
                     lib = RLib()
-                    deepComponentsKey, glyphVariationsKey = _getKeys(self)
+                    deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self)
                     lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
-                    lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getDict())
+                    lib[axesKey] = copy.deepcopy(self._axes.getList())
+                    lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getList())
                     self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                     self.stackUndo_lib.append(lib)
                     self.indexStackUndo_lib += 1
@@ -102,9 +103,10 @@ def glyphAddRemoveUndo(func):
         try:
             if self.type in ["characterGlyph", "deepComponent"]:
                 lib = RLib()
-                deepComponentsKey, glyphVariationsKey = _getKeys(self)
+                deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self)
                 lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
-                lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getDict())
+                lib[axesKey] = copy.deepcopy(self._axes.getList())
+                lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getList())
                 self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                 self.stackUndo_lib.append(lib)
                 self.indexStackUndo_lib += 1
@@ -120,9 +122,10 @@ def glyphTransformUndo(func):
         try:
             if self.RCJKI.currentGlyph.type in ["characterGlyph", "deepComponent"]:
                 lib = RLib()
-                deepComponentsKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
+                deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
                 lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
-                lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getDict())
+                lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList())
+                lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
                 self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
                 self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
                 self.RCJKI.currentGlyph.indexStackUndo_lib += 1

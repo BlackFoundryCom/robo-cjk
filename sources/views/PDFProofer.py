@@ -32,7 +32,7 @@ except:
     pass
 import copy
 from imp import reload
-from utils import files
+from utils import files, interpolation
 # reload(files)
 numberFormatter = NumberFormatter()
 
@@ -134,13 +134,16 @@ class UfoText(Textbox):
                 rglyph = self.RCJKI.currentFont[charName] 
                 glyph = RGlyph()
                 if not self.sourceList:
-                    rglyph.preview.computeDeepComponents(update = False)
-                    for atomicInstance in rglyph.preview.axisPreview:
-                        for c in atomicInstance.getTransformedGlyph():
-                            glyph.appendContour(c)
+                    # rglyph.preview.computeDeepComponents(update = False)
+                    for atomicInstance in rglyph.preview(self.sourceList):
+                        atomicInstance = atomicInstance.glyph
+                        atomicInstance.draw(glyph.getPen())
+                        # for c in atomicInstance.getTransformedGlyph():
+                        #     glyph.appendContour(c)
                 else:
-                    rglyph.preview.computeDeepComponentsPreview(self.sourceList,update = False)
-                    glyph = rglyph.preview.variationPreview
+                    for atomicInstance in rglyph.preview():
+                        atomicInstance = atomicInstance.glyph
+                        atomicInstance.draw(glyph.getPen())
 
                 yield (x, y), glyph
                 
@@ -148,13 +151,16 @@ class UfoText(Textbox):
                     g = self.RCJKI.currentFont[c.baseGlyph]
                     glyph = RGlyph()
                     if not self.sourceList:
-                        g.preview.computeDeepComponents(update = False)
-                        for atomicInstance in g.preview.axisPreview:
-                            for c in atomicInstance.getTransformedGlyph():
-                                glyph.appendContour(c)
+                        # g.preview.computeDeepComponents(update = False)
+                        for atomicInstance in g.preview(self.sourceList):
+                            atomicInstance = atomicInstance.glyph
+                            atomicInstance.draw(glyph.getPen())
+                            # for c in atomicInstance.getTransformedGlyph():
+                            #     glyph.appendContour(c)
                     else:
-                        g.preview.computeDeepComponentsPreview(self.sourceList,update = False)
-                        glyph = g.preview.variationPreview
+                        for atomicInstance in g.preview():
+                            atomicInstance = atomicInstance.glyph
+                            atomicInstance.draw(glyph.getPen())
 
                     yield (x, y), glyph
                     
@@ -947,12 +953,15 @@ class NewPDF:
                 try:
                     for variation in self.RCJKI.currentFont.fontVariations:
                         glyph1 = glyph
-                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 1)])
-                        # glyph1.preview.variationPreview.removeOverlap()
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
-                        glyph1.preview.variationPreview.markColor = glyph1.markColor
-                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
+                        resultGlyph = []
+                        for c in glyph1.preview({variation:1}):
+                            c = c.glyph
+                            c.markColor = glyph1.markColor
+                            c.name = glyph1.name
+                            resultGlyph.append(c)
+                        glyphsVariations[variation].append(resultGlyph)
 
                         drawDesignFrame()
                         if glyph1.markColor:
@@ -967,16 +976,20 @@ class NewPDF:
                         db.fill(1, 1, 1, 1)
                         db.stroke(0, 0, 0, 1)
                         db.strokeWidth(1)
-                        
-                        db.drawGlyph(glyph1.preview.variationPreview)
-                        glyph1.preview.computeDeepComponentsPreview([dict(Axis = variation, PreviewValue = 0)])
-                        # glyph1.preview.variationPreview.removeOverlap()
+                        for c in resultGlyph:
+                            db.drawGlyph(c)
                         variation = "normal"
                         if variation not in glyphsVariations.keys():
                             glyphsVariations[variation] = []
-                        glyph1.preview.variationPreview.markColor = glyph1.markColor
-                        glyphsVariations[variation].append(glyph1.preview.variationPreview)
-                        db.drawGlyph(glyph1.preview.variationPreview)
+                        resultGlyph = []
+                        for c in glyph1.preview({variation:0}):
+                            c = c.glyph
+                            c.markColor = glyph1.markColor
+                            c.name = glyph1.name
+                            resultGlyph.append(c)
+                        glyphsVariations[variation].append(resultGlyph)
+                        for c in resultGlyph:
+                            db.drawGlyph(c)
 
                         if (i+1)%4:
                             db.translate(1000, 0)
@@ -1007,20 +1020,22 @@ class NewPDF:
                 db.translate(tx, ty)
                 db.fontSize(60)
 
+                print(weight)
                 for i, glyph in enumerate(weight):
                     drawDesignFrame()
-                    if glyph.markColor:
-                        db.fill(*glyph.markColor)
+                    if glyph[0].markColor:
+                        db.fill(*glyph[0].markColor)
                     else:
                         db.fill(*INPROGRESS)
                     db.rect(0, 900, 250, 100)
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)                    
-                    db.textBox(glyph.name, (0, 900, 1000, 100), align = "center")
+                    db.textBox(glyph[0].name, (0, 900, 1000, 100), align = "center")
 
                     db.fill(0, 0, 0, 1)
                     db.stroke(None)
-                    db.drawGlyph(glyph)
+                    for c in glyph:
+                        db.drawGlyph(c)
                     if (i+1)%4 :
                         db.translate(1000, 0)
                     else:
@@ -1119,7 +1134,7 @@ class DesignFrameDrawer:
         glyph.round()
         glyph.moveBy((0, ty))
 
-        self.elements.append((glyph, (0, .75, 1, .1), 'fill'))
+        self.elements.append((glyph, (0.4, .75, 1, .1), 'fill'))
         # db.drawGlyph(glyph)
 
     def _makeHorSecLine(self, 
@@ -1138,7 +1153,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeVerSecLine(self, 
@@ -1157,7 +1172,7 @@ class DesignFrameDrawer:
         pen.closePath()
         glyph.round()
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, .3), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
         # db.drawGlyph(glyph)
 
     def _makeHorGrid(self,
@@ -1177,7 +1192,7 @@ class DesignFrameDrawer:
             dist += h / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
 
     def _makeVerGrid(self,
                     glyph: RGlyph, 
@@ -1196,7 +1211,7 @@ class DesignFrameDrawer:
             dist += w / step
         # db.drawGlyph(glyph)
         glyph.moveBy((0, ty))
-        self.elements.append((glyph, (.65, 0.16, .39, 1), 'stroke'))
+        self.elements.append((glyph, (.80, 0.56, .66, 1), 'stroke'))
 
 
     def _findProximity(self, 
