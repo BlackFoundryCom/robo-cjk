@@ -1696,7 +1696,7 @@ class TransformationGroup(Group):
         # loc = {}
         # if glyph.selectedSourceAxis:
         #     loc = {glyph.selectedSourceAxis:1}
-        preview = [g.glyph for x in glyph.preview(forceRefresh=False)]
+        preview = [x.glyph for x in glyph.preview(forceRefresh=False)]
         # preview = [g.glyph for g in glyph.previewGlyph]
         for i, x in zip(selection, glyph._getSelectedElement()):
             elements.append(SelectedElements(x, preview[i]))
@@ -1711,6 +1711,8 @@ class TransformationGroup(Group):
             diffy = [0, target - element.glyph.box[pos]][pos%2]
             element.settings.x += diffx
             element.settings.y += diffy
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
 
 class Inspector:
 
