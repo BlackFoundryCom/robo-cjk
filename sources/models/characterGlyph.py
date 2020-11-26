@@ -212,7 +212,7 @@ class CharacterGlyph(Glyph):
                 else:
                     preview.append(self.ResultGlyph(resultGlyph, dc.get("transform")))
 
-        if len(self._RGlyph) and not self.selectedElement and not axisPreview:
+        if len(self._RGlyph) and not self.selectedElement:
             layerGlyphs = []
             layerNames = self._axes.names
             for layerName in layerNames:
