@@ -164,10 +164,10 @@ class Drawer():
                 mjdt.restore()
                 mjdt.fill(0, .8, .8, .5)
 
-            for c in atomicInstance:
-                if c.clockwise:
-                    mjdt.stroke(1, 0, 0, 1)
-                    mjdt.strokeWidth(2*scale)
+            # for c in atomicInstance:
+            #     if c.clockwise:
+            #         mjdt.stroke(1, 0, 0, 1)
+            #         mjdt.strokeWidth(2*scale)
             mjdt.save()
             # mjdt.drawGlyph(atomicInstance.getTransformedGlyph(round = self.RCJKI.roundToGrid)) 
             mjdt.drawGlyph(atomicInstance) 
