@@ -64,7 +64,7 @@ from views import PDFProofer
 from views import accordionViews
 
 import os
-from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow
+from mojo.UI import UpdateCurrentGlyphView, CurrentGlyphWindow, SetCurrentLayerByName
 import mojo.drawingTools as mjdt
 from mojo.roboFont import *
 from mojo.extensions import getExtensionDefault, setExtensionDefault
@@ -643,6 +643,9 @@ class RoboCJKController(object):
             self.doRedo()
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
+            if len(self.currentGlyph) and self.currentGlyph.type != "deepComponent":
+                SetCurrentLayerByName("foreground")
+
             self.updateDeepComponent()
             # self.currentViewSourceList.glyphVariationAxesList.setSelection([])
             self.glyphInspectorWindow.sourcesItem.sourcesList.setSelection([])
