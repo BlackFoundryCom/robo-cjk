@@ -520,7 +520,8 @@ class RoboCJKController(object):
                     data = x.deepComponents
                     break
         l = []
-        if len(self.currentGlyph.selectedElement) == 1:
+
+        if len(self.currentGlyph.selectedElement) == 1 and data:
             i = self.currentGlyph.selectedElement[0]
             dc = data[i]
             dc_name = self.currentGlyph._deepComponents[i].name
@@ -534,7 +535,7 @@ class RoboCJKController(object):
         l = self.sortDeepComponentAxesList(l)
         element.deepComponentAxesList.setSelection([])
         element.deepComponentAxesList.set(l)
-        if hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):
+        if data and hasattr(data[self.currentGlyph.selectedElement[0]], 'name'):
                 element.deepComponentName.set(data[self.currentGlyph.selectedElement[0]].name)
         self.sliderValue = None
 
