@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from mojo.UI import AccordionView, UpdateCurrentGlyphView
+from mojo.UI import AccordionView, UpdateCurrentGlyphView, SetCurrentLayerByName
 from vanilla import *
 from vanilla.dialogs import askYesNo
 from mojo.roboFont import *
@@ -1197,6 +1197,12 @@ class SourcesGroup(Group):
         self.RCJKI.sliderValue = None
         self.RCJKI.sliderName = None
         self.RCJKI.axisPreview = []
+
+        if len(self.RCJKI.currentGlyph) and self.RCJKI.currentGlyph.type != "deepComponent":
+            layerName = self.RCJKI.currentGlyph.selectedSourceAxis
+            if layerName in [l.name for l in self.RCJKI.currentFont._RFont.layers]:
+                SetCurrentLayerByName(layerName)
+
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.updateDeepComponent(update = False)
