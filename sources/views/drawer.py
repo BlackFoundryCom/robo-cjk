@@ -145,7 +145,7 @@ class Drawer():
         # for i, atomicInstance in enumerate(glyph.preview()):
         for i, atomicInstance in enumerate(glyph.preview(forceRefresh=False, axisPreview=True)):
         # for i, atomicInstance in enumerate(glyph.previewGlyph):
-            transformIntance = atomicInstance.transformation
+            transformIntance = atomicInstance._transformation
             atomicInstance = atomicInstance.glyph
 
             mjdt.fill(*color)

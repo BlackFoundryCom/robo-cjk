@@ -78,10 +78,15 @@ class Glyph(RGlyph):
 
         def __init__(self, resultGlyph, transformation={}):
             self.resultGlyph = resultGlyph
-            self.transformation = transformation
-            if not self.transformation:
-                self.transformation = {"x":0, "y":0, "tcenterx":0, "tcentery":0, "scalex":1, "scaley":1, "rotation":0}
+            self._transformation = transformation
 
+        @property
+        def transformation(self):
+            return self._transformation
+
+        @transformation.setter
+        def transformation(self, t):
+            self._transformation = t
 
         @property
         def glyph(self):
