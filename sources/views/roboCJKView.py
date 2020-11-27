@@ -1293,17 +1293,19 @@ class RoboCJKView(BaseWindowController):
             return False
         glyphType = glyph.type
         GlyphsthatUse = set()
-        if not self.RCJKI.currentFont.mysqlFont:
-            if glyphType != 'characterGlyph':
-                for name in glyphset:
-                    glyph = self.RCJKI.currentFont.get(name)
-                    if glyphType == 'atomicElement':
-                        d =  glyph._deepComponents
-                    elif glyphType == 'deepComponent':
-                        d =  glyph._deepComponents
-                    for ae in d:
-                        if ae["name"] == glyphName:
-                            GlyphsthatUse.add(name)
+        if (glyph.type == "atomicElement" and len(glyph)) or (glyph.type == "deepComponent" and glyph._deepComponents):
+            if not self.RCJKI.currentFont.mysqlFont:
+                if glyphType != 'characterGlyph':
+                    for name in glyphset:
+                        glyph = self.RCJKI.currentFont.get(name)
+                        if glyphType == 'atomicElement':
+                            d =  glyph._deepComponents
+                        elif glyphType == 'deepComponent':
+                            d =  glyph._deepComponents
+                        for ae in d:
+                            if ae["name"] == glyphName:
+                                GlyphsthatUse.add(name)
+                                break
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
             answer = AskYesNoCancel(
@@ -1338,7 +1340,7 @@ class RoboCJKView(BaseWindowController):
         return True
 
     def removeAtomicElementCallback(self, sender):
-        remove = self.removeGlyph(self.w.atomicElement, self.RCJKI.currentFont.deepComponentSet, "deepComponent")
+        remove = self.removeGlyph(self.w.atomicElement, self.RCJKI.currentFont.staticDeepComponentSet(), "deepComponent")
         if remove:
             self.w.atomicElement.setSelection([])
             self.w.atomicElement.set(self.currentFont.atomicElementSet)
@@ -1347,7 +1349,13 @@ class RoboCJKView(BaseWindowController):
             self.w.lockerInfoTextBox.set("")
 
     def removeDeepComponentCallback(self, sender):
-        remove = self.removeGlyph(self.w.deepComponent, self.RCJKI.currentFont.characterGlyphSet, "characterGlyph")
+        dcName = self.w.deepComponent[self.w.deepComponent.getSelection()[0]]
+        try:
+            char = chr(int(dcName.split("_")[1], 16))
+            glyphset = [x for x in set(["uni%s"%hex(ord(y))[2:].upper() for y in self.RCJKI.currentFont.deepComponents2Chars[char]])&self.RCJKI.currentFont.staticCharacterGlyphSet()]
+        except:
+            glyphset = self.RCJKI.currentFont.staticCharacterGlyphSet()
+        remove = self.removeGlyph(self.w.deepComponent, glyphset, "characterGlyph")
         if remove:
             self.w.deepComponent.setSelection([])
             self.w.deepComponent.set(self.currentFont.deepComponentSet)
