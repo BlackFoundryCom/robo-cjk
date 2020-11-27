@@ -130,27 +130,35 @@ class Font():
         l3 = staticCharacterGlyphSet[thirdl*2:]
         print(len(staticCharacterGlyphSet), len(l1), len(l2), len(l3), len(l1)+len(l2)+len(l3))
         self.queue = queue.Queue()
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue, "atomicElement"), daemon=True).start()
-        self.queue.put(self.staticAtomicElementSet())
+        threading.Thread(target=self.queueGetGlyphsAEDC, args = (self.queue), daemon=True).start()
+        self.queue.put([(self.staticAtomicElementSet(), "atomicElement"), (self.staticDeepComponentSet(), "deepComponent")])
 
-        self.queue2 = queue.Queue()
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue2, "deepComponent"), daemon=True).start()
-        self.queue2.put(self.staticDeepComponentSet())
+        # self.queue2 = queue.Queue()
+        # threading.Thread(target=self.queueGetGlyphsAEDC, args = (self.queue2), daemon=True).start()
+        # self.queue2.put((self.staticDeepComponentSet(), "deepComponent"))
 
         self.queue3 = queue.Queue()
         threading.Thread(target=self.queueGetGlyphs, args = (self.queue3, "characterGlyph"), daemon=True).start()
-        self.queue3.put(l1)
+        self.queue3.put(self.staticCharacterGlyphSet())
 
-        self.queue4 = queue.Queue()
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue4, "characterGlyph"), daemon=True).start()
-        self.queue4.put(l2)
+        # self.queue4 = queue.Queue()
+        # threading.Thread(target=self.queueGetGlyphs, args = (self.queue4, "characterGlyph"), daemon=True).start()
+        # self.queue4.put(l2)
 
-        self.queue5 = queue.Queue()
-        threading.Thread(target=self.queueGetGlyphs, args = (self.queue5, "characterGlyph"), daemon=True).start()
-        self.queue5.put(l3)
+        # self.queue5 = queue.Queue()
+        # threading.Thread(target=self.queueGetGlyphs, args = (self.queue5, "characterGlyph"), daemon=True).start()
+        # self.queue5.put(l3)
 
         self.createLayersFromVariationAxis()
-        self.save()
+        # self.save()
+
+    def queueGetGlyphsAEDC(self, queue):
+        glyphsets = queue.get()
+        for item in glyphsets:
+            glyphset, item_type = item
+            for name in glyphset:
+                self.getGlyph(name, type = item_type, font = self._fullRFont)
+        queue.task_done()
 
     def queueGetGlyphs(self, queue, item_type):
         glyphset = queue.get()
