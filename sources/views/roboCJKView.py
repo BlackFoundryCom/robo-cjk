@@ -1349,7 +1349,13 @@ class RoboCJKView(BaseWindowController):
             self.w.lockerInfoTextBox.set("")
 
     def removeDeepComponentCallback(self, sender):
-        remove = self.removeGlyph(self.w.deepComponent, self.RCJKI.currentFont.staticCharacterGlyphSet(), "characterGlyph")
+        dcName = self.w.deepComponent[self.w.deepComponent.getSelection()[0]]
+        try:
+            char = chr(int(dcName.split("_")[1], 16))
+            glyphset = [x for x in set(["uni%s"%hex(ord(y))[2:].upper() for y in self.RCJKI.currentFont.deepComponents2Chars[char]])&self.RCJKI.currentFont.staticCharacterGlyphSet()]
+        except:
+            glyphset = self.RCJKI.currentFont.staticCharacterGlyphSet()
+        remove = self.removeGlyph(self.w.deepComponent, glyphset, "characterGlyph")
         if remove:
             self.w.deepComponent.setSelection([])
             self.w.deepComponent.set(self.currentFont.deepComponentSet)
