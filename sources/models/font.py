@@ -43,6 +43,7 @@ import threading
 import queue
 
 from vanilla.dialogs import message
+from PyObjCTools.AppHelper import callAfter
 
 # class glyphsTypes:
 
@@ -84,13 +85,18 @@ class Font():
         self._deepComponentSet = []
         self._characterGlyphSet = []
 
+    def getLocker(self, args):
+        self.locker = locker.Locker(*args)
+
     def _init_for_git(self, fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker, robocjkVersion):
         self.admin = False
         if gitHostLockerPassword:
             self.admin = True
         self.fontPath = fontPath
-        
-        self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
+
+
+        # self.locker = locker.Locker(fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker)
+        callAfter(self.getLocker, (fontPath, gitUserName, gitPassword, gitHostLocker, gitHostLockerPassword, privateLocker))
         name = os.path.split(fontPath)[1].split('.')[0]
         self.fontName = name
         self._RFont = NewFont(
@@ -100,7 +106,6 @@ class Font():
             )
         fontFilePath = '{}.ufo'.format(os.path.join(fontPath, name))
         self._RFont.save(fontFilePath)
-
         fontFilePath = '{}.ufo'.format(os.path.join(fontPath, "%sfull"%name))
         self._fullRFont = NewFont(
             familyName="%s-full"%self.fontName, 
@@ -112,7 +117,6 @@ class Font():
         self._glyphs = {}
         self._fullGlyphs = {}
         self.fontVariations = []
-
         if 'fontLib.json' in os.listdir(self.fontPath):
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, 'r') as file:
@@ -123,16 +127,15 @@ class Font():
 
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
 
-        staticCharacterGlyphSet = list(self.staticCharacterGlyphSet())
-        thirdl = len(staticCharacterGlyphSet)//3
-        l1 = staticCharacterGlyphSet[0:thirdl]
-        l2 = staticCharacterGlyphSet[thirdl:thirdl*2]
-        l3 = staticCharacterGlyphSet[thirdl*2:]
-        print(len(staticCharacterGlyphSet), len(l1), len(l2), len(l3), len(l1)+len(l2)+len(l3))
+        # staticCharacterGlyphSet = list(self.staticCharacterGlyphSet())
+        # thirdl = len(staticCharacterGlyphSet)//3
+        # l1 = staticCharacterGlyphSet[0:thirdl]
+        # l2 = staticCharacterGlyphSet[thirdl:thirdl*2]
+        # l3 = staticCharacterGlyphSet[thirdl*2:]
+        # print(len(staticCharacterGlyphSet), len(l1), len(l2), len(l3), len(l1)+len(l2)+len(l3))
         self.queue = queue.Queue()
         threading.Thread(target=self.queueGetGlyphsAEDC, args = (self.queue), daemon=True).start()
         self.queue.put([(self.staticAtomicElementSet(), "atomicElement"), (self.staticDeepComponentSet(), "deepComponent")])
-
         # self.queue2 = queue.Queue()
         # threading.Thread(target=self.queueGetGlyphsAEDC, args = (self.queue2), daemon=True).start()
         # self.queue2.put((self.staticDeepComponentSet(), "deepComponent"))
