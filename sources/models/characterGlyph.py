@@ -82,7 +82,7 @@ class CharacterGlyph(Glyph):
 
 
     def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
-        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.getLocation().items()])
+        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.normalizedValueToMinMaxValue(self.getLocation(), self).items()])
         # print(locationKey)
         #### 3 CONDITIONS DE DESSIN POSSIBLE EN CAS D'ÉLEMENT SELECTIONNÉ ####
         redrawAndTransformAll = False

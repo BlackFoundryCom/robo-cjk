@@ -955,6 +955,8 @@ class RoboCJKView(BaseWindowController):
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
     def rcjkFilesSelectionCallback(self, sender):
+        import time
+        start = time.time()
         self.w.rcjkFiles.enable(True)
         self.currentrcjkFile = sender.getItem()
         if self.currentrcjkFile is None: 
@@ -1060,10 +1062,12 @@ class RoboCJKView(BaseWindowController):
 
             self.RCJKI.toggleWindowController()
 
-            self.w.atomicElement.set(self.currentFont.atomicElementSet)
-            self.w.deepComponent.set(self.currentFont.deepComponentSet)
-            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+            self.w.atomicElement.set(sorted(list(self.currentFont.staticAtomicElementSet())))
+            self.w.deepComponent.set(sorted(list(self.currentFont.staticDeepComponentSet())))
+            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in sorted(list(self.currentFont.staticCharacterGlyphSet()))]
             self.w.characterGlyph.set(charSet)
+            stop = time.time()
+            print("total to load", stop-start)
 
     def GlyphsListDoubleClickCallback(self, sender):
         items = sender.get()

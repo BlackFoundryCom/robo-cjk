@@ -71,7 +71,7 @@ class AtomicElement(Glyph):
         self.save()
 
     def preview(self, position:dict={}, font=None, forceRefresh=True):
-        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.getLocation().items()])
+        locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.normalizedValueToMinMaxValue(position, self).items()])
         if locationKey in self.previewLocationsStore:
             for p in self.previewLocationsStore[locationKey]:
                 yield p
@@ -83,7 +83,9 @@ class AtomicElement(Glyph):
         #     position = self.getLocation()
         # print(position)
         position = self.normalizedValueToMinMaxValue(position, self)
-        # print(position)
+        for k in position:
+            if position[k] > 1:
+                position[k] = 1
 
         locations = [{}]
         locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations.getList() if x["on"]])
