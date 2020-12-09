@@ -132,9 +132,12 @@ class EditingSheet():
 def getRelatedGlyphs(font, glyphName, regenerated = []):
     g = font.get(glyphName)
     if glyphName not in regenerated:
-        q = queue.Queue()
-        threading.Thread(target=font.queueGetGlyphs, args = (q, g.type), daemon=True).start()
-        q.put([glyphName])
+        if not font.mysqlFont:
+            q = queue.Queue()
+            threading.Thread(target=font.queueGetGlyphs, args = (q, g.type), daemon=True).start()
+            q.put([glyphName])
+        else:
+            font.getmySQLGlyph(glyphName)
         regenerated.append(glyphName)
     if not hasattr(g, "_deepComponents"): return
     for dc in g._deepComponents:
@@ -142,6 +145,8 @@ def getRelatedGlyphs(font, glyphName, regenerated = []):
 
 # This function is outside of any class
 def openGlyphWindowIfLockAcquired(RCJKI, glyph):
+    import time
+    start = time.time()
     font = RCJKI.currentFont
     g = glyph._RGlyph
     # font[glyphName]._initWithLib()
@@ -158,6 +163,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
             # g = font.get(glyphName, font._RFont)._RGlyph
     else:
         if not locked: return
+        getRelatedGlyphs(font, glyph.name)
     if not g.width:
         g.width = font.defaultGlyphWidth
     try:
@@ -169,6 +175,8 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     g = glyph._RGlyph
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
+    stop = time.time()
+    print(stop-start)
 
 
 class RoboCJKView(BaseWindowController):
@@ -942,12 +950,13 @@ class RoboCJKView(BaseWindowController):
 
     def setmySQLRCJKFiles(self):
         # if self.RCJKI.mysql is None:
-        if not self.RCJKI.mysql:
-            rcjkFiles = []
-        else:
-            rcjkFiles = [x[1] for x in self.RCJKI.mysql.select_fonts()]
-        rcjkFiles.append("-- insert .rcjk project")  
-        self.w.rcjkFiles.setItems(rcjkFiles)
+        # if not self.RCJKI.mysql:
+        #     rcjkFiles = []
+        # else:
+        #     rcjkFiles = [x[1] for x in self.RCJKI.mysql.select_fonts()]
+        # rcjkFiles.append("-- insert .rcjk project")  
+        fontList = ["Select a project"] + list(self.RCJKI.fontsList.keys())
+        self.w.rcjkFiles.setItems(fontList)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
     @gitCoverage()
@@ -971,9 +980,9 @@ class RoboCJKView(BaseWindowController):
             except:
                 pass
         # return
-        if self.RCJKI.get('currentFont'):
-            if self.currentFont is not None:
-                self.currentFont.save()
+        # if self.RCJKI.get('currentFont'):
+        #     if self.currentFont is not None:
+                # self.currentFont.save()
                 # self.currentFont.close()
         self.currentrcjkFile = sender.getItem() 
         # if self.currentrcjkFile is None:
@@ -1053,9 +1062,11 @@ class RoboCJKView(BaseWindowController):
                             self.RCJKI.currentFont.deepComponents2Chars[dc] = set()
                         self.RCJKI.currentFont.deepComponents2Chars[dc].add(k)
             else:
+                print("hello")
                 # self.RCJKI.dataBase = True
-                self.RCJKI.currentFont._init_for_mysql(self.RCJKI.bf_log, self.currentrcjkFile, self.RCJKI.mysql, self.RCJKI.mysql_userName,self.RCJKI.mysql_password, self.RCJKI.hiddenSavePath)
-                self.RCJKI.currentFont.loadMysqlDataBase()
+                f = self.RCJKI.client.font_get(self.RCJKI.fontsList[self.currentrcjkFile]['uid'])
+                self.RCJKI.currentFont._init_for_mysql(f, self.RCJKI.client, self.RCJKI.mysql_userName)
+                # self.RCJKI.currentFont.loadMysqlDataBase()
                 # self.RCJKI.currentFont.dataBase
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
             
