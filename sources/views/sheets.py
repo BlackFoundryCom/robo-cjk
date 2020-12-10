@@ -442,7 +442,7 @@ class FontInfosSheet():
     #     self.RCJKI.exportDataBase()
         
     def closeCallback(self, sender):
-        self.RCJKI.currentFont.fontLib = self.RCJKI.currentFont._fullRFont.lib.asDict()
+        self.RCJKI.currentFont.fontLib.update(self.RCJKI.currentFont._fullRFont.lib.asDict())
         self.RCJKI.currentFont.saveFontlib()
         self.RCJKI.currentFont.createLayersFromVariationAxis()
         self.s.close()

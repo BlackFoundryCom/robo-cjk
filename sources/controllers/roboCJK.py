@@ -310,10 +310,11 @@ class RoboCJKController(object):
             self.currentFont.save()
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
+            self.currentFont.clearRFont()  
         else:
-            pass
+            self.currentFont.saveGlyph(self.currentGlyph)
 
-        self.currentFont.clearRFont()        
+              
 
     def closeimportDCFromCG(self):
         if self.importDCFromCG is not None:

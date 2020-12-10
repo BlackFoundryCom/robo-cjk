@@ -182,6 +182,7 @@ class Font():
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
+        self._initFontLib(self.fontLib, self._RFont)
         self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
         # self.mysqlFont = True
@@ -332,6 +333,8 @@ class Font():
                 glyphtype = "AE"
             elif glyph.name in self.staticDeepComponentSet():
                 glyphtype = "DC"
+            else:
+                glyphtype = "CG"
             if glyphtype == "AE":
                 user = self.client.atomic_element_get(self.uid, glyph.name)["data"]["locked_by_user"]
             elif glyphtype == "DC":
@@ -896,15 +899,18 @@ class Font():
                             layerPath = os.path.join(folderPath, layer, fileName)
                             os.remove(layerPath)
 
-            self._RFont.removeGlyph(glyphName)
+            
             self._fullRFont.removeGlyph(glyphName)
-            for layer in self._RFont.layers:
-                if glyphName in layer.keys():
-                    layer.removeGlyph(glyphName) 
-            self.locker.removeFiles([glyphName])  
-            self.updateStaticSet(glyphType) 
+            self.locker.removeFiles([glyphName])
+
         else:
-            pass
+            glyph = self[glyphName]
+            if glyph.type == "atomicElement":
+                self.client.atomic_element_delete(self.uid, glyphName)
+            elif glyph.type == "deepComponent":
+                self.client.deep_component_delete(self.uid, glyphName)
+            else:
+                self.client.character_glyph_delete(self.uid, glyphName)
             # bfitem = self._getBFItem(glyphName)
             # BF_rcjk2mysql.remove_item_to_mysql(self.bf_log, bfitem, self.mysql)
             
@@ -912,6 +918,12 @@ class Font():
             # for layer in self._RFont.layers:
             #     if glyphName in layer.keys():
             #         layer.removeGlyph(glyphName) 
+        self._RFont.removeGlyph(glyphName)
+        for layer in self._RFont.layers:
+            if glyphName in layer.keys():
+                layer.removeGlyph(glyphName) 
+          
+        self.updateStaticSet(glyphType) 
 
     def _getBFItem(self, glyphName):
         pass
@@ -924,56 +936,32 @@ class Font():
         #     return self._BFont.get_aelement(glyphName)
 
     def saveGlyph(self, glyph):
-        pass
-        # if glyph is None: return  
+        if glyph is None: return  
+        name = glyph.name
+        glyph.save()
+        rglyph = glyph._RGlyph
+        rglyph.lib.update(glyph.lib)
+        xml = rglyph.dumpToGLIF()
+        if glyph.type == "atomicElement":
+            self.client.atomic_element_update(self.uid, glyph.name, xml)
+        elif glyph.type == "deepComponent":
+            self.client.deep_component_update(self.uid, glyph.name, xml)
+        else:
+            self.client.character_glyph_update(self.uid, glyph.name, xml)
 
-        # self.mysql.login(self.mysqlUserName, self.mysqlPassword)
+        for layerName in self._fontLayers:
+            if not layerName: continue
+            f = self._RFont.getLayer(layerName)
+            if glyph.name in f:
+                layerglyph = f[glyph.name]
+                xml = layerglyph.dumpToGLIF()
+                if glyph.type == "atomicElement":
+                    self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml)
+                elif glyph.type == "deepComponent":
+                    pass
+                else:
+                    self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
 
-        # name = glyph.name
-
-        # glyph.save()
-        # rglyph = glyph._RGlyph
-        # rglyph.lib.update(glyph.lib)
-        # xml = rglyph.dumpToGLIF()
-        # bglyph = self._getBFItem(name)
-            
-        # for layer in self._RFont.layers:
-        #     if layer.name == "foreground": continue
-        #     f = self._RFont.getLayer(layer.name)
-        #     if not set([name])-set(f.keys()):
-        #         variations = glyph._glyphVariations
-        #         layerGlyph = f[name]
-        #         layerxml = layerGlyph.dumpToGLIF()
-        #         blayerGlyph = bglyph.get_layer_name(layer.name)
-
-        #         if blayerGlyph:
-        #             blayerGlyph.set_xml(layerxml)
-        #         else:
-        #             axisname = ""
-        #             for k, v in variations.items():
-        #                 if isinstance(v, str) and layer.name == v:
-        #                     axisname = k
-        #                     break
-        #                 elif layer.name in v.layerName:
-        #                     axisname = k
-        #                     break
-        #             if not axisname: continue
-
-        #             l = bfs.BfLayer(
-        #                 bglyph, 
-        #                 axisname, 
-        #                 layer.name, 
-        #                 layerxml
-        #                 )
-        #             l._changed = True
-
-        # bglyph.rename(name)
-        # bglyph.set_xml(xml)
-
-        # BF_rcjk2mysql.update_item_to_mysql(self.bf_log, bglyph, self.mysql)
-
-        # self.getmySQLGlyph(glyph.name, font = self._fullRFont)
-        # self.getmySQLGlyph(glyph.name)
 
     def writeGlif(self, glyph):
         glyph.save()
