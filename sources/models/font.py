@@ -74,7 +74,7 @@ class Font():
 
 
     def __init__(self):
-        self.mysqlFont = False
+        self.mysql = False
         self.mysql = False
         self._glyphs = {}
         self._RFont = {}
@@ -170,7 +170,7 @@ class Font():
         queue.task_done()
 
     def _init_for_mysql(self, font, client, username):
-        self.mysqlFont = True
+        self.mysql = True
         self.username = username
         self.client = client
         self.fontName = font["data"]["name"]
@@ -185,7 +185,7 @@ class Font():
         self._initFontLib(self.fontLib, self._RFont)
         self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
-        # self.mysqlFont = True
+        # self.mysql = True
         # self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
         # # print("----")
         # # for x in self._BFont.cglyphs:
@@ -248,7 +248,7 @@ class Font():
                 styleName='Regular', 
                 showUI = False,
                 )
-        if self.mysqlFont:
+        if self.mysql:
             pass
             # if self.fontpath is not None:
             #     fontFilePath = files.makepath(os.path.join(self.fontpath, "%s.ufo"%fontName))
@@ -263,7 +263,7 @@ class Font():
     def saveTeam(self, teamDict):
         self.fontLib['teamManager'] = teamDict
         print("save team", teamDict)
-        if self.mysqlFont:
+        if self.mysql:
             pass
             # self.mysql.update_font_fontlib_data(self.fontName, json.dumps(self.fontLib))
         else:
@@ -283,7 +283,7 @@ class Font():
                 font.lib[k] = v
 
     def selectDatabaseKey(self, key):
-        if not self.mysqlFont:
+        if not self.mysql:
             char = chr(int(key, 16))
             return "".join(self.dataBase[char])
         else:
@@ -291,7 +291,7 @@ class Font():
             # return self.mysql.select_font_database_key(self.fontName, key)
 
     def updateDatabaseKey(self, key, values):
-        if not self.mysqlFont:
+        if not self.mysql:
             char = chr(int(key, 16))
             self.dataBase[char] = values
         else:
@@ -308,7 +308,7 @@ class Font():
         except:
             self.getGlyph(name, font = font)
             return self._glyphs[font[name]]
-        # if self.mysqlFont:
+        # if self.mysql:
         #     return self._glyphs[self._fullRFont[name]]
         # else:
         #     return self[name]
@@ -317,7 +317,7 @@ class Font():
     #     self.dataBase = json.loads(self._BFont.database_data)
 
     def saveFontlib(self):
-        if self.mysqlFont:
+        if self.mysql:
             print(self.fontLib)
             self.client.font_update(self.uid, self.fontLib)
 
@@ -325,7 +325,7 @@ class Font():
     #     pass
 
     def lockGlyph(self, glyph):
-        if not self.mysqlFont:
+        if not self.mysql:
             locked, alreadyLocked = self.locker.lock(glyph)
             return locked, alreadyLocked
         else:
@@ -352,49 +352,35 @@ class Font():
                     user = self.client.character_glyph_lock(self.uid, glyph.name)
                 return 1, None
 
-    def unlockGlyph(self, glyph):
-        if not self.mysqlFont:
-            return self.locker.batchUnlock([glyph])
-        else:
-            pass
-            # glyphName = glyph.name
-            # glyphType = self._findGlyphType(glyphName)
-            # if glyphType == "cglyphs":
-            #     return self.mysql.unlock_cglyph(self.fontName, glyphName)
-            # elif glyphType == "dcomponents":
-            #     return self.mysql.unlock_dcomponent(self.fontName, glyphName)
-            # elif glyphType == "aelements":
-            #     return self.mysql.unlock_aelement(self.fontName, glyphName)
-
     def batchLockGlyphs(self, glyphs:list = []):
-        if not self.mysqlFont:
+        if not self.mysql:
             return self.locker.batchLock(glyphs)
         else:
-            pass
-            # for glyph in glyphs:
-            #     self.lockGlyph(glyph)
-            # return True
+            for glyph in glyphs:
+                if glyph.type == "atomicElement":
+                    user = self.client.atomic_element_lock(self.uid, glyph.name)
+                elif glyph.type == "deepComponent":
+                    user = self.client.deep_component_lock(self.uid, glyph.name)
+                else:
+                    user = self.client.character_glyph_lock(self.uid, glyph.name)
+            return True
 
-    def exportDataBase(self):
-        if not self.mysqlFont:
-            with open(os.path.join(self.fontPath, "database.json"), 'w', encoding="utf-8") as file:
-                file.write(json.dumps(self.dataBase))
-        else:
-            pass
-            # self._BFont.database_data = json.dumps(self.dataBase)
-            # self.mysql.update_font_database_data(self.fontName, json.dumps(self.dataBase))
 
     def batchUnlockGlyphs(self, glyphs:list = []):
-        if not self.mysqlFont:
+        if not self.mysql:
             return self.locker.batchUnlock(glyphs)
         else:
-            pass
-            # for glyph in glyphs:
-            #     self.unlockGlyph(glyph)
-            # return True
+            for glyph in glyphs:
+                if glyph.type == "atomicElement":
+                    user = self.client.atomic_element_unlock(self.uid, glyph.name)
+                elif glyph.type == "deepComponent":
+                    user = self.client.deep_component_unlock(self.uid, glyph.name)
+                else:
+                    user = self.client.character_glyph_unlock(self.uid, glyph.name)
+            return True
 
     def glyphLockedBy(self, glyph):
-        if not self.mysqlFont:
+        if not self.mysql:
             return self.locker.potentiallyOutdatedLockingUser(glyph)
         else:
             if glyph.type == "atomicElement":
@@ -405,27 +391,31 @@ class Font():
                 user = self.client.character_glyph_get(self.uid, glyph.name)["data"]["locked_by_user"]
             if user:
                 return user["username"]
-            # glyphName = glyph.name
-            # glyphType = self._findGlyphType(glyphName)
-            # if glyphType == "cglyphs":
-            #     return self.mysql.who_locked_cglyph(self.fontName, glyphName)
-            # elif glyphType == "dcomponents":
-            #     return self.mysql.who_locked_dcomponent(self.fontName, glyphName)
-            # elif glyphType == "aelements":
-            #     return self.mysql.who_locked_aelement(self.fontName, glyphName)
 
-    def currentUserLockedGlyphs(self):
-        if not self.mysqlFont:
-            return self.locker.myLockedGlyphs
+    def exportDataBase(self):
+        if not self.mysql:
+            with open(os.path.join(self.fontPath, "database.json"), 'w', encoding="utf-8") as file:
+                file.write(json.dumps(self.dataBase))
         else:
             pass
+            # self._BFont.database_data = json.dumps(self.dataBase)
+            # self.mysql.update_font_database_data(self.fontName, json.dumps(self.dataBase))
+
+    def currentUserLockedGlyphs(self):
+        if not self.mysql:
+            return self.locker.myLockedGlyphs
+        else:
+            lockedGlyph = []
+            for items in self.client.glif_list(self.uid, is_locked_by_current_user=True)["data"].values():
+                lockedGlyph.extend([x["name"] for x in items])
+            return lockedGlyph
             # cglyphs = [x[0] for x in self.mysql.select_locked_cglyphs(self.fontName) if x[1] == self.mysqlUserName]
             # dcomponents = [x[0] for x in self.mysql.select_locked_dcomponents(self.fontName) if x[1] == self.mysqlUserName]
             # aelements = [x[0] for x in self.mysql.select_locked_aelements(self.fontName) if x[1] == self.mysqlUserName]
             # return cglyphs + dcomponents + aelements
 
     def removeLockerFiles(self, glyphsnames:list = []):
-        if not self.mysqlFont:
+        if not self.mysql:
             if not isinstance(glyphsnames, list):
                 glyphsnames = list(glyphsnames)
             self.locker.removeFiles(glyphsnames)
@@ -436,10 +426,10 @@ class Font():
 
     @property
     def lockerUserName(self):
-        if not self.mysqlFont:
+        if not self.mysql:
             return self.locker._username
         else:
-            pass
+            return self.username
             # return self.mysqlUserName
 
     def _findGlyphType(self, glyphname):
@@ -456,7 +446,7 @@ class Font():
         try:
             return self._glyphs[self._RFont.getLayer(layerName)[name]]
         except:
-            if self.mysqlFont:
+            if self.mysql:
                 pass
                 # self.getmySQLGlyph(name)
             else:
@@ -474,7 +464,7 @@ class Font():
         try:
             return self._glyphs[self._RFont[name]]
         except:
-            if self.mysqlFont:
+            if self.mysql:
                 pass
                 self.getmySQLGlyph(name)
             else:
@@ -719,12 +709,15 @@ class Font():
         
         emptyGlyph.name = glyphName
         txt = emptyGlyph.dumpToGLIF()
-        fileName = files.userNameToFileName(glyphName)
-        path = os.path.join(self.fontPath, glyphType, "%s.glif"%fileName)
-        files.makepath(path)
-        with open(path, "w", encoding = "utf-8") as file:
-            file.write(txt)
-        return (emptyGlyph, fileName)
+        if not self.mysql:
+            fileName = files.userNameToFileName(glyphName)
+            path = os.path.join(self.fontPath, glyphType, "%s.glif"%fileName)
+            files.makepath(path)
+            with open(path, "w", encoding = "utf-8") as file:
+                file.write(txt)
+            return (emptyGlyph, fileName)
+        else:
+            return txt
 
     def duplicateGLIF(self, glyphName, glyphNamePath, newGlyphName, newGlyphNamePath):
         fileName = files.userNameToFileName(glyphName)
@@ -788,7 +781,7 @@ class Font():
 
     @property
     def atomicElementSet(self):
-        if not self.mysqlFont:
+        if not self.mysql:
             return self._returnGlyphsList('atomicElement')
         else:
             # self.atomicElementName2uid = {x["name"]:x["id"] for x in self.client.atomic_element_list(self.uid)["data"]}
@@ -796,7 +789,7 @@ class Font():
 
     @property
     def deepComponentSet(self):
-        if not self.mysqlFont:
+        if not self.mysql:
             return self._returnGlyphsList('deepComponent')
         else:
             # self.deepComponentName2uid = {x["name"]:x["id"] for x in self.client.deep_component_list(self.uid)["data"]}
@@ -804,7 +797,7 @@ class Font():
 
     @property
     def characterGlyphSet(self):
-        if not self.mysqlFont:
+        if not self.mysql:
             return self._returnGlyphsList('characterGlyph')
         else:
             # self.characterGlyphName2uid = {x["name"]:x["id"] for x in self.client.character_glyph_list(self.uid)["data"]}
@@ -824,25 +817,30 @@ class Font():
         return sorted(l)
 
     def newGlyph(self, glyphType, glyphName = "newGlyph"):
-        if not self.mysqlFont:
+        if not self.mysql:
             glif = self.newGLIF(glyphType, glyphName)
             self.addGlyph(*glif, "foreground", font = self._fullRFont)
             self.addGlyph(*glif, "foreground")
             
             self.batchLockGlyphs([self[glyphName]])
-            self.updateStaticSet(glyphType)
+            
         else:
-            pass
-            # self._RFont.newGlyph(glyphName)
-            # glyphType = glyphsTypes.bfs(glyphType)
-            # BF_rcjk2mysql.new_item_to_mysql(self.bf_log, item_type = glyphType, bfont = self._BFont, new_name = glyphName, my_sql = self.mysql)
-            # self.getmySQLGlyph(glyphName)
+            # pass
+            xml = self.newGLIF(glyphType, glyphName)
+            if glyphType == "atomicElement":
+                self.client.atomic_element_create(self.uid, xml)
+            elif glyphType == "deepComponent":
+                self.client.deep_component_create(self.uid, xml)
+            else:
+                self.client.character_glyph_create(self.uid, xml)
+            self.getmySQLGlyph(glyphName)
+        self.updateStaticSet(glyphType)
             # self.saveGlyph(self[glyphName])
         # self.save()
 
     @gitCoverage(msg = 'duplicate Glyph')
     def duplicateGlyph(self, glyphName:str, newGlyphName:str):
-        if not self.mysqlFont:
+        if not self.mysql:
             glyphType = self[glyphName].type
 
             filename = files.userNameToFileName(glyphName)
@@ -905,19 +903,14 @@ class Font():
 
         else:
             glyph = self[glyphName]
-            if glyph.type == "atomicElement":
+            glyphType = glyph.type
+            if glyphType == "atomicElement":
                 self.client.atomic_element_delete(self.uid, glyphName)
-            elif glyph.type == "deepComponent":
+            elif glyphType == "deepComponent":
                 self.client.deep_component_delete(self.uid, glyphName)
             else:
                 self.client.character_glyph_delete(self.uid, glyphName)
-            # bfitem = self._getBFItem(glyphName)
-            # BF_rcjk2mysql.remove_item_to_mysql(self.bf_log, bfitem, self.mysql)
-            
-            # self._RFont.removeGlyph(glyphName)
-            # for layer in self._RFont.layers:
-            #     if glyphName in layer.keys():
-            #         layer.removeGlyph(glyphName) 
+
         self._RFont.removeGlyph(glyphName)
         for layer in self._RFont.layers:
             if glyphName in layer.keys():
@@ -956,11 +949,13 @@ class Font():
                 layerglyph = f[glyph.name]
                 xml = layerglyph.dumpToGLIF()
                 if glyph.type == "atomicElement":
-                    self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml)
+                    print('name: {}'.format(glyph.name), type(glyph.name))
+                    print('layerName: {}'.format(layerName), type(layerName))
+                    print("atomic_element_layer_update:", self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml))
                 elif glyph.type == "deepComponent":
                     pass
                 else:
-                    self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
+                    print("character_glyph_layer_update:", self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml))
 
 
     def writeGlif(self, glyph):

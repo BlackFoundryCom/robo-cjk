@@ -111,7 +111,7 @@ class EditingSheet():
     def setUI(self):
         unicode = str(hex(self.RCJKI.currentGlyph.unicode)[2:])
         self.w.editField.set(self.RCJKI.currentFont.selectDatabaseKey(unicode))
-        # if not self.RCJKI.currentFont.mysqlFont:
+        # if not self.RCJKI.currentFont.mysql:
         #     self.w.editField.set("".join(self.RCJKI.dataBase[self.char]))
         # else:
         #     self.w.editField.set(self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:])))
@@ -119,7 +119,7 @@ class EditingSheet():
     def closeCallback(self, sender):
         components = list(self.w.editField.get())
         self.RCJKI.currentFont.updateDatabaseKey(str(hex(self.RCJKI.currentGlyph.unicode)[2:]), components)
-        if not self.RCJKI.currentFont.mysqlFont:
+        if not self.RCJKI.currentFont.mysql:
             # self.RCJKI.dataBase[self.char] = components
             self.RCJKI.exportDataBase()
         # else:
@@ -132,7 +132,7 @@ class EditingSheet():
 def getRelatedGlyphs(font, glyphName, regenerated = []):
     g = font.get(glyphName)
     if glyphName not in regenerated:
-        if not font.mysqlFont:
+        if not font.mysql:
             q = queue.Queue()
             threading.Thread(target=font.queueGetGlyphs, args = (q, g.type), daemon=True).start()
             q.put([glyphName])
@@ -1309,7 +1309,7 @@ class RoboCJKView(BaseWindowController):
         glyphType = glyph.type
         GlyphsthatUse = set()
         if (glyph.type == "atomicElement" and len(glyph)) or (glyph.type == "deepComponent" and glyph._deepComponents):
-            if not self.RCJKI.currentFont.mysqlFont:
+            if not self.RCJKI.currentFont.mysql:
                 if glyphType != 'characterGlyph':
                     for name in glyphset:
                         glyph = self.RCJKI.currentFont.get(name)
@@ -1321,6 +1321,12 @@ class RoboCJKView(BaseWindowController):
                             if ae["name"] == glyphName:
                                 GlyphsthatUse.add(name)
                                 break
+            else:
+                if glyphType != 'characterGlyph':
+                    if glyphType == 'atomicElement':
+                        GlyphsthatUse = set([x["name"] for x in self.RCJKI.currentFont.client.atomic_element_get(self.RCJKI.currentFont.uid, glyphName)["data"]["used_by"]])
+                    else:
+                        GlyphsthatUse = set([x["name"] for x in self.RCJKI.currentFont.client.deep_component_get(self.RCJKI.currentFont.uid, glyphName)["data"]["used_by"]])
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
             answer = AskYesNoCancel(
@@ -1358,7 +1364,7 @@ class RoboCJKView(BaseWindowController):
         remove = self.removeGlyph(self.w.atomicElement, self.RCJKI.currentFont.staticDeepComponentSet(), "deepComponent")
         if remove:
             self.w.atomicElement.setSelection([])
-            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.atomicElement.set(sorted(list(self.currentFont.atomicElementSet)))
             self.prevGlyphName = ""
             self.setGlyphToCanvas(self.w.atomicElement, self.currentGlyph)
             self.w.lockerInfoTextBox.set("")
@@ -1373,7 +1379,7 @@ class RoboCJKView(BaseWindowController):
         remove = self.removeGlyph(self.w.deepComponent, glyphset, "characterGlyph")
         if remove:
             self.w.deepComponent.setSelection([])
-            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            self.w.deepComponent.set(sorted(list(self.currentFont.deepComponentSet)))
             self.prevGlyphName = ""
             self.setGlyphToCanvas(self.w.deepComponent, self.currentGlyph)
             self.w.lockerInfoTextBox.set("")
@@ -1429,7 +1435,7 @@ class RoboCJKView(BaseWindowController):
                 print("-----------")
                 self.RCJKI.currentFont.removeGlyph(glyphName)
         self.w.characterGlyph.setSelection([])
-        self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
+        self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in sorted(list(self.currentFont.characterGlyphSet))])
         self.prevGlyphName = ""
         self.setGlyphToCanvas(self.w.characterGlyph, self.currentGlyph)
         self.w.lockerInfoTextBox.set("")

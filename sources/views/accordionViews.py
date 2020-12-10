@@ -78,7 +78,7 @@ class EditingSheet():
     def closeCallback(self, sender):
         components = list(self.w.editField.get())
         self.RCJKI.currentFont.updateDatabaseKey(str(hex(self.RCJKI.currentGlyph.unicode)[2:]), components)
-        if not self.RCJKI.currentFont.mysqlFont:
+        if not self.RCJKI.currentFont.mysql:
             self.RCJKI.exportDataBase()
         self.c.componentsList.set(components)
         self.w.close()

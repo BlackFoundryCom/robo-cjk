@@ -13,8 +13,8 @@ class Client(object):
         data = c.projects_list()
     """
 
-    @staticmethod
-    def _if_int(value):
+    @classmethod
+    def _if_int(cls, value):
         if isinstance(value, int):
             return value
         try:
@@ -23,8 +23,13 @@ class Client(object):
             return None
 
 
-    @staticmethod
-    def _if_str(value):
+    @classmethod
+    def _if_json(cls, value):
+        return json.dumps(value) if isinstance(value, dict) else cls._if_str(value)
+
+
+    @classmethod
+    def _if_str(cls, value):
         return value if isinstance(value, str) else None
 
 
@@ -57,6 +62,7 @@ class Client(object):
         if self._auth_token:
             headers['Authorization'] = 'Bearer {}'.format(self._auth_token)
         headers['Cache-Control'] = 'no-cache'
+        headers['Pragma'] = 'no-cache'
         # request options
         options = {
             'data': data,
@@ -210,23 +216,28 @@ class Client(object):
         return self._api_call('font_get', params)
 
 
-    def font_update(self, font_uid, fontlib):
+    def font_update(self, font_uid, fontlib=None, glyphs_composition=None):
         """
-        Update the data of a specific Font.
+        Update the fontlib or the glyphs-composition of a specific Font.
         """
         params = {
             'font_uid': font_uid,
-            'fontlib': json.dumps(fontlib) if isinstance(fontlib, dict) else fontlib,
+            'fontlib': self._if_json(fontlib),
+            'glyphs_composition': self._if_json(glyphs_composition),
         }
         return self._api_call('font_update', params)
 
 
-    def glif_list(self, font_uid, is_locked_by_current_user=None, is_locked=None, is_empty=None, has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
+    def glif_list(self,
+            font_uid, status=None,
+            is_locked_by_current_user=None, is_locked=None, is_empty=None,
+            has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
         """
         Get the lists of Atomic Elements / Deep Components / Character Glyphs of a Font according to the given filters.
         """
         params = {
             'font_uid': font_uid,
+            'status': status,
             'is_locked_by_current_user': is_locked_by_current_user,
             'is_locked': is_locked,
             'is_empty': is_empty,
@@ -238,12 +249,16 @@ class Client(object):
         return self._api_call('glif_list', params)
 
 
-    def atomic_element_list(self, font_uid, is_locked_by_current_user=None, is_locked=None, is_empty=None, has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
+    def atomic_element_list(self,
+            font_uid, status=None,
+            is_locked_by_current_user=None, is_locked=None, is_empty=None,
+            has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
         """
         Get the list of Atomic Elements of a Font according to the given filters.
         """
         params = {
             'font_uid': font_uid,
+            'status': status,
             'is_locked_by_current_user': is_locked_by_current_user,
             'is_locked': is_locked,
             'is_empty': is_empty,
@@ -399,12 +414,16 @@ class Client(object):
         return self._api_call('atomic_element_layer_delete', params)
 
 
-    def deep_component_list(self, font_uid, is_locked_by_current_user=None, is_locked=None, is_empty=None, has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
+    def deep_component_list(self,
+            font_uid, status=None,
+            is_locked_by_current_user=None, is_locked=None, is_empty=None,
+            has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
         """
         Get the list of Deep Components of a Font according to the given filters.
         """
         params = {
             'font_uid': font_uid,
+            'status': status,
             'is_locked_by_current_user': is_locked_by_current_user,
             'is_locked': is_locked,
             'is_empty': is_empty,
@@ -502,12 +521,16 @@ class Client(object):
         return self._api_call('deep_component_unlock', params)
 
 
-    def character_glyph_list(self, font_uid, is_locked_by_current_user=None, is_locked=None, is_empty=None, has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
+    def character_glyph_list(self,
+            font_uid, status=None,
+            is_locked_by_current_user=None, is_locked=None, is_empty=None,
+            has_variation_axis=None, has_outlines=None, has_components=None, has_unicode=None):
         """
         Get the list of Character Glyphs of a Font according to the given filters.
         """
         params = {
             'font_uid': font_uid,
+            'status': status,
             'is_locked_by_current_user': is_locked_by_current_user,
             'is_locked': is_locked,
             'is_empty': is_empty,
@@ -531,7 +554,7 @@ class Client(object):
         return self._api_call('character_glyph_get', params)
 
 
-    def character_glyph_create(self, font_uid, data):
+    def character_glyph_create(self, font_uid, character_glyph_data):
         """
         Create a new Character Glyph with the specified glif data.
         """
