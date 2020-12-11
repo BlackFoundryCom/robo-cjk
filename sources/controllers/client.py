@@ -15,12 +15,7 @@ class Client(object):
 
     @classmethod
     def _if_int(cls, value):
-        if isinstance(value, int):
-            return value
-        try:
-            return int(value)
-        except ValueError:
-            return None
+        return value if isinstance(value, int) else None
 
 
     @classmethod
