@@ -62,7 +62,6 @@ CHECKING1 = colors.CHECKING1
 CHECKING2 = colors.CHECKING2
 CHECKING3 = colors.CHECKING3
 DONE = colors.DONE
-STATE_COLORS = colors.STATE_COLORS
 
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
 removeGlyphImagePath = os.path.join(os.getcwd(), "resources", "removeButton.pdf")
@@ -535,36 +534,57 @@ class RoboCJKView(BaseWindowController):
         print(self.RCJKI.textCenterWindows)
 
     def atomicElementDesignStepPopUpButtonCallback(self, sender):
-        state = sender.get()
+        state = sender.getItem()
+        names = {
+            "In Progress":colors.WIP_name,  
+            "Checking 1":colors.CHECKING1_name,
+            "Checking 2":colors.CHECKING2_name,
+            "Checking 3":colors.CHECKING3_name,
+            "Done":colors.DONE_name,
+            }
         l = self.w.atomicElement
         if not l.getSelection():
             return
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
-        glyph.markColor = STATE_COLORS[state]
+        glyph.markColor = colors.STATUS_COLORS[names[state]]
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.atomicElementPreview.update()
 
     def deepComponentDesignStepPopUpButtonCallback(self, sender):
-        state = sender.get()
+        state = sender.getItem()
+        names = {
+            "In Progress":colors.WIP_name,  
+            "Checking 1":colors.CHECKING1_name,
+            "Checking 2":colors.CHECKING2_name,
+            "Checking 3":colors.CHECKING3_name,
+            "Done":colors.DONE_name,
+            }
         l = self.w.deepComponent
         if not l.getSelection():
             return
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
-        glyph.markColor = STATE_COLORS[state]
+        glyph.markColor = colors.STATUS_COLORS[names[state]]
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.deepComponentPreview.update()
 
     def characterGlyphDesignStepPopUpButtonCallback(self, sender):
-        state = sender.get()
+        state = sender.getItem()
+        names = {
+            "In Progress":colors.WIP_name,  
+            "Checking 1":colors.CHECKING1_name,
+            "Checking 2":colors.CHECKING2_name,
+            "Checking 3":colors.CHECKING3_name,
+            "Done":colors.DONE_name,
+            }
         l = self.w.characterGlyph
         if not l.getSelection():
             return
         name = l.get()[l.getSelection()[0]]["name"]
         glyph = self.currentFont[name]
-        glyph.markColor = STATE_COLORS[state]
-        if STATE_COLORS[state] == DONE:
+        glyph.markColor = colors.STATUS_COLORS[names[state]]
+        if colors.STATUS_COLORS[names[state]] == DONE:
             self.RCJKI.decomposeGlyphToBackupLayer(glyph)
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.characterGlyphPreview.update()

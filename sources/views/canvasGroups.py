@@ -40,12 +40,11 @@ refresh = decorators.refresh
 transparentColor = NSColor.colorWithCalibratedRed_green_blue_alpha_(1, 1, 1, 0)
 numberFormatter = NumberFormatter()
 
-INPROGRESS = (1., 0., 0., 1.)
-CHECKING1 = (1., .5, 0., 1.)
-CHECKING2 = (1., 1., 0., 1.)
-CHECKING3 = (0., .5, 1., 1.)
-DONE = (0., 1., .5, 1.)
-STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
+# INPROGRESS = (1., 0., 0., 1.)
+# CHECKING1 = (1., .5, 0., 1.)
+# CHECKING2 = (1., 1., 0., 1.)
+# CHECKING3 = (0., .5, 1., 1.)
+# DONE = (0., 1., .5, 1.)
 
 SmartTextBox = vanillaPlus.SmartTextBox
 

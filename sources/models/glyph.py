@@ -32,17 +32,11 @@ import math
 DeepComponents = component.DeepComponents
 VariationGlyphs = component.VariationGlyphs
 
-INPROGRESS = (1, 0, 0, 1)
-CHECKING1 = (1, .5, 0, 1)
-CHECKING2 = (1, 1, 0, 1)
-CHECKING3 = (0, .5, 1, 1)
-DONE = (0, 1, .5, 1)
-STATE_COLORS = {
-    INPROGRESS:"INPROGRESS", 
-    CHECKING1:"CHECKING1", 
-    CHECKING2:"CHECKING2", 
-    CHECKING3:"CHECKING3", 
-    DONE:"DONE"}
+# INPROGRESS = (1, 0, 0, 1)
+# CHECKING1 = (1, .5, 0, 1)
+# CHECKING2 = (1, 1, 0, 1)
+# CHECKING3 = (0, .5, 1, 1)
+# DONE = (0, 1, .5, 1)
 
 # def compute(func):
 #     def wrapper(self, *args, **kwargs):

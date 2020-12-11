@@ -432,6 +432,17 @@ class Font():
             return self.username
             # return self.mysqlUserName
 
+    def changeGlyphState(self, state="", glyph=None):
+        if not self.mysql: return
+        if glyph is None: return
+        if not state: return
+        if glyph.type == "atomicElement":
+            self.client.atomic_element_update_status(self.uid, glyph.name, state)
+        elif glyph.type == "deepComponent":
+            self.client.deep_component_update_status(self.uid, glyph.name, state)
+        else:
+            self.client.character_glyph_update_status(self.uid, glyph.name, state)
+
     def _findGlyphType(self, glyphname):
         if glyphname in self.characterGlyphSet:
             return "cglyphs"

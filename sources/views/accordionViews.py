@@ -1446,7 +1446,6 @@ CHECKING1 = colors.CHECKING1
 CHECKING2 = colors.CHECKING2
 CHECKING3 = colors.CHECKING3
 DONE = colors.DONE
-STATE_COLORS = colors.STATE_COLORS
         
 class PropertiesGroup(Group):
     
@@ -1491,11 +1490,19 @@ class PropertiesGroup(Group):
         self.glyphStateCallback(state)
 
     def glyphStateCallback(self, sender):
-        state = sender.get()
-        self.RCJKI.currentGlyph.markColor = STATE_COLORS[state]
-        if STATE_COLORS[state] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
+        state = sender.getItem()
+        names = {
+            "In Progress":colors.WIP_name, 
+            "Checking round 1":colors.CHECKING1_name, 
+            "Checking round 2":colors.CHECKING2_name, 
+            "Checking round 3":colors.CHECKING3_name, 
+            "Done":colors.DONE_name
+            }
+        self.RCJKI.currentGlyph.markColor = colors.STATUS_COLORS[names[state]]
+        self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = self.RCJKI.currentGlyph)
+        if colors.STATUS_COLORS[names[state]] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
             self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
-        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*STATE_COLORS[state]))
+        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.STATUS_COLORS[names[state]]))
 
 class TransformationGroup(Group):
 
