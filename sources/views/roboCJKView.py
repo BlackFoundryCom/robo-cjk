@@ -713,30 +713,30 @@ class RoboCJKView(BaseWindowController):
         def reformatList(list):
             return [x["name"] for x in list["data"]]
 
-        locked = option != "All those"
+        locked = option1 != "All those"
         if option2 == "that can be fully designed":
             #TODO
-            return reformatList(glyphList(is_locked_by_current_user=locked))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked))
         elif option2 == "that are not empty":
-            return reformatList(glyphList(is_locked_by_current_user=locked, is_empty=False))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, is_empty=False))
         elif option2 == "that have outlines":
-            return reformatList(glyphList(is_locked_by_current_user=locked, has_outlines=True))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, has_outlines=True))
         elif option2 == "that are empty":
-            return reformatList(glyphList(is_locked_by_current_user=locked, is_empty=True))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, is_empty=True))
         elif option2 == "that are in font":
-            return reformatList(glyphList(is_locked_by_current_user=locked))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked))
         elif option2 == "that are in progress":
-            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.WIP_name))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, status = colors.WIP_name))
         elif option2 == "that are checking 1":
-            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.CHECKING1_name))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, status = colors.CHECKING1_name))
         elif option2 == "that are checking 2":
-            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.CHECKING2_name))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, status = colors.CHECKING2_name))
         elif option2 == "that are checking 3":
-            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.CHECKING3_name))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, status = colors.CHECKING3_name))
         elif option2 == "that are done":
-            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.DONE_name))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked, status = colors.DONE_name))
         else:
-            return reformatList(glyphList(is_locked_by_current_user=locked))
+            return reformatList(glyphList(self.RCJKI.currentFont.uid, is_locked_by_current_user=locked))
 
     def filterGlyphs(self, glyphtype, option1, option2, allGlyphs, lockedGlyphs):
         lockedGlyphs = lockedGlyphs & set(allGlyphs)
