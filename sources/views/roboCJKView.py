@@ -637,14 +637,21 @@ class RoboCJKView(BaseWindowController):
 
     def filterAtomicElementCallback(self, sender):
         aeList = self.currentFont.staticAtomicElementSet()
-        filteredList = self.filterGlyphs(
-            "atomicElement",
-            self.w.firstFilterAtomicElement.getItem(),
-            self.w.secondFilterAtomicElement.getItem(),
-            aeList,
-            # list(set(aeList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            set(aeList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
-            )
+        if not self.RCJKI.currentFont.mysql:
+            filteredList = self.filterGlyphs(
+                "atomicElement",
+                self.w.firstFilterAtomicElement.getItem(),
+                self.w.secondFilterAtomicElement.getItem(),
+                aeList,
+                # list(set(aeList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+                set(aeList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
+                )
+        else:
+            filteredList = self.mysqlFilterGlyphs(
+                "atomicElement",
+                self.w.firstFilterAtomicElement.getItem(),
+                self.w.secondFilterAtomicElement.getItem(),
+                )
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
@@ -652,14 +659,21 @@ class RoboCJKView(BaseWindowController):
 
     def filterDeepComponentCallback(self, sender):
         dcList = self.currentFont.staticDeepComponentSet()
-        filteredList = self.filterGlyphs(
-            "deepComponent",
-            self.w.firstFilterDeepComponent.getItem(),
-            self.w.secondFilterDeepComponent.getItem(),
-            dcList,
-            # list(set(dcList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            set(dcList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
-            )
+        if not self.RCJKI.currentFont.mysql:
+            filteredList = self.filterGlyphs(
+                "deepComponent",
+                self.w.firstFilterDeepComponent.getItem(),
+                self.w.secondFilterDeepComponent.getItem(),
+                dcList,
+                # list(set(dcList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+                set(dcList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
+                )
+        else:
+            filteredList = self.mysqlFilterGlyphs(
+                "deepComponent",
+                self.w.firstFilterDeepComponent.getItem(),
+                self.w.secondFilterDeepComponent.getItem(),
+                )
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
@@ -667,20 +681,62 @@ class RoboCJKView(BaseWindowController):
 
     def filterCharacterGlyphCallback(self, sender):
         cgList = self.currentFont.staticCharacterGlyphSet()
-        filteredList = self.filterGlyphs(
-            "characterGlyph",
-            self.w.firstFilterCharacterGlyph.getItem(),
-            self.w.secondFilterCharacterGlyph.getItem(),
-            cgList,
-            # list(set(cgList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
-            set(cgList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
-            )
-
+        if not self.RCJKI.currentFont.mysql:
+            filteredList = self.filterGlyphs(
+                "characterGlyph",
+                self.w.firstFilterCharacterGlyph.getItem(),
+                self.w.secondFilterCharacterGlyph.getItem(),
+                cgList,
+                # list(set(cgList) & set([x for x in self.currentFont.locker.myLockedGlyphs]))
+                set(cgList) & set([x for x in self.currentFont.currentUserLockedGlyphs()])
+                )
+        else:
+            filteredList = self.mysqlFilterGlyphs(
+                "characterGlyph",
+                self.w.firstFilterCharacterGlyph.getItem(),
+                self.w.secondFilterCharacterGlyph.getItem(),
+                )
         self.w.atomicElement.setSelection([])
         self.w.deepComponent.setSelection([])
         self.w.characterGlyph.setSelection([])
         charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in sorted(filteredList)]
         self.w.characterGlyph.set(charSet)
+
+    def mysqlFilterGlyphs(self, glyphType, option1, option2):
+        if glyphType == 'atomicElement':
+            glyphList = self.RCJKI.currentFont.client.atomic_element_list
+        elif glyphType == 'deepComponent':
+            glyphList = self.RCJKI.currentFont.client.deep_component_list
+        else:
+            glyphList = self.RCJKI.currentFont.client.character_glyph_list
+
+        def reformatList(list):
+            return [x["name"] for x in list["data"]]
+
+        locked = option != "All those"
+        if option2 == "that can be fully designed":
+            #TODO
+            return reformatList(glyphList(is_locked_by_current_user=locked))
+        elif option2 == "that are not empty":
+            return reformatList(glyphList(is_locked_by_current_user=locked, is_empty=False))
+        elif option2 == "that have outlines":
+            return reformatList(glyphList(is_locked_by_current_user=locked, has_outlines=True))
+        elif option2 == "that are empty":
+            return reformatList(glyphList(is_locked_by_current_user=locked, is_empty=True))
+        elif option2 == "that are in font":
+            return reformatList(glyphList(is_locked_by_current_user=locked))
+        elif option2 == "that are in progress":
+            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.WIP_name))
+        elif option2 == "that are checking 1":
+            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.CHECKING1_name))
+        elif option2 == "that are checking 2":
+            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.CHECKING2_name))
+        elif option2 == "that are checking 3":
+            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.CHECKING3_name))
+        elif option2 == "that are done":
+            return reformatList(glyphList(is_locked_by_current_user=locked, status = colors.DONE_name))
+        else:
+            return reformatList(glyphList(is_locked_by_current_user=locked))
 
     def filterGlyphs(self, glyphtype, option1, option2, allGlyphs, lockedGlyphs):
         lockedGlyphs = lockedGlyphs & set(allGlyphs)
