@@ -1437,7 +1437,15 @@ class RoboCJKView(BaseWindowController):
         return True
 
     def removeAtomicElementCallback(self, sender):
-        remove = self.removeGlyph(self.w.atomicElement, self.RCJKI.currentFont.staticDeepComponentSet(), "deepComponent")
+        aeName = self.w.atomicElement[self.w.atomicElement.getSelection()[0]]
+        if not self.RCJKI.currentFont.mysql:
+            glyphset = self.RCJKI.currentFont.staticDeepComponentSet()
+        else:
+            glyphset = []
+            uid = self.RCJKI.currentFont.uid
+            for char in self.RCJKI.currentFont.client.atomic_element_get(uid, aeName)["data"]["used_by"]:
+                glyphset.append(char["name"])
+        remove = self.removeGlyph(self.w.atomicElement, glyphset, "deepComponent")
         if remove:
             self.w.atomicElement.setSelection([])
             self.w.atomicElement.set(sorted(list(self.currentFont.atomicElementSet)))
@@ -1447,11 +1455,18 @@ class RoboCJKView(BaseWindowController):
 
     def removeDeepComponentCallback(self, sender):
         dcName = self.w.deepComponent[self.w.deepComponent.getSelection()[0]]
-        try:
-            char = chr(int(dcName.split("_")[1], 16))
-            glyphset = [x for x in set(["uni%s"%hex(ord(y))[2:].upper() for y in self.RCJKI.currentFont.deepComponents2Chars[char]])&self.RCJKI.currentFont.staticCharacterGlyphSet()]
-        except:
-            glyphset = self.RCJKI.currentFont.staticCharacterGlyphSet()
+        if not self.RCJKI.currentFont.mysql:
+            try:
+                char = chr(int(dcName.split("_")[1], 16))
+                glyphset = [x for x in set(["uni%s"%hex(ord(y))[2:].upper() for y in self.RCJKI.currentFont.deepComponents2Chars[char]])&self.RCJKI.currentFont.staticCharacterGlyphSet()]
+            except:
+                glyphset = self.RCJKI.currentFont.staticCharacterGlyphSet()
+        else:
+            glyphset = []
+            uid = self.RCJKI.currentFont.uid
+            for char in self.RCJKI.currentFont.client.deep_component_get(uid, dcName)["data"]["used_by"]:
+                glyphset.append(char["name"])
+
         remove = self.removeGlyph(self.w.deepComponent, glyphset, "characterGlyph")
         if remove:
             self.w.deepComponent.setSelection([])
@@ -1464,21 +1479,27 @@ class RoboCJKView(BaseWindowController):
         sel = self.w.characterGlyph.getSelection()
         if not sel: return
         glyphName = self.w.characterGlyph[sel[0]]["name"]
+        glyph = self.RCJKI.currentFont[glyphName]
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
-        user = self.RCJKI.currentFont.glyphLockedBy(self.currentFont[glyphName])
+        user = self.RCJKI.currentFont.glyphLockedBy(glyph)
         # if user != self.RCJKI.currentFont.locker._username:
         if user != self.RCJKI.currentFont.lockerUserName:
             PostBannerNotification(
                 'Impossible', "You must lock the glyph before"
                 )
             return
-        glyphType = self.RCJKI.currentFont[glyphName].type
+        glyphType = glyph.type
         GlyphsthatUse = set()
-        for name in self.RCJKI.currentFont.characterGlyphSet:
-            glyph = self.RCJKI.currentFont[name]
-            for compo in glyph.components:
-                if glyphName == compo.baseGlyph :
-                    GlyphsthatUse.add(name)
+        if not self.RCJKI.currentFont.mysql:
+            for name in self.RCJKI.currentFont.staticCharacterGlyphSet():
+                glyph = self.RCJKI.currentFont[name]
+                for compo in glyph.components:
+                    if glyphName == compo.baseGlyph:
+                        GlyphsthatUse.add(name)
+        else:
+            uid = self.RCJKI.currentFont.uid
+            for char in self.RCJKI.currentFont.client.character_glyph_get(uid, glyphName)["data"]["used_by"]:
+                GlyphsthatUse.add(char["name"])
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
             answer = AskYesNoCancel(
@@ -1511,7 +1532,7 @@ class RoboCJKView(BaseWindowController):
                 print("-----------")
                 self.RCJKI.currentFont.removeGlyph(glyphName)
         self.w.characterGlyph.setSelection([])
-        self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in sorted(list(self.currentFont.characterGlyphSet))])
+        self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in sorted(list(self.currentFont.staticCharacterGlyphSet()))])
         self.prevGlyphName = ""
         self.setGlyphToCanvas(self.w.characterGlyph, self.currentGlyph)
         self.w.lockerInfoTextBox.set("")

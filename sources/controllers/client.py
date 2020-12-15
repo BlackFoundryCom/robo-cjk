@@ -92,10 +92,12 @@ class Client(object):
             # Project
             'project_list': '/api/project/list/',
             'project_get': '/api/project/get/',
+            'project_create': '/api/project/create/',
 
             # Font
             'font_list': '/api/font/list/',
             'font_get': '/api/font/get/',
+            'font_create': '/api/font/create/',
             'font_update': '/api/font/update/',
 
             # All glif (Atomic Element + Deep Component + Character Glyph)
@@ -190,6 +192,15 @@ class Client(object):
         }
         return self._api_call('project_get', params)
 
+    def project_create(self, name, repo_url):
+        """
+        Create a new Project with the specified name and repository url.
+        """
+        params = {
+            'name': name,
+            'repo_url': repo_url,
+        }
+        return self._api_call('project_create', params)
 
     def font_list(self, project_uid):
         """
@@ -210,6 +221,15 @@ class Client(object):
         }
         return self._api_call('font_get', params)
 
+    def font_create(self, project_uid, name):
+        """
+        Create a new Font with the specified project_uid and name.
+        """
+        params = {
+            'project_uid': project_uid,
+            'name': name,
+        }
+        return self._api_call('font_create', params)
 
     def font_update(self, font_uid, fontlib=None, glyphs_composition=None):
         """

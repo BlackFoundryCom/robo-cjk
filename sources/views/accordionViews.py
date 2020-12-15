@@ -201,13 +201,22 @@ class CompositionRulesGroup(Group):
         self.existingDeepComponentInstances = []
         f = self.RCJKI.currentFont
 
-        dcdatabase = set(["uni%s"%hex(ord(x))[2:].upper() for x in self.RCJKI.currentFont.deepComponents2Chars.get(chr(int(deepComponentName.split("_")[1], 16)), set())])
-        self.existingDeepComponentInstances = []
-        for n in f.staticCharacterGlyphSet()&dcdatabase:
-            try:
-                self.existingDeepComponentInstances.append(chr(int(n[3:], 16)))
-            except:
-                self.existingDeepComponentInstances.append(n)
+        if not self.RCJKI.currentFont.mysql:
+            dcdatabase = set(["uni%s"%hex(ord(x))[2:].upper() for x in self.RCJKI.currentFont.deepComponents2Chars.get(chr(int(deepComponentName.split("_")[1], 16)), set())])
+            self.existingDeepComponentInstances = []
+            for n in f.staticCharacterGlyphSet()&dcdatabase:
+                try:
+                    self.existingDeepComponentInstances.append(chr(int(n[3:], 16)))
+                except:
+                    self.existingDeepComponentInstances.append(n)
+        else:
+            self.existingDeepComponentInstances = []
+            uid = self.RCJKI.currentFont.uid
+            for char in self.RCJKI.currentFont.client.deep_component_get(uid, deepComponentName)["data"]["used_by"]:
+                if char["unicode_hex"]:
+                    self.existingDeepComponentInstances.append(chr(int(char["unicode_hex"],16)))
+                else:
+                    self.existingDeepComponentInstances.append(char["name"])
         self.existingInstancesList.set(self.existingDeepComponentInstances)
 
     def variantListDoubleClickCallback(self, sender):

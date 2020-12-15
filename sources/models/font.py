@@ -182,6 +182,7 @@ class Font():
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
+        self.dataBase = font["data"]["glyphs_composition"]
         self._initFontLib(self.fontLib, self._RFont)
         self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
@@ -306,7 +307,10 @@ class Font():
         try:
             return self._glyphs[font[name]]
         except:
-            self.getGlyph(name, font = font)
+            if self.mysql:
+                self.getmySQLGlyph(name)
+            else:
+                self.getGlyph(name, font = font)
             return self._glyphs[font[name]]
         # if self.mysql:
         #     return self._glyphs[self._fullRFont[name]]
@@ -318,8 +322,7 @@ class Font():
 
     def saveFontlib(self):
         if self.mysql:
-            print(self.fontLib)
-            self.client.font_update(self.uid, self.fontLib)
+            self.client.font_update(self.uid, fontlib=self.fontLib)
 
     # def saveDatabase(self):
     #     pass
@@ -397,9 +400,7 @@ class Font():
             with open(os.path.join(self.fontPath, "database.json"), 'w', encoding="utf-8") as file:
                 file.write(json.dumps(self.dataBase))
         else:
-            pass
-            # self._BFont.database_data = json.dumps(self.dataBase)
-            # self.mysql.update_font_database_data(self.fontName, json.dumps(self.dataBase))
+            self.client.font_update(self.uid, glyphs_composition=self.dataBase)
 
     def currentUserLockedGlyphs(self):
         if not self.mysql:
@@ -730,14 +731,7 @@ class Font():
         else:
             return txt
 
-    def duplicateGLIF(self, glyphName, glyphNamePath, newGlyphName, newGlyphNamePath):
-        fileName = files.userNameToFileName(glyphName)
-        tree = copy.deepcopy(ET.parse(glyphNamePath))
-        root = tree.getroot()
-        root.set("name", newGlyphName)
-        string = ET.tostring(root).decode("utf-8")
-        newFileName = files.userNameToFileName(newGlyphName)
-        tree.write(open(newGlyphNamePath, "w"), encoding = 'unicode')
+    
 
     def addGlyph(self, glyph, fileName, layerName, font = None):
         if font is None:
@@ -849,6 +843,15 @@ class Font():
             # self.saveGlyph(self[glyphName])
         # self.save()
 
+    def duplicateGLIF(self, glyphName, glyphNamePath, newGlyphName, newGlyphNamePath):
+        fileName = files.userNameToFileName(glyphName)
+        tree = copy.deepcopy(ET.parse(glyphNamePath))
+        root = tree.getroot()
+        root.set("name", newGlyphName)
+        string = ET.tostring(root).decode("utf-8")
+        newFileName = files.userNameToFileName(newGlyphName)
+        tree.write(open(newGlyphNamePath, "w"), encoding = 'unicode')
+
     @gitCoverage(msg = 'duplicate Glyph')
     def duplicateGlyph(self, glyphName:str, newGlyphName:str):
         if not self.mysql:
@@ -886,10 +889,36 @@ class Font():
             self.getGlyph(self[newGlyphName], font = self._fullRFont)
             self.updateStaticSet(glyphType)
         else:
-            pass
-            # bfitem = self._getBFItem(glyphName)
-            # t = BF_rcjk2mysql.duplicate_item_to_mysql(self.bf_log, bfitem, newGlyphName, self.mysql)
-            # self.getmySQLGlyph(newGlyphName)
+            f = self._RFont.getLayer('foreground')
+            # f[glyphName].name = newGlyphName
+            glyph = f[glyphName].copy()
+            glyph.name = newGlyphName
+            xml = glyph.dumpToGLIF()
+            glyphType = self[glyphName].type
+            if glyphType == "atomicElement":
+                self.client.atomic_element_create(self.uid, xml)
+            elif glyphType == "deepComponent":
+                self.client.deep_component_create(self.uid, xml)
+            else:
+                self.client.character_glyph_create(self.uid, xml)
+
+            for layerName in self._fontLayers:
+                f = self._RFont.getLayer(layerName)
+                # f[glyphName].name = newGlyphName
+                if glyphName not in f.keys(): continue
+                g = f[glyphName].copy()
+                g.name = newGlyphName
+                xml = g.dumpToGLIF()
+                if glyphType == "atomicElement":
+                    self.client.atomic_element_layer_create(self.uid, newGlyphName, layerName, xml)
+                elif glyphType == "deepComponent":
+                    pass
+                else:
+                    self.client.character_glyph_layer_create(self.uid, newGlyphName, layerName, xml)
+
+            # self.removeGlyph(glyphName)
+            self.getmySQLGlyph(newGlyphName)
+            self.updateStaticSet(glyphType)
 
     @gitCoverage(msg = 'remove Glyph')
     def removeGlyph(self, glyphName:str): 
@@ -960,13 +989,16 @@ class Font():
                 layerglyph = f[glyph.name]
                 xml = layerglyph.dumpToGLIF()
                 if glyph.type == "atomicElement":
-                    print('name: {}'.format(glyph.name), type(glyph.name))
-                    print('layerName: {}'.format(layerName), type(layerName))
-                    print("atomic_element_layer_update:", self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml))
+                    print("self.uid", self.uid)
+                    print("glyph", glyph)
+                    print("layerName", layerName)
+                    print("atomic_element_layer_create", self.client.atomic_element_layer_create(self.uid, glyph.name, layerName, xml), "\n")
+                    print("atomic_element_layer_update", self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml))
                 elif glyph.type == "deepComponent":
                     pass
                 else:
-                    print("character_glyph_layer_update:", self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml))
+                    self.client.character_glyph_layer_create(self.uid, glyph.name, layerName, xml)
+                    self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
 
 
     def writeGlif(self, glyph):
@@ -1083,10 +1115,30 @@ class Font():
             self.locker.changeLockName(oldName, newName)
             return True
         else:
-            pass
-            # bfitem = self._getBFItem(oldName)
-            # BF_rcjk2mysql.rename_item_to_mysql(self.bf_log, item = bfitem, new_name = newName, my_sql = self.mysql)
-            # self[oldName].name = newName
-            # self._RFont.renameGlyph(oldName, newName)
-            # self.saveGlyph(self[newName])
-            # return True
+            f = self._RFont.getLayer('foreground')
+            f[oldName].name = newName
+            glyph = f[newName]
+            xml = glyph.dumpToGLIF()
+            glyphType = self[glyph.name].type
+            if glyphType == "atomicElement":
+                self.client.atomic_element_create(self.uid, xml)
+            elif glyphType == "deepComponent":
+                self.client.deep_component_create(self.uid, xml)
+            else:
+                self.client.character_glyph_create(self.uid, xml)
+
+            for layerName in self._fontLayers:
+                f = self._RFont.getLayer(layerName)
+                f[oldName].name = newName
+                g = f[newName]
+                xml = g.dumpToGLIF()
+                if glyphType == "atomicElement":
+                    self.client.atomic_element_layer_create(self.uid, newName, layerName, xml)
+                elif glyphType == "deepComponent":
+                    pass
+                else:
+                    self.client.character_glyph_layer_create(self.uid, newName, layerName, xml)
+
+            self.removeGlyph(oldName)
+            self.getmySQLGlyph(newName)
+            self.updateStaticSet(glyphType)
