@@ -80,54 +80,6 @@ class SmartTextBox(TextBox):
         font = NSFont.systemFontOfSize_(value)
         self._nsObject.setFont_(font)
 
-class EditingSheet():
-
-    def __init__(self, controller, RCJKI):
-        self.RCJKI = RCJKI
-        self.c = controller
-        self.w = Sheet((240, 80), self.c.w)
-        self.char =  self.c.w.char.get()
-        self.w.char = SmartTextBox(
-            (0, 0, 80, -0),
-            self.char,
-            sizeStyle = 65,
-            alignment = "center"
-            )
-        self.w.editField = TextEditor(
-            (80, 0, -0, -20),
-            ""
-            )
-        self.w.closeButton = Button(
-            (80, -20, -0, -0),
-            "Close",
-            sizeStyle = "small",
-            callback = self.closeCallback
-            )
-
-        self.setUI()
-        self.w.open()
-
-    def setUI(self):
-        unicode = str(hex(self.RCJKI.currentGlyph.unicode)[2:])
-        self.w.editField.set(self.RCJKI.currentFont.selectDatabaseKey(unicode))
-        # if not self.RCJKI.currentFont.mysql:
-        #     self.w.editField.set("".join(self.RCJKI.dataBase[self.char]))
-        # else:
-        #     self.w.editField.set(self.RCJKI.mysql.select_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:])))
-
-    def closeCallback(self, sender):
-        components = list(self.w.editField.get())
-        self.RCJKI.currentFont.updateDatabaseKey(str(hex(self.RCJKI.currentGlyph.unicode)[2:]), components)
-        if not self.RCJKI.currentFont.mysql:
-            # self.RCJKI.dataBase[self.char] = components
-            self.RCJKI.exportDataBase()
-        # else:
-        #     data = tuple([hex(ord(x))[2:] for x in components])
-        #     self.RCJKI.mysql.update_font_database_key(self.RCJKI.currentFont.fontName, str(hex(self.RCJKI.currentGlyph.unicode)[2:]), data)
-        self.c.w.componentList.set(components)
-        self.w.close()
-
-
 def getRelatedGlyphs(font, glyphName, regenerated = []):
     g = font.get(glyphName)
     if glyphName not in regenerated:
@@ -196,14 +148,14 @@ class RoboCJKView(BaseWindowController):
         self.w.setDefaultButton(self.w.loadProjectButton)
         self.w.saveProjectButton = Button(
             (210, 10, 200, 20), 
-            "Save project", 
+            "Save font", 
             callback = self.saveProjectButtonCallback,
             )
         self.w.saveProjectButton.enable(False)
 
         self.w.newProjectButton = Button(
             (410, 10, 200, 20), 
-            "New project", 
+            "New font", 
             callback = self.newProjectButtonCallback,
             )
         self.w.newProjectButton.enable(False)
@@ -1000,13 +952,9 @@ class RoboCJKView(BaseWindowController):
             self.RCJKI.setGitEngine()
             self.setrcjkFiles()
         else:
-            projectName = AskString('', value = "Untitled", title = "Project Name")
-            bfont = bfs.BfFont(projectName)
-            print("----")
-            print(bfont.database_data, bfont.database_name)
-            print(bfont.fontlib_data, bfont.fontlib_name)
-            print("----")
-            t = BF_rcjk2mysql.insert_newfont_to_mysql(self.RCJKI.bf_log, bfont, self.RCJKI.mysql)
+            projectName = AskString('', value = "Untitled", title = "Font Name")
+            response = self.RCJKI.client.font_create(self.RCJKI.currentProjectUID, projectName)
+            self.RCJKI.fontsList = {x["name"]:x for x in self.RCJKI.client.font_list(self.RCJKI.currentProjectUID)["data"]}
             self.setmySQLRCJKFiles()
 
     def askYesNocallback(self, sender):
@@ -1018,7 +966,7 @@ class RoboCJKView(BaseWindowController):
 
     @gitCoverage()
     def setrcjkFiles(self):
-        rcjkFiles = ["Select a project"]
+        rcjkFiles = ["Select a font"]
         rcjkFiles.extend(list(filter(lambda x: x.endswith(".rcjk"), 
             os.listdir(self.RCJKI.projectRoot))))
         self.w.rcjkFiles.setItems(rcjkFiles)
@@ -1031,7 +979,7 @@ class RoboCJKView(BaseWindowController):
         # else:
         #     rcjkFiles = [x[1] for x in self.RCJKI.mysql.select_fonts()]
         # rcjkFiles.append("-- insert .rcjk project")  
-        fontList = ["Select a project"] + list(self.RCJKI.fontsList.keys())
+        fontList = ["Select a font"] + list(self.RCJKI.fontsList.keys())
         self.w.rcjkFiles.setItems(fontList)
         self.rcjkFilesSelectionCallback(self.w.rcjkFiles)
 
@@ -1071,7 +1019,7 @@ class RoboCJKView(BaseWindowController):
             message("Load done")
 
             self.setmySQLRCJKFiles()
-        elif self.currentrcjkFile == "Select a project":
+        elif self.currentrcjkFile == "Select a font":
             self.w.newProjectButton.enable(True)
             pass
         else:
@@ -1141,7 +1089,7 @@ class RoboCJKView(BaseWindowController):
                 print("hello")
                 # self.RCJKI.dataBase = True
                 f = self.RCJKI.client.font_get(self.RCJKI.fontsList[self.currentrcjkFile]['uid'])
-                self.RCJKI.currentFont._init_for_mysql(f, self.RCJKI.client, self.RCJKI.mysql_userName)
+                self.RCJKI.currentFont._init_for_mysql(f, self.RCJKI.client, self.RCJKI.mysql_userName, self.RCJKI.hiddenSavePath)
                 # self.RCJKI.currentFont.loadMysqlDataBase()
                 # self.RCJKI.currentFont.dataBase
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase

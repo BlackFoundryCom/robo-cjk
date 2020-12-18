@@ -17,7 +17,8 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from vanilla import *
-from vanilla.dialogs import getFile, getFolder
+from vanilla.dialogs import getFile, getFolder, message
+from fontParts.ui import AskString
 from mojo.canvas import Canvas
 import mojo.drawingTools as mjdt
 from mojo.UI import CurrentGlyphWindow
@@ -797,8 +798,8 @@ class Login:
         setExtensionDefault(blackrobocjk_locker+"password", self.RCJKI.gitPassword)
         setExtensionDefault(blackrobocjk_locker+"hostlocker", self.RCJKI.gitHostLocker)
         setExtensionDefault(blackrobocjk_locker+"hostlockerpassword", self.RCJKI.gitHostLockerPassword)
-        
         self.w.close()
+        
         if not self.RCJKI.mysql:
             folder = getFolder()
             if not folder: return
@@ -813,11 +814,12 @@ class Login:
             setExtensionDefault(blackrobocjk_locker+"mysql_password", self.RCJKI.mysql_password)
             setExtensionDefault(blackrobocjk_locker+"mysql_host", self.RCJKI.mysql_host)
             self.RCJKI.client = client.Client(self.RCJKI.mysql_host, self.RCJKI.mysql_userName, self.RCJKI.mysql_password)
+            check = self.RCJKI.client.auth_token()
+            if check["status"] != 200:
+                message("Warning, your credentials are wrong!")
+                return
             self.RCJKI.projects = {x["name"]:x for x in self.RCJKI.client.project_list()["data"]}
             SelectMYSQLProjectSheet(self.RCJKI, self.parentWindow)
-            # self.RCJKI.getmySQLParams()
-            # self.RCJKI.connect2mysql()
-            # self.RCJKI.roboCJKView.setmySQLRCJKFiles()
 
     def segmentedButtonCallback(self, sender):
         for i, x in enumerate([self.w.git, self.w.mysql]):
@@ -831,18 +833,29 @@ class SelectMYSQLProjectSheet:
         self.RCJKI = RCJKI
         self.projectList = sorted(list(self.RCJKI.projects.keys()))
         self.w.selectProject = TextBox((10, 10, -10, 20), "Select a project", sizeStyle ="small", alignment = "center")
-        self.w.projectsList = List((10, 40, -10, -40), self.projectList)
+        self.w.projectsList = List((10, 40, -10, -60), self.projectList)
+        self.w.newProjectButton = Button((10, -60, -10, -40), "new project", sizeStyle = "small", callback = self.newProjectCallback)
         self.w.openProject = Button((170, -30, -10, 20), "Open", sizeStyle = "small", callback = self.openProjectCallback)
         self.w.cancel = Button((10, -30, 160, 20), "cancel", sizeStyle = "small", callback = self.cancelProjectCallback)
         self.w.setDefaultButton(self.w.openProject)
         self.w.open()
+
+    def newProjectCallback(self, sender):
+        project_name = AskString('', value = "Choose a font name", title = "Font Name")
+        repo_url = AskString('', value = "Give a valid Repository url", title = "Repository url")
+        response = self.RCJKI.client.project_create(project_name, repo_url)
+        print(response)
+        self.RCJKI.projects = {x["name"]:x for x in self.RCJKI.client.project_list()["data"]}
+        self.projectList = sorted(list(self.RCJKI.projects.keys()))
+        self.w.projectsList.set(self.projectList)
 
     def openProjectCallback(self, sender):
         sel = self.w.projectsList.getSelection()
         if not sel:
             return
         selectedProjectName = self.projectList[sel[0]]
-        self.RCJKI.fontsList = {x["name"]:x for x in self.RCJKI.client.font_list(self.RCJKI.projects[selectedProjectName]['uid'])["data"]}
+        self.RCJKI.currentProjectUID = self.RCJKI.projects[selectedProjectName]['uid']
+        self.RCJKI.fontsList = {x["name"]:x for x in self.RCJKI.client.font_list(self.RCJKI.currentProjectUID)["data"]}
         self.RCJKI.roboCJKView.setmySQLRCJKFiles()
         self.w.close()
 

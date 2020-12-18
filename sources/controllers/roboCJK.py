@@ -313,6 +313,7 @@ class RoboCJKController(object):
             self.currentFont.clearRFont()  
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
+            self.currentFont.saveFontlib()
 
               
 

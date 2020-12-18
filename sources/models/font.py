@@ -169,7 +169,7 @@ class Font():
             self.getGlyph(name, type = item_type, font = self._fullRFont)
         queue.task_done()
 
-    def _init_for_mysql(self, font, client, username):
+    def _init_for_mysql(self, font, client, username, hiddenSavePath):
         self.mysql = True
         self.username = username
         self.client = client
@@ -179,6 +179,7 @@ class Font():
             styleName='Regular', 
             showUI = False
             )
+        self._RFont.save(os.path.join(hiddenSavePath, "mysqlTempFont.ufo"))
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
@@ -240,14 +241,17 @@ class Font():
             # return self.mysql.select_font_database_key(self.fontName, key)
 
     def updateDatabaseKey(self, key, values):
+        char = chr(int(key, 16))
         if not self.mysql:
-            char = chr(int(key, 16))
             self.dataBase[char] = values
         else:
-            pass
-            # data = tuple([hex(ord(x))[2:] for x in values])
-            # self.mysql.update_font_database_key(self.fontName, key, data)
-            # self.loadMysqlDataBase()
+            response = self.client.glyphs_composition_get(self.uid)
+            if response['status'] == 200:
+                self.dataBase = self.client.glyphs_composition_get(self.uid)["data"]
+                self.dataBase[char] = values
+                self.client.glyphs_composition_update(self.uid, self.dataBase)
+            else:
+                print(response)
 
     def get(self, name, font = None):
         if font is None:
@@ -349,7 +353,8 @@ class Font():
                 file.write(json.dumps(self.dataBase))
         else:
             # self.client.font_update(self.uid, glyphs_composition=self.dataBase)
-            self.client.glyphs_composition_update(self.uid, self.dataBase)
+            pass
+            # self.client.glyphs_composition_update(self.uid, self.dataBase)
 
     def currentUserLockedGlyphs(self):
         if not self.mysql:
