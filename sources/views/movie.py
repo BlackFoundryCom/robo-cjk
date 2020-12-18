@@ -227,7 +227,10 @@ class Movie:
 
                 ratioX = ratioY = (rands[k][g])/1000
                 resultGlyph = RGlyph()
-                for c in glyph.preview():
+                locations = {}
+                for e in ld:
+                    locations[e["Axis"]["sourceName"]] = e["PreviewValue"]
+                for c in glyph.preview(locations):
                     c = c.glyph
                     c.draw(resultGlyph.getPen())
                 interpoGlyph = interpolation.interpol_glyph_glyph_ratioX_ratioY_scaleX_scaleY(origineGlyph, resultGlyph, ratioX, ratioY, 1, 1, NewFont(showUI = False))
