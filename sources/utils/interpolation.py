@@ -18,6 +18,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 import math
 from fontTools.misc.transform import Transform
+from fontTools.ufoLib.pointPen import PointToSegmentPen
 
 def makeTransform(x, y, rotation, scalex, scaley, tcenterx, tcentery, scaleUsesCenter=True):
     rotation = math.radians(rotation)
