@@ -171,7 +171,7 @@ class Movie:
                     db.fill(None)
                     db.drawPath(path)
                     ainc += alpha
-                    lines.append((line,axes[i]))
+                    lines.append((line,axes[i]["sourceName"]))
                     # v = getValueForAxeAtFrame(i, g, nbAxes, LCM, speeds[i])
                     # values.append(v)
                     if i == k:

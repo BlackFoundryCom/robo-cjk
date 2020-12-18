@@ -100,6 +100,10 @@ class Client(object):
             'font_create': '/api/font/create/',
             'font_update': '/api/font/update/',
 
+            # Glyphs Composition
+            'glyphs_composition_get': '/api/glyphs-composition/get/',
+            'glyphs_composition_update': '/api/glyphs-composition/update/',
+
             # All glif (Atomic Element + Deep Component + Character Glyph)
             'glif_list': '/api/glif/list/',
 
@@ -142,6 +146,8 @@ class Client(object):
             'character_glyph_layer_delete': '/api/character-glyph/layer/delete/',
         }
         url = view_names.get(view_name)
+        if not url:
+            raise Exception('Invalid url view_name: "{}".'.format(view_name))
         abs_url = '{}{}'.format(self._host, url)
         return abs_url
 
@@ -192,6 +198,7 @@ class Client(object):
         }
         return self._api_call('project_get', params)
 
+
     def project_create(self, name, repo_url):
         """
         Create a new Project with the specified name and repository url.
@@ -201,6 +208,7 @@ class Client(object):
             'repo_url': repo_url,
         }
         return self._api_call('project_create', params)
+
 
     def font_list(self, project_uid):
         """
@@ -221,26 +229,49 @@ class Client(object):
         }
         return self._api_call('font_get', params)
 
-    def font_create(self, project_uid, name):
+
+    def font_create(self, project_uid, name, fontlib=None):
         """
         Create a new Font with the specified project_uid and name.
         """
         params = {
             'project_uid': project_uid,
             'name': name,
+            'fontlib': self._if_json(fontlib),
         }
         return self._api_call('font_create', params)
 
-    def font_update(self, font_uid, fontlib=None, glyphs_composition=None):
+
+    def font_update(self, font_uid, fontlib):
         """
-        Update the fontlib or the glyphs-composition of a specific Font.
+        Update the fontlib of a specific Font.
         """
         params = {
             'font_uid': font_uid,
             'fontlib': self._if_json(fontlib),
-            'glyphs_composition': self._if_json(glyphs_composition),
         }
         return self._api_call('font_update', params)
+
+
+    def glyphs_composition_get(self, font_uid):
+        """
+        Get the glyphs-composition data of a specific Font.
+        """
+        params = {
+            'font_uid': font_uid,
+        }
+        return self._api_call('glyphs_composition_get', params)
+
+
+    def glyphs_composition_update(self, font_uid, data):
+        """
+        Update the glyphs-composition of a specific Font.
+        """
+        params = {
+            'font_uid': font_uid,
+            'data': self._if_json(data),
+        }
+        return self._api_call('glyphs_composition_update', params)
 
 
     def glif_list(self,

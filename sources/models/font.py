@@ -182,64 +182,12 @@ class Font():
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
-        self.dataBase = font["data"]["glyphs_composition"]
+        # self.dataBase = font["data"]["glyphs_composition"]
+        self.dataBase = self.client.glyphs_composition_get(self.uid)["data"]
+        # print(self.dataBase)
         self._initFontLib(self.fontLib, self._RFont)
         self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
         self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
-        # self.mysql = True
-        # self._BFont = BF_mysql2rcjk.read_font_from_mysql(bf_log, fontName, mysql)
-        # # print("----")
-        # # for x in self._BFont.cglyphs:
-        # #     print(x.xml)
-        # #     break
-        # # print(self._BFont.cglyphs[0].xml)
-        # self._RFont = NewFont(
-        #     familyName=fontName, 
-        #     styleName='Regular', 
-        #     showUI = False,
-        #     )
-        # self.fontPath = fontPath
-        # if fontpath is not None:
-        #     files.makepath(os.path.join(fontpath, "%s.ufo"%fontName))
-        #     self._RFont.save(os.path.join(fontpath, "%s.ufo"%fontName))
-
-        # print("fontpath")
-        # print(os.path.join(fontpath, "%s.ufo"%fontName))
-        # self._fullRFont = NewFont(
-        #     familyName="%s-full"%fontName, 
-        #     styleName='Regular', 
-        #     showUI = False
-        #     )
-        # self._fullGlyphs = {}
-        # self.fontName = fontName
-        # self.mysql = mysql
-        # self.mysqlUserName = mysqlUserName
-        # self.mysqlPassword = mysqlPassword
-        # self.bf_log = bf_log
-
-        # fontlib = self._BFont.fontlib_data
-        # print(fontlib)
-        # if fontlib is None:
-        #     fontlib = '{}'
-        # # self.fontLib = eval(fontlib)
-        # self.fontLib = json.loads(fontlib)#.decode()
-        # self._initFontLib(self.fontLib)
-
-        # self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
-
-        # database = self._BFont.database_data
-        # if database is None:
-        #     database = '{}'
-        # self.dataBase = json.loads(database)
-        # # print(self.dataBase)
-        # self.defaultGlyphWidth = self.fontLib.get("robocjk.defaultGlyphWidth", 1000)
-        # start = time.time()
-        # for glyphset in [self.atomicElementSet, self.deepComponentSet, self.characterGlyphSet]:
-        #     for name in glyphset:
-        #         self.getmySQLGlyph(name, font = self._fullRFont)
-        # stop = time.time()
-        # print("full font need:", stop-start)
-    #     self.insertFullRFont()
 
     def clearRFont(self):
         # for k, v in copy.deepcopy(self._RFont.lib.asDict()).items():
@@ -400,7 +348,8 @@ class Font():
             with open(os.path.join(self.fontPath, "database.json"), 'w', encoding="utf-8") as file:
                 file.write(json.dumps(self.dataBase))
         else:
-            self.client.font_update(self.uid, glyphs_composition=self.dataBase)
+            # self.client.font_update(self.uid, glyphs_composition=self.dataBase)
+            self.client.glyphs_composition_update(self.uid, self.dataBase)
 
     def currentUserLockedGlyphs(self):
         if not self.mysql:

@@ -161,6 +161,7 @@ class CompositionRulesGroup(Group):
             self.variantList.set([])
             return
         char = sender.get()[sel[0]]
+        print("self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())")
         self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())
         dcName = "DC_%s_00"%self.code
         deepComponentSet = self.RCJKI.currentFont.deepComponentSet
@@ -390,6 +391,7 @@ class RelatedGlyphsGroup(Group):
         elif self.filter in [2, 3]:
             DCSet = set([x for x in deepComponentSet if self.RCJKI.currentFont.get(x)._RGlyph.lib["robocjk.deepComponents"]])
             for c in self.relatedChars:
+                print("self.RCJKI.currentFont.dataBase[c]", self.RCJKI.currentFont.dataBase[c])
                 compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
                 inside = len(set(compo) - DCSet) == 0
                 if self.filter == 2 and inside:
