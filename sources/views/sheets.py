@@ -816,6 +816,7 @@ class Login:
             self.RCJKI.client = client.Client(self.RCJKI.mysql_host, self.RCJKI.mysql_userName, self.RCJKI.mysql_password)
             check = self.RCJKI.client.auth_token()
             if check["status"] != 200:
+                print('login response:', check)
                 message("Warning, your credentials are wrong!")
                 return
             self.RCJKI.projects = {x["name"]:x for x in self.RCJKI.client.project_list()["data"]}
