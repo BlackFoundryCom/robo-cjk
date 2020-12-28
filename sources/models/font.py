@@ -179,7 +179,9 @@ class Font():
             styleName='Regular', 
             showUI = False
             )
-        self._RFont.save(os.path.join(hiddenSavePath, f"{self.fontName}.ufo"))
+        savePath = os.path.join(hiddenSavePath, f"{self.fontName}.ufo")
+        files.makepath(savePath)
+        self._RFont.save(savePath)
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
