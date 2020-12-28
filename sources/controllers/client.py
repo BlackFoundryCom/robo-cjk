@@ -230,7 +230,7 @@ class Client(object):
         return self._api_call('font_get', params)
 
 
-    def font_create(self, project_uid, name, fontlib=None):
+    def font_create(self, project_uid, name, fontlib=None, features=None):
         """
         Create a new Font with the specified project_uid and name.
         """
@@ -238,17 +238,19 @@ class Client(object):
             'project_uid': project_uid,
             'name': name,
             'fontlib': self._if_json(fontlib),
+            'features': self._if_str(features),
         }
         return self._api_call('font_create', params)
 
 
-    def font_update(self, font_uid, fontlib):
+    def font_update(self, font_uid, fontlib=None, features=None):
         """
         Update the fontlib of a specific Font.
         """
         params = {
             'font_uid': font_uid,
             'fontlib': self._if_json(fontlib),
+            'features': self._if_str(features),
         }
         return self._api_call('font_update', params)
 
