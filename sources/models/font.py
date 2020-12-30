@@ -746,6 +746,7 @@ class Font():
             return self._returnGlyphsList('atomicElement')
         else:
             # self.atomicElementName2uid = {x["name"]:x["id"] for x in self.client.atomic_element_list(self.uid)["data"]}
+
             return [x["name"] for x in self.client.atomic_element_list(self.uid)["data"]]
 
     @property

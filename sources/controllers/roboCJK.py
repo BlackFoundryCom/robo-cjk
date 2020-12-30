@@ -72,6 +72,7 @@ from mojo.extensions import getExtensionDefault, setExtensionDefault
 import math
 import json
 import copy 
+import time
 
 # import mySQLCollabEngine
 
@@ -288,6 +289,7 @@ class RoboCJKController(object):
         _decompose(glyph, '', masterLayerName)
 
     def glyphWindowWillClose(self, notification):
+        start = time.time()
         if self.glyphInspectorWindow is not None:
             self.glyphInspectorWindow.closeWindow()
             self.glyphInspectorWindow = None
@@ -314,7 +316,8 @@ class RoboCJKController(object):
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
             self.currentFont.saveFontlib()
-
+        stop = time.time()
+        print(stop-start, "to close %s"%self.currentGlyph.name)
               
 
     def closeimportDCFromCG(self):

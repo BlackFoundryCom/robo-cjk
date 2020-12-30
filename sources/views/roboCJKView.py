@@ -127,7 +127,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     OpenGlyphWindow(g)
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
     stop = time.time()
-    print(stop-start)
+    print(stop-start, 'to open a %s'%glyph.name)
 
 
 class RoboCJKView(BaseWindowController):
