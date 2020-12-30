@@ -182,6 +182,7 @@ class Font():
         savePath = os.path.join(hiddenSavePath, f"{self.fontName}.ufo")
         files.makepath(savePath)
         self._RFont.save(savePath)
+        self._mysqlInsertedGlyph = {}
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
@@ -555,20 +556,27 @@ class Font():
             if variation not in [x.name for x in self._RFont.layers]:
                 self._RFont.newLayer(variation)
 
-    def getmySQLGlyph(self, name, font = None):        
+    def getmySQLGlyph(self, name, font = None):      
+        prev = self._mysqlInsertedGlyph.get(name, None)
+        if prev is not None:
+            now = time.time()
+            if now - prev < 30:
+                return
+
         if font is None:
             font = self._RFont
 
         if not isinstance(name, str):
             name = name["name"]
 
-        if name in self.atomicElementSet:
+        if name in self.staticAtomicElementSet():
             gtype = "AE"
-        elif name in self.deepComponentSet:
+        elif name in self.staticDeepComponentSet():
             gtype = "DC"
         else:
             gtype = "CG"
 
+        start = time.time()
         if gtype == "AE":
             glyph = atomicElement.AtomicElement(name)
             BGlyph = self.client.atomic_element_get(self.uid, name)["data"]
@@ -578,14 +586,15 @@ class Font():
         elif gtype == "CG":
             glyph = characterGlyph.CharacterGlyph(name)
             BGlyph = self.client.character_glyph_get(self.uid, name)["data"]
-
+        stop = time.time()
+        print("insert glyphs:", stop-start, 'to insert %s'%name)
         if BGlyph is None: return
         xml = BGlyph["data"]
         self.insertGlyph(glyph, xml, 'foreground', font)
 
         for layer in BGlyph["layers"]:
             layerName = layer["group_name"]
-            
+
             if gtype == "AE":
                 glyph = atomicElement.AtomicElement(name)
             elif gtype == "DC":
@@ -597,6 +606,8 @@ class Font():
 
             font.newLayer(layerName)
             self.insertGlyph(glyph, xml, layerName, font)
+
+        self._mysqlInsertedGlyph[name] = time.time()
 
     def getGlyph(self, glyph, type = None, font = None):
         if font is None:
