@@ -70,6 +70,9 @@ class AtomicElement(Glyph):
         # self.preview = glyphPreview.AtomicElementPreview(self)
         self.save()
 
+    def _clampLocation(self, d):
+        return {k: min(1, max(0, v)) for k, v in d.items()}
+
     def preview(self, position:dict={}, font=None, forceRefresh=True):
         locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.normalizedValueToMinMaxValue(position, self).items()])
         if locationKey in self.previewLocationsStore:
@@ -82,13 +85,16 @@ class AtomicElement(Glyph):
         # if not position:
         #     position = self.getLocation()
         # print(position)
+        # print("AE %s position"%self.name, position, "\n")
         position = self.normalizedValueToMinMaxValue(position, self)
-        for k in position:
-            if position[k] > 1:
-                position[k] = 1
+        position = self._clampLocation(position)
+        # for k in position:
+        #     if position[k] > 1:
+        #         position[k] = 1
 
         locations = [{}]
         locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations.getList() if x["on"]])
+        # print("AE %s locations"%self.name, locations, "\n")
         # print(locations,'\n')
         # locations.extend([{k:self.normalizedValueToMinMaxValue(v, self) for k, v in x["location"].items()} for x in self._glyphVariations.getList() if x["on"]])
 

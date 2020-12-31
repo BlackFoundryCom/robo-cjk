@@ -1408,9 +1408,10 @@ class DeepComponentAxesGroup(Group):
 
 class DeepComponentListGroup(Group):
 
-    def __init__(self, posSize, RCJKI):
+    def __init__(self, posSize, RCJKI, controller):
         super().__init__(posSize)
         self.RCJKI = RCJKI
+        self.controller = controller
 
         checkbox = CheckBoxListCell()
         self.deepComponentList = List(
@@ -1418,8 +1419,9 @@ class DeepComponentListGroup(Group):
             [], 
             columnDescriptions = [
                     {"title": "select", "editable": True, "width": 40, "cell":checkbox},
-                    {"title": "name", "editable": False}],
+                    {"title": "name", "editable": True}],
             editCallback = self.deepComponentListEditCallback,
+            selectionCallback = self.deepComponentListSelectionCallback,
             drawFocusRing = False,
             showColumnTitles = False
             )
@@ -1432,8 +1434,48 @@ class DeepComponentListGroup(Group):
         self.deepComponentsNames = [dict(name=x.get("name"), select = i in self.RCJKI.currentGlyph.selectedElement) for i, x in enumerate(self.RCJKI.currentGlyph._deepComponents)]
         self.deepComponentList.set(self.deepComponentsNames)
 
+    def deepComponentListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            return
+        self.selectedDCName = sender.get()[sel[0]]["name"]
+
     def deepComponentListEditCallback(self, sender):
-        self.RCJKI.currentGlyph.selectedElement = [i for i, x in enumerate(sender.get()) if x["select"]]
+        edited = sender.getEditedColumnAndRow()
+        if edited[0] == 1:
+            index = edited[1]
+            name = sender.get()[index]["name"]
+            if self.RCJKI.currentGlyph.type == 'characterGlyph':
+                if name not in self.RCJKI.currentFont.staticDeepComponentSet():
+                    self.setList()
+                    return
+            else:
+                if name not in self.RCJKI.currentFont.staticAtomicElementSet():
+                    self.setList()
+                    return
+            currentCoords = list(self.RCJKI.currentGlyph._deepComponents[index]["coord"].keys())
+            dc = self.RCJKI.currentFont[name]
+            dcCoords = [x.name for x in dc._axes]
+            if sorted(currentCoords) != sorted(dcCoords):
+                if self.RCJKI.isDeepComponent:
+                    self.RCJKI.currentGlyph.removeAtomicElementAtIndex([index])
+                    self.RCJKI.currentGlyph.addAtomicElementNamed(name)
+                elif self.RCJKI.isCharacterGlyph:
+                    self.RCJKI.currentGlyph.removeDeepComponentAtIndexToGlyph([index])
+                    self.RCJKI.currentGlyph.addDeepComponentNamed(name)
+                self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+                self.RCJKI.updateDeepComponent()
+                self.setList()
+                sender.setSelection([-1])
+            else:
+                self.RCJKI.currentGlyph._deepComponents[index]["name"] = name
+                self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+                self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
+                self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+                self.RCJKI.updateDeepComponent()
+                self.setList()
+        else:
+            self.RCJKI.currentGlyph.selectedElement = [i for i, x in enumerate(sender.get()) if x["select"]]
         self.RCJKI.updateDeepComponent()
 
     def addDeepComponentButtonCallback(self, sender):
@@ -1762,7 +1804,7 @@ class CharacterGlyphInspector(Inspector):
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((10, 0, -10, -0), self.RCJKI, deepComponentAxes)
-        self.deepComponentListItem = DeepComponentListGroup((10, 0, -10, -0), self.RCJKI)
+        self.deepComponentListItem = DeepComponentListGroup((10, 0, -10, -0), self.RCJKI, self)
         self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
         self.transformationItem = TransformationGroup((10, 0, -10, -0), self.RCJKI, self)
 
@@ -1802,7 +1844,7 @@ class DeepComponentInspector(Inspector):
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((10, 0, -10, -0), self.RCJKI, atomicElementAxes)
-        self.deepComponentListItem = DeepComponentListGroup((10, 0, -10, -0), self.RCJKI)
+        self.deepComponentListItem = DeepComponentListGroup((10, 0, -10, -0), self.RCJKI, self)
         self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
         self.transformationItem = TransformationGroup((10, 0, -10, -0), self.RCJKI, self)
 

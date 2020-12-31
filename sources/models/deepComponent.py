@@ -145,10 +145,12 @@ class DeepComponent(Glyph):
         if not position:
             position = self.getLocation()
 
-        position =self.normalizedValueToMinMaxValue(position, self)
+        position = self.normalizedValueToMinMaxValue(position, self)
+        # print("position", position, "\n")
 
         locations = [{}]
         locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations if x["on"]])
+        # print("location", locations, "\n\n")
         model = VariationModel(locations)
         
         if redrawAndTransformAll:
@@ -308,9 +310,12 @@ class DeepComponent(Glyph):
         # self.preview.computeDeepComponents(update = False)
 
     @glyphAddRemoveUndo
-    def removeAtomicElementAtIndex(self):
-        if not self.selectedElement: return
-        self.removeDeepComponents(self.selectedElement)
+    def removeAtomicElementAtIndex(self, indexes = []):
+        if not self.selectedElement and not indexes: return
+        if indexes:
+            self.removeDeepComponents(indexes)
+        else:
+            self.removeDeepComponents(self.selectedElement)
         self.redrawSelectedElementSource = True
         self.redrawSelectedElementPreview = True
         self.selectedElement = []
