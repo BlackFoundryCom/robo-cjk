@@ -219,7 +219,7 @@ class EditPopoverAlignTool(EditPopover):
         # else:
         #     d = [dict(layer = k, value = v) for k, v in self.infos["coord"].items()]
         self.popover.coord = List(
-            (10,y, -10, -30),
+            (10,y, -10, -50),
             d,
             columnDescriptions = [
                 {"title": "layer", "editable" : False},
@@ -238,19 +238,26 @@ class EditPopoverAlignTool(EditPopover):
         scrollView.setDrawsBackground_(False)
         scrollView.setBorderType_(NSNoBorder)
         self.popover.copy = SquareButton(
-            (10, -30, 75, -10),
+            (10, -50, 75, -30),
             "copy",
             callback = self.copyCallback,
             sizeStyle = "small"
             )
         buttonAsthetic(self.popover.copy)
         self.popover.paste = SquareButton(
-            (85, -30, 75, -10),
+            (85, -50, 75, -30),
             "paste",
             callback = self.pasteCallback,
             sizeStyle = "small"
             )
         buttonAsthetic(self.popover.paste)
+        self.popover.pastetoAllSources = SquareButton(
+            (10, -30, -10, -10),
+            "apply to all sources",
+            callback = self.pastetoAllSourcesCallback,
+            sizeStyle = "small"
+            )
+        buttonAsthetic(self.popover.pastetoAllSources)
         self.open()
 
     def setUI(self):
@@ -269,27 +276,15 @@ class EditPopoverAlignTool(EditPopover):
         self.popover.coord.set(d)
 
     def getLib(self):
-        if self.RCJKI.isDeepComponent and not self.glyph.selectedSourceAxis:
+        if not self.glyph.selectedSourceAxis:
             return self.RCJKI.currentGlyph._deepComponents
-            
-        elif self.RCJKI.isDeepComponent and self.glyph.selectedSourceAxis:
+        else:
             index = 0
             for i, x in enumerate(self.RCJKI.currentGlyph._glyphVariations):
                 if x.sourceName == self.glyph.selectedSourceAxis:
                     index = i
+                    break
             return self.RCJKI.currentGlyph._glyphVariations[index].deepComponents
-            # return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
-            
-        if self.RCJKI.isCharacterGlyph and not self.glyph.selectedSourceAxis:
-            return self.RCJKI.currentGlyph._deepComponents
-            
-        elif self.RCJKI.isCharacterGlyph and self.glyph.selectedSourceAxis:
-            index = 0
-            for i, x in enumerate(self.RCJKI.currentGlyph._glyphVariations):
-                if x.sourceName == self.glyph.selectedSourceAxis:
-                    index = i
-            return self.RCJKI.currentGlyph._glyphVariations[index].deepComponents
-            # return self.RCJKI.currentGlyph._glyphVariations[self.glyph.selectedSourceAxis]
 
     def copyCallback(self, sender):
         self.RCJKI.copy = [self.sourceAxis, copy.deepcopy(self.infos)]
@@ -315,6 +310,26 @@ class EditPopoverAlignTool(EditPopover):
             self.infos["coord"] = c["coord"]
         if self.infos.get("name") == c.get("name"):
             self.infos["coord"] = c["coord"]
+        self.setUI()
+
+    @tryfunc
+    @resetDict
+    def pastetoAllSourcesCallback(self, sender):
+        source, c = [self.sourceAxis, copy.deepcopy(self.infos)]
+        for gv in self.RCJKI.currentGlyph._glyphVariations:
+            dc = gv.deepComponents[self.glyph.selectedElement[0]]
+            dc["transform"]["scalex"] = c["transform"]["scalex"]
+            dc["transform"]["scaley"] = c["transform"]["scaley"]
+            dc["transform"]["rotation"] = c["transform"]["rotation"]
+            dc["transform"]["tcenterx"] = c["transform"]["tcenterx"]
+            dc["transform"]["tcentery"] = c["transform"]["tcentery"]
+            # if source != self.sourceAxis:
+            dc["transform"]["x"] = c["transform"]["x"]
+            dc["transform"]["y"] = c["transform"]["y"]
+            dc["coord"] = c["coord"]
+            if dc.get("name") == c.get("name"):
+                dc["coord"] = c["coord"]
+            gv.deepComponents[self.glyph.selectedElement[0]].set(dc)
         self.setUI()
 
     @tryfunc
