@@ -977,16 +977,15 @@ class Font():
                 layerglyph = f[glyph.name]
                 xml = layerglyph.dumpToGLIF()
                 if glyph.type == "atomicElement":
-                    print("self.uid", self.uid)
-                    print("glyph", glyph)
-                    print("layerName", layerName)
-                    print("atomic_element_layer_create", self.client.atomic_element_layer_create(self.uid, glyph.name, layerName, xml), "\n")
-                    print("atomic_element_layer_update", self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml))
+                    self.client.atomic_element_layer_create(self.uid, glyph.name, layerName, xml)
+                    self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml)
                 elif glyph.type == "deepComponent":
                     pass
                 else:
-                    self.client.character_glyph_layer_create(self.uid, glyph.name, layerName, xml)
-                    self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
+                    layer_update_response = self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
+                    if layer_update_response['status'] == 404:
+                        self.client.character_glyph_layer_create(self.uid, glyph.name, layerName, xml)
+                    # self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
 
 
     def writeGlif(self, glyph):
