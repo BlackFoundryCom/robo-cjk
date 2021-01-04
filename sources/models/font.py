@@ -576,6 +576,9 @@ class Font():
         else:
             gtype = "CG"
 
+        made_of_aes = []
+        made_of_dcs = []
+
         start = time.time()
         if gtype == "AE":
             glyph = atomicElement.AtomicElement(name)
@@ -586,8 +589,25 @@ class Font():
         elif gtype == "CG":
             glyph = characterGlyph.CharacterGlyph(name)
             BGlyph = self.client.character_glyph_get(self.uid, name)["data"]
+            made_of_dcs = BGlyph["made_of"]
+            made_of_aes = [x for dc in made_of_dcs for x in dc["made_of"]]
+
         stop = time.time()
-        print("insert glyphs:", stop-start, 'to insert %s'%name)
+        print("download glyphs:", stop-start, 'seconds to download %s'%name)
+
+        start = time.time()
+        self.insertmysqlGlyph(glyph, name, BGlyph, font, gtype)
+        for ae in made_of_aes:
+            # print(ae)
+            glyph = atomicElement.AtomicElement(ae["name"])
+            self.insertmysqlGlyph(glyph, ae["name"], ae, font, gtype)
+        for dc in made_of_dcs:
+            glyph = deepComponent.DeepComponent(dc["name"])
+            self.insertmysqlGlyph(glyph, dc["name"], dc, font, gtype)
+        stop = time.time()
+        print("insert glyphs:", stop-start, 'seconds to insert %s'%str(1+len(made_of_aes+made_of_dcs)))
+
+    def insertmysqlGlyph(self, glyph, name, BGlyph, font, gtype):
         if BGlyph is None: return
         xml = BGlyph["data"]
         self.insertGlyph(glyph, xml, 'foreground', font)
