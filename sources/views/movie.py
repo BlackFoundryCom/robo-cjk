@@ -139,7 +139,7 @@ class Movie:
         db.newDrawing()
         for k in range(nbAxes):
             start = time.time()
-            ld = [{'Axis': l, 'PreviewValue':[0, 1][j == k]} for j, l in enumerate(axes)]
+            ld = [{'Axis': l, 'PreviewValue':j == k} for j, l in enumerate(axes)]
             # glyph.preview.computeDeepComponentsPreview(ld)
             for g in range(LCM):
 
