@@ -98,11 +98,18 @@ def getRelatedGlyphs(font, glyphName, regenerated = []):
 def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     import time
     start = time.time()
+    s_start = time.time()
     font = RCJKI.currentFont
     g = glyph._RGlyph
+    s_stop = time.time()
+    print("1", s_stop-s_start)
+    s_start = time.time()
     # font[glyphName]._initWithLib()
     # locked, alreadyLocked = font.locker.lock(g)
     locked, alreadyLocked = font.lockGlyph(g)
+    s_stop = time.time()
+    print("2", s_stop-s_start)
+    s_start = time.time()
     if not RCJKI.mysql:
         print(locked, alreadyLocked)
         if not locked: return
@@ -115,16 +122,31 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     else:
         if not locked: return
         getRelatedGlyphs(font, glyph.name)
+    s_stop = time.time()
+    print("3", s_stop-s_start)
+    s_start = time.time()
     if not g.width:
         g.width = font.defaultGlyphWidth
     try:
         CurrentGlyphWindow().close()
     except: pass
+    s_stop = time.time()
+    print("4", s_stop-s_start)
+    s_start = time.time()
     # font.get(glyphName, font._RFont).update()
     glyph = font.get(glyph.name, font._RFont)
+    s_stop = time.time()
+    print("5", s_stop-s_start)
+    s_start = time.time()
     glyph.update()
+    s_stop = time.time()
+    print("6", s_stop-s_start)
+    s_start = time.time()
     g = glyph._RGlyph
     OpenGlyphWindow(g)
+    s_stop = time.time()
+    print("7", s_stop-s_start)
+    s_start = time.time()
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
     stop = time.time()
     print(stop-start, 'to open a %s'%glyph.name)
@@ -1446,7 +1468,7 @@ class RoboCJKView(BaseWindowController):
                         GlyphsthatUse.add(name)
         else:
             uid = self.RCJKI.currentFont.uid
-            for char in self.RCJKI.currentFont.client.character_glyph_get(uid, glyphName)["data"]["used_by"]:
+            for char in self.RCJKI.currentFont.client.character_glyph_get(uid, glyphName, return_layers=False, return_related=False)["data"]["used_by"]:
                 GlyphsthatUse.add(char["name"])
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"

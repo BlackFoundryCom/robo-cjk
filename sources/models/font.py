@@ -294,11 +294,11 @@ class Font():
             else:
                 glyphtype = "CG"
             if glyphtype == "AE":
-                user = self.client.atomic_element_get(self.uid, glyph.name)["data"]["locked_by_user"]
+                user = self.client.atomic_element_get(self.uid, glyph.name, return_layers=False, return_related=False)["data"]["locked_by_user"]
             elif glyphtype == "DC":
-                user = self.client.deep_component_get(self.uid, glyph.name)["data"]["locked_by_user"]
+                user = self.client.deep_component_get(self.uid, glyph.name, return_layers=False, return_related=False)["data"]["locked_by_user"]
             else:
-                user = self.client.character_glyph_get(self.uid, glyph.name)["data"]["locked_by_user"]
+                user = self.client.character_glyph_get(self.uid, glyph.name, return_layers=False, return_related=False)["data"]["locked_by_user"]
             if user:
                 return user["username"] == self.username, None
             else:
@@ -342,11 +342,11 @@ class Font():
             return self.locker.potentiallyOutdatedLockingUser(glyph)
         else:
             if glyph.type == "atomicElement":
-                user = self.client.atomic_element_get(self.uid, glyph.name)["data"]["locked_by_user"]
+                user = self.client.atomic_element_get(self.uid, glyph.name, return_layers=False, return_related=False)["data"]["locked_by_user"]
             elif glyph.type == "deepComponent":
-                user = self.client.deep_component_get(self.uid, glyph.name)["data"]["locked_by_user"]
+                user = self.client.deep_component_get(self.uid, glyph.name, return_layers=False, return_related=False)["data"]["locked_by_user"]
             else:
-                user = self.client.character_glyph_get(self.uid, glyph.name)["data"]["locked_by_user"]
+                user = self.client.character_glyph_get(self.uid, glyph.name, return_layers=False, return_related=False)["data"]["locked_by_user"]
             if user:
                 return user["username"]
 
@@ -977,15 +977,15 @@ class Font():
                 layerglyph = f[glyph.name]
                 xml = layerglyph.dumpToGLIF()
                 if glyph.type == "atomicElement":
-                    self.client.atomic_element_layer_create(self.uid, glyph.name, layerName, xml)
-                    self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml)
+                    layer_update_response = self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml)
+                    if layer_update_response['status'] == 404:
+                        self.client.atomic_element_layer_create(self.uid, glyph.name, layerName, xml)
                 elif glyph.type == "deepComponent":
                     pass
                 else:
                     layer_update_response = self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
                     if layer_update_response['status'] == 404:
                         self.client.character_glyph_layer_create(self.uid, glyph.name, layerName, xml)
-                    # self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
 
 
     def writeGlif(self, glyph):
