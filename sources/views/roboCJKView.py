@@ -45,7 +45,7 @@ from views import scriptingWindow
 from views import textCenter
 # reload(textCenter)
 
-import os, json, copy
+import os, json, copy, time
 
 # import BF_fontbook_struct as bfs
 # import BF_rcjk2mysql
@@ -1172,6 +1172,7 @@ class RoboCJKView(BaseWindowController):
         sender.setSelection([index])
 
     def GlyphsListSelectionCallback(self, sender):
+        start = time.time()
         selected = sender.getSelection()
         if not selected: 
             if sender == self.w.atomicElement:
@@ -1191,7 +1192,6 @@ class RoboCJKView(BaseWindowController):
             self.w.characterGlyphDesignStepPopUpButton.enable(True)
             state = self.w.characterGlyphDesignStepPopUpButton
 
-
         for lists in self.lists:
             if lists != sender:
                 lists.setSelection([])
@@ -1202,7 +1202,10 @@ class RoboCJKView(BaseWindowController):
         # else:
         self.prevGlyphName = prevGlyphName
         glyph = self.currentFont[self.prevGlyphName]
+        preview_start = time.time()
         user = self.RCJKI.currentFont.glyphLockedBy(glyph)
+        preview_stop = time.time()
+        print("get locked by:", preview_stop-preview_start, "seconds to get lock for %s"%glyph.name)
         color = glyph.markColor
         if color is None:
             state.set(0)
@@ -1219,8 +1222,10 @@ class RoboCJKView(BaseWindowController):
         else:
             state.set(0)
         # self.currentFont[self.prevGlyphName].update()
-        
+        preview_start = time.time()
         glyph.createPreviewLocationsStore()
+        preview_stop = time.time()
+        print("calculate preview:", preview_stop-preview_start, "seconds to calculate preview of %s"%glyph.name)
         self.setGlyphToCanvas(sender, glyph)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
@@ -1231,6 +1236,8 @@ class RoboCJKView(BaseWindowController):
             self.w.lockerInfoTextBox.set('Locked by: ' + user)
         else:
             self.w.lockerInfoTextBox.set("")
+        stop = time.time()
+        print("display glyph:", stop-start, 'seconds to display %s'%glyph.name)
 
     def setGlyphToCanvas(self, sender, glyph):
         if sender == self.w.atomicElement:

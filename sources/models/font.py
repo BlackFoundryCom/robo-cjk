@@ -586,6 +586,7 @@ class Font():
         elif gtype == "DC":
             glyph = deepComponent.DeepComponent(name)
             BGlyph = self.client.deep_component_get(self.uid, name)["data"]
+            made_of_aes = BGlyph["made_of"]
         elif gtype == "CG":
             glyph = characterGlyph.CharacterGlyph(name)
             BGlyph = self.client.character_glyph_get(self.uid, name)["data"]
@@ -624,7 +625,7 @@ class Font():
 
             xml = layer["data"]
 
-            font.newLayer(layerName)
+            # font.newLayer(layerName)
             self.insertGlyph(glyph, xml, layerName, font)
 
         self._mysqlInsertedGlyph[name] = time.time()
@@ -754,7 +755,10 @@ class Font():
         layer.insertGlyph(glyph)
         glyph._RFont = font
         self._glyphs[layer[glyph.name]] = glyph
+        # _initWithLib_start = time.time()
         glyph._initWithLib()
+        # _initWithLib_stop = time.time()
+        # print("_initWithLib = ", _initWithLib_stop-_initWithLib_start, "seconds for %s"%glyph.name)
 
     def staticAtomicElementSet(self, update = False):
         if not self._atomicElementSet or update:
