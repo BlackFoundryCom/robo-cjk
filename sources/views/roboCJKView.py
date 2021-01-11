@@ -1343,7 +1343,10 @@ class RoboCJKView(BaseWindowController):
             return False
         self.RCJKI.currentFont.duplicateGlyph(glyphName, newGlyphName)
         # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[newGlyphName]])
-        self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
+        if not self.RCJKI.currentFont.mysql:
+            self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
+        else:
+            self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
         return newGlyphName
 
     def removeGlyph(self, UIList, glyphset, glyphTypeImpacted):

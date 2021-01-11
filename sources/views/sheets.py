@@ -612,7 +612,10 @@ class NewCharacterGlyph:
     def lockGlyphs(self, glyphs):
         if self.lockNewGlyph:
             # lock = self.RCJKI.currentFont.locker.batchLock(glyphs)
-            lock = self.RCJKI.currentFont.batchLockGlyphs(glyphs)
+            if not self.RCJKI.currentFont.mysql:
+                lock = self.RCJKI.currentFont.batchLockGlyphs(glyphs)
+            else:
+                lock = self.RCJKI.currentFont.batchLockGlyphs([g.name for g in glyphs])
             PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
 
     def relatedDCSearchBox(self, sender):
@@ -958,16 +961,21 @@ class LockController:
         PostBannerNotification("Lock %s"%["failed", "succeeded"][lock], "")
 
     def lockButtonCallback(self, sender):
+        f = self.RCJKI.currentFont
         txt = self.w.lock.field.get().split()
-        glyphs = []
-        for e in txt:
-            try:
-                glyphs.append(self.RCJKI.currentFont[e])
-            except:
-                for c in e:
-                    try: glyphs.append(self.RCJKI.currentFont[files.unicodeName(c)])
-                    except: continue
-        self.lockGlyphs(glyphs)
+        if not f.mysql:
+            glyphs = []
+            for e in txt:
+                try:
+                    glyphs.append(self.RCJKI.currentFont[e])
+                except:
+                    for c in e:
+                        try: glyphs.append(self.RCJKI.currentFont[files.unicodeName(c)])
+                        except: continue
+            self.lockGlyphs(glyphs)
+        else:
+            names = [x for x in txt if x in f.staticAtomicElementSet()|f.staticDeepComponentSet()|f.staticCharacterGlyphSet()]
+            f.batchLockGlyphs(names)
 
     def unlockSelectedButtonCallback(self, sender):
         f = self.RCJKI.currentFont
@@ -1000,15 +1008,19 @@ class LockController:
 
     def unlockAllButtonCallback(self, sender):
         f = self.RCJKI.currentFont
-        glyphs = []
-        filesToRemove = []
-        for x in self.w.unlock.lockedGlyphsList.get():
-            try: glyphs.append(f[x["name"]])
-            except: 
-                filesToRemove.append(x["name"])
-        # self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
-        self.RCJKI.currentFont.removeLockerFiles(filesToRemove)
-        self.unlockGlyphs(glyphs)
+        if not f.mysql:
+            glyphs = []
+            filesToRemove = []
+            for x in self.w.unlock.lockedGlyphsList.get():
+                try: glyphs.append(f[x["name"]])
+                except: 
+                    filesToRemove.append(x["name"])
+            # self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
+            self.RCJKI.currentFont.removeLockerFiles(filesToRemove)
+            self.unlockGlyphs(glyphs)
+        else:
+            names = [x["name"] for x in self.w.unlock.lockedGlyphsList.get()]
+            f.batchUnlockGlyphs(names)
         self.resetList()        
 
     def filterListCallback(self, sender):
