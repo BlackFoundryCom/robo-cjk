@@ -2,6 +2,10 @@
 
 import json
 import requests
+import urllib3
+
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class Client(object):
@@ -33,7 +37,7 @@ class Client(object):
         Initialize a new Robo-CJK API client using the given credentials,
         then authentication is automatically managed by the client, no need to do anything.
         """
-        self._host = host # 'http://164.90.229.235'
+        self._host = host
         self._username = username
         self._password = password
         self._auth_token = None
@@ -62,7 +66,8 @@ class Client(object):
         options = {
             'data': data,
             'headers': headers,
-            'verify': self._host.startswith('https://'),
+            'verify': False,
+            # 'verify': self._host.startswith('https://'),
         }
         # send post request
         response = requests.post(url, **options)
