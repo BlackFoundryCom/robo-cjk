@@ -914,8 +914,9 @@ class Font():
                     self.client.character_glyph_layer_create(self.uid, newGlyphName, layerName, xml)
 
             # self.removeGlyph(glyphName)
-            self.getmySQLGlyph(newGlyphName)
             self.updateStaticSet(glyphType)
+            self.getmySQLGlyph(newGlyphName)
+            
 
     @gitCoverage(msg = 'remove Glyph')
     def removeGlyph(self, glyphName:str): 
