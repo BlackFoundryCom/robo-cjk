@@ -23,6 +23,12 @@ class Client(object):
 
 
     @classmethod
+    def _if_int_list(cls, values):
+        l = [value for value in values if isinstance(value, int)] if values else None
+        return json.dumps(l) if l else None
+
+
+    @classmethod
     def _if_json(cls, value):
         return json.dumps(value) if isinstance(value, dict) else cls._if_str(value)
 
@@ -30,6 +36,12 @@ class Client(object):
     @classmethod
     def _if_str(cls, value):
         return value if isinstance(value, str) else None
+
+
+    @classmethod
+    def _if_str_list(cls, values):
+        l = [value for value in values if isinstance(value, str)] if values else None
+        return json.dumps(l) if l else None
 
 
     def __init__(self, host, username, password):
@@ -111,6 +123,8 @@ class Client(object):
 
             # All glif (Atomic Element + Deep Component + Character Glyph)
             'glif_list': '/api/glif/list/',
+            'glif_lock': '/api/glif/lock/',
+            'glif_unlock': '/api/glif/unlock/',
 
             # Atomic Element
             'atomic_element_list': '/api/atomic-element/list/',
@@ -300,6 +314,42 @@ class Client(object):
             'has_unicode': has_unicode,
         }
         return self._api_call('glif_list', params)
+
+
+    def glif_lock(self, font_uid, atomic_elements=None, deep_components=None, character_glyphs=None, return_layers=False, return_related=False):
+        """
+        Lock lists of Atomic Elements / Deep Components / Character Glyphs of a Font by their id or name.
+        """
+        params = {
+            'font_uid': font_uid,
+            'character_glyphs_ids': self._if_int_list(character_glyphs),
+            'character_glyphs_names': self._if_str_list(character_glyphs),
+            'deep_components_ids': self._if_int_list(deep_components),
+            'deep_components_names': self._if_str_list(deep_components),
+            'atomic_elements_ids': self._if_int_list(atomic_elements),
+            'atomic_elements_names': self._if_str_list(atomic_elements),
+            'return_layers': return_layers,
+            'return_related': return_related,
+        }
+        return self._api_call('glif_lock', params)
+
+
+    def glif_unlock(self, font_uid, atomic_elements=None, deep_components=None, character_glyphs=None, return_layers=False, return_related=False):
+        """
+        Unlock lists of Atomic Elements / Deep Components / Character Glyphs of a Font by their id or name.
+        """
+        params = {
+            'font_uid': font_uid,
+            'character_glyphs_ids': self._if_int_list(character_glyphs),
+            'character_glyphs_names': self._if_str_list(character_glyphs),
+            'deep_components_ids': self._if_int_list(deep_components),
+            'deep_components_names': self._if_str_list(deep_components),
+            'atomic_elements_ids': self._if_int_list(atomic_elements),
+            'atomic_elements_names': self._if_str_list(atomic_elements),
+            'return_layers': return_layers,
+            'return_related': return_related,
+        }
+        return self._api_call('glif_unlock', params)
 
 
     def atomic_element_list(self,

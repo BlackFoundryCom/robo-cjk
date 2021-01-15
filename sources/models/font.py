@@ -317,14 +317,11 @@ class Font():
         if not self.mysql:
             return self.locker.batchLock(glyphs)
         else:
-            for name in glyphs:
-                glyphtype = self._findGlyphTypeFromName(name)
-                if glyphtype == "atomicElement":
-                    user = self.client.atomic_element_lock(self.uid, name)
-                elif glyphtype == "deepComponent":
-                    user = self.client.deep_component_lock(self.uid, name)
-                else:
-                    user = self.client.character_glyph_lock(self.uid, name)
+            set_glyphs = set(glyphs)
+            AE = set_glyphs & self.staticAtomicElementSet()
+            DC = set_glyphs & self.staticDeepComponentSet()
+            CG = set_glyphs & self.staticCharacterGlyphSet()
+            self.client.glif_lock(self.uid, atomic_elements = list(AE), deep_components = list(DC), character_glyphs = list(CG))
             return True
 
 
@@ -332,14 +329,12 @@ class Font():
         if not self.mysql:
             return self.locker.batchUnlock(glyphs)
         else:
-            for name in glyphs:
-                glyphtype = self._findGlyphTypeFromName(name)
-                if glyphtype == "atomicElement":
-                    user = self.client.atomic_element_unlock(self.uid, name)
-                elif glyphtype == "deepComponent":
-                    user = self.client.deep_component_unlock(self.uid, name)
-                else:
-                    user = self.client.character_glyph_unlock(self.uid, name)
+            print("Unlocked glyphs:", " ".join(glyphs))
+            set_glyphs = set(glyphs)
+            AE = set_glyphs & self.staticAtomicElementSet()
+            DC = set_glyphs & self.staticDeepComponentSet()
+            CG = set_glyphs & self.staticCharacterGlyphSet()
+            self.client.glif_unlock(self.uid, atomic_elements = list(AE), deep_components = list(DC), character_glyphs = list(CG))
             return True
 
     def glyphLockedBy(self, glyph):
