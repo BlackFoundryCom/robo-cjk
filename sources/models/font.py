@@ -362,6 +362,7 @@ class Font():
         else:
             # self.client.font_update(self.uid, glyphs_composition=self.dataBase)
             pass
+            self.client.glyphs_composition_update(self.uid, self.dataBase)
             # self.client.glyphs_composition_update(self.uid, self.dataBase)
 
     def currentUserLockedGlyphs(self):
