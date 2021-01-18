@@ -827,10 +827,13 @@ class Font():
             xml = self.newGLIF(glyphType, glyphName)
             if glyphType == "atomicElement":
                 self.client.atomic_element_create(self.uid, xml)
+                self.staticAtomicElementSet(update = True)
             elif glyphType == "deepComponent":
                 self.client.deep_component_create(self.uid, xml)
+                self.staticDeepComponentSet(update = True)
             else:
                 self.client.character_glyph_create(self.uid, xml)
+                self.staticCharacterGlyphSet(update = True)
             self.getmySQLGlyph(glyphName)
         self.updateStaticSet(glyphType)
             # self.saveGlyph(self[glyphName])
