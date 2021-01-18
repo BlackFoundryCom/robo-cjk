@@ -66,6 +66,7 @@ DONE = colors.DONE
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
 removeGlyphImagePath = os.path.join(os.getcwd(), "resources", "removeButton.pdf")
 duplicateGlyphImagePath = os.path.join(os.getcwd(), "resources", "duplicateButton.pdf")
+localiseGlyphImagePath = os.path.join(os.getcwd(), "resources", "localiseButton.pdf")
 
 class SmartTextBox(TextBox):
     def __init__(self, posSize, text="", alignment="natural", 
@@ -305,8 +306,15 @@ class RoboCJKView(BaseWindowController):
             callback = self.duplicateAtomicElementCallback
             )
         self.w.duplicateAtomicElement.enable(False)
+        self.w.localiseAtomicElement = ImageButton(
+            (170, 350, 20, 20),
+            imagePath = localiseGlyphImagePath,
+            bordered = False,
+            callback = self.localiseAtomicElementCallback
+            )
+        self.w.localiseAtomicElement.enable(False)
         self.w.newAtomicElement = Button(
-            (30, 350, 160, 20),
+            (30, 350, 140, 20),
             "New AE",
             callback = self.newAtomicElementCallback
             )
@@ -381,8 +389,15 @@ class RoboCJKView(BaseWindowController):
             callback = self.duplicateDeepComponentCallback
             )
         self.w.duplicateDeepComponent.enable(False)
+        self.w.localiseDeepComponent = ImageButton(
+            (370, 350, 20, 20),
+            imagePath = localiseGlyphImagePath,
+            bordered = False,
+            callback = self.localiseDeepComponentCallback
+            )
+        self.w.localiseDeepComponent.enable(False)
         self.w.newDeepComponent = Button(
-            (230, 350, 160, 20),
+            (230, 350, 140, 20),
             "New DC",
             callback = self.newDeepComponentCallback
             )
@@ -463,8 +478,15 @@ class RoboCJKView(BaseWindowController):
             callback = self.duplicateCharacterGlyphCallback
             )
         self.w.duplicateCharacterGlyph.enable(False)
+        self.w.localiseCharacterGlyph = ImageButton(
+            (570, 350, 20, 20),
+            imagePath = localiseGlyphImagePath,
+            bordered = False,
+            callback = self.localiseCharacterGlyphCallback
+            )
+        self.w.localiseCharacterGlyph.enable(False)
         self.w.newCharacterGlyph = Button(
-            (430, 350, 160, 20),
+            (430, 350, 140, 20),
             "New CG",
             callback = self.newCharacterGlyphCallback
             )
@@ -1073,6 +1095,9 @@ class RoboCJKView(BaseWindowController):
             self.w.duplicateDeepComponent.enable(True)
             self.w.removeCharacterGlyph.enable(True)
             self.w.duplicateCharacterGlyph.enable(True)
+            self.w.localiseAtomicElement.enable(True)
+            self.w.localiseDeepComponent.enable(True)
+            self.w.localiseCharacterGlyph.enable(True)
             # self.w.atomicElementDesignStepPopUpButton.enable(True)
             # self.w.deepComponentDesignStepPopUpButton.enable(True)
             # self.w.characterGlyphDesignStepPopUpButton.enable(True)
@@ -1281,30 +1306,30 @@ class RoboCJKView(BaseWindowController):
         self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
     def duplicateAtomicElementCallback(self, sender):
-        newGlyphName = self._duplicateGlyph(self.w.atomicElement, self.RCJKI.currentFont.atomicElementSet)
+        newGlyphName = self._duplicateGlyph(self.w.atomicElement, self.RCJKI.currentFont.staticAtomicElementSet())
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
-            index = self.currentFont.atomicElementSet.index(newGlyphName)
+            index = self.currentFont.staticAtomicElementSet(update = True).index(newGlyphName)
             self.w.atomicElement.setSelection([])
-            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.atomicElement.set(self.currentFont.staticAtomicElementSet())
             self.w.atomicElement.setSelection([index])
 
     def duplicateDeepComponentCallback(self, sender):
-        newGlyphName = self._duplicateGlyph(self.w.deepComponent, self.RCJKI.currentFont.deepComponentSet)
+        newGlyphName = self._duplicateGlyph(self.w.deepComponent, self.RCJKI.currentFont.staticDeepComponentSet())
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
-            index = self.currentFont.deepComponentSet.index(newGlyphName)
+            index = self.currentFont.staticDeepComponentSet(update = True).index(newGlyphName)
             self.w.deepComponent.setSelection([])
-            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            self.w.deepComponent.set(self.currentFont.staticDeepComponentSet())
             self.w.deepComponent.setSelection([index])
 
     def duplicateCharacterGlyphCallback(self, sender):
-        newGlyphName = self._duplicateGlyph(self.w.characterGlyph, self.RCJKI.currentFont.characterGlyphSet)
+        newGlyphName = self._duplicateGlyph(self.w.characterGlyph, self.RCJKI.currentFont.staticCharacterGlyphSet())
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
-            index = self.currentFont.characterGlyphSet.index(newGlyphName)
+            index = self.currentFont.staticCharacterGlyphSet(update = True).index(newGlyphName)
             self.w.characterGlyph.setSelection([])
-            self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet])
+            self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.staticCharacterGlyphSet()])
             self.w.characterGlyph.setSelection([index])
 
     def _duplicateGlyph(self, UIList, glyphset):
@@ -1348,6 +1373,27 @@ class RoboCJKView(BaseWindowController):
         else:
             self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
         return newGlyphName
+
+    def localiseAtomicElementCallback(self, sender):
+        sel = self.w.atomicElement.getSelection()
+        if not sel:
+            return
+        glyphName = self.w.atomicElement.get()[sel[0]]
+        sheets.LocaliseGlyphSheet(self.RCJKI, self, self.w, glyphName, glyphset = self.RCJKI.currentFont.staticAtomicElementSet, sender = self.w.atomicElement)
+
+    def localiseDeepComponentCallback(self, sender):
+        sel = self.w.deepComponent.getSelection()
+        if not sel:
+            return
+        glyphName = self.w.deepComponent.get()[sel[0]]
+        sheets.LocaliseGlyphSheet(self.RCJKI, self, self.w, glyphName, dependencies_glyphset = self.RCJKI.currentFont.staticAtomicElementSet(), glyphset = self.RCJKI.currentFont.staticDeepComponentSet, sender = self.w.deepComponent)
+
+    def localiseCharacterGlyphCallback(self, sender):
+        sel = self.w.characterGlyph.getSelection()
+        if not sel:
+            return
+        glyphName = self.w.characterGlyph.get()[sel[0]]
+        sheets.LocaliseGlyphSheet(self.RCJKI, self, self.w, glyphName, dependencies_glyphset = self.RCJKI.currentFont.staticDeepComponentSet(), glyphset = self.RCJKI.currentFont.staticCharacterGlyphSet, sender = self.w.characterGlyph)
 
     def removeGlyph(self, UIList, glyphset, glyphTypeImpacted):
         sel = UIList.getSelection()

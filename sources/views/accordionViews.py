@@ -1027,7 +1027,7 @@ class SourcesSheet:
             maxValue = TextBox((-50, y+5, 50, 20), axis.maxValue, sizeStyle = 'small', alignment="left")
             setattr(self.w, "%sName"%axis.name, textbox)
             setattr(self.w, "%sminValue"%axis.name, minValue)
-            setattr(self.w, axis.name, editText)
+            setattr(self.w, axis.name+str(i), editText)
             setattr(self.w, "%smaxValue"%axis.name, maxValue)
             self.axes[editText] = axis
             y += 25

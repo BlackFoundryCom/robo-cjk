@@ -830,6 +830,67 @@ class Login:
             x.show(i == sender.get())
         self.RCJKI.mysql = sender.get()
 
+localisation_suffix = sorted(['.C_xxjx', '', '.C_xtjk.xxxk', '.C_xxjk.xxjx', '.V_xxjx*0', '.C_xxjk.xxjk', '.C_htjk.C_xtxx.xtxx', '.A_htjx', '.E_xtjk*0.E_xtjk*0', '.C_xxxk.xxxk', '.C_hxjx.xxjx', '.A_htjk', '.C_xtjk.htxx', '.C_htjx.xxjk', '.A_xtxk', '.E_xxjx*0', '.A_xxjx.A_xxjx', '.C_xtxx.xtxx', '.A_xxxk', '_C.hxxx.hxxx', '.xtxx', '.A_xxjk', '.xtjk', '.C_hxjk.xxjx', '.V_htjk*0', '.C_htjk.hxxx', '.C_xtxx.htxx', '.E_htxx*0', '.C_htjk.xxjk', '.L_xtjk*0', '.V_xxjx*1', '.A_xtxx', '.C_htxk.xtxx', '.C_xxxx.xxxk', '.C_htjx.xtxx', '.L_htxx*0', '.E_hxjk*0', '.C_xtxk.xxxk', '.A_hxjk', '.L_hxjx*0', '.C_htxk.htxx', '.E_hxjx*0', '.V_htxx*0.V_htxx', '.C_htxk.xxxk', '.C_htjk.htxk', '.V_htxx*1', '.C_htxx.xtxx', '.A_hxxx*0', '.C_xxjx.xxxk', '.C_hxjk.xxjk', '.E_htjx*0', '.C_htjx.hxxx', '.hxjx', '.A_hxxx', '.V_xxjk*1', '.C_xtjx.xxjk', '.htjx', '.E_xtjk*0', '.E_htxx', '.C_xxxk.xxjk', '.htjk', '.xtxk', '.C_htjk.htxx', '.C_htxk.hxxx', '.A_xxjx', '.V_xxjk*0k', '.C_hxxx.hxxx', '.C_htxx.htjk', '.V_htjk*1', '.E_hxxk*0', '.V_htjx', '.C_xtjk.xxjx', '.C_xtjk.xxjk', '.V_hxxk*0', '.xtjx', '.C_xtjx.xtxx', '.htxx', '.A_hxxk', '.V_xxjk*0', '.V_xtjk*0', '.L_hxjk*0', '.V_xtxx*0', '.V_htxx*0.V_htxx*0', '.A_xtjx', '.L_xtxx*1', '.A_xtxx*0', '.C_hxjx.hxxx', '.C_xtjk.xtjk', '.C_hxjk.xxxk', '.xxjx', '.V_hxxx*0', '.E_xxjx', '.C_htxx.htxx', '.C_xtjx.xxjx', '.A_xxjk*1', '.A_xxjk_xxjk', '.E_xtxx*1', '.C_htjk.htjk', '.hxxk', '.hxjk', '.E_xtxx*0', '.C_htjx.xxjx', '.C_xxjx.xxjk', '.C_htjk.xxxk', '.L_xtxx*2', '.C_xtxk.xtxk', '.L_xxjk*0', '.A_htxx', '.C_htjk.hxjk', '.C_xtjk.xtxx', '.L_xxjx*0', '.L_htjk*0', '.V_htxx*0.A_xtxx', '.C_htjk.xxjx', '.C_htjx.htxx', '.C_htxx.hxxx', '.V_hxjk*0', '.C_xxjk.C_xxjk.xxjx', '.xxxk', '.E_xxjk*0', '.C_htjk.xtxx', '.E_xxxk*0', '.E_hxxx*0', '.A_xtjk.A_xtjx', '.L_hxxx*0', '.L_xtxx*0', '.A_xxjk*0', '\x13.C_htxx.htxx', '.L_xxxk*0', '.V_xtxx*1', '.xxjk', '.V_xxjk*0.A_xxjk', '.V_htxx*0', '.L_xtjx*0', '.L_xxjk*1', '.htxk', '.hxxx', '.C_hxxk.hxxk', '.A_xxjk.A_xxjk', '.L_htxx*1', '.C_xxjx.xxjx', '.A_xtjk', '.V_htjx*0', '.C_xtxk.xtxx', '.C_htjk.htjx', '.A_xtxk.A_xtxk', '.V_xxxk*0', '.E_htjk*0', '.C_xxjk.xxxk', '.C_hxjk.hxxx'])
+
+class LocaliseGlyphSheet:
+
+    def __init__(self, RCJKI, controller, parentWindow, glyphName, dependencies_glyphset = None, glyphset = None, sender = None):
+        self.RCJKI = RCJKI
+        self.controller = controller
+        self.glyphName = glyphName
+        self.dependencies_glyphset = dependencies_glyphset
+        self.glyphset = glyphset
+        self.sender = sender
+        self.selectedSuffix = ""
+        
+        self.glyph = self.RCJKI.currentFont[self.glyphName]
+
+        self.w = Sheet((300, 60+30*(len(self.glyph._deepComponents)+1)), parentWindow)
+
+        existingSuffix = set([x[len(self.glyph.name):] for x in glyphset() if self.glyph.name in x])
+        available_localisation_suffix = sorted(list(set(localisation_suffix)-existingSuffix))
+
+        self.w.glyphNameSuffix = TextBox((120, 10, -100, 20), "suffix:", sizeStyle = "small")
+        self.w.glyphName = TextBox((10, 30, 150, 20), self.glyph.name)
+        self.w.glyphNameExtension = PopUpButton((120, 30, -10, 20), available_localisation_suffix)
+
+        y = 60
+        for deepComponent in self.glyph._deepComponents:
+            glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
+            availableSuffix = [x.split(".")[1] for x in dependencies_glyphset if x.split(".")[0] == glyphName]
+            glyphNameExtension = PopUpButton((120, y, -10, 20), availableSuffix)
+            setattr(self.w, deepComponent["name"], glyphName)
+            if availableSuffix:
+                setattr(self.w, f"{deepComponent['name']}Extentsion", glyphNameExtension)
+            y+=30
+
+        self.w.cancelButton = Button((0, -20, 150, 20), "Cancel", callback = self.cancelButtonCallback)
+        self.w.localiseGlyphButton = Button((-150, -20, -0, 20), "Localise", callback = self.localiseButtonCallback)
+        self.w.setDefaultButton(self.w.localiseGlyphButton)
+        self.w.open()
+
+    def cancelButtonCallback(self, sender):
+        self.w.close()
+
+    def localiseButtonCallback(self, sender):
+        self.selectedSuffix = self.w.glyphNameExtension.getItem()
+        if self.selectedSuffix == "":
+            return ""
+        newGlyphName = self.glyph.name+self.selectedSuffix
+        self.RCJKI.currentFont.duplicateGlyph(self.glyph.name, newGlyphName)
+        if not self.RCJKI.currentFont.mysql:
+            self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
+        else:
+            self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
+        self.w.close()
+        index = sorted(list(self.glyphset(update = True))).index(newGlyphName)
+        self.sender.setSelection([])
+        if self.sender == self.controller.w.characterGlyph:
+            self.sender.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.glyphset()])
+        else:
+            self.sender.set(self.glyphset())
+        self.sender.setSelection([index])
+
 class SelectMYSQLProjectSheet:
 
     def __init__(self, RCJKI, parentWindow):
