@@ -1068,12 +1068,13 @@ class SourcesSheet:
             layerName = self.layers[self.w.sourceName.get()]
         if not sourceName and not layerName: return
         location = {}
-        for axis in self.RCJKI.currentGlyph._axes.names:
+        for i, axis in enumerate(self.RCJKI.currentGlyph._axes):
             try:
-                value = float(getattr(self.w, axis).get())
+                value = float(getattr(self.w, axis.name+str(i)).get())
                 if value != "":
-                    location[axis] = value
-            except:
+                    location[axis.name] = value
+            except Exception as e:
+                print(e)
                 continue
         if self.glyphType != "atomicElement":
             copyFrom = self.w.copyfromPopupButton.getItem()
