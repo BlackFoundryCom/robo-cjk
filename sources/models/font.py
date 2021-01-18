@@ -1136,5 +1136,6 @@ class Font():
                     self.client.character_glyph_layer_create(self.uid, newName, layerName, xml)
 
             self.removeGlyph(oldName)
-            self.getmySQLGlyph(newName)
             self.updateStaticSet(glyphType)
+            self.getmySQLGlyph(newName)
+            
