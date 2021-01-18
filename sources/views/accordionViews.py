@@ -379,7 +379,7 @@ class RelatedGlyphsGroup(Group):
             l = list(self.relatedChars)
             title = "Related Characters"
         elif self.filter in [0, 1]:
-            names = [files.unicodeName(c) for c in self.relatedChars]
+            names = [files.unicodeName(c.split('.')[0]) for c in self.relatedChars]
             if self.filter == 0:
                 result = set(names) & set(characterGlyphSet)
             else:
@@ -422,7 +422,6 @@ class RelatedGlyphsGroup(Group):
             self.previewCheckBox.setPosSize((125, 40, 120, 20))
             self.sliders.setPosSize((120, 65, -0, -0))
 
-
         self.RCJKI.drawer.refGlyph = None
         self.RCJKI.drawer.refGlyphPos = [0, 0]   
         UpdateCurrentGlyphView()
@@ -454,7 +453,8 @@ class RelatedGlyphsGroup(Group):
         if not self.RCJKI.currentGlyph.name.startswith("DC_"): return
         self.relatedChars = set()
         try:
-            _, code, _ = self.RCJKI.currentGlyph.name.split("_") 
+            name = self.RCJKI.currentGlyph.name
+            _, code, _ = name.split(".")[0].split("_") 
             char = chr(int(code, 16))
             for k, v in self.RCJKI.currentFont.dataBase.items():
                 if char in v:
@@ -1454,24 +1454,13 @@ class DeepComponentListGroup(Group):
                 if name not in self.RCJKI.currentFont.staticAtomicElementSet():
                     self.setList()
                     return
-            currentCoords = list(self.RCJKI.currentGlyph._deepComponents[index]["coord"].keys())
-            dc = self.RCJKI.currentFont[name]
-            dcCoords = [x.name for x in dc._axes]
-            if sorted(currentCoords) != sorted(dcCoords):
-                if self.RCJKI.isDeepComponent:
-                    self.RCJKI.currentGlyph.removeAtomicElementAtIndex([index])
-                    self.RCJKI.currentGlyph.addAtomicElementNamed(name)
-                elif self.RCJKI.isCharacterGlyph:
-                    self.RCJKI.currentGlyph.removeDeepComponentAtIndexToGlyph([index])
-                    self.RCJKI.currentGlyph.addDeepComponentNamed(name)
+            same_axes = self.RCJKI.currentGlyph.renameDeepComponent(index, name)
+            if not same_axes:
                 self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
                 self.RCJKI.updateDeepComponent()
                 self.setList()
                 sender.setSelection([-1])
             else:
-                self.RCJKI.currentGlyph._deepComponents[index]["name"] = name
-                self.RCJKI.currentGlyph.redrawSelectedElementSource = True
-                self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
                 self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
                 self.RCJKI.updateDeepComponent()
                 self.setList()
@@ -1821,7 +1810,6 @@ class CharacterGlyphInspector(Inspector):
                        dict(label="Deep component list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
-                       
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
@@ -1836,13 +1824,10 @@ class DeepComponentInspector(Inspector):
         self.w = Window((0, 0, 400, 870), self.RCJKI.currentGlyph.name, minSize = (100, 200), closable = False)
 
         self.type = "deepComponent"
-        
         self.relatedGlyphsItem = RelatedGlyphsGroup((10, 0, -10, -0), self.RCJKI, self)
         self.previewItem = PreviewGroup((10, 0, -10, -0), self.RCJKI)
-
         self.axesItem = AxesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, axes)
         self.sourcesItem = SourcesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
-
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "deepComponent", glyphVariationsAxes)
         self.deepComponentAxesItem = DeepComponentAxesGroup((10, 0, -10, -0), self.RCJKI, atomicElementAxes)
         self.deepComponentListItem = DeepComponentListGroup((10, 0, -10, -0), self.RCJKI, self)

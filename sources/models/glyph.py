@@ -211,6 +211,33 @@ class Glyph(RGlyph):
 
         self.removeDeepComponents(deepComponentToRemove)
 
+    def renameDeepComponent(self, index, newName):
+        currentCoords = list(self._deepComponents[index]["coord"].keys())
+        dc = self.getParent()[newName]
+        dcCoords = [x.name for x in dc._axes]
+        print("currentCoords", currentCoords)
+        print("dcCoords", dcCoords, "\n")
+        if sorted(currentCoords) != sorted(dcCoords):
+            if self.currentGlyph.type == 'deepComponent':
+                self.removeAtomicElementAtIndex([index])
+                self.addAtomicElementNamed(newName)
+            elif self.currentGlyph.type == 'characterGlyph':
+                self.removeDeepComponentAtIndexToGlyph([index])
+                self.addDeepComponentNamed(newName)
+            return False
+            # self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+            # self.RCJKI.updateDeepComponent()
+            # self.setList()
+            # sender.setSelection([-1])
+        else:
+            self._deepComponents[index]["name"] = newName
+            self.redrawSelectedElementSource = True
+            self.redrawSelectedElementPreview = True
+            return True
+            # self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
+            # self.RCJKI.updateDeepComponent()
+            # self.setList()
+
     def addAxis(self, axisName="", minValue="", maxValue=""):
         self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue))
         self._glyphVariations.addAxisToLocations(axisName = axisName, minValue=minValue)

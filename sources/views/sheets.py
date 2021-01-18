@@ -845,24 +845,30 @@ class LocaliseGlyphSheet:
         
         self.glyph = self.RCJKI.currentFont[self.glyphName]
 
-        self.w = Sheet((300, 60+30*(len(self.glyph._deepComponents)+1)), parentWindow)
+        if self.glyph.type != "atomicElement":
+            self.w = Sheet((300, 60+30*(len(self.glyph._deepComponents)+1)), parentWindow)
+        else:
+            self.w = Sheet((300, 90), parentWindow)
 
         existingSuffix = set([x[len(self.glyph.name):] for x in glyphset() if self.glyph.name in x])
-        available_localisation_suffix = sorted(list(set(localisation_suffix)-existingSuffix))
+        available_localisation_suffix = ["Choose suffix"]+sorted(list(set(localisation_suffix)-existingSuffix))
 
         self.w.glyphNameSuffix = TextBox((120, 10, -100, 20), "suffix:", sizeStyle = "small")
         self.w.glyphName = TextBox((10, 30, 150, 20), self.glyph.name)
         self.w.glyphNameExtension = PopUpButton((120, 30, -10, 20), available_localisation_suffix)
 
-        y = 60
-        for deepComponent in self.glyph._deepComponents:
-            glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
-            availableSuffix = [x.split(".")[1] for x in dependencies_glyphset if x.split(".")[0] == glyphName]
-            glyphNameExtension = PopUpButton((120, y, -10, 20), availableSuffix)
-            setattr(self.w, deepComponent["name"], glyphName)
-            if availableSuffix:
-                setattr(self.w, f"{deepComponent['name']}Extentsion", glyphNameExtension)
-            y+=30
+        if self.glyph.type != "atomicElement":
+            y = 60
+            for i, deepComponent in enumerate(self.glyph._deepComponents):
+                glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
+                availableSuffix = ["Choose suffix (optional)"]+[x.split(".")[1] for x in dependencies_glyphset if "." in x and x.split(".")[0] == deepComponent["name"]]
+                glyphNameExtension = PopUpButton((120, y, -10, 20), availableSuffix)
+                setattr(self.w, deepComponent["name"], glyphName)
+                if len(availableSuffix)>1:
+                    setattr(self.w, f"{deepComponent['name']}Extension{i}", glyphNameExtension)
+                else:
+                    setattr(self.w, f"{deepComponent['name']}Extension{i}", TextBox((120, y, -10, 20), "No suffix available", sizeStyle = "small"))
+                y+=30
 
         self.w.cancelButton = Button((0, -20, 150, 20), "Cancel", callback = self.cancelButtonCallback)
         self.w.localiseGlyphButton = Button((-150, -20, -0, 20), "Localise", callback = self.localiseButtonCallback)
@@ -874,21 +880,28 @@ class LocaliseGlyphSheet:
 
     def localiseButtonCallback(self, sender):
         self.selectedSuffix = self.w.glyphNameExtension.getItem()
-        if self.selectedSuffix == "":
+        if self.selectedSuffix == "" or self.selectedSuffix == "Choose suffix":
             return ""
-        newGlyphName = self.glyph.name+self.selectedSuffix
+        newGlyphName = self.glyph.name + self.selectedSuffix
         self.RCJKI.currentFont.duplicateGlyph(self.glyph.name, newGlyphName)
         if not self.RCJKI.currentFont.mysql:
             self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
         else:
             self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
+        if self.glyph.type != "atomicElement":
+            for i, deepComponent in enumerate(self.glyph._deepComponents):
+                element = getattr(self.w, f"{deepComponent['name']}Extension{i}")
+                if element.__class__.__name__ == "TextBox": continue
+                ext = element.getItem()
+                if ext == "Choose suffix (optional)": continue
+                self.RCJKI.currentFont[newGlyphName].renameDeepComponent(i, deepComponent["name"]+'.'+ext)
         self.w.close()
         index = sorted(list(self.glyphset(update = True))).index(newGlyphName)
         self.sender.setSelection([])
         if self.sender == self.controller.w.characterGlyph:
-            self.sender.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.glyphset()])
+            self.sender.set([dict(char = files.unicodeName2Char(x), name = x) for x in sorted(list(self.glyphset()))])
         else:
-            self.sender.set(self.glyphset())
+            self.sender.set(sorted(list(self.glyphset())))
         self.sender.setSelection([index])
 
 class SelectMYSQLProjectSheet:
