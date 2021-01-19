@@ -440,6 +440,7 @@ class RoboCJKController(object):
                 self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)    
             else:
                 self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
+        
 
     # def draw(self):
     #     mjdt.save()

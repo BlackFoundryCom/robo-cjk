@@ -762,16 +762,25 @@ class Font():
         # print("_initWithLib = ", _initWithLib_stop-_initWithLib_start, "seconds for %s"%glyph.name)
 
     def staticAtomicElementSet(self, update = False):
+        if self.mysql:
+            self._atomicElementSet = self.atomicElementSet
+            return set(self._atomicElementSet)
         if not self._atomicElementSet or update:
             self._atomicElementSet = self.atomicElementSet
         return set(self._atomicElementSet)
 
     def staticDeepComponentSet(self, update = False):
+        if self.mysql:
+            self._deepComponentSet = self.deepComponentSet
+            return set(self._deepComponentSet)
         if not self._deepComponentSet or update:
             self._deepComponentSet = self.deepComponentSet
         return set(self._deepComponentSet)
 
     def staticCharacterGlyphSet(self, update = False):
+        if self.mysql:
+            self._characterGlyphSet = self.characterGlyphSet
+            return set(self._characterGlyphSet)
         if not self._characterGlyphSet or update:
             self._characterGlyphSet = self.characterGlyphSet
         return set(self._characterGlyphSet)

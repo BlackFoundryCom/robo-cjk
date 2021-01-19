@@ -218,12 +218,16 @@ class Glyph(RGlyph):
         print("currentCoords", currentCoords)
         print("dcCoords", dcCoords, "\n")
         if sorted(currentCoords) != sorted(dcCoords):
-            if self.currentGlyph.type == 'deepComponent':
+            if self.type == 'deepComponent':
                 self.removeAtomicElementAtIndex([index])
                 self.addAtomicElementNamed(newName)
-            elif self.currentGlyph.type == 'characterGlyph':
+            elif self.type == 'characterGlyph':
                 self.removeDeepComponentAtIndexToGlyph([index])
                 self.addDeepComponentNamed(newName)
+            # for coord_name in self._deepComponents[-1]["coord"]:
+            #     if coord_name in dcCoords:
+            #         value = dc._axes[dcCoords.index(coord_name)]
+            #         self._deepComponents[-1]["coord"][coord_name] = value
             return False
         else:
             self._deepComponents[index]["name"] = newName
