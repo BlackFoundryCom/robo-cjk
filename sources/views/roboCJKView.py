@@ -1309,27 +1309,30 @@ class RoboCJKView(BaseWindowController):
         newGlyphName = self._duplicateGlyph(self.w.atomicElement, self.RCJKI.currentFont.staticAtomicElementSet())
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
-            index = self.currentFont.staticAtomicElementSet(update = True).index(newGlyphName)
+            glyphset = sorted(list(self.currentFont.staticAtomicElementSet(update = True)))
+            index = glyphset.index(newGlyphName)
             self.w.atomicElement.setSelection([])
-            self.w.atomicElement.set(self.currentFont.staticAtomicElementSet())
+            self.w.atomicElement.set(glyphset)
             self.w.atomicElement.setSelection([index])
 
     def duplicateDeepComponentCallback(self, sender):
         newGlyphName = self._duplicateGlyph(self.w.deepComponent, self.RCJKI.currentFont.staticDeepComponentSet())
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
-            index = self.currentFont.staticDeepComponentSet(update = True).index(newGlyphName)
+            glyphset = sorted(list(self.currentFont.staticDeepComponentSet(update = True)))
+            index = glyphset.index(newGlyphName)
             self.w.deepComponent.setSelection([])
-            self.w.deepComponent.set(self.currentFont.staticDeepComponentSet())
+            self.w.deepComponent.set(glyphset)
             self.w.deepComponent.setSelection([index])
 
     def duplicateCharacterGlyphCallback(self, sender):
         newGlyphName = self._duplicateGlyph(self.w.characterGlyph, self.RCJKI.currentFont.staticCharacterGlyphSet())
         if newGlyphName:
             # self.prevGlyphName = newGlyphName
-            index = self.currentFont.staticCharacterGlyphSet(update = True).index(newGlyphName)
+            glyphset = sorted(list(self.currentFont.staticCharacterGlyphSet(update = True)))
+            index = glyphset.index(newGlyphName)
             self.w.characterGlyph.setSelection([])
-            self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.staticCharacterGlyphSet()])
+            self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in glyphset])
             self.w.characterGlyph.setSelection([index])
 
     def _duplicateGlyph(self, UIList, glyphset):
@@ -1340,14 +1343,16 @@ class RoboCJKView(BaseWindowController):
             glyphName = glyphName["name"]
         glyph = self.currentFont[glyphName]
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(glyph)
-        user = self.RCJKI.currentFont.glyphLockedBy(glyph)
+        
         glyphtype = glyph.type
         # if user != self.RCJKI.currentFont.locker._username:
-        if user != self.RCJKI.currentFont.lockerUserName:
-            PostBannerNotification(
-                'Impossible', "You must lock the glyph before"
-                )
-            return False
+        if not self.RCJKI.currentFont.mysql:
+            user = self.RCJKI.currentFont.glyphLockedBy(glyph)
+            if user != self.RCJKI.currentFont.lockerUserName:
+                PostBannerNotification(
+                    'Impossible', "You must lock the glyph before"
+                    )
+                return False
         glyphSet = glyphset
         message = f"Duplicate '{glyphName}' as:"
         i = 0
@@ -1402,12 +1407,20 @@ class RoboCJKView(BaseWindowController):
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
         glyph = self.currentFont[glyphName]
         user = self.RCJKI.currentFont.glyphLockedBy(glyph)
-        # if user != self.RCJKI.currentFont.locker._username:
-        if user != self.RCJKI.currentFont.lockerUserName:
-            PostBannerNotification(
-                'Impossible', "You must lock the glyph before"
-                )
-            return False
+        if not self.RCJKI.currentFont.mysql:
+            # if user != self.RCJKI.currentFont.locker._username:
+            if user != self.RCJKI.currentFont.lockerUserName:
+                PostBannerNotification(
+                    'Impossible', "You must lock the glyph before"
+                    )
+                return False
+        else:
+            if user != None and user != self.RCJKI.currentFont.lockerUserName:
+                PostBannerNotification(
+                    'Impossible', "This glyph is locked by someone else"
+                    )
+                return False
+
         glyphType = glyph.type
         GlyphsthatUse = set()
         if (glyph.type == "atomicElement" and len(glyph)) or (glyph.type == "deepComponent" and glyph._deepComponents):
@@ -1476,7 +1489,7 @@ class RoboCJKView(BaseWindowController):
             self.w.atomicElement.setSelection([])
             self.w.atomicElement.set(sorted(list(self.currentFont.atomicElementSet)))
             self.prevGlyphName = ""
-            self.setGlyphToCanvas(self.w.atomicElement, self.currentGlyph)
+            self.setGlyphToCanvas(self.w.atomicElement, None)
             self.w.lockerInfoTextBox.set("")
 
     def removeDeepComponentCallback(self, sender):
@@ -1498,7 +1511,7 @@ class RoboCJKView(BaseWindowController):
             self.w.deepComponent.setSelection([])
             self.w.deepComponent.set(sorted(list(self.currentFont.deepComponentSet)))
             self.prevGlyphName = ""
-            self.setGlyphToCanvas(self.w.deepComponent, self.currentGlyph)
+            self.setGlyphToCanvas(self.w.deepComponent,None)
             self.w.lockerInfoTextBox.set("")
 
     def removeCharacterGlyphCallback(self, sender):
@@ -1560,7 +1573,7 @@ class RoboCJKView(BaseWindowController):
         self.w.characterGlyph.setSelection([])
         self.w.characterGlyph.set([dict(char = files.unicodeName2Char(x), name = x) for x in sorted(list(self.currentFont.staticCharacterGlyphSet()))])
         self.prevGlyphName = ""
-        self.setGlyphToCanvas(self.w.characterGlyph, self.currentGlyph)
+        self.setGlyphToCanvas(self.w.characterGlyph, None)
         self.w.lockerInfoTextBox.set("")
 
     def dumpName(self, glyphType, sets):

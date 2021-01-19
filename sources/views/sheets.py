@@ -1055,12 +1055,17 @@ class LockController:
         f = self.RCJKI.currentFont
         glyphs = []
         filesToRemove = []
-        for x in self.w.unlock.lockedGlyphsList.get():
-            if x["sel"]:
-                try:    
-                    glyphs.append(f[x["name"]])
-                except:
-                    filesToRemove.append(x["name"])
+        if not f.mysql:
+            for x in self.w.unlock.lockedGlyphsList.get():
+                if x["sel"]:
+                    try:    
+                        glyphs.append(f[x["name"]])
+                    except:
+                        filesToRemove.append(x["name"])
+        else:
+            for x in self.w.unlock.lockedGlyphsList.get():
+                if x["sel"]:
+                    glyphs.append(x["name"])
         # self.RCJKI.currentFont.locker.removeFiles(filesToRemove)
         self.RCJKI.currentFont.removeLockerFiles(filesToRemove)
         if glyphs:

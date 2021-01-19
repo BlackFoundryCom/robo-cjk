@@ -890,12 +890,23 @@ class Font():
             self.getGlyph(self[newGlyphName], font = self._fullRFont)
             self.updateStaticSet(glyphType)
         else:
+            glyphType = self[glyphName].type
+            self.updateStaticSet(glyphType)
+            if glyphType == "atomicElement":
+                if newGlyphName in self.staticAtomicElementSet():
+                    return
+            elif glyphType == "deepComponent":
+                if newGlyphName in self.staticDeepComponentSet():
+                    return
+            else:
+                if newGlyphName in self.staticCharacterGlyphSet():
+                    return
             f = self._RFont.getLayer('foreground')
             # f[glyphName].name = newGlyphName
             glyph = f[glyphName].copy()
             glyph.name = newGlyphName
             xml = glyph.dumpToGLIF()
-            glyphType = self[glyphName].type
+            
             if glyphType == "atomicElement":
                 self.client.atomic_element_create(self.uid, xml)
             elif glyphType == "deepComponent":
@@ -923,7 +934,7 @@ class Font():
             
 
     @gitCoverage(msg = 'remove Glyph')
-    def removeGlyph(self, glyphName:str): 
+    def removeGlyph(self, glyphName:str, glyphType = None): 
         # return
         if not self.mysql:
             fileName = "%s.glif"%files.userNameToFileName(glyphName)
@@ -944,19 +955,31 @@ class Font():
             self.locker.removeFiles([glyphName])
 
         else:
-            glyph = self[glyphName]
-            glyphType = glyph.type
+            # glyph = self[glyphName]
+            if glyphType is None:
+                glyphType = self._findGlyphTypeFromName(glyphName)
+            self.updateStaticSet(glyphType)
             if glyphType == "atomicElement":
-                self.client.atomic_element_delete(self.uid, glyphName)
+                if glyphName not in self.staticAtomicElementSet():
+                    return
             elif glyphType == "deepComponent":
-                self.client.deep_component_delete(self.uid, glyphName)
+                if glyphName not in self.staticDeepComponentSet():
+                    return
             else:
-                self.client.character_glyph_delete(self.uid, glyphName)
+                if glyphName not in self.staticCharacterGlyphSet():
+                    return
+            if glyphType == "atomicElement":
+                remove = self.client.atomic_element_delete(self.uid, glyphName, ignore_lock = True)
+            elif glyphType == "deepComponent":
+                self.client.deep_component_delete(self.uid, glyphName, ignore_lock = True)
+            elif glyphType == "characterGlyph":
+                self.client.character_glyph_delete(self.uid, glyphName, ignore_lock = True)
 
-        self._RFont.removeGlyph(glyphName)
-        for layer in self._RFont.layers:
-            if glyphName in layer.keys():
-                layer.removeGlyph(glyphName) 
+        if glyphName in self._RFont.keys():
+            self._RFont.removeGlyph(glyphName)
+            for layer in self._RFont.layers:
+                if glyphName in layer.keys():
+                    layer.removeGlyph(glyphName) 
           
         self.updateStaticSet(glyphType) 
 
@@ -1117,6 +1140,17 @@ class Font():
             self.locker.changeLockName(oldName, newName)
             return True
         else:
+            glyphType = self[oldName].type
+            self.updateStaticSet(glyphType)
+            if glyphType == "atomicElement":
+                if oldName not in self.staticAtomicElementSet():
+                    return
+            elif glyphType == "deepComponent":
+                if oldName not in self.staticDeepComponentSet():
+                    return
+            else:
+                if oldName not in self.staticCharacterGlyphSet():
+                    return
             f = self._RFont.getLayer('foreground')
             f[oldName].name = newName
             glyph = f[newName]
@@ -1131,6 +1165,7 @@ class Font():
 
             for layerName in self._fontLayers:
                 f = self._RFont.getLayer(layerName)
+                if oldName not in f.keys(): continue
                 f[oldName].name = newName
                 g = f[newName]
                 xml = g.dumpToGLIF()
@@ -1141,7 +1176,7 @@ class Font():
                 else:
                     self.client.character_glyph_layer_create(self.uid, newName, layerName, xml)
 
-            self.removeGlyph(oldName)
+            self.removeGlyph(oldName, glyphType)
             self.updateStaticSet(glyphType)
             self.getmySQLGlyph(newName)
             
