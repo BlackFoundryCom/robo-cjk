@@ -781,8 +781,6 @@ class Font():
         if not self.mysql:
             return self._returnGlyphsList('atomicElement')
         else:
-            # self.atomicElementName2uid = {x["name"]:x["id"] for x in self.client.atomic_element_list(self.uid)["data"]}
-
             return [x["name"] for x in self.client.atomic_element_list(self.uid)["data"]]
 
     @property
@@ -790,7 +788,6 @@ class Font():
         if not self.mysql:
             return self._returnGlyphsList('deepComponent')
         else:
-            # self.deepComponentName2uid = {x["name"]:x["id"] for x in self.client.deep_component_list(self.uid)["data"]}
             return [x["name"] for x in self.client.deep_component_list(self.uid)["data"]]
 
     @property
@@ -798,7 +795,6 @@ class Font():
         if not self.mysql:
             return self._returnGlyphsList('characterGlyph')
         else:
-            # self.characterGlyphName2uid = {x["name"]:x["id"] for x in self.client.character_glyph_list(self.uid)["data"]}
             return [x["name"] for x in self.client.character_glyph_list(self.uid)["data"]]
 
     def _returnGlyphsList(self, glyphType):
@@ -967,6 +963,7 @@ class Font():
 
     def saveGlyph(self, glyph):
         if glyph is None: return  
+        if self.glyphLockedBy(glyph) != self.lockerUserName: return
         name = glyph.name
         glyph.save()
         rglyph = glyph._RGlyph

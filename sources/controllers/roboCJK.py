@@ -316,6 +316,7 @@ class RoboCJKController(object):
         else:
             self.currentFont.saveGlyph(self.currentGlyph)
             self.currentFont.saveFontlib()
+            self.currentFont.batchUnlockGlyphs([self.currentGlyph.name])
         stop = time.time()
         print(stop-start, "to close %s"%self.currentGlyph.name)
               

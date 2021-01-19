@@ -225,18 +225,11 @@ class Glyph(RGlyph):
                 self.removeDeepComponentAtIndexToGlyph([index])
                 self.addDeepComponentNamed(newName)
             return False
-            # self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
-            # self.RCJKI.updateDeepComponent()
-            # self.setList()
-            # sender.setSelection([-1])
         else:
             self._deepComponents[index]["name"] = newName
             self.redrawSelectedElementSource = True
             self.redrawSelectedElementPreview = True
             return True
-            # self.controller.deepComponentAxesItem.deepComponentAxesList.set([])
-            # self.RCJKI.updateDeepComponent()
-            # self.setList()
 
     def addAxis(self, axisName="", minValue="", maxValue=""):
         self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue))

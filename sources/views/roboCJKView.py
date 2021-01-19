@@ -121,7 +121,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
             # font.getGlyph(font[glyphName])
             # g = font.get(glyphName, font._RFont)._RGlyph
     else:
-        if not locked: return
+        # if not locked: return
         getRelatedGlyphs(font, glyph.name)
     s_stop = time.time()
     print("3", s_stop-s_start)
