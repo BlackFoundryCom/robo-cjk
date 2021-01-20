@@ -762,25 +762,25 @@ class Font():
         # print("_initWithLib = ", _initWithLib_stop-_initWithLib_start, "seconds for %s"%glyph.name)
 
     def staticAtomicElementSet(self, update = False):
-        if self.mysql:
-            self._atomicElementSet = self.atomicElementSet
-            return set(self._atomicElementSet)
+        # if self.mysql:
+        #     self._atomicElementSet = self.atomicElementSet
+        #     return set(self._atomicElementSet)
         if not self._atomicElementSet or update:
             self._atomicElementSet = self.atomicElementSet
         return set(self._atomicElementSet)
 
     def staticDeepComponentSet(self, update = False):
-        if self.mysql:
-            self._deepComponentSet = self.deepComponentSet
-            return set(self._deepComponentSet)
+        # if self.mysql:
+        #     self._deepComponentSet = self.deepComponentSet
+        #     return set(self._deepComponentSet)
         if not self._deepComponentSet or update:
             self._deepComponentSet = self.deepComponentSet
         return set(self._deepComponentSet)
 
     def staticCharacterGlyphSet(self, update = False):
-        if self.mysql:
-            self._characterGlyphSet = self.characterGlyphSet
-            return set(self._characterGlyphSet)
+        # if self.mysql:
+        #     self._characterGlyphSet = self.characterGlyphSet
+        #     return set(self._characterGlyphSet)
         if not self._characterGlyphSet or update:
             self._characterGlyphSet = self.characterGlyphSet
         return set(self._characterGlyphSet)
@@ -1143,15 +1143,20 @@ class Font():
             glyphType = self[oldName].type
             self.updateStaticSet(glyphType)
             if glyphType == "atomicElement":
-                if oldName not in self.staticAtomicElementSet():
+                glyphlist = self.staticAtomicElementSet()
+                if oldName not in glyphlist or newName in glyphlist:
                     return
             elif glyphType == "deepComponent":
-                if oldName not in self.staticDeepComponentSet():
+                glyphlist = self.staticDeepComponentSet()
+                if oldName not in glyphlist or newName in glyphlist:
                     return
             else:
-                if oldName not in self.staticCharacterGlyphSet():
+                glyphlist = self.staticCharacterGlyphSet()
+                if oldName not in glyphlist or newName in glyphlist:
                     return
+
             f = self._RFont.getLayer('foreground')
+            if self.glyphLockedBy(self[oldName]) not in [None, self.lockerUserName]: return
             f[oldName].name = newName
             glyph = f[newName]
             xml = glyph.dumpToGLIF()
@@ -1179,4 +1184,5 @@ class Font():
             self.removeGlyph(oldName, glyphType)
             self.updateStaticSet(glyphType)
             self.getmySQLGlyph(newName)
+            return True
             

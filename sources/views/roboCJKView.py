@@ -1182,19 +1182,19 @@ class RoboCJKView(BaseWindowController):
             if sender == self.w.characterGlyph:
                 charSet = [dict(char = files.unicodeName2Char(x["name"]), name = x["name"]) for x in sender.get()]
                 sender.set(charSet)
-            self.setGlyphToCanvas(sender, self.currentGlyph)
+            self.setGlyphToCanvas(sender, self.currentFont[newGlyphName])
 
-        self.w.atomicElement.setSelection([])
-        self.w.deepComponent.setSelection([])
-        self.w.characterGlyph.setSelection([])
+            self.w.atomicElement.setSelection([])
+            self.w.deepComponent.setSelection([])
+            self.w.characterGlyph.setSelection([])
 
-        self.w.atomicElement.set(self.currentFont.atomicElementSet)
-        self.w.deepComponent.set(self.currentFont.deepComponentSet)
-        charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
-        self.w.characterGlyph.set(charSet)
+            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+            self.w.characterGlyph.set(charSet)
 
-        index = sender.get().index(newGlyphName)
-        sender.setSelection([index])
+            index = sender.get().index(newGlyphName)
+            sender.setSelection([index])
 
     def GlyphsListSelectionCallback(self, sender):
         start = time.time()
