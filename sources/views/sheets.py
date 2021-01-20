@@ -41,6 +41,8 @@ connectorPath = os.path.join(cwd, "rcjk2mysql", "Config", "connectors.cfg")
 # print("head", head)
 # print("tail", tail)
 
+getSuffix = files.getSuffix
+
 class SelectLayerSheet():
     def __init__(self, RCJKI, controller, availableLayers):
         self.RCJKI = RCJKI
@@ -861,9 +863,9 @@ class LocaliseGlyphSheet:
             y = 60
             for i, deepComponent in enumerate(self.glyph._deepComponents):
                 glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
-                availableSuffix = ["Choose suffix (optional)"]+[x.split(".")[1] for x in dependencies_glyphset if "." in x and x.split(".")[0] == deepComponent["name"]]
+                availableSuffix = ["Choose suffix (optional)"]+[getSuffix(x) for x in dependencies_glyphset if "." in x and x.split(".")[0] == deepComponent["name"]]
                 glyphNameExtension = PopUpButton((120, y, -10, 20), availableSuffix)
-                setattr(self.w, deepComponent["name"], glyphName)
+                setattr(self.w, deepComponent["name"]+str(i), glyphName)
                 if len(availableSuffix)>1:
                     setattr(self.w, f"{deepComponent['name']}Extension{i}", glyphNameExtension)
                 else:

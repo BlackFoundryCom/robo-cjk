@@ -26,7 +26,7 @@ import mojo.drawingTools as mjdt
 from AppKit import NSColor, NSFont
 from utils import decorators, files, interpolation, vanillaPlus
 from views import sheets
-import os, copy
+import os, copy, string
 
 import cProfile, pstats, io
 from pstats import SortKey
@@ -42,7 +42,7 @@ alignTopButtonImagePath = os.path.join(os.getcwd(), "resources", "alignTopButton
 alignRightButtonImagePath = os.path.join(os.getcwd(), "resources", "alignRightButton.pdf")
 alignBottomButtonImagePath = os.path.join(os.getcwd(), "resources", "alignBottomButton.pdf")
 
-
+getSuffix = files.getSuffix
 
 class EditingSheet():
 
@@ -103,24 +103,24 @@ class CompositionRulesGroup(Group):
             callback = self.editButtonCallback
             )
         self.componentsList = List(
-            (80, 0, 40, -0), [], 
+            (80, 0, 80, -0), [], 
             drawFocusRing = False,
             selectionCallback = self.componentsListSelectionCallback)
         
         self.variantList = List(
-            (120, 0, 40, -0), [], 
+            (160, 0, 80, -0), [], 
             drawFocusRing = False,
             selectionCallback = self.variantListSelectionCallback,
             doubleClickCallback = self.variantListDoubleClickCallback)
         self.existingInstancesList = List(
-            (-40, 0, 40, -20), [], 
+            (-60, 0, -0, -20), [], 
             drawFocusRing = False,
             selectionCallback = self.existingInstancesListSelectionCallback,
             doubleClickCallback = self.existingInstancesListDoubleClickCallback
             )
-        self.canvas = CanvasGroup((160, 0, -40, -0), delegate = self)
+        self.canvas = CanvasGroup((240, 0, -60, -0), delegate = self)
         self.deselectButton = Button(
-            (-40, -20, -0, 20), "✖", 
+            (-60, -20, -0, 20), "✖", 
             sizeStyle = 'small', 
             callback = self.deselectButtonCallback)
         
@@ -128,17 +128,32 @@ class CompositionRulesGroup(Group):
 
     def setUI(self):
         if not self.RCJKI.currentFont.dataBase or not self.RCJKI.currentGlyph.name.startswith("uni"): return
-        if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni'):
+        suffix = ""
+        if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni') and "." not in self.RCJKI.currentGlyph.name:
             try:
                 self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
+                glyph_unicode = self.RCJKI.currentGlyph.unicode
             except:
                 print('this glyph has no Unicode')
                 return
-        char = chr(self.RCJKI.currentGlyph.unicode)
+        if "." in self.RCJKI.currentGlyph.name:
+            try:
+                glyph_unicode = int(self.RCJKI.currentGlyph.name.split(".")[0][3:], 16)
+                suffix = "." + getSuffix(self.RCJKI.currentGlyph.name)
+            except: pass
+        char = chr(self.RCJKI.currentGlyph.unicode)+suffix
         d = self.RCJKI.currentFont.dataBase.get(char, [])
         if d is None:
             d = []
-        self.componentsList.set(d)
+        data = []
+        for c in d:
+            if c not in string.printable:
+                data.append(c)
+            elif data:
+                data[-1]+=c
+            else:
+                pass
+        self.componentsList.set(data)
         self.char.set(char)
 
     def editButtonCallback(self, sender):
@@ -161,8 +176,10 @@ class CompositionRulesGroup(Group):
             self.variantList.set([])
             return
         char = sender.get()[sel[0]]
-        self.code = files.normalizeUnicode(hex(ord(char))[2:].upper())
-        dcName = "DC_%s_00"%self.code
+        self.code = files.normalizeUnicode(hex(ord(char[0]))[2:].upper())
+        self.suffix = char[1:]
+        if self.suffix == " ": self.suffix = ""
+        dcName = "DC_%s_00%s"%(self.code, self.suffix)
         deepComponentSet = self.RCJKI.currentFont.deepComponentSet
         if dcName not in deepComponentSet: 
             self.variantList.set([])
@@ -171,7 +188,7 @@ class CompositionRulesGroup(Group):
         l = ["00"]
         i = 1
         while True:
-            name = "DC_%s_%s"%(self.code, str(i).zfill(2))
+            name = "DC_%s_%s%s"%(self.code, str(i).zfill(2), self.suffix)
             if not name in deepComponentSet:
                 break
             l.append(str(i).zfill(2))
@@ -191,7 +208,7 @@ class CompositionRulesGroup(Group):
             self.canvas.update()
             return
         index = sender.get()[sel[0]]
-        self.deepComponentName = "DC_%s_%s"%(self.code, index)
+        self.deepComponentName = "DC_%s_%s%s"%(self.code, index, self.suffix)
         self.glyph = self.RCJKI.currentFont.get(self.deepComponentName)
         # self.glyph.preview.computeDeepComponents(update = False)
         self.canvas.update()
@@ -213,10 +230,13 @@ class CompositionRulesGroup(Group):
             self.existingDeepComponentInstances = []
             uid = self.RCJKI.currentFont.uid
             for char in self.RCJKI.currentFont.client.deep_component_get(uid, deepComponentName)["data"]["used_by"]:
+                print("char", char)
+                suffix = getSuffix(char["name"])
+                if suffix: suffix = "."+suffix
                 if char["unicode_hex"]:
-                    self.existingDeepComponentInstances.append(chr(int(char["unicode_hex"],16)))
+                    self.existingDeepComponentInstances.append(chr(int(char["unicode_hex"],16))+suffix)
                 else:
-                    self.existingDeepComponentInstances.append(char["name"])
+                    self.existingDeepComponentInstances.append(char["name"]+suffix)
         self.existingInstancesList.set(self.existingDeepComponentInstances)
 
     def variantListDoubleClickCallback(self, sender):
@@ -229,7 +249,7 @@ class CompositionRulesGroup(Group):
         if not sel:
             self.RCJKI.drawer.existingInstance = None
             self.RCJKI.drawer.existingInstancePos = [0, 0]
-            self.deepComponentSettings = []
+            self.deepComponentSettings = {}
             self.deepComponentVariationSettings = []
             return
         char = sender.get()[sel[0]]
@@ -237,7 +257,10 @@ class CompositionRulesGroup(Group):
 
         f = self.RCJKI.currentFont
         try:
-            g = f.get("uni%s"%hex(ord(char))[2:].upper())
+            suffix = getSuffix(char)
+            if suffix: suffix = "."+suffix
+            name = 'uni%s%s'%(hex(ord(char[0]))[2:].upper(), suffix)
+            g = f.get(name)
         except:
             g = f.get(char)
         for i, x in enumerate(g._deepComponents):
@@ -248,7 +271,7 @@ class CompositionRulesGroup(Group):
         if not "name" in self.deepComponentSettings: 
             self.RCJKI.drawer.existingInstance = None
             self.RCJKI.drawer.existingInstancePos = [0, 0]
-            self.deepComponentSettings = []
+            self.deepComponentSettings = {}
             self.deepComponentVariationSettings = []
             return
         dcname = self.deepComponentSettings['name']
