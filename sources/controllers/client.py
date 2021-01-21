@@ -49,11 +49,31 @@ class Client(object):
         Initialize a new Robo-CJK API client using the given credentials,
         then authentication is automatically managed by the client, no need to do anything.
         """
+        if not host or not any([host.startswith(protocol) for protocol in ['http://', 'https://']]):
+            raise ValueError('Invalid host: {}'.format(host))
+        if not username:
+            raise ValueError('Invalid username: {}'.format(username))
+        if not password:
+            raise ValueError('Invalid password: {}'.format(password))
+
+        # strip last slash in case
+        if host.endswith('/'):
+            host = host[:-1]
+
         self._host = host
         self._username = username
         self._password = password
         self._auth_token = None
 
+        try:
+            # check if there are robocjk apis available at the given host
+            response = self._api_call('ping')
+            assert response['data'] == 'pong'
+        except Exception as e:
+            # invalid host
+            raise ValueError(
+                'Unable to call RoboCJK APIs at host: {} - Exception: {}'.format(
+                    self._host, e))
 
     def _api_call(self, view_name, params=None):
         """
@@ -99,6 +119,9 @@ class Client(object):
         Build API absolute url for the given method.
         """
         view_names = {
+            # Ping
+            'ping': '/api/ping/',
+
             # Auth (jwt token)
             'auth_token': '/api/auth/token/',
 

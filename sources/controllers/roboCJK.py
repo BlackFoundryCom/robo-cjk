@@ -147,7 +147,7 @@ class RoboCJKController(object):
         self.copy = []
         self.px, self.py = 0,0
 
-        self.mysql = False
+        self.mysql = True
         self.mysql_userName = ""
         self.mysql_password = ""
         # self.bf_log = bf_log

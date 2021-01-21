@@ -1522,11 +1522,18 @@ class RoboCJKView(BaseWindowController):
         # user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[glyphName])
         user = self.RCJKI.currentFont.glyphLockedBy(glyph)
         # if user != self.RCJKI.currentFont.locker._username:
-        if user != self.RCJKI.currentFont.lockerUserName:
-            PostBannerNotification(
-                'Impossible', "You must lock the glyph before"
-                )
-            return
+        if not self.RCJKI.currentFont.mysql:
+            if user != self.RCJKI.currentFont.lockerUserName:
+                PostBannerNotification(
+                    'Impossible', "You must lock the glyph before"
+                    )
+                return
+        else:
+            if user != None and user != self.RCJKI.currentFont.lockerUserName:
+                PostBannerNotification(
+                    'Impossible', "This glyph is locked by someone else"
+                    )
+                return False
         glyphType = glyph.type
         GlyphsthatUse = set()
         if not self.RCJKI.currentFont.mysql:
@@ -1537,8 +1544,10 @@ class RoboCJKView(BaseWindowController):
                         GlyphsthatUse.add(name)
         else:
             uid = self.RCJKI.currentFont.uid
-            for char in self.RCJKI.currentFont.client.character_glyph_get(uid, glyphName, return_layers=False, return_related=False)["data"]["used_by"]:
-                GlyphsthatUse.add(char["name"])
+            pass
+            # print(self.RCJKI.currentFont.client.character_glyph_get(uid, glyphName, return_layers=False, return_related=False)["data"])
+            # for char in self.RCJKI.currentFont.client.character_glyph_get(uid, glyphName, return_layers=False, return_related=False)["data"]["used_by"]:
+            #     GlyphsthatUse.add(char["name"])
         if not len(GlyphsthatUse):
             message = f"Are you sure you want to delete '{glyphName}'? This action is not undoable"
             answer = AskYesNoCancel(

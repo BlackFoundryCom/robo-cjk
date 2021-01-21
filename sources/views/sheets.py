@@ -688,7 +688,7 @@ class Login:
 
         self.w.segmentedButton = SegmentedButton(
             (10, 10, -10, 20),
-            [dict(title = "Git"), dict(title = "mySQL")],
+            [dict(title = "mySQL"), dict(title = "Git")],
             callback = self.segmentedButtonCallback
             )
         self.w.segmentedButton.set(0)
@@ -818,19 +818,27 @@ class Login:
             setExtensionDefault(blackrobocjk_locker+"mysql_username", self.RCJKI.mysql_userName)
             setExtensionDefault(blackrobocjk_locker+"mysql_password", self.RCJKI.mysql_password)
             setExtensionDefault(blackrobocjk_locker+"mysql_host", self.RCJKI.mysql_host)
-            self.RCJKI.client = client.Client(self.RCJKI.mysql_host, self.RCJKI.mysql_userName, self.RCJKI.mysql_password)
+            try:
+                self.RCJKI.client = client.Client(self.RCJKI.mysql_host, self.RCJKI.mysql_userName, self.RCJKI.mysql_password)
+            except Exception as e:
+                print(e)
+                message("Warning, your credentials are wrong!")
+                return
+            print('self.RCJKI.client', self.RCJKI.client)
             check = self.RCJKI.client.auth_token()
+            print('check', check)
             if check["status"] != 200:
                 print('login response:', check)
                 message("Warning, your credentials are wrong!")
                 return
             self.RCJKI.projects = {x["name"]:x for x in self.RCJKI.client.project_list()["data"]}
             SelectMYSQLProjectSheet(self.RCJKI, self.parentWindow)
+        
 
     def segmentedButtonCallback(self, sender):
-        for i, x in enumerate([self.w.git, self.w.mysql]):
+        for i, x in enumerate([self.w.mysql, self.w.git]):
             x.show(i == sender.get())
-        self.RCJKI.mysql = sender.get()
+        self.RCJKI.mysql = not sender.get()
 
 localisation_suffix = sorted(['', '.C_xtjk.xxxk', '.C_xxjk.xxjx', '.V_xxjx*0', '.C_xxjk.xxjk', '.C_htjk.C_xtxx.xtxx', '.A_htjx', '.E_xtjk*0.E_xtjk*0', '.C_xxxk.xxxk', '.C_hxjx.xxjx', '.A_htjk', '.C_xtjk.htxx', '.C_htjx.xxjk', '.A_xtxk', '.E_xxjx*0', '.A_xxjx.A_xxjx', '.C_xtxx.xtxx', '.A_xxxk', '_C.hxxx.hxxx', '.xtxx', '.A_xxjk', '.xtjk', '.C_hxjk.xxjx', '.V_htjk*0', '.C_htjk.hxxx', '.C_xtxx.htxx', '.E_htxx*0', '.C_htjk.xxjk', '.L_xtjk*0', '.V_xxjx*1', '.A_xtxx', '.C_htxk.xtxx', '.C_xxxx.xxxk', '.C_htjx.xtxx', '.L_htxx*0', '.E_hxjk*0', '.C_xtxk.xxxk', '.A_hxjk', '.L_hxjx*0', '.C_htxk.htxx', '.E_hxjx*0', '.V_htxx*0.V_htxx', '.C_htxk.xxxk', '.C_htjk.htxk', '.V_htxx*1', '.C_htxx.xtxx', '.A_hxxx*0', '.C_xxjx.xxxk', '.C_hxjk.xxjk', '.E_htjx*0', '.C_htjx.hxxx', '.hxjx', '.A_hxxx', '.V_xxjk*1', '.C_xtjx.xxjk', '.htjx', '.E_xtjk*0', '.E_htxx', '.C_xxxk.xxjk', '.htjk', '.xtxk', '.C_htjk.htxx', '.C_htxk.hxxx', '.A_xxjx', '.V_xxjk*0k', '.C_hxxx.hxxx', '.C_htxx.htjk', '.V_htjk*1', '.E_hxxk*0', '.V_htjx', '.C_xtjk.xxjx', '.C_xtjk.xxjk', '.V_hxxk*0', '.xtjx', '.C_xtjx.xtxx', '.htxx', '.A_hxxk', '.V_xxjk*0', '.V_xtjk*0', '.L_hxjk*0', '.V_xtxx*0', '.V_htxx*0.V_htxx*0', '.A_xtjx', '.L_xtxx*1', '.A_xtxx*0', '.C_hxjx.hxxx', '.C_xtjk.xtjk', '.C_hxjk.xxxk', '.xxjx', '.V_hxxx*0', '.E_xxjx', '.C_htxx.htxx', '.C_xtjx.xxjx', '.A_xxjk*1', '.A_xxjk_xxjk', '.E_xtxx*1', '.C_htjk.htjk', '.hxxk', '.hxjk', '.E_xtxx*0', '.C_htjx.xxjx', '.C_xxjx.xxjk', '.C_htjk.xxxk', '.L_xtxx*2', '.C_xtxk.xtxk', '.L_xxjk*0', '.A_htxx', '.C_htjk.hxjk', '.C_xtjk.xtxx', '.L_xxjx*0', '.L_htjk*0', '.V_htxx*0.A_xtxx', '.C_htjk.xxjx', '.C_htjx.htxx', '.C_htxx.hxxx', '.V_hxjk*0', '.C_xxjk.C_xxjk.xxjx', '.xxxk', '.E_xxjk*0', '.C_htjk.xtxx', '.E_xxxk*0', '.E_hxxx*0', '.A_xtjk.A_xtjx', '.L_hxxx*0', '.L_xtxx*0', '.A_xxjk*0', '\x13.C_htxx.htxx', '.L_xxxk*0', '.V_xtxx*1', '.xxjk', '.V_xxjk*0.A_xxjk', '.V_htxx*0', '.L_xtjx*0', '.L_xxjk*1', '.htxk', '.hxxx', '.C_hxxk.hxxk', '.A_xxjk.A_xxjk', '.L_htxx*1', '.C_xxjx.xxjx', '.A_xtjk', '.V_htjx*0', '.C_xtxk.xtxx', '.C_htjk.htjx', '.A_xtxk.A_xtxk', '.V_xxxk*0', '.E_htjk*0', '.C_xxjk.xxxk', '.C_hxjk.hxxx'])
 
