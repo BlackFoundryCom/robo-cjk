@@ -1073,7 +1073,13 @@ class Font():
                 self.getGlyph(rglyph.name, type = glyph.type, font = self._fullRFont)
 
         else:
-            pass
+            AElist = [x["name"] for x in self.client.atomic_element_list(self.uid, is_locked_by_current_user = True)["data"]]
+            DClist = [x["name"] for x in self.client.deep_component_list(self.uid, is_locked_by_current_user = True)["data"]]
+            CGlist = [x["name"] for x in self.client.character_glyph_list(self.uid, is_locked_by_current_user = True)["data"]]
+            for name in AElist + DClist + CGlist:
+                if name in self._RFont.keys():
+                    self.saveGlyph(self[name])
+            # print(AElist, DClist, CGlist)
             # return
 
     def updateStaticSet(self, glyphType = ""):

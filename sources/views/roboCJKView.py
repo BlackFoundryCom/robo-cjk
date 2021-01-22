@@ -149,6 +149,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     print("7", s_stop-s_start)
     s_start = time.time()
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
+    RCJKI.openedGlyphName = glyph.name
     stop = time.time()
     print(stop-start, 'to open a %s'%glyph.name)
 
@@ -543,6 +544,8 @@ class RoboCJKView(BaseWindowController):
             return
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
+        lock, _ = self.currentFont.lockGlyph(glyph)
+        if not lock: return
         glyph.markColor = colors.STATUS_COLORS[names[state]]
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.atomicElementPreview.update()
@@ -561,6 +564,8 @@ class RoboCJKView(BaseWindowController):
             return
         name = l.get()[l.getSelection()[0]]
         glyph = self.currentFont[name]
+        lock, _ = self.currentFont.lockGlyph(glyph)
+        if not lock: return
         glyph.markColor = colors.STATUS_COLORS[names[state]]
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.deepComponentPreview.update()
@@ -579,6 +584,8 @@ class RoboCJKView(BaseWindowController):
             return
         name = l.get()[l.getSelection()[0]]["name"]
         glyph = self.currentFont[name]
+        lock, _ = self.currentFont.lockGlyph(glyph)
+        if not lock: return
         glyph.markColor = colors.STATUS_COLORS[names[state]]
         if colors.STATUS_COLORS[names[state]] == DONE:
             self.RCJKI.decomposeGlyphToBackupLayer(glyph)
@@ -984,6 +991,7 @@ class RoboCJKView(BaseWindowController):
         if self.RCJKI.get('currentFont'):
             if self.currentFont is not None:
                 self.currentFont.save()
+                self.RCJKI.unlockGlyphsNonOpen()
 
     def newProjectButtonCallback(self, sender):
         if not self.RCJKI.mysql:

@@ -122,6 +122,8 @@ class RoboCJKController(object):
         self.transformationTool = transformationTool.TransformationTool(self)
         self.componentWindow = None
         self.characterWindow = None
+        self.currentGlyph = None
+        self.openedGlyphName = ""
         self.gitUserName = ''
         self.gitPassword = ''
         self.gitHostLocker = ''
@@ -254,7 +256,8 @@ class RoboCJKController(object):
                 if self.currentGlyph:
                     self.currentFont.saveGlyph(self.currentGlyph)
                 else:
-                    self.currentFont.save()    
+                    self.currentFont.save()  
+                    self.unlockGlyphsNonOpen()
             else:
                 self.currentFont.save()
         else:
@@ -272,7 +275,11 @@ class RoboCJKController(object):
         def _decompose(glyph, axis, layername):
             if layername not in self.currentFont._RFont.layers:
                 self.currentFont._RFont.newLayer(layername)
-                ais = glyph.preview()
+                if axis:
+                    glyphAxis = glyph._axes.get(axis)
+                    ais = glyph.preview({axis:glyphAxis.maxValue})
+                else:
+                    ais = glyph.preview()
                 f = self.currentFont._RFont.getLayer(layername)
                 f.newGlyph(glyph.name)
                 g1 = f[glyph.name]
@@ -288,8 +295,22 @@ class RoboCJKController(object):
         masterLayerName = "backup_master"
         _decompose(glyph, '', masterLayerName)
 
+
+    def unlockGlyphsNonOpen(self):
+        glyphsList = []
+        for l in [self.currentFont.client.atomic_element_list, self.currentFont.client.deep_component_list, self.currentFont.client.character_glyph_list]:
+            for x in l(self.currentFont.uid, is_locked_by_current_user = True)["data"]:
+                name = x["name"]
+                if name != self.openedGlyphName:
+                    glyphsList.append(name)
+        self.currentFont.batchUnlockGlyphs(glyphsList)
+        # AElist = [x["name"] for x in self.currentFont.client.atomic_element_list(self.currentFont.uid, is_locked_by_current_user = True)["data"]]
+        # DClist = [x["name"] for x in self.currentFont.client.deep_component_list(self.currentFont.uid, is_locked_by_current_user = True)["data"]]
+        # CGlist = [x["name"] for x in self.currentFont.client.character_glyph_list(self.currentFont.uid, is_locked_by_current_user = True)["data"]]
+
     def glyphWindowWillClose(self, notification):
         start = time.time()
+        self.openedGlyphName = ""
         if self.glyphInspectorWindow is not None:
             self.glyphInspectorWindow.closeWindow()
             self.glyphInspectorWindow = None
