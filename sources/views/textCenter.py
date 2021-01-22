@@ -74,7 +74,9 @@ class GlyphUsingDC(Group):
         self.deepComponent = set()
         for dcname in self.c.RCJKI.currentFont.staticDeepComponentSet():
             if len(dcname.split('_')) > 1:
-                self.deepComponent.add(chr(int(dcname.split("_")[1], 16)))
+                try:
+                    self.deepComponent.add(chr(int(dcname.split("_")[1], 16)))
+                except:continue
 
         self.search = SearchBox((0, 5, 100, 20),
             callback = self.searchCallback)
