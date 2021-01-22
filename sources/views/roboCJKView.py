@@ -1200,9 +1200,14 @@ class RoboCJKView(BaseWindowController):
             self.w.deepComponent.set(self.currentFont.deepComponentSet)
             charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
             self.w.characterGlyph.set(charSet)
-
-            index = sender.get().index(newGlyphName)
-            sender.setSelection([index])
+            if sender != self.w.characterGlyph:
+                index = sender.get().index(newGlyphName)
+                sender.setSelection([index])
+            else:
+                for i, x in enumerate(sender.get()):
+                    if x["name"] == newGlyphName:
+                        sender.setSelection([i])       
+                        break
 
     def GlyphsListSelectionCallback(self, sender):
         start = time.time()
@@ -1233,7 +1238,10 @@ class RoboCJKView(BaseWindowController):
         #     self.prevGlyphName = prevGlyphName["name"]
         #     self.RCJKI.currentFont.loadCharacterGlyph(self.prevGlyphName)
         # else:
-        self.prevGlyphName = prevGlyphName
+        if not isinstance(prevGlyphName, str):
+            self.prevGlyphName = prevGlyphName["name"]
+        else:
+            self.prevGlyphName = prevGlyphName
         glyph = self.currentFont[self.prevGlyphName]
         preview_start = time.time()
         user = self.RCJKI.currentFont.glyphLockedBy(glyph)

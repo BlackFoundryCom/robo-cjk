@@ -141,7 +141,8 @@ class CompositionRulesGroup(Group):
                 glyph_unicode = int(self.RCJKI.currentGlyph.name.split(".")[0][3:], 16)
                 suffix = "." + getSuffix(self.RCJKI.currentGlyph.name)
             except: pass
-        char = chr(self.RCJKI.currentGlyph.unicode)+suffix
+        if glyph_unicode is None: return
+        char = chr(glyph_unicode)+suffix
         d = self.RCJKI.currentFont.dataBase.get(char, [])
         if d is None:
             d = []
