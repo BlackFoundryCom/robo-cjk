@@ -97,20 +97,12 @@ def getRelatedGlyphs(font, glyphName, regenerated = []):
 
 # This function is outside of any class
 def openGlyphWindowIfLockAcquired(RCJKI, glyph):
-    import time
     start = time.time()
-    s_start = time.time()
     font = RCJKI.currentFont
     g = glyph._RGlyph
-    s_stop = time.time()
-    print("1", s_stop-s_start)
-    s_start = time.time()
     # font[glyphName]._initWithLib()
     # locked, alreadyLocked = font.locker.lock(g)
     locked, alreadyLocked = font.lockGlyph(g)
-    s_stop = time.time()
-    print("2", s_stop-s_start)
-    s_start = time.time()
     if not RCJKI.mysql:
         print(locked, alreadyLocked)
         if not locked: return
@@ -123,31 +115,16 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     else:
         # if not locked: return
         getRelatedGlyphs(font, glyph.name)
-    s_stop = time.time()
-    print("3", s_stop-s_start)
-    s_start = time.time()
     if not g.width:
         g.width = font.defaultGlyphWidth
     try:
         CurrentGlyphWindow().close()
     except: pass
-    s_stop = time.time()
-    print("4", s_stop-s_start)
-    s_start = time.time()
     # font.get(glyphName, font._RFont).update()
     glyph = font.get(glyph.name, font._RFont)
-    s_stop = time.time()
-    print("5", s_stop-s_start)
-    s_start = time.time()
     glyph.update()
-    s_stop = time.time()
-    print("6", s_stop-s_start)
-    s_start = time.time()
     g = glyph._RGlyph
     OpenGlyphWindow(g)
-    s_stop = time.time()
-    print("7", s_stop-s_start)
-    s_start = time.time()
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
     RCJKI.openedGlyphName = glyph.name
     stop = time.time()

@@ -129,6 +129,7 @@ class CompositionRulesGroup(Group):
     def setUI(self):
         if not self.RCJKI.currentFont.dataBase or not self.RCJKI.currentGlyph.name.startswith("uni"): return
         suffix = ""
+        glyph_unicode = self.RCJKI.currentGlyph.unicode
         if not self.RCJKI.currentGlyph.unicode and self.RCJKI.currentGlyph.name.startswith('uni') and "." not in self.RCJKI.currentGlyph.name:
             try:
                 self.RCJKI.currentGlyph.unicode = int(self.RCJKI.currentGlyph.name[3:], 16)
@@ -140,7 +141,8 @@ class CompositionRulesGroup(Group):
             try:
                 glyph_unicode = int(self.RCJKI.currentGlyph.name.split(".")[0][3:], 16)
                 suffix = "." + getSuffix(self.RCJKI.currentGlyph.name)
-            except: pass
+            except: 
+                pass
         if glyph_unicode is None: return
         char = chr(glyph_unicode)+suffix
         d = self.RCJKI.currentFont.dataBase.get(char, [])
@@ -156,6 +158,7 @@ class CompositionRulesGroup(Group):
                 pass
         self.componentsList.set(data)
         self.char.set(char)
+        # print(self.RCJKI.currentFont.dataBase)
 
     def editButtonCallback(self, sender):
         EditingSheet(self, self.RCJKI)
