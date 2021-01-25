@@ -20,6 +20,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from dataclasses import dataclass
 from vanilla import *
 from vanilla.dialogs import putFile
+import vanilla.dialogs
 from drawBot.ui.drawView import DrawView
 from AppKit import NumberFormatter, NSColor
 from mojo.canvas import Canvas
@@ -887,7 +888,6 @@ CHECKING1 = colors.CHECKING1
 CHECKING2 = colors.CHECKING2
 CHECKING3 = colors.CHECKING3
 DONE = colors.DONE
-STATE_COLORS = colors.STATE_COLORS
 
 class NewPDF:
 
@@ -920,6 +920,9 @@ class NewPDF:
         user = self.RCJKI.gitUserName
         now = datetime.datetime.now()
         date = "%s%s%s_%s%s%s"%(now.year, str(now.month).zfill(2), str(now.day).zfill(2), str(now.hour).zfill(2), str(now.minute).zfill(2), str(now.second).zfill(2))
+
+        if self.RCJKI.currentFont.mysql:
+            mysqlpath = vanilla.dialogs.getFolder()[0]
 
         def drawDesignFrame():
             for e in self.designFrameViewer.elements:
@@ -999,8 +1002,11 @@ class NewPDF:
                     raise e
             db.restore()
 
-            pdfData = db.pdfImage()            
-            outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s-%s.pdf'%(date, str(pageIndex).zfill(2), self.RCJKI.currentFont.fontName, "Overlay"))
+            pdfData = db.pdfImage() 
+            if not self.RCJKI.currentFont.mysql:           
+                outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s-%s.pdf'%(date, str(pageIndex).zfill(2), self.RCJKI.currentFont.fontName, "Overlay"))
+            else:
+                outputPath = os.path.join(mysqlpath, '%s_%s_%s-%s.pdf'%(date, str(pageIndex).zfill(2), self.RCJKI.currentFont.fontName, "Overlay"))
             files.makepath(outputPath)
             db.saveImage(outputPath)
             os.rename(outputPath, outputPath[:-3]+"ai")
@@ -1044,7 +1050,10 @@ class NewPDF:
                 db.restore()
                 pdfData = db.pdfImage()
                 now = datetime.datetime.now()
-                outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s.pdf'%(date, str(pageIndex).zfill(2), text))
+                if not self.RCJKI.currentFont.mysql:           
+                    outputPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_%s.pdf'%(date, str(pageIndex).zfill(2), text))
+                else:
+                    outputPath = os.path.join(mysqlpath, '%s_%s_%s.pdf'%(date, str(pageIndex).zfill(2), text))
                 # os.rename(outputPath, outputPath[:-3]+'ai')
                 files.makepath(outputPath)
                 db.saveImage(outputPath)
@@ -1053,7 +1062,10 @@ class NewPDF:
             for variations, weights in glyphsVariations.items():
                 drawWeight(weights, '%s-%s'%(self.RCJKI.currentFont.fontName, variations))
 
-            textPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_text.txt'%(date, str(pageIndex).zfill(2)))
+            if not self.RCJKI.currentFont.mysql:
+                textPath = os.path.join(self.RCJKI.currentFont.fontPath, "Proofing", user, '%s_%s_text.txt'%(date, str(pageIndex).zfill(2)))
+            else:
+                textPath = os.path.join(mysqlpath, '%s_%s_text.txt'%(date, str(pageIndex).zfill(2)))
             files.makepath(textPath)
             with open(textPath, 'w', encoding = 'utf-8') as file:
                 file.write("".join([chr(int(x.name[3:], 16)) for x in page]))

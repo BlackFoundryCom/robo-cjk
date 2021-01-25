@@ -356,9 +356,12 @@ class CharacterGlyph(Glyph):
         self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{name:1}}, self._axes)
 
     @glyphAddRemoveUndo
-    def removeDeepComponentAtIndexToGlyph(self):
-        if not self.selectedElement: return
-        self.removeDeepComponents(self.selectedElement)
+    def removeDeepComponentAtIndexToGlyph(self, indexes = []):
+        if not self.selectedElement and not indexes: return
+        if indexes:
+            self.removeDeepComponents(indexes)
+        else:
+            self.removeDeepComponents(self.selectedElement)
         self.selectedElement = []
         self.redrawSelectedElementSource = True
         self.redrawSelectedElementPreview = True

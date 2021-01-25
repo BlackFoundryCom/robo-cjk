@@ -32,17 +32,11 @@ import math
 DeepComponents = component.DeepComponents
 VariationGlyphs = component.VariationGlyphs
 
-INPROGRESS = (1, 0, 0, 1)
-CHECKING1 = (1, .5, 0, 1)
-CHECKING2 = (1, 1, 0, 1)
-CHECKING3 = (0, .5, 1, 1)
-DONE = (0, 1, .5, 1)
-STATE_COLORS = {
-    INPROGRESS:"INPROGRESS", 
-    CHECKING1:"CHECKING1", 
-    CHECKING2:"CHECKING2", 
-    CHECKING3:"CHECKING3", 
-    DONE:"DONE"}
+# INPROGRESS = (1, 0, 0, 1)
+# CHECKING1 = (1, .5, 0, 1)
+# CHECKING2 = (1, 1, 0, 1)
+# CHECKING3 = (0, .5, 1, 1)
+# DONE = (0, 1, .5, 1)
 
 # def compute(func):
 #     def wrapper(self, *args, **kwargs):
@@ -216,6 +210,30 @@ class Glyph(RGlyph):
                         glyphVariation.content.deepComponents[index].coord.add(axis, 0)
 
         self.removeDeepComponents(deepComponentToRemove)
+
+    def renameDeepComponent(self, index, newName):
+        currentCoords = list(self._deepComponents[index]["coord"].keys())
+        dc = self.getParent()[newName]
+        dcCoords = [x.name for x in dc._axes]
+        print("currentCoords", currentCoords)
+        print("dcCoords", dcCoords, "\n")
+        if sorted(currentCoords) != sorted(dcCoords):
+            if self.type == 'deepComponent':
+                self.removeAtomicElementAtIndex([index])
+                self.addAtomicElementNamed(newName)
+            elif self.type == 'characterGlyph':
+                self.removeDeepComponentAtIndexToGlyph([index])
+                self.addDeepComponentNamed(newName)
+            # for coord_name in self._deepComponents[-1]["coord"]:
+            #     if coord_name in dcCoords:
+            #         value = dc._axes[dcCoords.index(coord_name)]
+            #         self._deepComponents[-1]["coord"][coord_name] = value
+            return False
+        else:
+            self._deepComponents[index]["name"] = newName
+            self.redrawSelectedElementSource = True
+            self.redrawSelectedElementPreview = True
+            return True
 
     def addAxis(self, axisName="", minValue="", maxValue=""):
         self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue))

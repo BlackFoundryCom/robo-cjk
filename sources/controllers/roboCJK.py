@@ -72,6 +72,7 @@ from mojo.extensions import getExtensionDefault, setExtensionDefault
 import math
 import json
 import copy 
+import time
 
 # import mySQLCollabEngine
 
@@ -113,7 +114,7 @@ class RoboCJKController(object):
     hiddenSavePath = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'mySQLSave')
     files.makepath(hiddenSavePath)
 
-    _version = 1.1
+    _version = 1.2
 
     def __init__(self):
         self.observers = False
@@ -121,6 +122,8 @@ class RoboCJKController(object):
         self.transformationTool = transformationTool.TransformationTool(self)
         self.componentWindow = None
         self.characterWindow = None
+        self.currentGlyph = None
+        self.openedGlyphName = ""
         self.gitUserName = ''
         self.gitPassword = ''
         self.gitHostLocker = ''
@@ -146,7 +149,7 @@ class RoboCJKController(object):
         self.copy = []
         self.px, self.py = 0,0
 
-        self.mysql = False
+        self.mysql = True
         self.mysql_userName = ""
         self.mysql_password = ""
         # self.bf_log = bf_log
@@ -253,7 +256,8 @@ class RoboCJKController(object):
                 if self.currentGlyph:
                     self.currentFont.saveGlyph(self.currentGlyph)
                 else:
-                    self.currentFont.save()    
+                    self.currentFont.save()  
+                    self.unlockGlyphsNonOpen()
             else:
                 self.currentFont.save()
         else:
@@ -271,7 +275,11 @@ class RoboCJKController(object):
         def _decompose(glyph, axis, layername):
             if layername not in self.currentFont._RFont.layers:
                 self.currentFont._RFont.newLayer(layername)
-                ais = glyph.preview()
+                if axis:
+                    glyphAxis = glyph._axes.get(axis)
+                    ais = glyph.preview({axis:glyphAxis.maxValue})
+                else:
+                    ais = glyph.preview()
                 f = self.currentFont._RFont.getLayer(layername)
                 f.newGlyph(glyph.name)
                 g1 = f[glyph.name]
@@ -287,7 +295,22 @@ class RoboCJKController(object):
         masterLayerName = "backup_master"
         _decompose(glyph, '', masterLayerName)
 
+
+    def unlockGlyphsNonOpen(self):
+        glyphsList = []
+        for l in [self.currentFont.client.atomic_element_list, self.currentFont.client.deep_component_list, self.currentFont.client.character_glyph_list]:
+            for x in l(self.currentFont.uid, is_locked_by_current_user = True)["data"]:
+                name = x["name"]
+                if name != self.openedGlyphName:
+                    glyphsList.append(name)
+        self.currentFont.batchUnlockGlyphs(glyphsList)
+        # AElist = [x["name"] for x in self.currentFont.client.atomic_element_list(self.currentFont.uid, is_locked_by_current_user = True)["data"]]
+        # DClist = [x["name"] for x in self.currentFont.client.deep_component_list(self.currentFont.uid, is_locked_by_current_user = True)["data"]]
+        # CGlist = [x["name"] for x in self.currentFont.client.character_glyph_list(self.currentFont.uid, is_locked_by_current_user = True)["data"]]
+
     def glyphWindowWillClose(self, notification):
+        start = time.time()
+        self.openedGlyphName = ""
         if self.glyphInspectorWindow is not None:
             self.glyphInspectorWindow.closeWindow()
             self.glyphInspectorWindow = None
@@ -310,10 +333,14 @@ class RoboCJKController(object):
             self.currentFont.save()
             if self.currentGlyph is not None:
                 self.currentFont.getGlyph(self.currentGlyph)
+            self.currentFont.clearRFont()  
         else:
-            pass
-
-        self.currentFont.clearRFont()        
+            self.currentFont.saveGlyph(self.currentGlyph)
+            self.currentFont.saveFontlib()
+            self.currentFont.batchUnlockGlyphs([self.currentGlyph.name])
+        stop = time.time()
+        print(stop-start, "to close %s"%self.currentGlyph.name)
+              
 
     def closeimportDCFromCG(self):
         if self.importDCFromCG is not None:
@@ -434,6 +461,7 @@ class RoboCJKController(object):
                 self.glyphInspectorWindow = accordionViews.DeepComponentInspector(self, glyphVariationsAxes)    
             else:
                 self.glyphInspectorWindow = accordionViews.CharacterGlyphInspector(self, glyphVariationsAxes)
+        
 
     # def draw(self):
     #     mjdt.save()

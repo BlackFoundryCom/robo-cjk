@@ -19,6 +19,12 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 import sys, os
 
 from controllers import roboCJK
+import sentry_sdk
+
+sentry_sdk.init(
+    "https://961a602da08346909a7eecb37d423d7c@o425940.ingest.sentry.io/5598166",
+    traces_sample_rate=1.0
+)
 # sys.path.append(os.path.join(os.getcwd(), "rcjk2mysql"))
 
 RCJKI = roboCJK.RoboCJKController()

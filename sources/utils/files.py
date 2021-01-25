@@ -54,6 +54,9 @@ def unicodeName2Char(name):
     except:
         return ""
 
+def getSuffix(name):
+    return ".".join(name.split(".")[1:])
+
 def _getFilteredListFromName(fullList: list, name: str) -> list:
     return [e for e in fullList if name in e]
 

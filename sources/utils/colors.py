@@ -22,4 +22,19 @@ CHECKING1 = (1., .5, 0., 1.)
 CHECKING2 = (1., 1., 0., 1.)
 CHECKING3 = (0., .5, 1., 1.)
 DONE = (0., 1., .5, 1.)
-STATE_COLORS = (INPROGRESS, CHECKING1, CHECKING2, CHECKING3, DONE)
+
+TODO_name = 'todo'
+WIP_name = 'wip'
+CHECKING1_name = 'checking-1'
+CHECKING2_name = 'checking-2'
+CHECKING3_name = 'checking-3'
+DONE_name = 'done'
+
+STATUS_COLORS = {
+	TODO_name: INPROGRESS, 
+	WIP_name: INPROGRESS, 
+	CHECKING1_name: CHECKING1,
+	CHECKING2_name: CHECKING2,
+	CHECKING3_name: CHECKING3,
+	DONE_name: DONE,
+	}
