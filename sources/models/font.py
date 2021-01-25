@@ -238,9 +238,10 @@ class Font():
     def selectDatabaseKey(self, key):
         if not self.mysql:
             char = chr(int(key, 16))
-            return "".join(self.dataBase[char])
+            return "".join(self.dataBase.get(char, []))
         else:
-            pass
+            char = chr(int(key, 16))
+            return "".join(self.dataBase.get(char, []))
             # return self.mysql.select_font_database_key(self.fontName, key)
 
     def updateDatabaseKey(self, key, values):
