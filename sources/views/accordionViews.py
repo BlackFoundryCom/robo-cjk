@@ -234,7 +234,6 @@ class CompositionRulesGroup(Group):
             self.existingDeepComponentInstances = []
             uid = self.RCJKI.currentFont.uid
             for char in self.RCJKI.currentFont.client.deep_component_get(uid, deepComponentName)["data"]["used_by"]:
-                print("char", char)
                 suffix = getSuffix(char["name"])
                 if suffix: suffix = "."+suffix
                 if char["unicode_hex"]:
