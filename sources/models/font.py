@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from xml.etree import ElementTree as ET
 from mojo.roboFont import *
-import json
+import json, base64
 import os
 import copy
 import time
@@ -187,7 +187,14 @@ class Font():
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
         # self.dataBase = font["data"]["glyphs_composition"]
-        self.dataBase = self.client.glyphs_composition_get(self.uid)["data"]
+        try:
+            dataBase_data = self.client.glyphs_composition_get(self.uid)["data"]
+            dataBase_base64 = dataBase_data["glyphs_composition_database"]
+            dataBase_json = base64.b64decode(dataBase_base64).decode('utf-8')
+            self.dataBase = json.loads(dataBase_json)
+        except Exception as e:
+            print(e)
+            self.dataBase = {}
         # print(self.dataBase)
         self._initFontLib(self.fontLib, self._RFont)
         self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
@@ -361,9 +368,12 @@ class Font():
                 file.write(json.dumps(self.dataBase))
         else:
             # self.client.font_update(self.uid, glyphs_composition=self.dataBase)
-            pass
+            # pass
             # print("self.dataBase = ", self.dataBase)
-            response = self.client.glyphs_composition_update(self.uid, self.dataBase)
+            dataBase_json = json.dumps(self.dataBase)
+            dataBase_base64 = base64.b64encode(bytes(dataBase_json, "utf-8"))
+            dataBase_data = {'glyphs_composition_database':dataBase_base64}
+            response = self.client.glyphs_composition_update(self.uid, dataBase_data)
             # print("response", response)
             # print("self.dataBase", len(self.dataBase))
             # self.client.glyphs_composition_update(self.uid, self.dataBase)
