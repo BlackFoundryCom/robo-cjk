@@ -405,7 +405,7 @@ class RelatedGlyphsGroup(Group):
             l = list(self.relatedChars)
             title = "Related Characters"
         elif self.filter in [0, 1]:
-            names = [files.unicodeName(c.split('.')[0]) for c in self.relatedChars]
+            names = [files.unicodeName(c[0]) for c in self.relatedChars]
             if self.filter == 0:
                 result = set(names) & set(characterGlyphSet)
             else:
@@ -416,7 +416,7 @@ class RelatedGlyphsGroup(Group):
         elif self.filter in [2, 3]:
             DCSet = set([x for x in deepComponentSet if self.RCJKI.currentFont.get(x)._RGlyph.lib["robocjk.deepComponents"]])
             for c in self.relatedChars:
-                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
+                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v[0]))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
                 inside = len(set(compo) - DCSet) == 0
                 if self.filter == 2 and inside:
                     l.append(c)
