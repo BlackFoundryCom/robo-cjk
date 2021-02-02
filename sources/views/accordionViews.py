@@ -1565,8 +1565,9 @@ class PropertiesGroup(Group):
             "Checking round 3":colors.CHECKING3_name, 
             "Done":colors.DONE_name
             }
-        self.RCJKI.currentGlyph.markColor = colors.STATUS_COLORS[names[state]]
-        self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = self.RCJKI.currentGlyph)
+        self.RCJKI.currentFont.markGlyph(self.RCJKI.currentGlyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        # self.RCJKI.currentGlyph.markColor = colors.STATUS_COLORS[names[state]]
+        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = self.RCJKI.currentGlyph)
         if colors.STATUS_COLORS[names[state]] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
             self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
         self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.STATUS_COLORS[names[state]]))

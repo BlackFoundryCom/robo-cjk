@@ -523,7 +523,9 @@ class RoboCJKView(BaseWindowController):
         glyph = self.currentFont[name]
         lock, _ = self.currentFont.lockGlyph(glyph)
         if not lock: return
-        glyph.markColor = colors.STATUS_COLORS[names[state]]
+        self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        # glyph.markColor = colors.STATUS_COLORS[names[state]]
+        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = glyph)
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.atomicElementPreview.update()
 
@@ -543,7 +545,9 @@ class RoboCJKView(BaseWindowController):
         glyph = self.currentFont[name]
         lock, _ = self.currentFont.lockGlyph(glyph)
         if not lock: return
-        glyph.markColor = colors.STATUS_COLORS[names[state]]
+        self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        # glyph.markColor = colors.STATUS_COLORS[names[state]]
+        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = glyph)
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.deepComponentPreview.update()
 
@@ -563,7 +567,9 @@ class RoboCJKView(BaseWindowController):
         glyph = self.currentFont[name]
         lock, _ = self.currentFont.lockGlyph(glyph)
         if not lock: return
-        glyph.markColor = colors.STATUS_COLORS[names[state]]
+        self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        # glyph.markColor = colors.STATUS_COLORS[names[state]]
+        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = glyph)
         if colors.STATUS_COLORS[names[state]] == DONE:
             self.RCJKI.decomposeGlyphToBackupLayer(glyph)
         self.setGlyphToCanvas(sender, self.currentGlyph)

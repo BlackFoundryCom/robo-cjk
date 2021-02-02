@@ -409,6 +409,11 @@ class Font():
             return self.username
             # return self.mysqlUserName
 
+    def markGlyph(self, name, color, colorname):
+        g = self[name]
+        g.markColor = color
+        self.changeGlyphState(state = colorname, glyph = g)
+
     def changeGlyphState(self, state="", glyph=None):
         if not self.mysql: return
         if glyph is None: return
