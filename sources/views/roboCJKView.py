@@ -523,7 +523,9 @@ class RoboCJKView(BaseWindowController):
         glyph = self.currentFont[name]
         lock, _ = self.currentFont.lockGlyph(glyph)
         if not lock: return
-        glyph.markColor = colors.STATUS_COLORS[names[state]]
+        self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        # glyph.markColor = colors.STATUS_COLORS[names[state]]
+        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = glyph)
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.atomicElementPreview.update()
 
@@ -543,7 +545,9 @@ class RoboCJKView(BaseWindowController):
         glyph = self.currentFont[name]
         lock, _ = self.currentFont.lockGlyph(glyph)
         if not lock: return
-        glyph.markColor = colors.STATUS_COLORS[names[state]]
+        self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        # glyph.markColor = colors.STATUS_COLORS[names[state]]
+        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = glyph)
         self.setGlyphToCanvas(sender, self.currentGlyph)
         self.w.deepComponentPreview.update()
 
@@ -563,7 +567,9 @@ class RoboCJKView(BaseWindowController):
         glyph = self.currentFont[name]
         lock, _ = self.currentFont.lockGlyph(glyph)
         if not lock: return
-        glyph.markColor = colors.STATUS_COLORS[names[state]]
+        self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        # glyph.markColor = colors.STATUS_COLORS[names[state]]
+        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = glyph)
         if colors.STATUS_COLORS[names[state]] == DONE:
             self.RCJKI.decomposeGlyphToBackupLayer(glyph)
         self.setGlyphToCanvas(sender, self.currentGlyph)
@@ -1122,6 +1128,10 @@ class RoboCJKView(BaseWindowController):
                 # self.RCJKI.dataBase = True
                 f = self.RCJKI.client.font_get(self.RCJKI.fontsList[self.currentrcjkFile]['uid'])
                 self.RCJKI.currentFont._init_for_mysql(f, self.RCJKI.client, self.RCJKI.mysql_userName, self.RCJKI.hiddenSavePath)
+                version = self.RCJKI.currentFont.fontLib["robocjk.version"]
+                if version > self.RCJKI._version:
+                    message("Warning you are not using the good RoboCJK version")
+                    return
                 # self.RCJKI.currentFont.loadMysqlDataBase()
                 # self.RCJKI.currentFont.dataBase
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase

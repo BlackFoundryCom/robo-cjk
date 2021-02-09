@@ -89,17 +89,17 @@ class Drawer():
             strokecolor = previewStrokeColor
             )
 
-        if not onlyPreview:
-            mjdt.save()
-            locker = self.RCJKI.currentFont.glyphLockedBy(self.RCJKI.currentGlyph)
-            if locker != self.RCJKI.currentFont.lockerUserName:
-                mjdt.fill(1, 0, 0, .1)
-                mjdt.rect(0, -2000, self.RCJKI.currentFont.defaultGlyphWidth, 10000)
-                mjdt.fill(1, 0, 0, 1)
-                mjdt.font("Helvetica")
-                mjdt.fontSize(40)
-                mjdt.textBox(f"Already locked by {locker}", (0, 900, 1000, 100), align = 'center')
-            mjdt.restore()
+        # if not onlyPreview:
+        #     mjdt.save()
+        #     locker = self.RCJKI.currentFont.glyphLockedBy(self.RCJKI.currentGlyph)
+        #     if locker != self.RCJKI.currentFont.lockerUserName:
+        #         mjdt.fill(1, 0, 0, .1)
+        #         mjdt.rect(0, -2000, self.RCJKI.currentFont.defaultGlyphWidth, 10000)
+        #         mjdt.fill(1, 0, 0, 1)
+        #         mjdt.font("Helvetica")
+        #         mjdt.fontSize(40)
+        #         mjdt.textBox(f"Already locked by {locker}", (0, 900, 1000, 100), align = 'center')
+        #     mjdt.restore()
 
         if self.RCJKI.currentGlyph.type == "atomicElement": return
 

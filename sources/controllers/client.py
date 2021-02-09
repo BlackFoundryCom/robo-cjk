@@ -75,6 +75,10 @@ class Client(object):
                 'Unable to call RoboCJK APIs at host: {} - Exception: {}'.format(
                     self._host, e))
 
+        # obtain the auth token to prevent 401 error on first call
+        self.auth_token()
+
+
     def _api_call(self, view_name, params=None):
         """
         Call an API method by its 'view-name' passing the given params.
@@ -105,9 +109,9 @@ class Client(object):
         response = requests.post(url, **options)
         if response.status_code == 401:
             # unauthorized - request a new auth token
-            auth_response = self.auth_token()
-            self._auth_token = auth_response.get('data', {}).get('auth_token', None)
+            self.auth_token()
             if self._auth_token:
+                # re-send previously unauthorized request
                 return self._api_call(view_name, params)
         # read response json data and return dict
         response_data = response.json()
@@ -202,7 +206,10 @@ class Client(object):
             'username': self._username,
             'password': self._password,
         }
-        return self._api_call('auth_token', params)
+        response = self._api_call('auth_token', params)
+        # update auth token
+        self._auth_token = response.get('data', {}).get('auth_token', self._auth_token)
+        return response
 
 
     # def auth_refresh_token(self, token):
