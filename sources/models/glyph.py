@@ -213,6 +213,8 @@ class Glyph(RGlyph):
 
     def renameDeepComponent(self, index, newName):
         currentCoords = list(self._deepComponents[index]["coord"].keys())
+        currentCoordsValues = dict(self._deepComponents[index]["coord"])
+        currentTransformValues = dict(self._deepComponents[index]["transform"])
         dc = self.getParent()[newName]
         dcCoords = [x.name for x in dc._axes]
         print("currentCoords", currentCoords)
@@ -224,6 +226,11 @@ class Glyph(RGlyph):
             elif self.type == 'characterGlyph':
                 self.removeDeepComponentAtIndexToGlyph([index])
                 self.addDeepComponentNamed(newName)
+            for k, v in self._deepComponents[-1]["coord"].items():
+                if k in currentCoordsValues:
+                    self._deepComponents[-1]["coord"][k] = currentCoordsValues[k]
+            for k in self._deepComponents[-1]["transform"]:
+                self._deepComponents[-1]["transform"][k] = currentTransformValues[k]
             # for coord_name in self._deepComponents[-1]["coord"]:
             #     if coord_name in dcCoords:
             #         value = dc._axes[dcCoords.index(coord_name)]
@@ -231,6 +238,7 @@ class Glyph(RGlyph):
             return False
         else:
             self._deepComponents[index]["name"] = newName
+
             self.redrawSelectedElementSource = True
             self.redrawSelectedElementPreview = True
             return True
