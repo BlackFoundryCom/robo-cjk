@@ -1117,12 +1117,7 @@ class RoboCJKView(BaseWindowController):
                     with open(os.path.join(fontPath, 'database.json'), 'r', encoding = "utf-8") as file:
                         self.RCJKI.currentFont.dataBase = json.load(file)
 
-                self.RCJKI.currentFont.deepComponents2Chars = {}
-                for k, v in self.RCJKI.currentFont.dataBase.items():
-                    for dc in v:
-                        if dc not in self.RCJKI.currentFont.deepComponents2Chars:
-                            self.RCJKI.currentFont.deepComponents2Chars[dc] = set()
-                        self.RCJKI.currentFont.deepComponents2Chars[dc].add(k)
+                
             else:
                 print("hello")
                 # self.RCJKI.dataBase = True
@@ -1135,6 +1130,13 @@ class RoboCJKView(BaseWindowController):
                 # self.RCJKI.currentFont.loadMysqlDataBase()
                 # self.RCJKI.currentFont.dataBase
                 # self.RCJKI.dataBase = self.RCJKI.currentFont.dataBase
+
+            self.RCJKI.currentFont.deepComponents2Chars = {}
+            for k, v in self.RCJKI.currentFont.dataBase.items():
+                for dc in v:
+                    if dc not in self.RCJKI.currentFont.deepComponents2Chars:
+                        self.RCJKI.currentFont.deepComponents2Chars[dc] = set()
+                    self.RCJKI.currentFont.deepComponents2Chars[dc].add(k)
             
 
             self.RCJKI.toggleWindowController()

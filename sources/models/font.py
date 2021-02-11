@@ -285,7 +285,10 @@ class Font():
 
     def saveFontlib(self):
         if self.mysql:
-            self.client.font_update(self.uid, fontlib=self.fontLib)
+            fontLib = dict(self.fontLib)
+            if "public.glyphOrder" in fontLib:
+                del fontLib["public.glyphOrder"]
+            self.client.font_update(self.uid, fontlib=fontLib)
 
     # def saveDatabase(self):
     #     pass

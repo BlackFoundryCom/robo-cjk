@@ -856,26 +856,29 @@ class LocaliseGlyphSheet:
         self.glyph = self.RCJKI.currentFont[self.glyphName]
 
         if self.glyph.type != "atomicElement":
-            self.w = Sheet((300, 60+30*(len(self.glyph._deepComponents)+1)), parentWindow)
+            self.w = Sheet((500, 60+30*(len(self.glyph._deepComponents)+1)), parentWindow)
         else:
-            self.w = Sheet((300, 90), parentWindow)
+            self.w = Sheet((500, 90), parentWindow)
 
         existingSuffix = set([x[len(self.glyph.name):] for x in glyphset() if self.glyph.name in x])
-        available_localisation_suffix = ["Choose suffix"]+sorted(list(set(localisation_suffix)-existingSuffix))
+        self.available_localisation_suffix = ["Choose suffix"]+sorted(list(set(localisation_suffix)-existingSuffix))
 
         self.w.glyphNameSuffix = TextBox((120, 10, -100, 20), "suffix:", sizeStyle = "small")
         self.w.glyphName = TextBox((10, 30, 150, 20), self.glyph.name)
-        self.w.glyphNameExtension = PopUpButton((120, 30, -10, 20), available_localisation_suffix)
+        self.w.glyphNameExtension = PopUpButton((255, 30, -10, 20), self.available_localisation_suffix, callback = self.glyphNameExtensionCallback)
+        self.w.glyphNameExtensionEditText = EditText((120, 30, 135, 20), "", callback = self.glyphNameExtensionEditTextCallback)
 
         if self.glyph.type != "atomicElement":
             y = 60
             for i, deepComponent in enumerate(self.glyph._deepComponents):
                 glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
                 availableSuffix = ["Choose suffix (optional)"]+[getSuffix(x) for x in dependencies_glyphset if "." in x and x.split(".")[0] == deepComponent["name"]]
-                glyphNameExtension = PopUpButton((120, y, -10, 20), availableSuffix)
+                glyphNameExtension = PopUpButton((255, y, -10, 20), availableSuffix, callback = self.popUpButtonCallback)
+                glyphNameExtensionEditText = EditText((120, y, 135, 20), '', callback = self.editTextCallback)
                 setattr(self.w, deepComponent["name"]+str(i), glyphName)
                 if len(availableSuffix)>1:
                     setattr(self.w, f"{deepComponent['name']}Extension{i}", glyphNameExtension)
+                    setattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}", glyphNameExtensionEditText)
                 else:
                     setattr(self.w, f"{deepComponent['name']}Extension{i}", TextBox((120, y, -10, 20), "No suffix available", sizeStyle = "small"))
                 y+=30
@@ -885,13 +888,44 @@ class LocaliseGlyphSheet:
         self.w.setDefaultButton(self.w.localiseGlyphButton)
         self.w.open()
 
+    def glyphNameExtensionCallback(self, sender):
+        t = sender.getItem()
+        if t != "Choose suffix":
+            self.w.glyphNameExtensionEditText.set(t)
+
+    def glyphNameExtensionEditTextCallback(self, sender):
+        name = sender.get()
+        if name in self.available_localisation_suffix:
+            self.w.glyphNameExtension.set(self.available_localisation_suffix.index(name))
+
+    def editTextCallback(self, sender):
+        if self.glyph.type != "atomicElement":
+            for i, deepComponent in enumerate(self.glyph._deepComponents):
+                if not hasattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}"):continue
+                name = getattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}").get()
+                popup = getattr(self.w, f"{deepComponent['name']}Extension{i}")
+                suf = getattr(self.w, f"{deepComponent['name']}Extension{i}").getItems()
+                if name in suf:
+                    popup.set(suf.index(name))
+
+    def popUpButtonCallback(self, sender):
+        if self.glyph.type != "atomicElement":
+            for i, deepComponent in enumerate(self.glyph._deepComponents):
+                if not hasattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}"):continue
+                editText = getattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}")
+                popup = getattr(self.w, f"{deepComponent['name']}Extension{i}")
+                name = getattr(self.w, f"{deepComponent['name']}Extension{i}").getItem()
+                editText.set(name)
+
     def cancelButtonCallback(self, sender):
         self.w.close()
 
     def localiseButtonCallback(self, sender):
-        self.selectedSuffix = self.w.glyphNameExtension.getItem()
+        self.selectedSuffix = self.w.glyphNameExtensionEditText.get()
         if self.selectedSuffix == "" or self.selectedSuffix == "Choose suffix":
             return ""
+        if not self.selectedSuffix.startswith("."):
+            self.selectedSuffix = f".{self.selectedSuffix}"
         newGlyphName = self.glyph.name + self.selectedSuffix
         self.RCJKI.currentFont.duplicateGlyph(self.glyph.name, newGlyphName)
         if not self.RCJKI.currentFont.mysql:
@@ -900,10 +934,12 @@ class LocaliseGlyphSheet:
             self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
         if self.glyph.type != "atomicElement":
             for i, deepComponent in enumerate(self.glyph._deepComponents):
-                element = getattr(self.w, f"{deepComponent['name']}Extension{i}")
+                if not hasattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}"):continue
+                element = getattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}")
                 if element.__class__.__name__ == "TextBox": continue
-                ext = element.getItem()
+                ext = element.get()
                 if ext == "Choose suffix (optional)": continue
+                if ext.startswith("."): ext = ext[1:]
                 self.RCJKI.currentFont[newGlyphName].renameDeepComponent(i, deepComponent["name"]+'.'+ext)
         self.w.close()
         index = sorted(list(self.glyphset(update = True))).index(newGlyphName)
