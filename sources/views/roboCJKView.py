@@ -1123,7 +1123,7 @@ class RoboCJKView(BaseWindowController):
                 # self.RCJKI.dataBase = True
                 f = self.RCJKI.client.font_get(self.RCJKI.fontsList[self.currentrcjkFile]['uid'])
                 self.RCJKI.currentFont._init_for_mysql(f, self.RCJKI.client, self.RCJKI.mysql_userName, self.RCJKI.hiddenSavePath)
-                version = self.RCJKI.currentFont.fontLib["robocjk.version"]
+                version = self.RCJKI.currentFont.fontLib.get("robocjk.version", 0)
                 if version > self.RCJKI._version:
                     message("Warning you are not using the good RoboCJK version")
                     return
