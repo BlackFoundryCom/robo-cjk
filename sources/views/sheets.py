@@ -938,7 +938,7 @@ class LocaliseGlyphSheet:
                 element = getattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}")
                 if element.__class__.__name__ == "TextBox": continue
                 ext = element.get()
-                if ext == "Choose suffix (optional)": continue
+                if ext == "Choose suffix (optional)" or ext == "": continue
                 if ext.startswith("."): ext = ext[1:]
                 self.RCJKI.currentFont[newGlyphName].renameDeepComponent(i, deepComponent["name"]+'.'+ext)
         self.w.close()
