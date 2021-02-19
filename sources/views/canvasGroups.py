@@ -69,7 +69,15 @@ class GlyphView(CanvasGroup):
         if not selectedSource:
             selectedSource = "Master"
         
-        self.selectedSource.set(selectedSource)  
+        value = False
+        if self.RCJKI.currentGlyph.type == "characterGlyph": 
+            value = self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name)
+        if value is not False:
+            percent = round(self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name))
+            txt = f"{selectedSource} - {percent}% possible regression"
+        else:
+            txt = selectedSource
+        self.selectedSource.set(txt)  
         self.selectedSource.setColor(*color)      
 
 class GlyphPreviewCanvas(CanvasGroup):

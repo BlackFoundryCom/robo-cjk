@@ -137,7 +137,7 @@ class RoboCJKController(object):
 
         self.glyphView = canvasGroups.GlyphView(
             self,
-            posSize = (20, -80, 300, -20), 
+            posSize = (20, -80, -20, -20), 
             delegate = self
             )
 
@@ -499,6 +499,28 @@ class RoboCJKController(object):
             customColor=(0, 0, 0, 1), 
             onlyPreview = self.drawOnlyInterpolation
             )
+
+    def getRegressionPercentage(self, name):
+        def getChar(dcname):
+            try:
+                code = dcname.split("_")[1]
+                return chr(int(code, 16))
+            except Exception as e:
+                print(e)
+                return False
+
+        glyph = self.currentFont[name]
+        response = self.currentFont.mysqlGlyphData.get(name, False)
+        try:
+            values = []
+            if response:
+                for dc in response["made_of"]:
+                    char = getChar(dc["name"])
+                    if not char: continue
+                    values.append(round((len(dc["used_by"])/len(self.currentFont.deepComponents2Chars[char]))*100))
+            return (100*len(values)-sum(values))//len(values)
+        except Exception as e:
+            return False
 
     @refresh
     def mouseDown(self, point):

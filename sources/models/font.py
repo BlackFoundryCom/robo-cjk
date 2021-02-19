@@ -116,6 +116,7 @@ class Font():
 
         self._glyphs = {}
         self._fullGlyphs = {}
+        self.mysqlGlyphData = {}
         self.fontVariations = []
         if 'fontLib.json' in os.listdir(self.fontPath):
             libPath = os.path.join(self.fontPath, 'fontLib.json')
@@ -182,6 +183,7 @@ class Font():
         savePath = os.path.join(hiddenSavePath, f"{self.fontName}.ufo")
         files.makepath(savePath)
         self._RFont.save(savePath)
+        self.mysqlGlyphData = {}
         self._mysqlInsertedGlyph = {}
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
@@ -619,6 +621,8 @@ class Font():
             BGlyph = self.client.character_glyph_get(self.uid, name)["data"]
             made_of_dcs = BGlyph["made_of"]
             made_of_aes = [x for dc in made_of_dcs for x in dc["made_of"]]
+
+        self.mysqlGlyphData[name] = BGlyph
 
         stop = time.time()
         print("download glyphs:", stop-start, 'seconds to download %s'%name)

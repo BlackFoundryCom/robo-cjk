@@ -26,6 +26,14 @@ attributes = {
             }
 red = NSColor.colorWithCalibratedRed_green_blue_alpha_(.8, .2, .2, .5)
 
+def getChar(dcname):
+    try:
+        code = dcname.split("_")[1]
+        return chr(int(code, 16))
+    except Exception as e:
+        print(e)
+        return False
+
 class Drawer():
 
     def __init__(self, RCJKI):
@@ -187,6 +195,21 @@ class Drawer():
             if customColor is None and view: 
                 if i != index:
                     self.drawIndexOfElements(i, atomicInstance, view)
+                    if glyph.type == "characterGlyph":
+                        response = self.RCJKI.currentFont.mysqlGlyphData.get(glyph.name, False)
+                        try:
+                            if response:
+                                for dc in response["made_of"]:
+                                    if dc["name"] != glyph._deepComponents[i].name: continue
+                                    char = getChar(dc["name"])
+                                    if not char: continue
+                                    txt = "%s/%s\nused at %s%s"%(len(dc["used_by"]), len(self.RCJKI.currentFont.deepComponents2Chars[char]), round((len(dc["used_by"])/len(self.RCJKI.currentFont.deepComponents2Chars[char]))*100), "%")
+                                    x, y = atomicInstance[0].points[0].x, atomicInstance[0].points[0].y
+                                    mjdt.fill(1, 0, 1, 1)
+                                    mjdt.fontSize(10*scale)
+                                    mjdt.text(txt, (x, y-30*scale))
+                        except Exception as e:
+                            pass
             index = i
         if customColor is None:
             mjdt.fill(customColor)
