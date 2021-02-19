@@ -1554,7 +1554,18 @@ class PropertiesGroup(Group):
             state.set(4)
         else:
             state.set(0)
-        self.glyphStateCallback(state)
+        self.setGlyphStateUI(state)
+
+    def setGlyphStateUI(self, sender):
+        state = sender.getItem()
+        names = {
+            "In Progress":colors.WIP_name, 
+            "Checking round 1":colors.CHECKING1_name, 
+            "Checking round 2":colors.CHECKING2_name, 
+            "Checking round 3":colors.CHECKING3_name, 
+            "Done":colors.DONE_name
+            }
+        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.STATUS_COLORS[names[state]]))
 
     def glyphStateCallback(self, sender):
         state = sender.getItem()
