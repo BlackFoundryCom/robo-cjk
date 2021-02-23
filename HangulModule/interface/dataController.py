@@ -224,7 +224,7 @@ class GroupPosition(Group):
     def jamosListSelectionCallback(self, sender):
         self.jamolock = True
         sel = sender.getSelection()
-        if not sel: 
+        if not sel:
             self.jamoBelongsTo.set("")
             return
         itemSel = sender.get()[sel[0]]
@@ -235,7 +235,7 @@ class GroupPosition(Group):
         self.jamoBelongsTo.set(text)
 
         for item in sender.get():
-            if not item.get("sel"): 
+            if not item.get("sel"):
                 self.hangulModule.groups.removeJamo(self.currentGroup, item.get("jamo"))
             else:
                 self.hangulModule.groups.addJamo(self.currentGroup, item.get("jamo"))
@@ -351,6 +351,8 @@ class Combinations(Group):
             return
         combinationName = sender.get()[sel[0]]
         combination = self.hangulModule.combinations.get(combinationName)
+        print("\n", combinationName, "\n")
+        print(combination)
         self.initialGroup.setItem(combination.initial.group)
         self.initialVariant.set(combination.initial.variant)
         self.medialGroup.setItem(combination.medial.group)
@@ -358,9 +360,12 @@ class Combinations(Group):
         if combination.get('final'):
             self.finalGroup.setItem(combination.final.group)
             self.finalVariant.set(combination.final.variant)
+        else:
+            self.finalVariant.set("None")
 
     def setUI(self):
         self.combinationsList.set(self.hangulModule.combinations.names())
+        # set the list of possible versions
         self.initialGroup.setItems(list(self.hangulModule.groups.initial))
         self.medialGroup.setItems(list(self.hangulModule.groups.medial))
         self.finalGroup.setItems(list(self.hangulModule.groups.final))
@@ -440,3 +445,4 @@ class DataController:
             getattr(self.w, e).setUI()
         for pos in ['initial', 'medial', 'final']:
             getattr(self.w.groups, pos).setUI()
+

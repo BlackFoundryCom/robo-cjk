@@ -81,7 +81,7 @@ class GroupController:
 
     def __getitem__(self, item):
         if not hasattr(self, item):
-            return 
+            return
         return getattr(self, item)
 
     def newGroup(self, name:str, position:str, jamos=None):
@@ -94,7 +94,7 @@ class GroupController:
         setattr(self, name, JamoGroup(name, position, jamos))
 
     def removeGroup(self, name:str):
-        if not hasattr(self, name): 
+        if not hasattr(self, name):
             return
         delattr(self, name)
 
@@ -162,14 +162,14 @@ class Combinations(Repr):
     def add(self, name, initial, medial, final = None):
         if final is None:
             setattr(self, name, GroupRelation(
-                initial = GroupsVariants(initial, self.index(initial)),
-                medial = GroupsVariants(medial, self.index(medial)),
+                initial = GroupsVariants(list(initial)[0], list(initial)[1]),
+                medial = GroupsVariants(list(medial)[0], list(medial)[1]),
                 ))
         else:
             setattr(self, name, GroupRelation(
-                initial = GroupsVariants(initial, self.index(initial)),
-                medial = GroupsVariants(medial, self.index(medial)),
-                final = GroupsVariants(final, self.index(final)),
+                initial = GroupsVariants(list(initial)[0], list(initial)[1]),
+                medial = GroupsVariants(list(medial)[0], list(medial)[1]),
+                final = GroupsVariants(list(final)[0], list(final)[1]),
                 ))
 
     def names(self):
@@ -192,8 +192,26 @@ class Combinations(Repr):
 
     def initWithDict(self, combinationsDict:dict = {}):
         for k, v in combinationsDict.items():
-            initial, variant = v.values(), v.values()
-            setattr(self, k, GroupRelation(initial = GroupsVariants(initial, variant)))
+            # print(k, v, '\n')
+            # for grp in v:
+            #     print('=>', grp, v[grp], '\n\n')
+            #     if grp == "initial":
+            #         initial, variant = v[grp].values(), v[grp].values()
+            #         #print(k, "\n", "initial", initial, "variant", variant, "\n\n")
+            #         setattr(self, k, GroupRelation(initial = GroupsVariants(initial, variant)))
+            #     elif grp == "medial":
+            #         medial, variant = v[grp].values(), v[grp].values()
+            #         #print(k, "\n", "medial", med, "variant", variant, "\n\n")
+            #         setattr(self, k, GroupRelation(medial = GroupsVariants(medial, variant)))
+            #     else:
+            #         final, variant = v[grp].values(), v[grp].values()
+            #         #print(k, "\n", "final", final, "variant", variant, "\n\n")
+            #         setattr(self, k, GroupRelation(final = GroupsVariants(final, variant)))
+            if 'final' in v:
+                self.add(k, v['initial'].values(), v['medial'].values(), v['final'].values())
+            else:
+                self.add(k, v['initial'].values(), v['medial'].values())
+
     
 class HangulModule:
 
@@ -233,10 +251,12 @@ class HangulModule:
         else:
             return self.groups.final
 
+        
+
     def concatenateData(self):
         usernames = self.userNames.export()
         groups = self.groups.export()
-        
+
         combinations = self.combinations.export()
         print("---")
         print(combinations)
