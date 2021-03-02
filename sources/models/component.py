@@ -553,7 +553,7 @@ class VariationGlyphs(list):
             variation.deepComponents._convertOffsetFromRCenterToTCenter()
 
     # def __iter__(self):
-    #     for x in super(VariationGlyphs, self).__iter__():
+    #     for x in super().__iter__():
     #         # print(dir(x))
     #         yield x._toDict()
 

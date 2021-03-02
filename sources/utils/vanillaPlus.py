@@ -24,7 +24,7 @@ class SmartTextBox(TextBox):
         selectable=False, callback=None, sizeStyle=40.0,
         red=0,green=0,blue=0, alpha=1.0):
         self.color = NSColor.colorWithCalibratedRed_green_blue_alpha_(red, green, blue, alpha)
-        super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, 
+        super().__init__(posSize, text=text, alignment=alignment, 
             selectable=selectable, sizeStyle=sizeStyle)
         
     def _setSizeStyle(self, sizeStyle):

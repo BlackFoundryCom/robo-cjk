@@ -72,7 +72,7 @@ class SmartTextBox(TextBox):
     def __init__(self, posSize, text="", alignment="natural", 
         selectable=False, callback=None, sizeStyle=40.0,
         red=0,green=0,blue=0, alpha=1.0):
-        super(SmartTextBox, self).__init__(posSize, text=text, alignment=alignment, 
+        super().__init__(posSize, text=text, alignment=alignment, 
             selectable=selectable, sizeStyle=sizeStyle)
         
     def _setSizeStyle(self, sizeStyle):
