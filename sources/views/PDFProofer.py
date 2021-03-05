@@ -21,12 +21,13 @@ from dataclasses import dataclass
 from vanilla import *
 from vanilla.dialogs import putFile
 import vanilla.dialogs
-from drawBot.ui.drawView import DrawView
+
 from AppKit import NumberFormatter, NSColor
 from mojo.canvas import Canvas
 from mojo.roboFont import RGlyph
 import Cocoa
 try:
+    from drawBot.ui.drawView import DrawView
     import drawBot as db
 except:
     print("DrawBot for robofont is not installed. PDF proofer need it, please install:\nhttps://github.com/typemytype/drawBotRoboFontExtension")
