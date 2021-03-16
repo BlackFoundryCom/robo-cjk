@@ -45,7 +45,7 @@ class TableDelegate(NSObject):
         # ALWAYS call the super's designated initializer.  Also, make sure to
         # re-bind "self" just in case it returns something else, or even
         # None!
-        self = super(TableDelegate, self).init()
+        self = super().init()
         if self is None: return None
         self.glist = glist
         return self

@@ -107,7 +107,7 @@ def resetDict(func):
 class EditPopoverAlignTool(EditPopover):
 
     def __init__(self, RCJKI, point, glyph):
-        super(EditPopoverAlignTool, self).__init__((170,210), point)
+        super().__init__((170,210), point)
         self.RCJKI = RCJKI
         self.glyph = glyph
         lib = self.getLib()
