@@ -924,6 +924,9 @@ class LocaliseGlyphSheet:
         self.selectedSuffix = self.w.glyphNameExtensionEditText.get()
         if self.selectedSuffix == "" or self.selectedSuffix == "Choose suffix":
             return ""
+        if " " in self.selectedSuffix or "\n" in self.selectedSuffix:
+            message("Warning wrong character(s) in the given suffix")
+            return ""
         if not self.selectedSuffix.startswith("."):
             self.selectedSuffix = f".{self.selectedSuffix}"
         newGlyphName = self.glyph.name + self.selectedSuffix
