@@ -792,7 +792,7 @@ class Login:
         self.w.close()
 
     def closeCallback(self, sender):
-        if not self.w.git.userName.get() or not self.w.git.password.get() or not self.w.git.hostlocker.get(): return
+        # if not self.w.git.userName.get() or not self.w.git.password.get() or not self.w.git.hostlocker.get(): return
 
         self.RCJKI.gitUserName = self.w.git.userName.get()
         self.RCJKI.gitPassword = self.w.git.password.get()
@@ -931,6 +931,9 @@ class LocaliseGlyphSheet:
             self.selectedSuffix = f".{self.selectedSuffix}"
         newGlyphName = self.glyph.name + self.selectedSuffix
         self.RCJKI.currentFont.duplicateGlyph(self.glyph.name, newGlyphName)
+        ####
+        # self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        ####
         if not self.RCJKI.currentFont.mysql:
             self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
         else:
