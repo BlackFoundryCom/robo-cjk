@@ -28,6 +28,7 @@ from mojo.UI import PostBannerNotification
 from mojo.extensions import getExtensionDefault, setExtensionDefault
 from mojo.UI import SetCurrentLayerByName
 from controllers import client
+from utils import colors
 
 import json, os
 blackrobocjk_locker = "com.black-foundry.blackrobocjk_locker"
@@ -932,7 +933,7 @@ class LocaliseGlyphSheet:
         newGlyphName = self.glyph.name + self.selectedSuffix
         self.RCJKI.currentFont.duplicateGlyph(self.glyph.name, newGlyphName)
         ####
-        # self.RCJKI.currentFont.markGlyph(glyph.name, colors.STATUS_COLORS[names[state]], names[state])
+        self.RCJKI.currentFont.markGlyph(newGlyphName, colors.STATUS_COLORS[colors.CHECKING1_name], colors.CHECKING1_name)
         ####
         if not self.RCJKI.currentFont.mysql:
             self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
