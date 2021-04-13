@@ -939,6 +939,7 @@ class LocaliseGlyphSheet:
             self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
         else:
             self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
+        torename = {}
         if self.glyph.type != "atomicElement":
             for i, deepComponent in enumerate(self.glyph._deepComponents):
                 if not hasattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}"):continue
@@ -947,7 +948,10 @@ class LocaliseGlyphSheet:
                 ext = element.get()
                 if ext == "Choose suffix (optional)" or ext == "": continue
                 if ext.startswith("."): ext = ext[1:]
-                self.RCJKI.currentFont[newGlyphName].renameDeepComponent(i, deepComponent["name"]+'.'+ext)
+                torename[i] = deepComponent["name"]+'.'+ext
+                # self.RCJKI.currentFont[newGlyphName].renameDeepComponent(i, deepComponent["name"]+'.'+ext)
+        for i in sorted(list(torename.keys()), reverse=True):
+            self.RCJKI.currentFont[newGlyphName].renameDeepComponent(i, torename[i])
         self.w.close()
         index = sorted(list(self.glyphset(update = True))).index(newGlyphName)
         self.sender.setSelection([])
