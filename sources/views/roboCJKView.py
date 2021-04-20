@@ -1169,7 +1169,23 @@ class RoboCJKView(BaseWindowController):
         if sender == self.w.characterGlyph:
             newGlyphName = newGlyphName["name"]
         if newGlyphName == self.prevGlyphName: return
-        if not self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName):
+
+        message = 'Are you sure to rename %s to %s?'%(self.prevGlyphName, newGlyphName)
+        answer = AskYesNoCancel(
+            message, 
+            title='Rename Glyph', 
+            default=-1, 
+            informativeText="",
+            )
+        if answer != 1: 
+            self.w.atomicElement.set(self.currentFont.atomicElementSet)
+            self.w.deepComponent.set(self.currentFont.deepComponentSet)
+            charSet = [dict(char = files.unicodeName2Char(x), name = x) for x in self.currentFont.characterGlyphSet]
+            self.w.characterGlyph.set(charSet)
+            return False
+        else:
+            renamed = self.currentFont.renameGlyph(self.prevGlyphName, newGlyphName)
+        if not renamed:
             if sender == self.w.characterGlyph:
                 sender.set([dict(char = files.unicodeName2Char([x["name"], self.prevGlyphName][x["name"] == newGlyphName]), name = [x["name"], self.prevGlyphName][x["name"] == newGlyphName]) for x in sender.get()])
             else:
