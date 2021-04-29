@@ -186,8 +186,11 @@ class CompositionRulesGroup(Group):
         dcName = "DC_%s_00%s"%(self.code, self.suffix)
         deepComponentSet = self.RCJKI.currentFont.deepComponentSet
         if dcName not in deepComponentSet: 
-            self.variantList.set([])
-            return
+            dcName = "DC_%s_00"%(self.code)
+            self.suffix = ""
+            if dcName not in deepComponentSet: 
+                self.variantList.set([])
+                return
         index = deepComponentSet.index(dcName)
         l = ["00"]
         i = 1
