@@ -90,6 +90,7 @@ class CompositionRulesGroup(Group):
         self.RCJKI = RCJKI
         self.controller = controller
         self.glyph = None
+        self.existingDeepComponentInstances = []
         self.char = SmartTextBox(
             (0, 0, 80, -0),
             "",
@@ -112,8 +113,13 @@ class CompositionRulesGroup(Group):
             drawFocusRing = False,
             selectionCallback = self.variantListSelectionCallback,
             doubleClickCallback = self.variantListDoubleClickCallback)
+        self.filterExistingInstance = EditText(
+            (-60, 0, -0, 20), "",
+            sizeStyle = 'small',
+            callback = self.filterExistingInstanceCallback
+            )
         self.existingInstancesList = List(
-            (-60, 0, -0, -20), [], 
+            (-60, 20, -0, -20), [], 
             drawFocusRing = False,
             selectionCallback = self.existingInstancesListSelectionCallback,
             doubleClickCallback = self.existingInstancesListDoubleClickCallback
@@ -248,6 +254,15 @@ class CompositionRulesGroup(Group):
     def variantListDoubleClickCallback(self, sender):
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
         self.RCJKI.updateDeepComponent(update = False)
+
+    def filterExistingInstanceCallback(self, sender):
+        if not self.existingDeepComponentInstances: return
+        senderget = sender.get()
+        if not senderget:
+            self.existingInstancesList.set(self.existingDeepComponentInstances)
+        else:
+            l = [x for x in self.existingDeepComponentInstances if senderget in x]
+            self.existingInstancesList.set(l)
 
     @refresh
     def existingInstancesListSelectionCallback(self, sender):
