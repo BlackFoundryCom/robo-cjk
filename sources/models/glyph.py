@@ -214,7 +214,9 @@ class Glyph(RGlyph):
     def renameDeepComponent(self, index, newName):
         currentCoords = list(self._deepComponents[index]["coord"].keys())
         currentCoordsValues = dict(self._deepComponents[index]["coord"])
+        currentVariationCoordsValues = [dict(x["deepComponents"][index]["coord"]) for x in self._glyphVariations]
         currentTransformValues = dict(self._deepComponents[index]["transform"])
+        currentVariationTransformValues = [dict(x["deepComponents"][index]["transform"]) for x in self._glyphVariations]
         dc = self.getParent()[newName]
         dcCoords = [x.name for x in dc._axes]
         print("currentCoords", currentCoords)
@@ -231,6 +233,15 @@ class Glyph(RGlyph):
                     self._deepComponents[-1]["coord"][k] = currentCoordsValues[k]
             for k in self._deepComponents[-1]["transform"]:
                 self._deepComponents[-1]["transform"][k] = currentTransformValues[k]
+
+            for i, var in enumerate(self._glyphVariations):
+                for k, v in var["deepComponents"][-1]["coord"].items():
+                    if k in currentVariationCoordsValues[i]:
+                        self._glyphVariations[i]["deepComponents"][-1]["coord"][k] = currentVariationCoordsValues[i][k]
+            for i, var in enumerate(self._glyphVariations):
+                for k in var["deepComponents"][-1]["transform"]:
+                    self._glyphVariations[i]["deepComponents"][-1]["transform"][k] = currentVariationTransformValues[i][k]
+
             # for coord_name in self._deepComponents[-1]["coord"]:
             #     if coord_name in dcCoords:
             #         value = dc._axes[dcCoords.index(coord_name)]
