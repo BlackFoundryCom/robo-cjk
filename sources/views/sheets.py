@@ -849,6 +849,7 @@ class LocaliseGlyphSheet:
         self.RCJKI = RCJKI
         self.controller = controller
         self.glyphName = glyphName
+        self.databaseKeys = set(self.RCJKI.currentFont.dataBase.keys())
         self.dependencies_glyphset = dependencies_glyphset
         self.glyphset = glyphset
         self.sender = sender
@@ -876,11 +877,11 @@ class LocaliseGlyphSheet:
                     glyphName = TextBox((10, y, 150, 20), "%s %s"%(chr(int(deepComponent["name"].split('_')[1], 16)),deepComponent["name"]))
                 except:
                     glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
-                availableSuffix = ["Choose suffix (optional)"]+[getSuffix(x) for x in dependencies_glyphset if "." in x and x.split(".")[0] == deepComponent["name"]]
-                glyphNameExtension = PopUpButton((255, y, -10, 20), availableSuffix, callback = self.popUpButtonCallback)
+                self.availableSuffix = ["Choose suffix (optional)"]+["."+getSuffix(x) for x in dependencies_glyphset if "." in x and x.split(".")[0] == deepComponent["name"]]
+                glyphNameExtension = PopUpButton((255, y, -10, 20), self.availableSuffix, callback = self.popUpButtonCallback)
                 glyphNameExtensionEditText = EditText((120, y, 135, 20), '', callback = self.editTextCallback)
                 setattr(self.w, deepComponent["name"]+str(i), glyphName)
-                if len(availableSuffix)>1:
+                if len(self.availableSuffix)>1:
                     setattr(self.w, f"{deepComponent['name']}Extension{i}", glyphNameExtension)
                     setattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}", glyphNameExtensionEditText)
                 else:
@@ -901,6 +902,37 @@ class LocaliseGlyphSheet:
         name = sender.get()
         if name in self.available_localisation_suffix:
             self.w.glyphNameExtension.set(self.available_localisation_suffix.index(name))
+        if not name.startswith("."):
+            name = "."+name
+        dataname = "%s%s"%(chr(int(self.glyphName["name"][3:], 16)), name)
+        if dataname in self.databaseKeys:
+            glyphComposition = [x for x in self.RCJKI.currentFont.dataBase[dataname].split(" ") if x]
+            for i, deepComponent in enumerate(self.glyph._deepComponents):
+                dcchar = chr(int(deepComponent['name'].split("_")[1], 16))
+                count = 0
+                for x in glyphComposition:
+                    if x[0] == dcchar:
+                        count+=1
+                if count > 1: continue
+                index = None
+                for j, c in enumerate(glyphComposition):
+                    if c[0] == dcchar and '.' in c:
+                        index = j
+                        suf = c[1:]
+                        if deepComponent['name']+suf in self.RCJKI.currentFont.staticDeepComponentSet():
+                            suflist = getattr(self.w, f"{deepComponent['name']}Extension{i}").getItems()
+                            if suf in suflist:
+                                getattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}").set(suf)
+                                getattr(self.w, f"{deepComponent['name']}Extension{i}").set(suflist.index(suf))
+                if index is not None:
+                    glyphComposition = [x for i, x in enumerate(glyphComposition) if i != index]
+        else:
+            for i, deepComponent in enumerate(self.glyph._deepComponents):
+                try:
+                    getattr(self.w, f"{deepComponent['name']}ExtensionEditText{i}").set("")
+                    getattr(self.w, f"{deepComponent['name']}Extension{i}").set(0)
+                except:
+                    getattr(self.w, f"{deepComponent['name']}Extension{i}").set("No suffix available")
 
     def editTextCallback(self, sender):
         if self.glyph.type != "atomicElement":
