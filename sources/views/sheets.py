@@ -872,7 +872,10 @@ class LocaliseGlyphSheet:
         if self.glyph.type != "atomicElement":
             y = 60
             for i, deepComponent in enumerate(self.glyph._deepComponents):
-                glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
+                try:
+                    glyphName = TextBox((10, y, 150, 20), "%s %s"%(chr(int(deepComponent["name"].split('_')[1], 16)),deepComponent["name"]))
+                except:
+                    glyphName = TextBox((10, y, 150, 20), deepComponent["name"])
                 availableSuffix = ["Choose suffix (optional)"]+[getSuffix(x) for x in dependencies_glyphset if "." in x and x.split(".")[0] == deepComponent["name"]]
                 glyphNameExtension = PopUpButton((255, y, -10, 20), availableSuffix, callback = self.popUpButtonCallback)
                 glyphNameExtensionEditText = EditText((120, y, 135, 20), '', callback = self.editTextCallback)
