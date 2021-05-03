@@ -365,6 +365,8 @@ class RoboCJKController(object):
                     endList.append(axis)
                     toDel.append(i)
         oldList = [x for i, x in enumerate(oldList) if i not in toDel]
+        keys = sorted([x["Axis"] for x in oldList])
+        oldList = [y for x in keys for y in oldList if y["Axis"] == x]
         newList.extend(oldList)
         newList.extend(endList)
         return newList
