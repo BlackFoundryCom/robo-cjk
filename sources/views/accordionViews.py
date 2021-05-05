@@ -187,10 +187,10 @@ class CompositionRulesGroup(Group):
             return
         char = sender.get()[sel[0]]
         self.code = files.normalizeUnicode(hex(ord(char[0]))[2:].upper())
-        self.suffix = char[1:]
+        self.suffix = char[1:].replace(" ", "")
         if self.suffix == " ": self.suffix = ""
         dcName = "DC_%s_00%s"%(self.code, self.suffix)
-        deepComponentSet = self.RCJKI.currentFont.deepComponentSet
+        deepComponentSet = list(self.RCJKI.currentFont.staticDeepComponentSet())
         if dcName not in deepComponentSet: 
             dcName = "DC_%s_00"%(self.code)
             self.suffix = ""
