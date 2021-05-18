@@ -109,7 +109,7 @@ class GlyphUsingDC(Group):
         code = files.normalizeUnicode(hex(ord(char))[2:].upper())
         for name in self.c.RCJKI.currentFont.staticDeepComponentSet():
             if code in name.split("_"):
-                var.append(name.split("_")[2])
+                var.append("_".join(name.split("_")[2:]))
         return var
 
     def deepComponentListSelectionCallback(self, sender):
@@ -137,12 +137,18 @@ class GlyphUsingDC(Group):
 
     def characterGlyphUsing(self, code):
         characters = []
-        for name in self.c.RCJKI.currentFont.staticCharacterGlyphSet():
-            glyph = self.c.RCJKI.currentFont.get(name)
-            for dc in glyph._deepComponents:
-                if code in dc.name:
-                    characters.append(name)
-                    break
+        if not self.c.RCJKI.currentFont.mysql:
+            for name in self.c.RCJKI.currentFont.staticCharacterGlyphSet():
+                glyph = self.c.RCJKI.currentFont.get(name)
+                for dc in glyph._deepComponents:
+                    if code in dc.name:
+                        characters.append(name)
+                        break
+        else:
+            code = "DC_%s"%code
+            response = self.c.RCJKI.currentFont.client.deep_component_get(self.c.RCJKI.currentFont.uid, code)
+            return [x["name"] for x in response["data"]["used_by"]]
+            # print(code)
         return characters
 
 class DCUsingAE(Group):
