@@ -310,7 +310,7 @@ class CharacterGlyph(Glyph):
             for i, x in enumerate(self._glyphVariations):
                 if x.sourceName == self.selectedSourceAxis:
                     index = i
-            self._glyphVariations[i].deepComponents[self.selectedElement[0]].coord[nameAxis] = value
+            self._glyphVariations[index].deepComponents[self.selectedElement[0]].coord[nameAxis] = value
             # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
         else:
             self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
