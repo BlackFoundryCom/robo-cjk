@@ -194,13 +194,14 @@ class Font():
             dataBase_base64 = dataBase_data["glyphs_composition_database"]
             dataBase_json = base64.b64decode(dataBase_base64).decode('utf-8')
             self.dataBase = json.loads(dataBase_json)
+            # print('\n', self.dataBase, '\n')
         except Exception as e:
             print(e)
             self.dataBase = {}
         # print(self.dataBase)
         self._initFontLib(self.fontLib, self._RFont)
         self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
-        self.defaultGlyphWidth = self._RFont.lib.get("rorocjk.defaultGlyphWidth", 1000)
+        self.defaultGlyphWidth = self._RFont.lib.get("robocjk.defaultGlyphWidth", 1000)
 
     def clearRFont(self):
         # for k, v in copy.deepcopy(self._RFont.lib.asDict()).items():
@@ -259,10 +260,21 @@ class Font():
             self.dataBase[char] = values
         else:
             response = self.client.glyphs_composition_get(self.uid)
+
             if response['status'] == 200:
-                self.dataBase = self.client.glyphs_composition_get(self.uid)["data"]
+                dataBase_data = response["data"]
+                dataBase_base64 = dataBase_data["glyphs_composition_database"]
+                dataBase_json = base64.b64decode(dataBase_base64).decode('utf-8')
+                self.dataBase = json.loads(dataBase_json)
+
                 self.dataBase[char] = values
-                self.client.glyphs_composition_update(self.uid, self.dataBase)
+
+                dataBase_json = json.dumps(self.dataBase)
+                dataBase_base64 = base64.b64encode(bytes(dataBase_json, "utf-8"))
+                dataBase_data = {'glyphs_composition_database':dataBase_base64}
+
+                updateresponse = self.client.glyphs_composition_update(self.uid, dataBase_data)
+                print(updateresponse["status"])
             else:
                 print(response)
 
