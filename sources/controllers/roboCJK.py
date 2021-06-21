@@ -275,19 +275,18 @@ class RoboCJKController(object):
         def _decompose(glyph, axis, layername):
             if layername not in self.currentFont._RFont.layers:
                 self.currentFont._RFont.newLayer(layername)
-                if axis:
-                    glyphAxis = glyph._axes.get(axis)
-                    ais = glyph.preview({axis:glyphAxis.maxValue})
-                else:
-                    ais = glyph.preview()
-                f = self.currentFont._RFont.getLayer(layername)
-                f.newGlyph(glyph.name)
-                g1 = f[glyph.name]
-                g1.clear()
-                for ai in ais:
-                    # g._transformGlyph()
-                    for c in ai.glyph:
-                        g1.appendContour(c)
+            if axis:
+                glyphAxis = glyph._axes.get(axis)
+                ais = glyph.preview({axis:glyphAxis.maxValue})
+            else:
+                ais = glyph.preview()
+            f = self.currentFont._RFont.getLayer(layername)
+            f.newGlyph(glyph.name)
+            g1 = f[glyph.name]
+            g1.clear()
+            for ai in ais:
+                for c in ai.glyph:
+                    g1.appendContour(c)
 
         for axis in self.currentFont.fontVariations:
             axisLayerName = "backup_%s"%axis
