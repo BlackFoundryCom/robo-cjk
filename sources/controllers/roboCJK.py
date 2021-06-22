@@ -577,7 +577,7 @@ class RoboCJKController(object):
             dc = data[i]
             dc_name = self.currentGlyph._deepComponents[i].name
             glyph = self.currentFont.get(dc_name)
-            for axis, variation in zip(glyph._axes, glyph._glyphVariations):
+            for axis in glyph._axes:
                 minValue = axis.minValue
                 maxValue = axis.maxValue
                 axisName = axis.name
