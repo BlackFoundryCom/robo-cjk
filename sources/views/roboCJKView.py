@@ -189,19 +189,19 @@ class RoboCJKView(BaseWindowController):
             callback = self.reloadProjectCallback
             )
 
-        self.w.generateFontButton = Button(
-            (10, 70, 200, 20),
-            "generateFont",
-            callback = self.generateFontButtonCallback,
-            )
-        self.w.generateFontButton.enable(False)
+        # self.w.generateFontButton = Button(
+        #     (10, 70, 200, 20),
+        #     "generateFont",
+        #     callback = self.generateFontButtonCallback,
+        #     )
+        # self.w.generateFontButton.enable(False)
 
-        self.w.teamManagerButton = Button(
-            (10, 100, 200, 20),
-            "Team manager",
-            callback = self.teamManagerButtonCallback,
-            )
-        self.w.teamManagerButton.enable(False)
+        # self.w.teamManagerButton = Button(
+        #     (10, 100, 200, 20),
+        #     "Team manager",
+        #     callback = self.teamManagerButtonCallback,
+        #     )
+        # self.w.teamManagerButton.enable(False)
 
         self.RCJKI.textCenterWindows = []
         self.w.textCenterButton = Button(
@@ -212,7 +212,7 @@ class RoboCJKView(BaseWindowController):
         self.w.textCenterButton.enable(False)
 
         self.w.codeEditorButton = Button(
-            (410, 100, 200, 20),
+            (10, 70, 200, 20),
             "Scripting Window",
             callback = self.codeEditorButtonCallback,
             )
@@ -1061,8 +1061,8 @@ class RoboCJKView(BaseWindowController):
             # self.RCJKI.dataBase = {}
             self.w.saveProjectButton.enable(True)
             self.w.fontInfos.enable(True)
-            self.w.generateFontButton.enable(True)
-            self.w.teamManagerButton.enable(True)
+            # self.w.generateFontButton.enable(True)
+            # self.w.teamManagerButton.enable(True)
             
             self.w.textCenterButton.enable(True)
             self.w.codeEditorButton.enable(True)
