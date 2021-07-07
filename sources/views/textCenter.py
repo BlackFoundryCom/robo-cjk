@@ -312,6 +312,17 @@ class TextCenter:
         self.input(self.w.leftInput.get(), self.w.input.get())
 
     def input(self, l, t):
+        def _getunicodename(e):
+            if "." in e:
+                suffix = ".".join(e.split(".")[1:])
+                char = e.split(".")[0]
+                if len(char) == 1:
+                    uniname = f"uni{ord(char):04X}"
+                else:
+                    uniname = char
+                e = uniname + "." + suffix
+            return e
+
         l = l.replace("/", " ")
         t = t.replace("/", " ")
         txt = t.split()
@@ -320,14 +331,14 @@ class TextCenter:
         for e in txt:
             try:
                 for c in l:
-                    glyphs.append(self.RCJKI.currentFont.get(c, rfont))    
-                glyphs.append(self.RCJKI.currentFont.get(e, rfont))
+                    glyphs.append(self.RCJKI.currentFont.get(_getunicodename(c), rfont))  
+                glyphs.append(self.RCJKI.currentFont.get(_getunicodename(e), rfont))
             except:
                 for c in e:
                     try:
                         for x in l: 
-                            glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(x), rfont))
-                        glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(c), rfont))
+                            glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(_getunicodename(x)), rfont))
+                        glyphs.append(self.RCJKI.currentFont.get(files.unicodeName(_getunicodename(c)), rfont))
                     except: continue
         self.w.multiLineView.set(glyphs)
 
