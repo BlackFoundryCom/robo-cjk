@@ -214,7 +214,7 @@ class CharacterGlyph(Glyph):
 
         if len(self._RGlyph) and not self.selectedElement:
             layerGlyphs = []
-            layerNames = self._axes.names
+            layerNames = self._glyphVariations.axes
             for layerName in layerNames:
                 try:
                     g = font._RFont.getLayer(layerName)[self.name]
@@ -310,8 +310,8 @@ class CharacterGlyph(Glyph):
             for i, x in enumerate(self._glyphVariations):
                 if x.sourceName == self.selectedSourceAxis:
                     index = i
+                    break
             self._glyphVariations[index].deepComponents[self.selectedElement[0]].coord[nameAxis] = value
-            # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
         else:
             self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
 
