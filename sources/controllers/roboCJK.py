@@ -724,12 +724,21 @@ class RoboCJKController(object):
             if self.currentGlyph.selectedElement:
                 item = ('Remove Selected Deep Component', self.removeDeepComponent)
                 menuItems.append(item)
+                item = ('go to selected deepComponent', self.gotoselectedDC)
+                menuItems.append(item)
             variationsAxes = self.currentGlyph.glyphVariations.axes
             if len(self.currentGlyph):
                 if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
                     item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
                     menuItems.append(item)
         notification["additionContextualMenuItems"].extend(menuItems)
+
+    def gotoselectedDC(self, sender):
+        g = self.currentGlyph
+        selectedDCName = g._deepComponents[g.selectedElement[0]].name
+        CurrentGlyphWindow().close()
+        self.currentGlyph = self.currentFont[selectedDCName]
+        roboCJKView.openGlyphWindowIfLockAcquired(self, self.currentGlyph)
 
     def animateThisVariableGlyph(self, sender):
         movie.Movie(self)
