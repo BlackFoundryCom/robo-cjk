@@ -54,7 +54,7 @@ class CharacterInfos:
     def final(self):
         for c in self.composition:
             if c in Jamos.final:
-                return c    
+                return c
         return ""
 
 class Composition:

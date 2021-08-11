@@ -126,7 +126,7 @@ class GroupController:
     @property
     def initial(self):
         return self._getGroupsFromPosition("initial")
-    
+
     @property
     def medial(self):
         return self._getGroupsFromPosition("medial")
@@ -191,28 +191,15 @@ class Combinations(Repr):
         return {k: getattr(self, k).toDict() for k in vars(self)}
 
     def initWithDict(self, combinationsDict:dict = {}):
+        # return a dict for each position in a combo.
+        # The dict has 2 values, one for the group name, one for the variant name
         for k, v in combinationsDict.items():
-            # print(k, v, '\n')
-            # for grp in v:
-            #     print('=>', grp, v[grp], '\n\n')
-            #     if grp == "initial":
-            #         initial, variant = v[grp].values(), v[grp].values()
-            #         #print(k, "\n", "initial", initial, "variant", variant, "\n\n")
-            #         setattr(self, k, GroupRelation(initial = GroupsVariants(initial, variant)))
-            #     elif grp == "medial":
-            #         medial, variant = v[grp].values(), v[grp].values()
-            #         #print(k, "\n", "medial", med, "variant", variant, "\n\n")
-            #         setattr(self, k, GroupRelation(medial = GroupsVariants(medial, variant)))
-            #     else:
-            #         final, variant = v[grp].values(), v[grp].values()
-            #         #print(k, "\n", "final", final, "variant", variant, "\n\n")
-            #         setattr(self, k, GroupRelation(final = GroupsVariants(final, variant)))
             if 'final' in v:
-                self.add(k, v['initial'].values(), v['medial'].values(), v['final'].values())
+                self.add(k, v['initial'].values(),
+                    v['medial'].values(), v['final'].values())
             else:
                 self.add(k, v['initial'].values(), v['medial'].values())
 
-    
 class HangulModule:
 
     def __init__(self):
@@ -343,6 +330,7 @@ class UserNames:
         fillPositionJamos(hangul.Jamos.final, self.final)
 
     def initWithDict(self, usernames:dict = {}):
+        print(usernames)
         for k, v in usernames.items():
             desc = [dict(jamo = x, name = y) for x, y in v.items()]
             setattr(self, k, desc)

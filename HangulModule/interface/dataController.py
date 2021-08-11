@@ -291,6 +291,10 @@ class Combinations(Group):
             selectionCallback = self.combinationsListSelectionCallback
             )
 
+        self.glyphsMadeByThisComboTitle = TextBox((170, 220, 260, 150),
+            "Characters created with this combo")
+        self.glyphsMadeByThisCombo = EditText((170, 240, 260, 150), " ")
+
         i = 40
 
         self.initialTitle = TextBox(
@@ -351,8 +355,9 @@ class Combinations(Group):
             return
         combinationName = sender.get()[sel[0]]
         combination = self.hangulModule.combinations.get(combinationName)
-        print("\n", combinationName, "\n")
-        print(combination)
+        # DEBUG print
+        # print("\n", combinationName, "\n")
+        # print(combination)
         self.initialGroup.setItem(combination.initial.group)
         self.initialVariant.set(combination.initial.variant)
         self.medialGroup.setItem(combination.medial.group)
@@ -360,15 +365,23 @@ class Combinations(Group):
         if combination.get('final'):
             self.finalGroup.setItem(combination.final.group)
             self.finalVariant.set(combination.final.variant)
+            self.glyphsMadeByThisCombo.set(combination.final.group)
         else:
-            self.finalVariant.set("None")
+            self.finalVariant.set(" ")
+            self.finalGroup.setItem("None")
+        # TODO: display characters than can be generated with
+        # the selected combination rule
+        # self.glyphsMadeByThisCombo.set()
 
     def setUI(self):
         self.combinationsList.set(self.hangulModule.combinations.names())
         # set the list of possible versions
         self.initialGroup.setItems(list(self.hangulModule.groups.initial))
         self.medialGroup.setItems(list(self.hangulModule.groups.medial))
-        self.finalGroup.setItems(list(self.hangulModule.groups.final))
+        # add a void field in the list
+        listOfFinalConsonnant = list(self.hangulModule.groups.final)
+        listOfFinalConsonnant.append("None")
+        self.finalGroup.setItems(listOfFinalConsonnant)
 
 
 class DataController:
