@@ -731,7 +731,48 @@ class RoboCJKController(object):
                 if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
                     item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
                     menuItems.append(item)
+
+        if "." in self.currentGlyph.name:
+            item = ('Import Axes and Sources from baseglyph', self.importAxesAndSourcesFromBaseglyph)
+            menuItems.append(item)
+
         notification["additionContextualMenuItems"].extend(menuItems)
+
+    def importAxesAndSourcesFromBaseglyph(self, sender):
+        name = self.currentGlyph.name
+        glyph = self.currentGlyph
+        f = self.currentFont
+
+        basename = name.split(".")[0]
+        baseglyph = f[basename]
+
+        if sorted(list(glyph._axes.names)) != sorted(list(baseglyph._axes.names)):
+            missing = []
+            for x in list(baseglyph._axes.names):
+                if x not in list(glyph._axes.names):
+                    missing.append(x)
+            for n in missing:
+                axis = baseglyph._axes.get(n)
+                glyph.addAxis(n, axis.minValue, axis.maxValue, axis.defaultValue)
+             
+        gsourcesnames = [x.sourceName for x in glyph._glyphVariations]
+        for bsi, source in enumerate(baseglyph._glyphVariations):
+            if source.sourceName not in gsourcesnames:
+                glyph.addSource(source.sourceName, dict(source.location), source.layerName)
+                for dci, dc in enumerate(baseglyph._deepComponents):
+                    if dc["name"] == glyph._deepComponents[dci]["name"]:
+                        gcoord = glyph._glyphVariations[-1].deepComponents[dci].coord
+                        gtransform = glyph._glyphVariations[-1].deepComponents[dci].transform
+                        bcoord = baseglyph._glyphVariations[bsi].deepComponents[dci].coord
+                        btransform = baseglyph._glyphVariations[bsi].deepComponents[dci].transform
+                        for k in gcoord:
+                            gcoord.setValue(k, bcoord[k])
+                        for t in gtransform:
+                            gtransform.setValue(t, btransform[t])
+                            
+        glyph.update()
+        self.glyphInspectorWindow.axesItem.setList()
+        self.glyphInspectorWindow.sourcesItem.setList()
 
     def gotoselectedDC(self, sender):
         g = self.currentGlyph

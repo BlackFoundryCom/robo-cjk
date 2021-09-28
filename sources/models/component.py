@@ -229,6 +229,9 @@ class Coord(DictClass):
         """
         delattr(self, axis)
 
+    def setValue(self, axis, value):
+        self[axis] = value
+
     @property
     def axes(self):
         """
@@ -271,6 +274,9 @@ class Transform(DictClass):
                 self.tcenterx = v
             elif k == "rcentery":
                 self.tcentery = v
+
+    def setValue(self, transform, value):
+        self[transform] = value
 
     def _normalizeRotation(self, rotation):
         r = rotation
