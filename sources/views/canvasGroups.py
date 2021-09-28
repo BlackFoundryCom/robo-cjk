@@ -124,9 +124,9 @@ class GlyphPreviewCanvas(CanvasGroup):
             #         {"Axis":axisName, "Layer":layerName, "PreviewValue":layerName.minValue} for axisName, layerName in  d.items()
             #         ]
 
-            if self.glyph.markColor is not None:
-                mjdt.fill(*self.glyph.markColor)
-                mjdt.rect(0, 0, 200, 20)
+            # if self.glyph.markColor is not None:
+            #     mjdt.fill(*self.glyph.markColor)
+            #     mjdt.rect(0, 0, 200, 20)
 
             # scale = .15
             # mjdt.scale(scale, scale)

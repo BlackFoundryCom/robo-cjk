@@ -45,6 +45,7 @@ glyphVariationsKey = 'robocjk.fontVariationGlyphs'
 deepComponentsKey = 'robocjk.deepComponents'
 axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
+statusKey = 'robocjk.status'
 
 import cProfile, pstats, io
 from pstats import SortKey
@@ -266,6 +267,7 @@ class CharacterGlyph(Glyph):
                     variationGlyphs = lib[variationGlyphsKey]
                 hasAxisKey = axesKey in lib.keys()
                 axes = lib.get(axesKey)
+                status = lib.get(statusKey, 0)
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
                     deepComponents = self._RGlyph.lib[deepComponentsKey]
@@ -275,10 +277,12 @@ class CharacterGlyph(Glyph):
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
                 hasAxisKey = axesKey in self._RGlyph.lib.keys()
                 axes = self._RGlyph.lib.get(axesKey)
+                status = self._RGlyph.lib.get(statusKey, 0)
             if hasAxisKey:
                 self._deepComponents = DeepComponents(deepComponents)
                 self._axes = Axes(axes)
                 self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes)
+                self._status = status
             else:
                 self._deepComponents = DeepComponents()
                 self._deepComponents._init_with_old_format(deepComponents)
@@ -286,6 +290,7 @@ class CharacterGlyph(Glyph):
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(variationGlyphs, self._axes)
+            # self._temp_set_Status_value()
         except Exception as e:
             self._deepComponents = DeepComponents()
             self._axes = Axes()   
@@ -312,6 +317,7 @@ class CharacterGlyph(Glyph):
                     index = i
                     break
             self._glyphVariations[index].deepComponents[self.selectedElement[0]].coord[nameAxis] = value
+            # self._glyphVariations[self.selectedSourceAxis][self.selectedElement[0]].coord[nameAxis] = value
         else:
             self._deepComponents[self.selectedElement[0]].coord[nameAxis]=value
 
@@ -368,7 +374,7 @@ class CharacterGlyph(Glyph):
         self.selectedElement = []
 
     def save(self):
-        color = self.markColor
+        # color = self.markColor
         self.lib.clear()
         lib = RLib()
 
@@ -387,5 +393,11 @@ class CharacterGlyph(Glyph):
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getList()
+        if self._status:
+            lib[statusKey] = self._status
+        if 'public.markColor' in lib:
+            del lib['public.markColor']
         self.lib.update(lib)
-        self.markColor = color
+        if 'public.markColor' in self.lib:
+            del self.lib['public.markColor']
+        # self.markColor = color

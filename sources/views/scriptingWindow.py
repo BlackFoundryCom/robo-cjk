@@ -70,6 +70,10 @@ class ScriptingWindow:
         self.w.open()
         
     def runCallback(self, sender):
+
+        from utils import decorators, files, locker
+        from models import atomicElement, deepComponent, characterGlyph
+        
         def CurrentRCJKFont():
             return self.RCJKI.currentFont
 

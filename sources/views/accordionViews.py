@@ -27,6 +27,7 @@ from AppKit import NSColor, NSFont
 from utils import decorators, files, interpolation, vanillaPlus
 from views import sheets
 import os, copy, string
+from lib.cells.colorCell import RFColorCell
 
 import cProfile, pstats, io
 from pstats import SortKey
@@ -671,7 +672,7 @@ class AxisSheet:
         self.RCJKI = RCJKI
         self.controller = controller
         self.glyphType = glyphType
-        self.w = Sheet((300, 140), parentWindow)
+        self.w = Sheet((300, 170), parentWindow)
 
         if glyphType != "characterGlyph":
             self.w.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
@@ -686,25 +687,52 @@ class AxisSheet:
         #     self.w.axisName = PopUpButton((100, 20, 150, 20), self.layers, sizeStyle = 'small')
 
         self.w.minValueTitle = TextBox((10, 50, 90, 20), "Min value", sizeStyle = 'small')
-        self.w.minValue = EditText((100, 50, 150, 20), 0, sizeStyle = 'small', formatter = numberFormatter)
+        self.w.minValue = EditText((100, 50, 150, 20), 0, sizeStyle = 'small', 
+            # formatter = numberFormatter, 
+            callback = self.valuesCallback, continuous = False)
 
         self.w.maxValueTitle = TextBox((10, 80, 90, 20), "Max Value", sizeStyle = 'small')
-        self.w.maxValue = EditText((100, 80, 150, 20), 1, sizeStyle = 'small', formatter = numberFormatter)
+        self.w.maxValue = EditText((100, 80, 150, 20), 1, sizeStyle = 'small', 
+            # formatter = numberFormatter, 
+            callback = self.valuesCallback, continuous = False)
+
+        self.w.defaultValueTitle = TextBox((10, 110, 90, 20), "Default Value", sizeStyle = 'small')
+        self.w.defaultValue = EditText((100, 110, 150, 20), 0, sizeStyle = 'small', 
+            # formatter = numberFormatter, 
+            callback = self.valuesCallback, continuous = False)        
 
         self.w.apply = Button((150, -20, -0, 20), "Add", sizeStyle = 'small',callback = self.applyCallback)
         self.w.cancel = Button((00, -20, 150, 20), "Cancel", sizeStyle = 'small',callback = self.cancelCallback)
         self.w.setDefaultButton(self.w.apply)
         self.w.open()
 
+    def valuesCallback(self, sender):
+        minvalue = str_to_int_or_float(self.w.minValue.get())
+        maxvalue = str_to_int_or_float(self.w.maxValue.get())
+        defaultvalue = str_to_int_or_float(self.w.defaultValue.get())
+
+        if sender == self.w.minValue:
+            if minvalue > maxvalue:
+                self.w.minValue.set(defaultvalue)
+        elif sender == self.w.maxValue:
+            if maxvalue < minvalue:
+                self.w.maxValue.set(defaultvalue)
+        else:
+            if not minvalue <= defaultvalue <= maxvalue:
+                self.w.defaultValue.set(minvalue)
+            # if not min([minvalue, maxvalue]) <= defaultvalue <= max([minvalue, maxvalue]):
+            #     self.w.defaultValue.set(minvalue)
+
     def applyCallback(self, sender):
         if self.glyphType != "characterGlyph":
             axisName = self.w.axisName.get()
         else: 
             axisName = self.fontVariations[self.w.axisName.get()]
-        minValue = int(self.w.minValue.get())
-        maxValue = int(self.w.maxValue.get())
-        if not all([x!="" for x in [axisName, minValue, maxValue]]): return
-        self.RCJKI.currentGlyph.addAxis(axisName, minValue, maxValue)
+        minValue = str_to_int_or_float(self.w.minValue.get())
+        maxValue = str_to_int_or_float(self.w.maxValue.get())
+        defaultValue = str_to_int_or_float(self.w.defaultValue.get())
+        if not all([x!="" for x in [axisName, minValue, maxValue, defaultValue]]): return
+        self.RCJKI.currentGlyph.addAxis(axisName, minValue, maxValue, defaultValue)
         self.controller.setList()
         self.controller.controller.sourcesItem.setList()
         self.w.close()
@@ -733,18 +761,41 @@ class ModifyAxisSheet:
         self.w = Sheet((300, 200), parentWindow)
 
         self.w.minValueTitle = TextBox((10, 10, 100, 20), "minValue", sizeStyle='small')
-        self.w.minValue = EditText((110, 10, 100, 20), axisList["MinValue"], sizeStyle='small')
+        self.w.minValue = EditText((110, 10, 100, 20), axisList["MinValue"], sizeStyle='small', callback=self.valueCallback)
 
         self.w.maxValueTitle = TextBox((10, 40, 100, 20), "maxValue", sizeStyle='small')
-        self.w.maxValue = EditText((110, 40, 100, 20), axisList["MaxValue"], sizeStyle='small')
+        self.w.maxValue = EditText((110, 40, 100, 20), axisList["MaxValue"], sizeStyle='small', callback=self.valueCallback)
 
-        self.changeDesignSpace = 1
-        self.w.changeDesignSpaceCheckBox = CheckBox((10, -50, -10, 20), 'Change design space values', value = self.changeDesignSpace, callback = self.changeDesignSpaceCallback, sizeStyle="small")
+        self.w.defaultValueTitle = TextBox((10, 70, 100, 20), "defaultValue", sizeStyle='small')
+        self.w.defaultValue = EditText((110, 70, 100, 20), axisList["DefaultValue"], sizeStyle='small', callback=self.valueCallback)
+
+        self.changeDesignSpace = 0
+        self.w.changeDesignSpaceCheckBox = CheckBox((10, -50, -10, 20), "Designspace range follows axis ranges", value = self.changeDesignSpace, callback = self.changeDesignSpaceCallback, sizeStyle="small")
 
         self.w.cancel = Button((0, -20, 150, 20), "cancel", sizeStyle = "small", callback = self.cancelCallback)
         self.w.apply = Button((150, -20, 150, 20), "apply", sizeStyle = "small", callback = self.applyCallback)
         self.w.setDefaultButton(self.w.apply)
         self.w.open()
+
+    def valueCallback(self, sender):
+        minvalue = str_to_int_or_float(self.w.minValue.get())
+        maxvalue = str_to_int_or_float(self.w.maxValue.get())
+        defaultvalue = str_to_int_or_float(self.w.defaultValue.get())
+
+        if None in [minvalue, maxvalue, defaultvalue]:
+            return
+
+        if sender == self.w.minValue:
+            if minvalue > maxvalue:
+                self.w.minValue.set(defaultvalue)
+        elif sender == self.w.maxValue:
+            if maxvalue < minvalue:
+                self.w.maxValue.set(defaultvalue)
+        else:
+            if not minvalue <= defaultvalue <= maxvalue:
+                self.w.defaultValue.set(minvalue)
+            # if not min([minvalue, maxvalue]) <= defaultvalue <= max([minvalue, maxvalue]):
+            #     self.w.defaultValue.set(minvalue)
 
     def changeDesignSpaceCallback(self, sender):
         self.changeDesignSpace = sender.get()
@@ -753,18 +804,23 @@ class ModifyAxisSheet:
         axisName = self.axisList["Axis"]
         oldMinValue = str_to_int_or_float(self.axisList["MinValue"])
         oldMaxValue = str_to_int_or_float(self.axisList["MaxValue"])
+        oldDefaultValue = str_to_int_or_float(self.axisList["DefaultValue"])
 
         newMinValue = self.w.minValue.get()
         newMaxVamue = self.w.maxValue.get()
+        newDefaultValue = self.w.defaultValue.get()
 
         try:
             newMinValue = str_to_int_or_float(newMinValue)
             newMaxVamue = str_to_int_or_float(newMaxVamue)
+            newDefaultValue = str_to_int_or_float(newDefaultValue)
         except: return
 
         self.RCJKI.currentGlyph._axes[self.axisIndex].minValue = newMinValue
         self.RCJKI.currentGlyph._axes[self.axisIndex].maxValue = newMaxVamue
-        if self.changeDesignSpace:
+        self.RCJKI.currentGlyph._axes[self.axisIndex].defaultValue = newDefaultValue
+
+        if self.changeDesignSpace == 1:
             for variation in self.RCJKI.currentGlyph._glyphVariations:
                 if axisName in variation.location:
                     systemValue = self.RCJKI.systemValue(variation.location[axisName], oldMinValue, oldMaxValue)
@@ -812,16 +868,16 @@ class AxesGroup(Group):
 
         self.setList()
 
-        self.modifyAxisButton = Button((0, -40, 80, 20), "Modify axis", sizeStyle="small", callback = self.modifyAxisCallback)
+        self.modifyAxisButton = Button((0, -40, 140, 20), "Edit selected axis range", sizeStyle="small", callback = self.modifyAxisCallback)
 
         if glyphtype in ["deepComponent", "atomicElement"]:
             self.editSelectedAxisExtremeValueButton = Button(
-                (80, -40, 200, 20), 
-                "Edit selected axis extreme value", 
+                (140, -40, 200, 20), 
+                "Edit selected axis maximum value", 
                 sizeStyle = "small",
                 callback = self.editSelectedAxisExtremeValueButtonCallback)
             self.setLocationTo1Button = Button(
-                (280, -40, 100, 20), 
+                (340, -40, 100, 20), 
                 "Set location to 1", 
                 sizeStyle = "small",
                 callback = self.setLocationTo1ButtonCallback)
@@ -891,15 +947,17 @@ class AxesGroup(Group):
         for i, e in enumerate(self.axesList.get()):
             minValue = float(e["MinValue"])
             maxValue = float(e["MaxValue"])
+            defaultValue = float(e["DefaultValue"])
             newList.append({
                 "Axis":e["Axis"],
+                "DefaultValue":e["DefaultValue"],
                 "MinValue":e["MinValue"],
-                "PreviewValue":0,#self.RCJKI.systemValue(0, minValue, maxValue),
+                "PreviewValue":self.RCJKI.systemValue(e["DefaultValue"], e["MinValue"], e["MaxValue"]),#self.RCJKI.systemValue(0, minValue, maxValue),
                 "MaxValue":e["MaxValue"],
                 })
             self.axesList.set(newList)
 
-        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in newList]
+        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "DefaultValue":self.RCJKI.systemValue(x["DefaultValue"], x["MinValue"], x["MaxValue"]), "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in newList]
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.currentGlyph.reinterpolate = True
@@ -908,7 +966,8 @@ class AxesGroup(Group):
         self.controller.updatePreview()
 
     def setList(self):
-        self.axes = [dict(Axis=x.name, MinValue=x.minValue, PreviewValue=0, MaxValue=x.maxValue) for x in self.RCJKI.currentGlyph._axes]
+        self.axes = [dict(Axis=x.name, DefaultValue=x.defaultValue, MinValue=x.minValue, PreviewValue=self.RCJKI.systemValue(x.defaultValue, x.minValue, x.maxValue), MaxValue=x.maxValue) for x in self.RCJKI.currentGlyph._axes]
+        print("self.axes", self.axes)
         # self.axesList.set(self.axes)
 
         if hasattr(self, "axesList"):
@@ -919,6 +978,7 @@ class AxesGroup(Group):
             self.axes,
             columnDescriptions = [
                     {"title": "Axis", "editable": True, "width": 100},
+                    {"title": "DefaultValue", "editable": True, "width": 40},
                     {"title": "MinValue", "editable": True, "width": 40},
                     {"title": "PreviewValue", "cell": slider},
                     {"title": "MaxValue", "editable": True, "width": 40}
@@ -950,8 +1010,10 @@ class AxesGroup(Group):
             else:
                 minValue = float(e["MinValue"])
                 maxValue = float(e["MaxValue"])
+                defaultValue = float(e["DefaultValue"])
                 newList.append({
                     "Axis":e["Axis"],
+                    "DefaultValue":e["DefaultValue"],
                     "MinValue":e["MinValue"],
                     "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
                     "MaxValue":e["MaxValue"],
@@ -996,13 +1058,13 @@ class AxesGroup(Group):
 
             l = []
             for axis in self.RCJKI.currentGlyph._axes:
-                l.append({'Axis':axis.name, 'PreviewValue':0, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
+                l.append({'Axis':axis.name, 'PreviewValue':0, "DefaultValue":axis.defaultValue, "MinValue":axis.minValue, "MaxValue":axis.maxValue})
             sender.set(l)
             sender.setSelection(sel)
 
         axis = sender.get()[sel[0]]["Axis"]
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, self.RCJKI.currentGlyph._axes.get(axis).minValue, self.RCJKI.currentGlyph._axes.get(axis).maxValue))
-        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
+        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "DefaultValue":x["DefaultValue"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
@@ -1063,13 +1125,15 @@ class SourcesSheet:
         self.axes = {}
         for i, axis in enumerate(self.RCJKI.currentGlyph._axes):
             textbox = TextBox((10, y, 90, 20), axis.name, sizeStyle = 'small')
+            defaultValue = TextBox((70, y+5, 100, 20), "default:%s"%axis.defaultValue, sizeStyle = 'small', alignment="left")
             minValue = TextBox((100, y+5, 50, 20), axis.minValue, sizeStyle = 'small', alignment="right")
-            editText = EditText((150, y, -50, 20), [axis.minValue, axis.maxValue][i + 1 == len(self.RCJKI.currentGlyph._axes)], sizeStyle = "small", 
+            editText = EditText((150, y, -50, 20), [axis.defaultValue, axis.maxValue][i + 1 == len(self.RCJKI.currentGlyph._axes)], sizeStyle = "small", 
                 # formatter = numberFormatter, 
                 continuous = False,
                 callback = self.valuesCallback)
             maxValue = TextBox((-50, y+5, 50, 20), axis.maxValue, sizeStyle = 'small', alignment="left")
             setattr(self.w, "%sName"%axis.name, textbox)
+            setattr(self.w, "%sdefaultValue"%axis.name, defaultValue)
             setattr(self.w, "%sminValue"%axis.name, minValue)
             setattr(self.w, axis.name+str(i), editText)
             setattr(self.w, "%smaxValue"%axis.name, maxValue)
@@ -1154,9 +1218,9 @@ class SourcesGroup(Group):
 
     def setList(self):
         if self.RCJKI.currentGlyph.type == "atomicElement":
-            self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:y.minValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+            self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:y.defaultValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         else:    
-            self.sources = [{"On/Off":x.on, "name":x.sourceName, **{y.name:y.minValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+            self.sources = [{"On/Off":x.on, "name":x.sourceName, **{y.name:y.defaultValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         for i, source in enumerate(self.sources):
             source.update(self.RCJKI.currentGlyph._glyphVariations[i].location)
 
@@ -1538,68 +1602,53 @@ class PropertiesGroup(Group):
         super().__init__(posSize)
         self.RCJKI = RCJKI
         self.controller = controller
-        self.glyphState = PopUpButton(
-            (5, 5, -100, 20),
-            [
-            "In Progress", 
-            "Checking round 1", 
-            "Checking round 2", 
-            "Checking round 3", 
-            "Done"
-            ],
-            callback = self.glyphStateCallback
+        
+        x = RFColorCell.alloc().init()
+        listRFColorCell = RFColorCell.alloc().init()
+        columnDescriptions = [
+            dict(title="color", key="color", cell=listRFColorCell, width=80),
+            dict(title="sourceName", key="sourceName", editable=False, width=150),
+            dict(title="status", cell=PopUpButtonListCell(colors.names), binding="selectedValue")
+            ]
+
+        self.glyphStatusList = List((5, 5, -5, -25), [], 
+            columnDescriptions=columnDescriptions,
+            editCallback = self.glyphStatusListEditCallback
             )
 
-        self.glyphStateColor = ColorWell(
-            (-100, 5, -5, 20)
-            )
-        self.glyphStateColor.getNSColorWell().setBordered_(False)
+    @lockedProtect
+    def glyphStatusListEditCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: return
+        status = sender.get()[sel[0]]["status"]
+        sourceName = sender.get()[sel[0]]["sourceName"]
+        colorindex = 0
+        for i, color in enumerate(colors.colors):
+            if color.name == status:
+                colorindex = i
+        if sourceName == "default":
+            self.RCJKI.currentGlyph._status = colorindex
+        else:
+            for v in self.RCJKI.currentGlyph._glyphVariations:
+                if v.sourceName == sourceName:
+                    v.status = colorindex
+        self.setglyphState()
 
     def setglyphState(self):
-        color = self.RCJKI.currentGlyph.markColor
-        state = self.glyphState
-        if color is None:
-            state.set(0)
-        elif color == INPROGRESS:
-            state.set(0)
-        elif color == CHECKING1:
-            state.set(1)
-        elif color == CHECKING2:
-            state.set(2)
-        elif color == CHECKING3:
-            state.set(3)
-        elif color == DONE:
-            state.set(4)
-        else:
-            state.set(0)
-        self.setGlyphStateUI(state)
+        l = [
+            dict(color = NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.colors[self.RCJKI.currentGlyph._status].rgba), 
+                sourceName = "default", 
+                status = colors.names[self.RCJKI.currentGlyph._status]
+                )
+        ]
+        for source in self.RCJKI.currentGlyph._glyphVariations:
+            l.append(dict(color = NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.colors[source.status].rgba), 
+                        sourceName = source.sourceName, 
+                        status = colors.names[source.status]
+                        ))
 
-    def setGlyphStateUI(self, sender):
-        state = sender.getItem()
-        names = {
-            "In Progress":colors.WIP_name, 
-            "Checking round 1":colors.CHECKING1_name, 
-            "Checking round 2":colors.CHECKING2_name, 
-            "Checking round 3":colors.CHECKING3_name, 
-            "Done":colors.DONE_name
-            }
-        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.STATUS_COLORS[names[state]]))
+        self.glyphStatusList.set(l)
 
-    def glyphStateCallback(self, sender):
-        state = sender.getItem()
-        names = {
-            "In Progress":colors.WIP_name, 
-            "Checking round 1":colors.CHECKING1_name, 
-            "Checking round 2":colors.CHECKING2_name, 
-            "Checking round 3":colors.CHECKING3_name, 
-            "Done":colors.DONE_name
-            }
-        self.RCJKI.currentFont.markGlyph(self.RCJKI.currentGlyph.name, colors.STATUS_COLORS[names[state]], names[state])
-        # self.RCJKI.currentGlyph.markColor = colors.STATUS_COLORS[names[state]]
-        # self.RCJKI.currentFont.changeGlyphState(state = names[state], glyph = self.RCJKI.currentGlyph)
-        if colors.STATUS_COLORS[names[state]] == DONE and self.RCJKI.currentGlyph.type == "characterGlyph":
-            self.RCJKI.decomposeGlyphToBackupLayer(self.RCJKI.currentGlyph)
-        self.glyphStateColor.set(NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.STATUS_COLORS[names[state]]))
 
 class TransformationGroup(Group):
 
@@ -1865,7 +1914,7 @@ class CharacterGlyphInspector(Inspector):
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True),
-                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
+                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=150, collapsed=False, canResize=True),
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)
@@ -1901,7 +1950,7 @@ class DeepComponentInspector(Inspector):
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Atomic element list", view=self.deepComponentListItem, minSize=100, size=150, collapsed=False, canResize=True),
                        dict(label="Transformation", view=self.transformationItem, minSize = 80, size=160, collapsed=False, canResize=True),
-                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True),
+                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=150, collapsed=False, canResize=True),
                        
                        ]
 
@@ -1933,7 +1982,7 @@ class AtomicElementInspector(Inspector):
                        dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
 
                        # dict(label="Atomic element axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
-                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=80, collapsed=False, canResize=True)
+                       dict(label="Properties", view=self.propertiesItem, minSize = 80, size=150, collapsed=False, canResize=True)
                        ]
 
         self.w.accordionView = AccordionView((0, 0, -0, -0), descriptions)

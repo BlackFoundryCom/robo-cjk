@@ -140,12 +140,16 @@ class MathDict(dict, _MathMixin):
 
 class Axis:
 
-    def __init__(self, name="", minValue=0, maxValue=1):
+    def __init__(self, name="", minValue=0, maxValue=1, defaultValue=None):
         # for k, v in kwargs.items():
         #     self[k] = v
         self.name = name
         self.minValue = minValue
         self.maxValue = maxValue
+        if defaultValue is None:
+            self.defaultValue = minValue
+        else:
+            self.defaultValue = defaultValue
 
     def __repr__(self):
         return "<"+str(vars(self))+">"
@@ -468,13 +472,14 @@ class DeepComponents:
 
 class VariationGlyphsInfos:
 
-    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}, sourceName: str = "", on: bool = 1, **kwargs):
+    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}, sourceName: str = "", on: bool = 1, status:int = 0, **kwargs):
         # print("_init_ variation glyphs", location, layerName, deepComponents)
         self.location = MathDict(location) #location is a dict specifiying the design space location {"wght":1, "wdth":1}
         self.layerName = layerName
         self.deepComponents = DeepComponents(deepComponents)
         self.sourceName = sourceName
         self.on = on
+        self.status = status
         for k, v in kwargs.items():
             if k == "axisName":
                 self.sourceName = v
@@ -529,7 +534,10 @@ class VariationGlyphsInfos:
         # return f"<location: {self.location}, layerName: {self.layerName}, deepComponent: {self.deepComponents}>"
 
     def _toDict(self, exception = []):
-        d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on}
+        if self.status:
+            d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on, "status":self.status}
+        else:
+            d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on}
         for e in exception:
             if e in d:
                 del d[e]
@@ -537,6 +545,12 @@ class VariationGlyphsInfos:
 
     def __getitem__(self, item):
         return getattr(self, item)
+
+"""
+variation.get('location'), axes {'BL_S_lo': 0.0, 'BR_S_lo': 0.0, 'X_WH_bo': -1.0, 'X_WV_bo': 0.0, 'X_X_fl': 0.0, 'X_X_na': 0.0} [<{'name': 'BL_S_lo', 'minValue': 0.0, 'maxValue': 1.0, 'defaultValue': 0}>, <{'name': 'BR_S_lo', 'minValue': 0.0, 'maxValue': 1.0, 'defaultValue': 0}>, <{'name': 'X_WH_bo', 'minValue': -1, 'maxValue': 1.0, 'defaultValue': 0}>, <{'name': 'X_WV_bo', 'minValue': 0.0, 'maxValue': 1.0, 'defaultValue': 0}>, <{'name': 'X_X_fl', 'minValue': 0.0, 'maxValue': 1.0, 'defaultValue': 0}>, <{'name': 'X_X_na', 'minValue': 0.0, 'maxValue': 1.0, 'defaultValue': 0}>]
+locations, loc [{'BL_S_lo': 1.0, 'X_WH_bo': 0}, {'BR_S_lo': 1.0, 'X_WH_bo': 0}, {'X_WH_bo': 1.0}, {'X_WH_bo': 0, 'X_WV_bo': 1.0}, {'X_WH_bo': 0, 'X_X_fl': 1.0}, {'X_WH_bo': 0, 'X_X_na': 1.0}] {}
+
+"""
 
 class VariationGlyphs(list):
 
@@ -565,6 +579,7 @@ class VariationGlyphs(list):
         loc = self._normalizedLocation(variation.get('location'), axes)
         locations = [self._normalizedLocation(x, axes) for x in self.locations]
         if loc in locations or not loc:
+            print("locations, loc", locations, loc)
             variation["on"] = False
         self.append(VariationGlyphsInfos(**variation))
 
@@ -591,7 +606,8 @@ class VariationGlyphs(list):
         variation.location = location
 
     def _normalizedLocation(self, location, axes):
-        return {k:v for k,v in location.items() if v != axes.get(k).minValue}
+        # return {k:v for k,v in location.items() if v != axes.get(k).minValue}
+        return {k:v for k,v in location.items() if v != axes.get(k).defaultValue}
 
     # def __iter__(self):
     #     for x in self:
@@ -631,7 +647,8 @@ class VariationGlyphs(list):
         for variation in self:
             empty = True
             for k, v in variation.location.items():
-                if v != axes.get(k).minValue:
+                # if v != axes.get(k).minValue:
+                if v != axes.get(k).defaultValue:
                     empty = False
                     break
             if empty:

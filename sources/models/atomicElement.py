@@ -41,6 +41,7 @@ glyphVariationsKey = 'robocjk.glyphVariationGlyphs'
 # Actual key
 axesKey = 'robocjk.axes'
 variationGlyphsKey = 'robocjk.variationGlyphs'
+statusKey = 'robocjk.status'
 
 class CustomMathGlyph(mathGlyph.MathGlyph):
 
@@ -86,8 +87,8 @@ class AtomicElement(Glyph):
         #     position = self.getLocation()
         # print(position)
         # print("AE %s position"%self.name, position, "\n")
-        position = self.normalizedValueToMinMaxValue(position, self)
-        position = self._clampLocation(position)
+        position = self.normalizedValueToMinMaxValue_clamped(position, self)
+        # position = self._clampLocation(position)
         # for k in position:
         #     if position[k] > 1:
         #         position[k] = 1
@@ -144,11 +145,13 @@ class AtomicElement(Glyph):
             if axesKey in self._RGlyph.lib:
                 self._axes = Axes(self._RGlyph.lib[axesKey])
                 self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey], self._axes)
+                self._status = self._RGlyph.lib.get(statusKey, 0)
             else:
                 self._axes = Axes()
                 self._axes._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]))
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]), self._axes)
+        # self._temp_set_Status_value()
 
     def addGlyphVariation(self, newAxisName, newLayerName):
         self._axes.addAxis({"name":newAxisName, "minValue":0, "maxValue":1})
@@ -168,7 +171,7 @@ class AtomicElement(Glyph):
         self._axes.removeAxis(index)
 
     def save(self):
-        color = self.markColor
+        # color = self.markColor
         self.lib.clear()
         lib = RLib()
         
@@ -183,6 +186,11 @@ class AtomicElement(Glyph):
         # lib[glyphVariationsKey] = self._glyphVariations.getList()
         lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getList(exception=["sourceName"])
-
+        if self._status:
+            lib[statusKey] = self._status
+        if 'public.markColor' in lib:
+            del lib['public.markColor']
         self.lib.update(lib)
-        self.markColor = color
+        if 'public.markColor' in self.lib:
+            del self.lib['public.markColor']
+        # self.markColor = color

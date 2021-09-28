@@ -26,6 +26,7 @@ from models import deepComponent, component
 # reload(component)
 import copy
 import math
+from utils import colors
 # from fontTools.misc.transform import Transform
 
 # reload(deepComponent)
@@ -91,6 +92,7 @@ class Glyph(RGlyph):
         super().__init__()
         self.type = None
         self._RFont = None
+        self._status = 0
         # self.preview = None
         self.sourcesList = []
         self._designState = ""
@@ -105,7 +107,20 @@ class Glyph(RGlyph):
         self._glyphVariations = VariationGlyphs()
         self.previewLocationsStore = {}
 
-        # self.frozenPreview = []
+    def _temp_set_Status_value(self):
+        mark = self._RGlyph.markColor
+        marked = False
+        for i, color in enumerate(colors.colors):
+            if mark == color.rgba:
+                self._status = i
+                for v in self._glyphVariations:
+                    v.status = i
+                marked = True
+
+        if not marked:
+            self._status = 0
+            for v in self._glyphVariations:
+                v.status = 0
 
     def createPreviewLocationsStore(self):
         # print('locations', self.locations)
@@ -134,9 +149,6 @@ class Glyph(RGlyph):
         else:
             return bool(self._glyphVariations)
 
-    def normalizedValue(self, v, minv, maxv):
-        return (v-minv)/(maxv-minv)
-
     def getLocation(self):
         loc = {}
         if self.selectedSourceAxis:
@@ -152,12 +164,28 @@ class Glyph(RGlyph):
     def locations(self):
         return self._locations()
 
+    def normalizedValue(self, v, minv, maxv, defaultValue):
+        return (v-defaultValue)/(maxv-minv)
+
+    def normalizedValueToMinMaxValue_clamped(self, loc, g):
+        position = {}
+        for k, v in loc.items():
+            axis = g._axes.get(k)
+            if axis is not None:
+                vx = self.normalizedValue(v, axis.minValue, axis.maxValue, axis.defaultValue)
+                if vx > axis.maxValue:
+                    vx = axis.maxValue
+                elif vx < axis.minValue:
+                    vx = axis.minValue
+                position[k] = vx
+        return position
+
     def normalizedValueToMinMaxValue(self, loc, g):
         position = {}
         for k, v in loc.items():
             axis = g._axes.get(k)
             if axis is not None:
-                position[k] = self.normalizedValue(v, axis.minValue, axis.maxValue)
+                position[k] = self.normalizedValue(v, axis.minValue, axis.maxValue, axis.defaultValue)
         return position
 
     def save(self):
@@ -254,8 +282,8 @@ class Glyph(RGlyph):
             self.redrawSelectedElementPreview = True
             return True
 
-    def addAxis(self, axisName="", minValue="", maxValue=""):
-        self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue))
+    def addAxis(self, axisName="", minValue="", maxValue="", defaultValue =""):
+        self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue, defaultValue = defaultValue))
         self._glyphVariations.addAxisToLocations(axisName = axisName, minValue=minValue)
 
     def removeAxis(self, index):

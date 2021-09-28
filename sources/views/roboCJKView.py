@@ -26,9 +26,10 @@ from views import canvasGroups
 from mojo.canvas import CanvasGroup
 import mojo.drawingTools as mjdt
 # from lib.doodleDocument import DoodleDocument
-from AppKit import NSFont, NumberFormatter 
+from AppKit import NSFont, NumberFormatter, NSColor
 from imp import reload
 from utils import decorators, files
+from lib.cells.colorCell import RFColorCell
 # reload(decorators)
 # reload(files)
 # reload(canvasGroups)
@@ -51,6 +52,7 @@ import os, json, copy, time
 # import BF_rcjk2mysql
 
 gitCoverage = decorators.gitCoverage
+lockedProtect = decorators.lockedProtect
 
 from mojo.roboFont import *
 import threading
@@ -134,10 +136,18 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
 class RoboCJKView(BaseWindowController):
     
     def __init__(self, RCJKI):
+        x = RFColorCell.alloc().init()
+        listRFColorCell = RFColorCell.alloc().init()
+        statusColumnDescriptions = [
+            dict(title="color", key="color", cell=listRFColorCell, width=30),
+            dict(title="sourceName", key="sourceName", editable=False, width=80),
+            dict(title="status", cell=PopUpButtonListCell(colors.names), binding="selectedValue")
+            ]
+
         self.RCJKI = RCJKI
         self.prevGlyphName = None
         self.w = Window(
-            (620, 600), 
+            (620, 670), 
             'RoboCJK'
             )
 
@@ -298,21 +308,27 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.newAtomicElement.enable(False)
         self.w.atomicElementPreview = canvasGroups.GlyphPreviewCanvas(
-            (10, 372, 200, -0),
+            (10, 372, 200, -70),
             self.RCJKI,
             glyphType = "atomicElement")
-        self.w.atomicElementDesignStepPopUpButton = PopUpButton(
-            (10, -20, 100, -0), 
-            [
-            "In Progress", 
-            "Checking 1", 
-            "Checking 2", 
-            "Checking 3", 
-            "Done"
-            ],
-            callback = self.atomicElementDesignStepPopUpButtonCallback
+
+        self.w.atomicElementStatusList = List((10, -70, 200, -0), [], 
+            columnDescriptions=statusColumnDescriptions,
+            editCallback = self.glyphStatusListEditCallback,
+            showColumnTitles = False
             )
-        self.w.atomicElementDesignStepPopUpButton.enable(False)
+        # self.w.atomicElementDesignStepPopUpButton = PopUpButton(
+        #     (10, -20, 100, -0), 
+        #     [
+        #     "In Progress", 
+        #     "Checking 1", 
+        #     "Checking 2", 
+        #     "Checking 3", 
+        #     "Done"
+        #     ],
+        #     callback = self.atomicElementDesignStepPopUpButtonCallback
+        #     )
+        # self.w.atomicElementDesignStepPopUpButton.enable(False)
 
         self.w.firstFilterDeepComponent = PopUpButton(
             (210, 120, 80, 20),
@@ -381,21 +397,27 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.newDeepComponent.enable(False)
         self.w.deepComponentPreview = canvasGroups.GlyphPreviewCanvas(
-            (210, 372, 200, -0),
+            (210, 372, 200, -70),
             self.RCJKI,
             glyphType = "deepComponent")
-        self.w.deepComponentDesignStepPopUpButton = PopUpButton(
-            (210, -20, 100, -0), 
-            [
-            "In Progress", 
-            "Checking 1", 
-            "Checking 2", 
-            "Checking 3", 
-            "Done"
-            ],
-            callback = self.deepComponentDesignStepPopUpButtonCallback
+
+        self.w.deepComponentStatusList = List((210, -70, 200, -0), [], 
+            columnDescriptions=statusColumnDescriptions,
+            editCallback = self.glyphStatusListEditCallback,
+            showColumnTitles = False
             )
-        self.w.deepComponentDesignStepPopUpButton.enable(False)
+        # self.w.deepComponentDesignStepPopUpButton = PopUpButton(
+        #     (210, -20, 100, -0), 
+        #     [
+        #     "In Progress", 
+        #     "Checking 1", 
+        #     "Checking 2", 
+        #     "Checking 3", 
+        #     "Done"
+        #     ],
+        #     callback = self.deepComponentDesignStepPopUpButtonCallback
+        #     )
+        # self.w.deepComponentDesignStepPopUpButton.enable(False)
 
         self.w.firstFilterCharacterGlyph = PopUpButton(
             (410, 120, 80, 20),
@@ -470,21 +492,28 @@ class RoboCJKView(BaseWindowController):
             )
         self.w.newCharacterGlyph.enable(False)
         self.w.characterGlyphPreview = canvasGroups.GlyphPreviewCanvas(
-            (410, 372, 200, -0),
+            (410, 372, 200, -70),
             self.RCJKI,
             glyphType = "characterGlyph")
-        self.w.characterGlyphDesignStepPopUpButton = PopUpButton(
-            (410, -20, 100, -0), 
-            [
-            "In Progress", 
-            "Checking 1", 
-            "Checking 2", 
-            "Checking 3", 
-            "Done"
-            ],
-            callback = self.characterGlyphDesignStepPopUpButtonCallback
+
+        self.w.characterGlyphStatusList = List((410, -70, 200, -0), [], 
+            columnDescriptions=statusColumnDescriptions,
+            editCallback = self.glyphStatusListEditCallback,
+            showColumnTitles = False
             )
-        self.w.characterGlyphDesignStepPopUpButton.enable(False)
+
+        # self.w.characterGlyphDesignStepPopUpButton = PopUpButton(
+        #     (410, -20, 100, -0), 
+        #     [
+        #     "In Progress", 
+        #     "Checking 1", 
+        #     "Checking 2", 
+        #     "Checking 3", 
+        #     "Done"
+        #     ],
+        #     callback = self.characterGlyphDesignStepPopUpButtonCallback
+        #     )
+        # self.w.characterGlyphDesignStepPopUpButton.enable(False)
         
         self.lists = [
             self.w.atomicElement,
@@ -494,6 +523,45 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.toggleObservers()
         self.w.bind('close', self.windowCloses)
         self.w.open()
+
+    @lockedProtect
+    def glyphStatusListEditCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            return
+        if self.w.atomicElementStatusList == sender:
+            l = self.w.atomicElement
+            name = l.get()[l.getSelection()[0]]
+        elif self.w.deepComponentStatusList == sender:
+            l = self.w.deepComponent
+            name = l.get()[l.getSelection()[0]]
+        elif self.w.characterGlyphStatusList == sender:
+            l = self.w.characterGlyph
+            name = l.get()[l.getSelection()[0]]["name"]
+
+        f = self.RCJKI.currentFont
+        glyph = self.RCJKI.currentFont[name]
+        lock, _ = f.lockGlyph(glyph)
+        if not lock: 
+            self.setglyphState(l, glyph)
+            return
+
+        status = sender.get()[sel[0]]["status"]
+        sourceName = sender.get()[sel[0]]["sourceName"]
+        colorindex = 0
+        for i, color in enumerate(colors.colors):
+            if color.name == status:
+                colorindex = i
+        if sourceName == "default":
+            glyph._status = colorindex
+        else:
+            for v in glyph._glyphVariations:
+                if v.sourceName == sourceName:
+                    v.status = colorindex
+
+        f.saveGlyph(glyph)
+        self.setglyphState(l, glyph)
+        self.RCJKI.unlockGlyphsNonOpen()
 
     def codeEditorButtonCallback(self, sender):
         scriptingWindow.ScriptingWindow(self.RCJKI)
@@ -1219,21 +1287,21 @@ class RoboCJKView(BaseWindowController):
         selected = sender.getSelection()
         if not selected: 
             if sender == self.w.atomicElement:
-                self.w.atomicElementDesignStepPopUpButton.enable(False)
+                self.w.atomicElementStatusList.enable(False)
             elif sender == self.w.deepComponent:
-                self.w.deepComponentDesignStepPopUpButton.enable(False)
+                self.w.deepComponentStatusList.enable(False)
             elif sender == self.w.characterGlyph:
-                self.w.characterGlyphDesignStepPopUpButton.enable(False)
+                self.w.characterGlyphStatusList.enable(False)
             return
         if sender == self.w.atomicElement:
-            self.w.atomicElementDesignStepPopUpButton.enable(True)
-            state = self.w.atomicElementDesignStepPopUpButton
+            self.w.atomicElementStatusList.enable(True)
+            # state = self.w.atomicElementDesignStepPopUpButton
         elif sender == self.w.deepComponent:
-            self.w.deepComponentDesignStepPopUpButton.enable(True)
-            state = self.w.deepComponentDesignStepPopUpButton
+            self.w.deepComponentStatusList.enable(True)
+            # state = self.w.deepComponentDesignStepPopUpButton
         elif sender == self.w.characterGlyph:
-            self.w.characterGlyphDesignStepPopUpButton.enable(True)
-            state = self.w.characterGlyphDesignStepPopUpButton
+            self.w.characterGlyphStatusList.enable(True)
+            # state = self.w.characterGlyphDesignStepPopUpButton
 
         for lists in self.lists:
             if lists != sender:
@@ -1252,27 +1320,28 @@ class RoboCJKView(BaseWindowController):
         user = self.RCJKI.currentFont.glyphLockedBy(glyph)
         preview_stop = time.time()
         print("get locked by:", preview_stop-preview_start, "seconds to get lock for %s"%glyph.name)
-        color = glyph.markColor
-        if color is None:
-            state.set(0)
-        elif color == INPROGRESS:
-            state.set(0)
-        elif color == CHECKING1:
-            state.set(1)
-        elif color == CHECKING2:
-            state.set(2)
-        elif color == CHECKING3:
-            state.set(3)
-        elif color == DONE:
-            state.set(4)
-        else:
-            state.set(0)
+        # color = glyph.markColor
+        # if color is None:
+        #     state.set(0)
+        # elif color == INPROGRESS:
+        #     state.set(0)
+        # elif color == CHECKING1:
+        #     state.set(1)
+        # elif color == CHECKING2:
+        #     state.set(2)
+        # elif color == CHECKING3:
+        #     state.set(3)
+        # elif color == DONE:
+        #     state.set(4)
+        # else:
+        #     state.set(0)
         # self.currentFont[self.prevGlyphName].update()
         preview_start = time.time()
         glyph.createPreviewLocationsStore()
         preview_stop = time.time()
         print("calculate preview:", preview_stop-preview_start, "seconds to calculate preview of %s"%glyph.name)
         self.setGlyphToCanvas(sender, glyph)
+        self.setglyphState(sender, glyph)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
         # else:
@@ -1284,6 +1353,25 @@ class RoboCJKView(BaseWindowController):
             self.w.lockerInfoTextBox.set("")
         stop = time.time()
         print("display glyph:", stop-start, 'seconds to display %s'%glyph.name)
+
+    def setglyphState(self, sender, glyph):
+        l = [
+            dict(color = NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.colors[glyph._status].rgba), 
+                sourceName = "default", 
+                status = colors.names[glyph._status]
+                )
+        ]
+        for source in glyph._glyphVariations:
+            l.append(dict(color = NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.colors[source.status].rgba), 
+                        sourceName = source.sourceName, 
+                        status = colors.names[source.status]
+                        ))
+        if sender == self.w.atomicElement:
+            self.w.atomicElementStatusList.set(l)
+        elif sender == self.w.deepComponent:
+            self.w.deepComponentStatusList.set(l)
+        elif sender == self.w.characterGlyph:
+            self.w.characterGlyphStatusList.set(l)
 
     def setGlyphToCanvas(self, sender, glyph):
         if sender == self.w.atomicElement:

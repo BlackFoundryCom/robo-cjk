@@ -322,7 +322,7 @@ class TextCenter:
                     uniname = char
                 e = uniname + "." + suffix
             return e
-
+        
         l = l.replace("/", " ")
         t = t.replace("/", " ")
         txt = t.split()
