@@ -309,6 +309,7 @@ class RoboCJKController(object):
 
     def glyphWindowWillClose(self, notification):
         start = time.time()
+        self.roboCJKView.setglyphState(self.currentGlyph)
         self.openedGlyphName = ""
         if self.glyphInspectorWindow is not None:
             self.glyphInspectorWindow.closeWindow()

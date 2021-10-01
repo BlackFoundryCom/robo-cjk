@@ -1194,6 +1194,7 @@ class SourcesSheet:
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.controller.setList()
         self.controller.sourcesList.setSelection([len(self.controller.sourcesList)-1])
+        self.controller.controller.propertiesItem.setglyphState()
         self.RCJKI.glyphView.setSelectedSource()
         self.w.close()
 
@@ -1344,6 +1345,7 @@ class SourcesGroup(Group):
         self.controller.updatePreview()
         self.sourcesList.setSelection([])
         self.controller.axesItem.axesList.setSelection([])
+        self.controller.propertiesItem.setglyphState()
         
 
 class DeepComponentAxesGroup(Group):

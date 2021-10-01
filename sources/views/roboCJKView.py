@@ -543,7 +543,7 @@ class RoboCJKView(BaseWindowController):
         glyph = self.RCJKI.currentFont[name]
         lock, _ = f.lockGlyph(glyph)
         if not lock: 
-            self.setglyphState(l, glyph)
+            self.setglyphState(glyph, l)
             return
 
         status = sender.get()[sel[0]]["status"]
@@ -560,7 +560,7 @@ class RoboCJKView(BaseWindowController):
                     v.status = colorindex
 
         f.saveGlyph(glyph)
-        self.setglyphState(l, glyph)
+        self.setglyphState(glyph, l)
         self.RCJKI.unlockGlyphsNonOpen()
 
     def codeEditorButtonCallback(self, sender):
@@ -1341,7 +1341,7 @@ class RoboCJKView(BaseWindowController):
         preview_stop = time.time()
         print("calculate preview:", preview_stop-preview_start, "seconds to calculate preview of %s"%glyph.name)
         self.setGlyphToCanvas(sender, glyph)
-        self.setglyphState(sender, glyph)
+        self.setglyphState(glyph, sender)
         # if not self.RCJKI.mysql:
         #     user = self.RCJKI.currentFont.locker.potentiallyOutdatedLockingUser(self.currentFont[self.prevGlyphName])
         # else:
@@ -1354,7 +1354,14 @@ class RoboCJKView(BaseWindowController):
         stop = time.time()
         print("display glyph:", stop-start, 'seconds to display %s'%glyph.name)
 
-    def setglyphState(self, sender, glyph):
+    def setglyphState(self, glyph, sender=None):
+        if sender is None:
+            if glyph.type == "atomicElement":
+                sender = self.w.atomicElement
+            elif glyph.type == "deepComponent":
+                sender = self.w.deepComponent
+            else:
+                sender = self.w.characterGlyph
         l = [
             dict(color = NSColor.colorWithCalibratedRed_green_blue_alpha_(*colors.colors[glyph._status].rgba), 
                 sourceName = "default", 
