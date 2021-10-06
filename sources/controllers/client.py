@@ -279,27 +279,30 @@ class Client(object):
         return self._api_call('font_get', params)
 
 
-    def font_create(self, project_uid, name, fontlib=None, features=None):
+    def font_create(self, project_uid, name, fontlib=None, features=None, designspace=None):
         """
         Create a new Font with the specified project_uid and name.
+        Optionally, it is possible to pass also fontlib, features and designspace.
         """
         params = {
             'project_uid': project_uid,
             'name': name,
             'fontlib': self._if_json(fontlib),
             'features': self._if_str(features),
+            'designspace': self._if_json(designspace),
         }
         return self._api_call('font_create', params)
 
 
-    def font_update(self, font_uid, fontlib=None, features=None):
+    def font_update(self, font_uid, fontlib=None, features=None, designspace=None):
         """
-        Update the fontlib of a specific Font.
+        Update the fontlib and/or features and/or designspace of a specific Font.
         """
         params = {
             'font_uid': font_uid,
             'fontlib': self._if_json(fontlib),
             'features': self._if_str(features),
+            'designspace': self._if_json(designspace),
         }
         return self._api_call('font_update', params)
 

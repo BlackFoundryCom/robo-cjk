@@ -287,6 +287,7 @@ class RoboCJKController(object):
             for ai in ais:
                 for c in ai.glyph:
                     g1.appendContour(c)
+            g1.round()
 
         for axis in self.currentFont.fontVariations:
             axisLayerName = "backup_%s"%axis
