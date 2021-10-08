@@ -172,11 +172,11 @@ class Glyph(RGlyph):
         for k, v in loc.items():
             axis = g._axes.get(k)
             if axis is not None:
+                if v > axis.maxValue:
+                    v = axis.maxValue
+                elif v < axis.minValue:
+                    v = axis.minValue
                 vx = self.normalizedValue(v, axis.minValue, axis.maxValue, axis.defaultValue)
-                if vx > axis.maxValue:
-                    vx = axis.maxValue
-                elif vx < axis.minValue:
-                    vx = axis.minValue
                 position[k] = vx
         return position
 
