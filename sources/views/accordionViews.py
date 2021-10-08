@@ -1127,7 +1127,9 @@ class SourcesSheet:
             textbox = TextBox((10, y, 90, 20), axis.name, sizeStyle = 'small')
             defaultValue = TextBox((70, y+5, 100, 20), "default:%s"%axis.defaultValue, sizeStyle = 'small', alignment="left")
             minValue = TextBox((100, y+5, 50, 20), axis.minValue, sizeStyle = 'small', alignment="right")
-            editText = EditText((150, y, -50, 20), [axis.defaultValue, axis.maxValue][i + 1 == len(self.RCJKI.currentGlyph._axes)], sizeStyle = "small", 
+            editText = EditText((150, y, -50, 20), 
+                axis.defaultValue, #[axis.defaultValue, axis.maxValue][i + 1 == len(self.RCJKI.currentGlyph._axes)], 
+                sizeStyle = "small", 
                 # formatter = numberFormatter, 
                 continuous = False,
                 callback = self.valuesCallback)
