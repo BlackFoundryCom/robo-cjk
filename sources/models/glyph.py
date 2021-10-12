@@ -210,34 +210,32 @@ class Glyph(RGlyph):
         return self._RGlyph.components
 
     def update(self):
-        return #should readapt this fonction to the new format
         if self.type == 'atomicElement':
             return
         deepComponentToRemove = []
-        glyphset = set(self.currentFont.glyphSet())
-        # print("self._glyphVariations before update", self._deepComponents)
+        # glyphset = set(self.currentFont.glyphSet())
+        glyphset = self.currentFont.staticCharacterGlyphSet() | self.currentFont.staticDeepComponentSet() | self.currentFont.staticAtomicElementSet()
         for index, deepComponent in enumerate(self._deepComponents):
-            if set([deepComponent.name]) - glyphset:
+            if set([deepComponent["name"]]) - glyphset:
                 deepComponentToRemove.append(index)
             else:
-                deepComponentGlyph = self.currentFont[deepComponent.name]
-                deepComponentGlyphAxes = set(deepComponentGlyph._glyphVariations.axes)
+                deepComponentGlyph = self.currentFont[deepComponent["name"]]
+                deepComponentGlyphAxes = deepComponentGlyph._axes
+                axesTodel = [x for x in deepComponent["coord"] if x not in deepComponentGlyphAxes.names]
 
-                # remove old axes in both deepComponent and variationGlyph
-                todel = set(deepComponent.coord.axes) - deepComponentGlyphAxes
-                for oldAxis in todel:
-                    deepComponent.coord.remove(oldAxis)
-                    for glyphVariation in self._glyphVariations.infos:
-                        glyphVariation.content.deepComponents[index].coord.remove(oldAxis)
+                for oldAxis in axesTodel:
+                    self._deepComponents[index].coord.remove(oldAxis.name)
+                    for glyphVariation in self._glyphVariations:
+                        glyphVariation.deepComponents[index].coord.remove(oldAxis)
 
-                # add new axes to both deepComponent and variationGlyph
-                toadd = deepComponentGlyphAxes - set(deepComponent.coord)
-                for axis in toadd:
-                    deepComponent.coord.add(axis, 0)
-                    for glyphVariation in self._glyphVariations.infos:
-                        glyphVariation.content.deepComponents[index].coord.add(axis, 0)
+                axesToadd = [x for x in deepComponentGlyphAxes if x.name not in deepComponent["coord"]]
+                for axis in axesToadd:
+                    self._deepComponents[index].coord.add(axis.name, axis.defaultValue)
+                    for glyphVariation in self._glyphVariations:
+                        glyphVariation.deepComponents[index].coord.add(axis.name, axis.defaultValue)
 
-        self.removeDeepComponents(deepComponentToRemove)
+        #commenté juste par sécurité
+        #self.removeDeepComponents(deepComponentToRemove)
 
     def renameDeepComponent(self, index, newName):
         currentCoords = list(self._deepComponents[index]["coord"].keys())
