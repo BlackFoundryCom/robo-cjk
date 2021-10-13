@@ -224,7 +224,7 @@ class Glyph(RGlyph):
                 axesTodel = [x for x in deepComponent["coord"] if x not in deepComponentGlyphAxes.names]
 
                 for oldAxis in axesTodel:
-                    self._deepComponents[index].coord.remove(oldAxis.name)
+                    self._deepComponents[index].coord.remove(oldAxis)
                     for glyphVariation in self._glyphVariations:
                         glyphVariation.deepComponents[index].coord.remove(oldAxis)
 
