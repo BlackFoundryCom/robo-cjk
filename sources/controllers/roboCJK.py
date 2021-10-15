@@ -114,7 +114,7 @@ class RoboCJKController(object):
     hiddenSavePath = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'mySQLSave')
     files.makepath(hiddenSavePath)
 
-    _version = 1.4
+    _version = 1.5
 
     def __init__(self):
         self.observers = False
@@ -123,6 +123,7 @@ class RoboCJKController(object):
         self.componentWindow = None
         self.characterWindow = None
         self.currentGlyph = None
+        self.menuItems = []
         self.openedGlyphName = ""
         self.gitUserName = ''
         self.gitPassword = ''
@@ -296,6 +297,44 @@ class RoboCJKController(object):
         _decompose(glyph, '', masterLayerName)
 
 
+    def _currentSourceValidated(self) -> bool:
+        validated = 4
+        disabled = False
+        if self.currentGlyph.selectedSourceAxis:
+            sourceName = self.currentGlyph.selectedSourceAxis
+            sourceStatus = self.currentGlyph._glyphVariations.getFromSourceName(sourceName).status
+        else:
+            sourceName = "default"
+            sourceStatus = self.currentGlyph._status
+
+        if sourceStatus != validated: return False
+        return True
+
+
+    def disabledEditingUIIfValidated(self):
+        validated = self._currentSourceValidated()
+        removeObserver(self, "glyphAdditionContextualMenuItems")
+        addObserver(self, "glyphAdditionContextualMenuItems", "glyphAdditionContextualMenuItems")
+
+        if not validated: 
+            
+            if self.currentGlyph.type != "atomicElement":
+                self.glyphInspectorWindow.deepComponentAxesItem.show(True)
+                self.glyphInspectorWindow.transformationItem.show(True)
+                if self.currentGlyph.type == "characterGlyph":
+                    self.glyphInspectorWindow.compositionRulesItem.show(True)
+            self.installCustomTool(install = True, sender = "disabledEditingUIIfValidated true")
+            return
+
+        
+        if self.currentGlyph.type != "atomicElement":
+            self.glyphInspectorWindow.deepComponentAxesItem.show(False)
+            self.glyphInspectorWindow.transformationItem.show(False)
+            if self.currentGlyph.type == "characterGlyph":
+                self.glyphInspectorWindow.compositionRulesItem.show(False)
+        self.installCustomTool(install = False, sender = "disabledEditingUIIfValidated false")
+        
+
     def unlockGlyphsNonOpen(self):
         glyphsList = []
         for l in [self.currentFont.client.atomic_element_list, self.currentFont.client.deep_component_list, self.currentFont.client.character_glyph_list]:
@@ -372,6 +411,17 @@ class RoboCJKController(object):
         newList.extend(endList)
         return newList
 
+
+    def installCustomTool(self, install = True, sender = None):
+        if install:
+            if self.currentGlyph.type =='atomicElement':
+                uninstallTool(self.transformationTool)
+            else:
+                installTool(self.transformationTool)
+        else:
+            uninstallTool(self.transformationTool)
+
+
     @lockedProtect
     def currentGlyphChanged(self, notification):
         glyph = notification['glyph']
@@ -390,10 +440,15 @@ class RoboCJKController(object):
             self.glyphInspectorWindow.sourcesItem.setList()
             self.glyphInspectorWindow.axesItem.setList()
             self.currentViewSourceValue.set("")
-        if self.currentGlyph.type =='atomicElement':
-            uninstallTool(self.transformationTool)
+        if not self._currentSourceValidated():
+            self.installCustomTool(install = True, sender = "currentGlyphChanged True")
         else:
-            installTool(self.transformationTool)
+            self.installCustomTool(install = False, sender = "currentGlyphChanged False")
+        # if self.currentGlyph.type =='atomicElement':
+        #     uninstallTool(self.transformationTool)
+        # else:
+        #     if not self._currentSourceValidated():
+        #         installTool(self.transformationTool)
 
         if self.currentGlyph.type != "atomicElement":
             self.addSubView()
@@ -544,7 +599,7 @@ class RoboCJKController(object):
             self.currentViewSliderList.deepComponentName.set("")
             if self.currentGlyph.selectedElement: 
                 self.setListWithSelectedElement()
-                if point['clickCount'] == 2:
+                if point['clickCount'] == 2 and not self._currentSourceValidated():
                     popover.EditPopoverAlignTool(
                         self, 
                         point['point'], 
@@ -705,40 +760,46 @@ class RoboCJKController(object):
             self.glyphInspectorWindow.sourcesItem.sourcesList.setSelection([])
             self.glyphInspectorWindow.axesItem.axesList.setSelection([])
             self.glyphView.setSelectedSource()
+            self.disabledEditingUIIfValidated()
+        if self._currentSourceValidated(): return
         self.currentGlyph.keyDown((modifiers, inputKey, character))
 
     def glyphAdditionContextualMenuItems(self, notification):
-        menuItems = []
+        self.menuItems = []
+        validated = self._currentSourceValidated()
         if self.isDeepComponent:
-            item = ('Add Atomic Element', self.addAtomicElement)
-            menuItems.append(item)
+            if not validated:
+                item = ('Add Atomic Element', self.addAtomicElement)
+                self.menuItems.append(item)
             item = ('Animate this variable glyph', self.animateThisVariableGlyph)
-            menuItems.append(item)
-            if self.currentGlyph.selectedElement:
+            self.menuItems.append(item)
+            if self.currentGlyph.selectedElement and not validated:
                 item = ('Remove Selected Atomic Element', self.removeAtomicElement)
-                menuItems.append(item)
+                self.menuItems.append(item)
         elif self.isCharacterGlyph:
-            item = ('Add Deep Component', self.addDeepComponent)
-            menuItems.append(item)
-            item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
-            menuItems.append(item)
+            if not validated:
+                item = ('Add Deep Component', self.addDeepComponent)
+                self.menuItems.append(item)
+                item = ('Import Deep Component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
+                self.menuItems.append(item)
 
             if self.currentGlyph.selectedElement:
-                item = ('Remove Selected Deep Component', self.removeDeepComponent)
-                menuItems.append(item)
+                if not validated:
+                    item = ('Remove Selected Deep Component', self.removeDeepComponent)
+                    self.menuItems.append(item)
                 item = ('go to selected deepComponent', self.gotoselectedDC)
-                menuItems.append(item)
+                self.menuItems.append(item)
             variationsAxes = self.currentGlyph.glyphVariations.axes
             if len(self.currentGlyph):
                 if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
                     item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
-                    menuItems.append(item)
+                    self.menuItems.append(item)
 
         if "." in self.currentGlyph.name:
             item = ('Import Axes and Sources from baseglyph', self.importAxesAndSourcesFromBaseglyph)
-            menuItems.append(item)
+            self.menuItems.append(item)
 
-        notification["additionContextualMenuItems"].extend(menuItems)
+        notification["additionContextualMenuItems"].extend(self.menuItems)
 
     def importAxesAndSourcesFromBaseglyph(self, sender):
         name = self.currentGlyph.name

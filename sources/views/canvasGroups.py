@@ -25,7 +25,7 @@ import mojo.drawingTools as mjdt
 from imp import reload
 from utils import decorators, interpolation
 # reload(decorators)
-from utils import files, vanillaPlus
+from utils import files, vanillaPlus, colors
 # reload(files)
 
 from views import sheets, drawer
@@ -56,18 +56,49 @@ class GlyphView(CanvasGroup):
         self.selectedSource = SmartTextBox((0, 0, -0, -0), "")
 
     def setSelectedSource(self):
+        # selectedSource = self.RCJKI.currentGlyph.selectedSourceAxis
+        # status = 0
+        # color = (0, 9, 0, 1)
+        # if self.RCJKI.currentGlyph.type == "deepComponent":
+        #     if not selectedSource:
+        #         color = (0, .5, .25, .6)
+        #         status = self.RCJKI.currentGlyph._status
+        #     else: 
+        #         status = self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(selectedSource).status
+        #         color = (.5, .25, 0, .3)
+        # if self.RCJKI.currentGlyph.type == "characterGlyph":
+        #     if not selectedSource:
+        #         color = (.25, 0, .5, .8)
+        #         status = self.RCJKI.currentGlyph._status
+        #     else: 
+        #         status = self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(selectedSource).status
+        #         color = (.5, 0, .25, .6)
+        # if not selectedSource:
+        #     selectedSource = "Master"
+
+        # statusColor = colors.colors[status].rgba
+        
+        # value = False
+        # if self.RCJKI.currentGlyph.type == "characterGlyph": 
+        #     value = self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name)
+        # if value is not False:
+        #     percent = round(self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name))
+        #     txt = f"{selectedSource} - {percent}% possible regression"
+        # else:
+        #     txt = selectedSource
+        # self.selectedSource.set(txt)  
+        # self.selectedSource.setColor(*statusColor)
+
         selectedSource = self.RCJKI.currentGlyph.selectedSourceAxis
-        color = (0, 9, 0, 1)
-        if self.RCJKI.currentGlyph.type == "deepComponent":
-            if not selectedSource:
-                color = (0, .5, .25, .6)
-            else: color = (.5, .25, 0, .3)
-        if self.RCJKI.currentGlyph.type == "characterGlyph":
-            if not selectedSource:
-                color = (.25, 0, .5, .8)
-            else: color = (.5, 0, .25, .6)
+        status = 0
+        if not selectedSource:
+            status = self.RCJKI.currentGlyph._status
+        else: 
+            status = self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(selectedSource).status
         if not selectedSource:
             selectedSource = "Master"
+
+        statusColor = colors.colors[status].rgba
         
         value = False
         if self.RCJKI.currentGlyph.type == "characterGlyph": 
@@ -78,7 +109,7 @@ class GlyphView(CanvasGroup):
         else:
             txt = selectedSource
         self.selectedSource.set(txt)  
-        self.selectedSource.setColor(*color)      
+        self.selectedSource.setColor(*statusColor)      
 
 class GlyphPreviewCanvas(CanvasGroup):
 

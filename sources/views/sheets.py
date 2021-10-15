@@ -821,14 +821,19 @@ class Login:
             setExtensionDefault(blackrobocjk_locker+"mysql_host", self.RCJKI.mysql_host)
             try:
                 self.RCJKI.client = client.Client(self.RCJKI.mysql_host, self.RCJKI.mysql_userName, self.RCJKI.mysql_password)
+                # return 
             except Exception as e:
                 print(e)
                 message("Warning, your credentials are wrong!")
                 return
-            print('self.RCJKI.client', self.RCJKI.client)
-            check = self.RCJKI.client.auth_token()
-            print('check', check)
-            if check["status"] != 200:
+            # check = self.RCJKI.client.auth_token()
+            # print('check', check)
+            # if check["status"] != 200:
+            #     print('login response:', check)
+            #     message("Warning, your credentials are wrong!")
+            #     return
+            check = self.RCJKI.client._auth_token
+            if not check:
                 print('login response:', check)
                 message("Warning, your credentials are wrong!")
                 return

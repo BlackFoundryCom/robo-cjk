@@ -130,6 +130,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
     RCJKI.openedGlyphName = glyph.name
     stop = time.time()
+    RCJKI.disabledEditingUIIfValidated()
     print(stop-start, 'to open a %s'%glyph.name)
 
 

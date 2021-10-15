@@ -871,23 +871,34 @@ class AxesGroup(Group):
         self.modifyAxisButton = Button((0, -40, 140, 20), "Edit selected axis range", sizeStyle="small", callback = self.modifyAxisCallback)
 
         if glyphtype in ["deepComponent", "atomicElement"]:
-            self.editSelectedAxisExtremeValueButton = Button(
+            self.editSelectedAxisMaximumValueButton = Button(
                 (140, -40, 200, 20), 
                 "Edit selected axis maximum value", 
                 sizeStyle = "small",
-                callback = self.editSelectedAxisExtremeValueButtonCallback)
-            self.setLocationTo1Button = Button(
+                callback = self.editSelectedAxisMaximumValueButtonCallback)
+            self.setLocationToPreviousMaxButton = Button(
                 (340, -40, 100, 20), 
-                "Set location to 1", 
+                "Set location to previous max", 
                 sizeStyle = "small",
-                callback = self.setLocationTo1ButtonCallback)
-            self.setLocationTo1Button.show(False)
+                callback = self.setLocationToPreviousMaxButtonCallback)
+            self.setLocationToPreviousMaxButton.show(False)
+
+            # self.editSelectedAxisMinimumValueButton = Button(
+            #     (440, -40, 200, 20), 
+            #     "Edit selected axis minimum value", 
+            #     sizeStyle = "small",
+            #     callback = self.editSelectedAxisMinimumValueButtonCallback)
+            # self.setLocationToPreviousMinButton = Button(
+            #     (640, -40, 100, 20), 
+            #     "Set location to previous max", 
+            #     sizeStyle = "small",
+            #     callback = self.setLocationToPreviousMinButtonCallback)
+            # self.setLocationToPreviousMinButton.show(False)
 
         self.addAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addAxisButtonCallback)
         self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
 
-
-    def editSelectedAxisExtremeValueButtonCallback(self, sender):
+    def editSelectedAxisMaximumValueButtonCallback(self, sender):
         sel = self.axesList.getSelection()
         if not sel:
             return
@@ -899,17 +910,34 @@ class AxesGroup(Group):
         backupGlyph = backuplayer[self.RCJKI.currentGlyph.name]
         backupGlyph.clear()
         pen = backupGlyph.getPen()
-        self.setLocationTo1Button.show(True)
-
-        # loc = {}
-        # if self.RCJKI.currentGlyph.selectedSourceAxis:
-        #     loc = {self.RCJKI.currentGlyph.selectedSourceAxis:1}
+        self.setLocationToPreviousMaxButton.show(True)
         for atomicInstance in self.RCJKI.currentGlyph.preview():
             g = atomicInstance.glyph
             g.draw(pen)
 
-    def setLocationTo1ButtonCallback(self, sender):
-        self.setLocationTo1Button.show(False)
+    def editSelectedAxisMinimumValueButtonCallback(self, sender):
+        return  #### WIP Function, disabled for now ####
+        sel = self.axesList.getSelection()
+        if not sel:
+            return
+        selectedAxisName = self.axesList.get()[sel[0]]["Axis"]
+        f = self.RCJKI.currentFont
+        f._RFont.newLayer("backup_axisMin", color = (.2, 0, .2, 1))
+        backuplayer = f._RFont.getLayer("backup_axisMin")
+        backuplayer.newGlyph(self.RCJKI.currentGlyph.name)
+        backupGlyph = backuplayer[self.RCJKI.currentGlyph.name]
+        backupGlyph.clear()
+        pen = backupGlyph.getPen()
+        self.setLocationToPreviousMinButton.show(True)
+        if self.RCJKI.currentGlyph.type == "deepComponent":
+            for atomicInstance in self.RCJKI.currentGlyph.preview():
+                g = atomicInstance.glyph
+                g.draw(pen)
+        else:
+            self.RCJKI.currentFont.getLayer()
+
+    def setLocationToPreviousMaxButtonCallback(self, sender):
+        self.setLocationToPreviousMaxButton.show(False)
         sel = self.axesList.getSelection()
         if not sel:
             return
@@ -934,6 +962,9 @@ class AxesGroup(Group):
 
         self.setList()
         self.controller.sourcesItem.setList()
+
+    def setLocationToPreviousMinButtonCallback(self, sender):
+        pass
 
     def modifyAxisCallback(self, sender):
         sel = self.axesList.getSelection()
@@ -1198,6 +1229,7 @@ class SourcesSheet:
         self.controller.sourcesList.setSelection([len(self.controller.sourcesList)-1])
         self.controller.controller.propertiesItem.setglyphState()
         self.RCJKI.glyphView.setSelectedSource()
+        self.RCJKI.disabledEditingUIIfValidated()
         self.w.close()
 
     def cancelCallback(self, sender):
@@ -1328,6 +1360,7 @@ class SourcesGroup(Group):
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
+        self.RCJKI.disabledEditingUIIfValidated()
         self.RCJKI.glyphView.setSelectedSource()
 
 
@@ -1348,6 +1381,7 @@ class SourcesGroup(Group):
         self.sourcesList.setSelection([])
         self.controller.axesItem.axesList.setSelection([])
         self.controller.propertiesItem.setglyphState()
+        self.RCJKI.disabledEditingUIIfValidated()
         
 
 class DeepComponentAxesGroup(Group):
@@ -1637,6 +1671,8 @@ class PropertiesGroup(Group):
                 if v.sourceName == sourceName:
                     v.status = colorindex
         self.setglyphState()
+        self.RCJKI.disabledEditingUIIfValidated()
+        UpdateCurrentGlyphView()
 
     def setglyphState(self):
         l = [
