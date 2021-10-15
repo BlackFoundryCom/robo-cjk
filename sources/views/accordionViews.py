@@ -1094,6 +1094,17 @@ class AxesGroup(Group):
             sender.setSelection(sel)
 
         axis = sender.get()[sel[0]]["Axis"]
+        if '*' in axis:
+            prefix = axis.split('*')[0]
+            for i, e in enumerate(sender.get()):
+                c_axisName = e["Axis"]
+                if '*' in c_axisName:
+                    if prefix == c_axisName.split('*')[0]:
+                        l = sender.get()
+                        l[i]['PreviewValue'] = sliderValue
+                        sender.set(l)
+                        sender.setSelection(sel)
+
         self.sliderValueEditText.set(self.RCJKI.userValue(sliderValue, self.RCJKI.currentGlyph._axes.get(axis).minValue, self.RCJKI.currentGlyph._axes.get(axis).maxValue))
         self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "DefaultValue":x["DefaultValue"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in senderGet]
         self.RCJKI.updateDeepComponent(update = False)
@@ -1251,7 +1262,7 @@ class SourcesGroup(Group):
         self.addSourceButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addSourceButtonCallback)
         self.removeSourceButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeSourceButtonCallback)
 
-    def setList(self):
+    def setList(self, sel=None):
         if self.RCJKI.currentGlyph.type == "atomicElement":
             self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:y.defaultValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         else:    
@@ -1283,6 +1294,8 @@ class SourcesGroup(Group):
             drawFocusRing = False,
             showColumnTitles = True
             )
+        if sel is not None:
+            self.sourcesList.setSelection(sel)
 
     def activateAllSourceCallback(self, sender):
         for i, _ in enumerate(self.RCJKI.currentGlyph._glyphVariations):
@@ -1328,9 +1341,10 @@ class SourcesGroup(Group):
                 value = values[edited[1]][axisName]
                 locations[axisName] = str_to_int_or_float(value)
             self.RCJKI.currentGlyph._glyphVariations.setLocationToIndex(locations, index, self.RCJKI.currentGlyph._axes)
-            self.setList()
+            self.setList(sel)
         self.RCJKI.updateDeepComponent(update = False)
         self.controller.updatePreview()
+
 
     @lockedProtect
     # @refreshPreview
