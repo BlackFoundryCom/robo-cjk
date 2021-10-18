@@ -1528,6 +1528,20 @@ class DeepComponentAxesGroup(Group):
                 minValue = x.minValue
                 maxValue = x.maxValue
 
+        axisName = sender[sel[0]]['Axis']
+        axisValue = sender[sel[0]]['PreviewValue']
+        if '*' in axisName:
+            prefix = axisName.split('*')[0]
+            for i, e in enumerate(sender.get()):
+                c_axisName = e["Axis"]
+                if '*' in c_axisName:
+                    if prefix == c_axisName.split('*')[0]:
+                        l = sender.get()
+                        sender.get()[i]['PreviewValue'] = axisValue
+                        sender.set(l)
+                        sender.setSelection(sel)
+
+
         # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sender.getSelection()[0]]['Axis'])
         self.setSliderValue2Glyph(sender, minValue, maxValue)
         if not self.RCJKI.currentGlyph.selectedSourceAxis:
@@ -1547,7 +1561,6 @@ class DeepComponentAxesGroup(Group):
     def setSliderValue2Glyph(self, sender, minValue, maxValue):
         def _getKeys(glyph):
             return 'robocjk.deepComponents', 'robocjk.variationGlyphs', 'robocjk.axes'
-
         if self.RCJKI.currentGlyph.type in ['characterGlyph', 'deepComponent']:
             lib = RLib()
             deepComponentsKey, glyphVariationsKey, axesKey = _getKeys(self.RCJKI.currentGlyph)
@@ -1562,10 +1575,20 @@ class DeepComponentAxesGroup(Group):
         self.RCJKI.sliderValue = self.RCJKI.userValue(round(sender.get()[sender.getSelection()[0]]["PreviewValue"], 3), minValue, maxValue)
         sliderName = self.deepComponentAxesList[sender.getSelection()[0]]['Axis']
         self.RCJKI.sliderName = sliderName
+        linkedAxes = []
+        if "*" in self.RCJKI.sliderName:
+            prefix = self.RCJKI.sliderName.split("*")[0]
+            for e in self.deepComponentAxesList:
+                if e['Axis'].split("*")[0] == prefix and e['Axis'] != self.RCJKI.sliderName:
+                    linkedAxes.append(e['Axis'])
         if self.RCJKI.isDeepComponent:
             self.RCJKI.currentGlyph.updateAtomicElementCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
+            for linkedAxis in linkedAxes:
+                self.RCJKI.currentGlyph.updateAtomicElementCoord(linkedAxis, self.RCJKI.sliderValue)
         elif self.RCJKI.isCharacterGlyph:
             self.RCJKI.currentGlyph.updateDeepComponentCoord(self.RCJKI.sliderName, self.RCJKI.sliderValue)
+            for linkedAxis in linkedAxes:
+                self.RCJKI.currentGlyph.updateDeepComponentCoord(linkedAxis, self.RCJKI.sliderValue)
 
 class DeepComponentListGroup(Group):
 
