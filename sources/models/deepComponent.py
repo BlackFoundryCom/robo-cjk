@@ -298,7 +298,7 @@ class DeepComponent(Glyph):
             d = DeepComponentNamed(atomicElementName)
             dcglyph = self.currentFont[atomicElementName]
             for i, axis in enumerate(dcglyph._axes):
-                value = dcglyph._axes[i].minValue
+                value = dcglyph._axes[i].defaultValue
                 d.coord.add(axis.name, value)
         else:
             d = items

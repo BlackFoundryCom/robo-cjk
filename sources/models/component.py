@@ -577,9 +577,9 @@ class VariationGlyphs(list):
     #         # print(dir(x))
     #         yield x._toDict()
 
-    def addAxisToLocations(self, axisName="", minValue=0):
+    def addAxisToLocations(self, axisName="", defaultValue=0):
         for variation in self:
-            variation.location[axisName] = minValue
+            variation.location[axisName] = defaultValue
 
     def addVariation(self, variation, axes):
         loc = self._normalizedLocation(variation.get('location'), axes)

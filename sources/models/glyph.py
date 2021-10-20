@@ -282,7 +282,7 @@ class Glyph(RGlyph):
 
     def addAxis(self, axisName="", minValue="", maxValue="", defaultValue =""):
         self._axes.addAxis(dict(name = axisName, minValue = minValue, maxValue = maxValue, defaultValue = defaultValue))
-        self._glyphVariations.addAxisToLocations(axisName = axisName, minValue=minValue)
+        self._glyphVariations.addAxisToLocations(axisName = axisName, defaultValue=defaultValue)
 
     def removeAxis(self, index):
         axisName = self._axes[index].name
