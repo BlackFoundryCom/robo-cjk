@@ -125,6 +125,7 @@ class RoboCJKController(object):
         self.currentGlyph = None
         self.menuItems = []
         self.openedGlyphName = ""
+        self.HistoryGlyphWindow = None
         self.gitUserName = ''
         self.gitPassword = ''
         self.gitHostLocker = ''
@@ -378,6 +379,9 @@ class RoboCJKController(object):
             self.currentFont.saveGlyph(self.currentGlyph)
             self.currentFont.saveFontlib()
             self.currentFont.batchUnlockGlyphs([self.currentGlyph.name])
+        if self.HistoryGlyphWindow is not None:
+            self.HistoryGlyphWindow.close()
+            self.HistoryGlyphWindow = None
         stop = time.time()
         print(stop-start, "to close %s"%self.currentGlyph.name)
               
@@ -776,6 +780,8 @@ class RoboCJKController(object):
             if self.currentGlyph.selectedElement and not validated:
                 item = ('Remove Selected Atomic Element', self.removeAtomicElement)
                 self.menuItems.append(item)
+            item = ('Open History Glyph', self.openHistoryGlyph)
+            self.menuItems.append(item)
         elif self.isCharacterGlyph:
             if not validated:
                 item = ('Add Deep Component', self.addDeepComponent)
@@ -789,9 +795,18 @@ class RoboCJKController(object):
                     self.menuItems.append(item)
                 item = ('go to selected deepComponent', self.gotoselectedDC)
                 self.menuItems.append(item)
-            variationsAxes = self.currentGlyph.glyphVariations.axes
+            variationsAxes = self.currentGlyph._axes.names
             if len(self.currentGlyph):
                 if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in variationsAxes)]):
+                    item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
+                    self.menuItems.append(item)
+            item = ('Open History Glyph', self.openHistoryGlyph)
+            self.menuItems.append(item)
+
+        else:
+            layersNames = ["foreground"]+[x.layerName for x in self.currentGlyph._glyphVariations]
+            if len(self.currentGlyph):
+                if all([*(self.currentFont._RFont.getLayer(x)[self.currentGlyph.name] for x in layersNames)]):
                     item = ('Fix Glyph Compatiblity', self.fixGlyphCompatibility)
                     self.menuItems.append(item)
 
@@ -800,6 +815,9 @@ class RoboCJKController(object):
             self.menuItems.append(item)
 
         notification["additionContextualMenuItems"].extend(self.menuItems)
+
+    def openHistoryGlyph(self, sender):
+        self.HistoryGlyphWindow = roboCJKView.HistoryGlyph(self)
 
     def importAxesAndSourcesFromBaseglyph(self, sender):
         name = self.currentGlyph.name

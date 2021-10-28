@@ -20,7 +20,7 @@ from vanilla import *
 from vanilla.dialogs import getFolder, putFile, askYesNo, message
 from mojo.canvas import Canvas
 from fontParts.ui import AskYesNoCancel, AskString
-from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView, PostBannerNotification
+from mojo.UI import OpenGlyphWindow, AllWindows, CurrentGlyphWindow, UpdateCurrentGlyphView, PostBannerNotification, SetCurrentLayerByName
 from defconAppKit.windows.baseWindow import BaseWindowController
 from views import canvasGroups
 from mojo.canvas import CanvasGroup
@@ -53,8 +53,10 @@ import os, json, copy, time
 
 gitCoverage = decorators.gitCoverage
 lockedProtect = decorators.lockedProtect
+refresh = decorators.refresh
 
 from mojo.roboFont import *
+from datetime import datetime
 import threading
 import queue
 
@@ -1800,3 +1802,107 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             self.index = None
             return
         self.index = sel[0]
+
+from fontTools.ufoLib.glifLib import readGlyphFromString
+
+class HistoryGlyph:
+
+    def __init__(self, RCJKI):
+        self.RCJKI = RCJKI
+        self.w = Window((300, 300), 'History Glyph')
+        self.w.saveStateButton = Button((0, 0, -0, 20), 'Save current glyph state', callback = self.saveStateButtonCallback)
+        self.w.historyTitle = TextBox((0, 30, -0, 20), 'History', alignment = 'center')
+        self.w.historyList = List((0, 50, -0, -60), self.glyphHistoryList)
+        self.w.restoreGlyphState = Button((0, -50, -0, 20), 'Restore glyph from selected state', callback = self.restoreGlyphStateCallback)
+        self.w.clearHistoryButton = Button((0, -20, -0, 20), 'Clear History', callback = self.clearHistoryButtonCallback)
+        self.w.open()
+
+
+    def close(self):
+        self.w.close()
+
+
+    @property
+    def glyphHistoryList(self):
+        if os.path.exists(self.glyphFolder):
+            return sorted(os.listdir(self.glyphFolder), reverse = True)
+        return []
+    
+
+    @property
+    def glyphFolder(self):
+        return "/".join([self.RCJKI.currentFont._hiddenSavePath, "%s-%s"%(self.RCJKI.currentFont.uid, self.RCJKI.currentFont._clientFont["data"]["name"]), self.RCJKI.currentGlyph.type, self.RCJKI.currentGlyph.name])    
+
+
+    def storingHistoryGlyphPath(self, glyph):
+        now = str(datetime.now()).replace(" ", "_").replace(":", "-").split(".")[0]
+        path = "/".join([self.glyphFolder, "%s__%s.glif"%(now, glyph.name)])
+        return path 
+
+
+    def saveStateButtonCallback(self, sender):
+        currentGlyph = self.RCJKI.currentGlyph
+        if currentGlyph is None: return
+        storingpath = self.storingHistoryGlyphPath(currentGlyph)
+        files.makepath(storingpath)
+        currentGlyph.save()
+        data = currentGlyph._RGlyph.dumpToGLIF()
+        with open(storingpath, 'w', encoding = 'utf-8') as file:
+            file.write(data)
+        self.w.historyList.set(self.glyphHistoryList)
+
+
+    @refresh
+    def restoreGlyphStateCallback(self, sender):
+        sel = self.w.historyList.getSelection()
+        if not sel: return
+        message = 'Are you sure to restore this glyph?'
+        answer = AskYesNoCancel(
+            message, 
+            title='restore glyph?', 
+            default=-1, 
+            informativeText="This action is not undoable",
+            )
+        if answer != 1: return
+
+        file = self.w.historyList.get()[sel[0]]
+        path = "/".join([self.glyphFolder, file])
+        with open(path, 'r', encoding = 'utf-8') as file:
+            string = file.read()
+        rGlyph = RGlyph()
+        pen = rGlyph.naked().getPointPen()
+        readGlyphFromString(string, rGlyph.naked(), pen)
+
+        self.RCJKI.currentGlyph._RGlyph.lib.update(rGlyph.lib)
+
+        self.RCJKI.currentGlyph._initWithLib(rGlyph.lib)
+        self.RCJKI.currentGlyph.update()
+
+        self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
+        self.RCJKI.currentGlyph.reinterpolate = True
+
+        self.RCJKI.disabledEditingUIIfValidated()
+
+        self.RCJKI.glyphInspectorWindow.axesItem.setList()
+        self.RCJKI.glyphInspectorWindow.sourcesItem.setList()
+        self.RCJKI.glyphInspectorWindow.deepComponentListItem.setList()
+        self.RCJKI.glyphInspectorWindow.propertiesItem.setglyphState()
+        
+
+    def clearHistoryButtonCallback(self, sender):
+        message = 'Are you sure to clear glyph history?'
+        answer = AskYesNoCancel(
+            message, 
+            title='Glyph history', 
+            default=-1, 
+            informativeText="This action is not undoable",
+            )
+        if answer != 1: return
+        for file in self.glyphHistoryList:
+            path = "/".join([self.glyphFolder, file])
+            os.remove(path)
+        self.w.historyList.set(self.glyphHistoryList)
+
+

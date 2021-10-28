@@ -80,6 +80,9 @@ class ScriptingWindow:
         def CurrentRCJKGlyph():
             return self.RCJKI.currentGlyph
 
+        def getRCJKI():
+            return self.RCJKI
+
         RCJKI = self.RCJKI
         makepath = files.makepath
 

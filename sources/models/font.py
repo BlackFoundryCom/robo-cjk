@@ -175,11 +175,13 @@ class Font():
         self.username = username
         self.client = client
         self.fontName = font["data"]["name"]
+        self._clientFont = font
         self._RFont = NewFont(
             familyName=self.fontName, 
             styleName='Regular', 
             showUI = False
             )
+        self._hiddenSavePath = hiddenSavePath
         savePath = os.path.join(hiddenSavePath, f"{self.fontName}.ufo")
         files.makepath(savePath)
         self._RFont.save(savePath)
