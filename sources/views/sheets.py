@@ -1245,7 +1245,7 @@ from mojo.roboFont import *
 from fontTools.ufoLib.pointPen import SegmentToPointPen, PointToSegmentPen
 import colorsys
 from fontTools.pens.cocoaPen import CocoaPen
-from AppKit import *
+# from AppKit import *
 
 class FixGlyphCompatibility:
 
