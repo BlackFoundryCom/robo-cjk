@@ -568,7 +568,7 @@ class RoboCJKController(object):
                 code = dcname.split("_")[1]
                 return chr(int(code, 16))
             except Exception as e:
-                print(e)
+                # print("getRegressionPercentage", e)
                 return False
 
         glyph = self.currentFont[name]

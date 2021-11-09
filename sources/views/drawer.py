@@ -31,7 +31,7 @@ def getChar(dcname):
         code = dcname.split("_")[1]
         return chr(int(code, 16))
     except Exception as e:
-        print(e)
+        # print("getChar", e)
         return False
 
 class Drawer():
