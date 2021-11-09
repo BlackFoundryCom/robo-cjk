@@ -94,7 +94,11 @@ class GlyphView(CanvasGroup):
         if not selectedSource:
             status = self.RCJKI.currentGlyph._status
         else: 
-            status = self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(selectedSource).status
+            source = self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(selectedSource)
+            if source is None:
+                status = 0
+            else:
+                status = source.status
         if not selectedSource:
             selectedSource = "Master"
 

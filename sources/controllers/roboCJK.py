@@ -303,7 +303,9 @@ class RoboCJKController(object):
         disabled = False
         if self.currentGlyph.selectedSourceAxis:
             sourceName = self.currentGlyph.selectedSourceAxis
-            sourceStatus = self.currentGlyph._glyphVariations.getFromSourceName(sourceName).status
+            source = self.currentGlyph._glyphVariations.getFromSourceName(sourceName)
+            if source is None: return False
+            sourceStatus = source.status
         else:
             sourceName = "default"
             sourceStatus = self.currentGlyph._status
