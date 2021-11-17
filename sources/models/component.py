@@ -478,13 +478,14 @@ class DeepComponents:
 
 class VariationGlyphsInfos:
 
-    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}, sourceName: str = "", on: bool = 1, status:int = 0, **kwargs):
+    def __init__(self, location: dict = {}, layerName: str = "", deepComponents: dict = {}, sourceName: str = "", on: bool = 1, status:int = 0, width:int = 1000, **kwargs):
         # print("_init_ variation glyphs", location, layerName, deepComponents)
         self.location = MathDict(location) #location is a dict specifiying the design space location {"wght":1, "wdth":1}
         self.layerName = layerName
         self.deepComponents = DeepComponents(deepComponents)
         self.sourceName = sourceName
         self.on = on
+        self.width = width
         self.status = status
         for k, v in kwargs.items():
             if k == "axisName":
@@ -541,9 +542,9 @@ class VariationGlyphsInfos:
 
     def _toDict(self, exception = []):
         if self.status:
-            d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on, "status":self.status}
+            d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on, "status":self.status, "width":self.width}
         else:
-            d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on}
+            d = {"location":self.location, "layerName":self.layerName, "deepComponents":self.deepComponents.getList(), "sourceName":self.sourceName, "on":self.on, "width":self.width}
         for e in exception:
             if e in d:
                 del d[e]

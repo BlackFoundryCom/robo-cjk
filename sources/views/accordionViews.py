@@ -741,6 +741,8 @@ class AxisSheet:
         self.w.close()  
 
 def str_to_int_or_float(s):
+    if isinstance(s, str):
+        s = s.replace(" ", "")
     try:
         if isinstance(s, (float, int)):
             return s
@@ -1035,8 +1037,21 @@ class AxesGroup(Group):
         except:
             return
         newList = []
-        for i, e in enumerate(self.axesList.get()):
-            if i != sel[0]:
+        axesList = self.axesList.get()
+        linked = "*" in axesList[sel[0]]["Axis"]
+        linkedName = None
+        if linked:
+            linkedName = axesList[sel[0]]["Axis"].split("*")[0]
+        for i, e in enumerate(axesList):
+            if i != sel[0] and linked and "*" in e["Axis"] and e["Axis"].split("*")[0] == linkedName:
+                newList.append({
+                    "Axis":e["Axis"],
+                    "DefaultValue":e["DefaultValue"],
+                    "MinValue":e["MinValue"],
+                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
+                    "MaxValue":e["MaxValue"],
+                    })
+            elif i != sel[0]:
                 newList.append(e)
             else:
                 minValue = float(e["MinValue"])
@@ -1143,9 +1158,9 @@ class SourcesSheet:
         self.controller = controller
         self.glyphType = glyphType
         if glyphType != "atomicElement":
-            height = 80 + 30*len(self.RCJKI.currentGlyph._axes)
+            height = 110 + 30*len(self.RCJKI.currentGlyph._axes)
         else:
-            height = 60 + 30*len(self.RCJKI.currentGlyph._axes)
+            height = 90 + 30*len(self.RCJKI.currentGlyph._axes)
         self.w = Sheet((300, height), parentWindow)
 
         y = 10
@@ -1188,6 +1203,10 @@ class SourcesSheet:
             self.w.copyfromTitle = TextBox((10, y, 90, 20), "copy from", sizeStyle = 'small')
             self.sources = ["master"]+self.RCJKI.currentGlyph._glyphVariations.sourceNames
             self.w.copyfromPopupButton = PopUpButton((100, y, -10, 20), self.sources, sizeStyle = 'small')
+            y += 25
+
+        self.w.widthTitle = TextBox((10, y, 90, 20), "width", sizeStyle = 'small')
+        self.w.widthInput = EditText((100, y, -10, 20), str_to_int_or_float(self.RCJKI.currentFont.defaultGlyphWidth), callback = self.widthInputCallback)
 
         self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
         self.w.apply = Button((150, -20, 150, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
@@ -1232,7 +1251,8 @@ class SourcesSheet:
             copyFrom = self.w.copyfromPopupButton.getItem()
         else:
             copyFrom = ""
-        self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName, copyFrom = copyFrom)
+        width = int(str(self.w.widthInput.get()).replace(" ", ""))
+        self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName, copyFrom = copyFrom, width = width)
         self.RCJKI.currentGlyph.selectedSourceAxis = sourceName
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
@@ -1242,6 +1262,9 @@ class SourcesSheet:
         self.RCJKI.glyphView.setSelectedSource()
         self.RCJKI.disabledEditingUIIfValidated()
         self.w.close()
+
+    def widthInputCallback(self, sender):
+        sender.set(str_to_int_or_float(sender.get()))
 
     def cancelCallback(self, sender):
         self.w.close()
@@ -1256,6 +1279,9 @@ class SourcesGroup(Group):
         self.glyphtype = glyphtype
 
         self.activateAllSource = Button((0, 0, 150, 20), "Activate all sources", sizeStyle = "small", callback = self.activateAllSourceCallback)
+
+        self.widthTitle = TextBox((-300, 2, -115, 20), 'Selected Source Width:', sizeStyle = "small", alignment = "right")
+        self.widthInput = EditText((-110, 0, -10, 20), '', callback = self.widthInputCallback, continuous = False)
 
         self.setList()
         
@@ -1291,11 +1317,34 @@ class SourcesGroup(Group):
             columnDescriptions = self.listDescription,
             editCallback = self.sourcesListEditCallback,
             doubleClickCallback = self.sourcesListDoubleClickCallback,
+            selectionCallback = self.sourcesListSelectionCallback,
             drawFocusRing = False,
             showColumnTitles = True
             )
         if sel is not None:
             self.sourcesList.setSelection(sel)
+
+    def widthInputCallback(self, sender):
+        sel = self.sourcesList.getSelection()
+        if not sel:
+            sender.set("")
+            return
+        value = sender.get()
+        try: 
+            value = int(value)
+        except:
+            sender.set(self.RCJKI.currentGlyph._glyphVariations[sel[0]].width)
+            return
+        variation = self.RCJKI.currentGlyph._glyphVariations[sel[0]]
+        variation.width = value
+
+    def sourcesListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.widthInput.set("")
+            return
+        width = self.RCJKI.currentGlyph._glyphVariations[sel[0]].width
+        self.widthInput.set(width)
 
     def activateAllSourceCallback(self, sender):
         for i, _ in enumerate(self.RCJKI.currentGlyph._glyphVariations):

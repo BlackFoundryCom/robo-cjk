@@ -171,21 +171,13 @@ class AtomicElement(Glyph):
         self._axes.removeAxis(index)
 
     def save(self):
-        # color = self.markColor
         self.lib.clear()
         lib = RLib()
-        
-        # for variations in self._glyphVariations.values():
-        #     layersNames = [x.name for x in self._RFont.layers]
-        #     if variations.layerName not in layersNames:
-        #         continue
-        #     axisGlyph = self._RFont.getLayer(variations.layerName)[self.name]
-        #     variations.writeOutlines(axisGlyph)
-        #     variations.setAxisWidth(axisGlyph.width)
-    
-        # lib[glyphVariationsKey] = self._glyphVariations.getList()
         lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getList(exception=["sourceName"])
+        for i, v in enumerate(lib[variationGlyphsKey]):
+            if v["width"] == self._RGlyph.width:
+                del lib[variationGlyphsKey][i]["width"]
         if self._status:
             lib[statusKey] = self._status
         if 'public.markColor' in lib:
@@ -193,4 +185,3 @@ class AtomicElement(Glyph):
         self.lib.update(lib)
         if 'public.markColor' in self.lib:
             del self.lib['public.markColor']
-        # self.markColor = color

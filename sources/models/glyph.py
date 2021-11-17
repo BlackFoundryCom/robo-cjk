@@ -290,7 +290,7 @@ class Glyph(RGlyph):
         self._glyphVariations.removeAxis(axisName)
         self._glyphVariations.desactivateDoubleLocations(self._axes)
 
-    def addSource(self, sourceName="", location={}, layerName = "", copyFrom = ""):
+    def addSource(self, sourceName="", location={}, layerName = "", copyFrom = "", width = 1000):
 
         deepComponents = []
         if self.type != "atomicElement":
@@ -304,7 +304,7 @@ class Glyph(RGlyph):
                     if k != "name":
                         items[k] = v
                 deepComponents.append(items)
-        self._glyphVariations.addVariation(dict(sourceName=sourceName, location=location, layerName=layerName, deepComponents = deepComponents), self._axes)
+        self._glyphVariations.addVariation(dict(sourceName=sourceName, location=location, layerName=layerName, deepComponents = deepComponents, width = width), self._axes)
 
     def removeSource(self, selectedAxisIndex):
         self._glyphVariations.removeVariation(selectedAxisIndex)

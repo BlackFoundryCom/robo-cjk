@@ -166,8 +166,8 @@ class CharacterGlyph(Glyph):
         position =self.normalizedValueToMinMaxValue(position, self)
 
 
-        pr = cProfile.Profile()
-        pr.enable()
+        # pr = cProfile.Profile()
+        # pr.enable()
 
         locations = [{}]
         locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations if x["on"]])
@@ -237,11 +237,11 @@ class CharacterGlyph(Glyph):
         for resultGlyph in preview:
             yield resultGlyph
 
-        pr.disable()
-        s = io.StringIO()
-        sortby = SortKey.CUMULATIVE
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-        ps.print_stats()
+        # pr.disable()
+        # s = io.StringIO()
+        # sortby = SortKey.CUMULATIVE
+        # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        # ps.print_stats()
         # print(s.getvalue())
 
     @property
@@ -393,6 +393,9 @@ class CharacterGlyph(Glyph):
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getList()
+        for i, v in enumerate(lib[variationGlyphsKey]):
+            if v["width"] == self._RGlyph.width:
+                del lib[variationGlyphsKey][i]["width"]
         if self._status:
             lib[statusKey] = self._status
         if 'public.markColor' in lib:

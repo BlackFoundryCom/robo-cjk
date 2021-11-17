@@ -361,6 +361,9 @@ class DeepComponent(Glyph):
         lib[deepComponentsKey] = self._deepComponents.getList()
         lib[axesKey] = self._axes.getList()
         lib[variationGlyphsKey] = self._glyphVariations.getList(exception=["layerName"])
+        for i, v in enumerate(lib[variationGlyphsKey]):
+            if v["width"] == self._RGlyph.width:
+                del lib[variationGlyphsKey][i]["width"]
         if self._status:
             lib[statusKey] = self._status
         if 'public.markColor' in lib:
