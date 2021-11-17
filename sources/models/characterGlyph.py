@@ -34,7 +34,7 @@ DeepComponents = component.DeepComponents
 Axes = component.Axes
 VariationGlyphs = component.VariationGlyphs
 
-import copy
+import copy, time
 from fontTools.varLib.models import VariationModel
 
 # Deprecated keys
@@ -85,7 +85,8 @@ class CharacterGlyph(Glyph):
     def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
         locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.normalizedValueToMinMaxValue(self.getLocation(), self).items()])
         # print(locationKey)
-        #### 3 CONDITIONS DE DESSIN POSSIBLE EN CAS D'ÉLEMENT SELECTIONNÉ ####
+        #### There is 3 possible condition for the drawing/preview if there is a selected element(s) ####
+        #### fr: 3 CONDITIONS DE DESSIN POSSIBLE EN CAS D'ÉLEMENT SELECTIONNÉ ####
         redrawAndTransformAll = False
         redrawAndTransformSelected = False
         onlyTransformSelected = False
@@ -101,10 +102,8 @@ class CharacterGlyph(Glyph):
         ############################################################
 
 
-        #### S'IL N'Y A PAS DE SELECTION, RECHERCHE D'UN CACHE ####
-        # previewLocationsStore = False
-        # if locationKey in self.previewLocationsStore:
-        #     previewLocationsStore = self.previewLocationsStore[locationKey]
+        #### If there is no selected element, we will have a look to the stored preview ####
+        #### fr: S'IL N'Y A PAS DE SELECTION, RECHERCHE D'UN CACHE ####
 
         previewLocationsStore = self.previewLocationsStore.get(locationKey, False)
         # print("previewLocationsStore", previewLocationsStore, '\n')
@@ -128,8 +127,8 @@ class CharacterGlyph(Glyph):
                 return
         ############################################################
 
-
-        #### S'IL N'Y A UNE SELECTION MAIS PAS D'INSTRUCTION DE REDESSIN, RECHERCHE D'UN CACHE ####
+        #### if there is no selection and no redraw instruction, we will have a look to the stored preview ####
+        #### fr: S'IL N'Y A UNE SELECTION MAIS PAS D'INSTRUCTION DE REDESSIN, RECHERCHE D'UN CACHE ####
         if not redrawAndTransformAll and not redrawAndTransformSelected and not onlyTransformSelected:
             if previewLocationsStore:
                 for p in previewLocationsStore:
@@ -137,20 +136,26 @@ class CharacterGlyph(Glyph):
                 return
             ############################################################
         else:
-            #### IL Y A DES INSTRUCTION DE REDESSIN ####
+            #### there is no redraw instruction ####
+            #### fr: IL Y A DES INSTRUCTION DE REDESSIN ####
             if axisPreview:
                 preview = self.axisPreview
             else:
                 preview = self.previewGlyph
 
-            """ Dans cette condition on ne ce soucis pas du cache, on redessine tout"""
+            """ in this condition we don't look into the stored preview, we will recompute and redraw everything"""
+            """ fr: Dans cette condition on ne ce soucis pas du cache, on redessine tout"""
             if redrawAndTransformAll:
                 if axisPreview:
                     preview = self.axisPreview = []
                 else:
                     preview = self.previewGlyph = []
             else:
-                """Dans cette condition on récupère ce qu'il y a dans le cache et on travaillera 
+                """In this contition we take the stored preview and we will work on it, to modify the transformation settings 
+                of the selected element, or to recompute the element and its transformation settings. All the other elements 
+                non selected from the stored preview will not be recomputed"""
+
+                """fr: Dans cette condition on récupère ce qu'il y a dans le cache et on travaillera 
                 dessus après, soit pour modifier les instructions de transformation de l'element selectionné
                 soit pour recalculer l'element et ses instructions de transformation. Les autres elements du cache ne seront
                 pas recalculé"""
