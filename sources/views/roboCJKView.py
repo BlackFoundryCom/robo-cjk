@@ -1409,20 +1409,22 @@ class RoboCJKView(BaseWindowController):
         # self.w.characterGlyph.set(self.currentFont.characterGlyphSet)
 
     def newDeepComponentCallback(self, sender):
-        name = self.dumpName('deepComponent', self.currentFont.deepComponentSet)
-        self.currentFont.newGlyph('deepComponent', name)
-        # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
-        # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
-        self.w.deepComponent.setSelection([])
-        self.w.deepComponent.set(self.currentFont.deepComponentSet)
+        sheets.NewDeepComponent(self.RCJKI, self.w)
+        # name = self.dumpName('deepComponent', self.currentFont.deepComponentSet)
+        # self.currentFont.newGlyph('deepComponent', name)
+        # # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
+        # # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
+        # self.w.deepComponent.setSelection([])
+        # self.w.deepComponent.set(self.currentFont.deepComponentSet)
 
     def newAtomicElementCallback(self, sender):
-        name = self.dumpName('atomicElement', self.currentFont.atomicElementSet)
-        self.currentFont.newGlyph('atomicElement', name)
-        # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
-        # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
-        self.w.atomicElement.setSelection([])
-        self.w.atomicElement.set(self.currentFont.atomicElementSet)
+        sheets.NewAtomicElement(self.RCJKI, self.w)
+        # name = self.dumpName('atomicElement', self.currentFont.atomicElementSet)
+        # self.currentFont.newGlyph('atomicElement', name)
+        # # self.RCJKI.currentFont.locker.batchLock([self.RCJKI.currentFont[name]])
+        # # self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[name]])
+        # self.w.atomicElement.setSelection([])
+        # self.w.atomicElement.set(self.currentFont.atomicElementSet)
 
     def duplicateAtomicElementCallback(self, sender):
         newGlyphName = self._duplicateGlyph(self.w.atomicElement, self.RCJKI.currentFont.staticAtomicElementSet())
@@ -1704,13 +1706,6 @@ class RoboCJKView(BaseWindowController):
         self.setGlyphToCanvas(self.w.characterGlyph, None)
         self.w.lockerInfoTextBox.set("")
 
-    def dumpName(self, glyphType, sets):
-        index = 0
-        while True:
-            name = "%s%s"%(glyphType, str(index).zfill(5))
-            if not name in sets:
-                return name
-            index+=1
 
 class ImportDeepComponentFromAnotherCharacterGlyph:
 

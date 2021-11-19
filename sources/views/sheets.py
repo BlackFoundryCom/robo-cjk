@@ -451,6 +451,69 @@ class FontInfosSheet():
         self.RCJKI.currentFont.createLayersFromVariationAxis()
         self.s.close()
 
+class NewGlyph:
+
+    def __init__(self, RCJKI, parentWindow):
+        self.RCJKI = RCJKI
+        self.window = parentWindow
+        self.w = Sheet((400, 100), self.window)
+        self.w.inputNameTitle = TextBox((10, 10, -10, 20), 'Choose a %s name'%self.type)
+        self.w.inputName = EditText((10, 40, -10, 20), '')
+        self.w.applyButton = Button((200, -20, -0, -0), "Apply", callback = self.applyButtonCallback)
+        self.w.cancelButton = Button((0, -20, 200, -0), "Cancel", callback = self.closeButtonCallback)
+        self.w.setDefaultButton(self.w.applyButton)
+        
+
+    def dumpName(self, glyphType, sets):
+        index = 0
+        while True:
+            name = "%s%s"%(glyphType, str(index).zfill(5))
+            if not name in sets:
+                return name
+            index+=1
+
+    def setWindow(self):
+        self.dumpedName = self.dumpName(self.type, self.glyphset)
+        self.w.inputName.set(self.dumpedName)
+        self.w.open()
+
+    def applyButtonCallback(self, sender):
+        chosenName = self.w.inputName.get()
+        if " " in chosenName:
+            message("Warning a name shouldn't contain a space")
+            return
+        elif chosenName in self.glyphset:
+            message("This name already exist in the font")
+            return
+        self.RCJKI.currentFont.newGlyph(self.type, chosenName)
+        self.windowList.setSelection([])
+        if self.type == 'deepComponent':
+            self.windowList.set(self.RCJKI.currentFont.deepComponentSet)
+        else:
+            self.windowList.set(self.RCJKI.currentFont.atomicElementSet)
+        self.w.close()
+
+    def closeButtonCallback(self, sender):
+        self.w.close()
+
+class NewDeepComponent(NewGlyph):
+
+    def __init__(self, *args, **kwargs):
+        self.type = 'deepComponent'
+        super().__init__(*args, **kwargs)
+        self.glyphset = self.RCJKI.currentFont.staticDeepComponentSet()
+        self.windowList = self.window.deepComponent
+        self.setWindow()
+
+class NewAtomicElement(NewGlyph):
+
+    def __init__(self, *args, **kwargs):
+        self.type = "atomicElement"
+        super().__init__(*args, **kwargs)
+        self.glyphset = self.RCJKI.currentFont.staticAtomicElementSet()
+        self.windowList = self.window.atomicElement
+        self.setWindow()
+
 class NewCharacterGlyph:
 
     def __init__(self, RCJKI, parentWindow):
