@@ -1497,9 +1497,18 @@ class DeepComponentAxesGroup(Group):
                 if value > max(minValue, maxValue) or value < min(minValue, maxValue):
                     return
         # minValue, maxValue = self.RCJKI.currentGlyph.getDeepComponentMinMaxValue(self.deepComponentAxesList[sel[0]]['Axis'])
+        baseName = self.deepComponentAxesList[sel[0]]["Axis"]
+        pref = baseName.split("*")[0]
         for i, e in enumerate(self.deepComponentAxesList.get()):
-            if i != sel[0]:
+            if i != sel[0] and e["Axis"] != baseName and e["Axis"].split("*")[0] != pref:
                 newList.append(e)
+            elif i != sel[0] and e["Axis"] != baseName and e["Axis"].split("*")[0] == pref:
+                newList.append({
+                    "Axis":e["Axis"],
+                    "MinValue": minValue,
+                    "PreviewValue":self.RCJKI.systemValue(value, minValue, maxValue),
+                    "MaxValue": maxValue,
+                    })
             else:
                 newList.append({
                     "Axis":e["Axis"],
