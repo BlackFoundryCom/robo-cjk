@@ -1174,7 +1174,7 @@ class SourcesSheet:
                 if self.RCJKI.currentGlyph.name in fl.keys():
                     if len(fl[self.RCJKI.currentGlyph.name]):
                         layers.append(l)
-            self.layers = [l.name for l in layers if l.name != 'foreground']
+            self.layers = [l.name for l in layers]# if l.name != 'foreground']
             self.w.sourceNameTitle = TextBox((10, y, 90, 20), "Axis name", sizeStyle = 'small')
             self.w.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
         y += 25
