@@ -102,6 +102,7 @@ class Client(object):
         options = {
             'data': data,
             'headers': headers,
+            'timeout': (3.05, 60.0, ),
             'verify': False,
             # 'verify': self._host.startswith('https://'),
         }
