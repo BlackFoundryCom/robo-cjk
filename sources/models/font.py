@@ -1053,6 +1053,7 @@ class Font():
         if self.glyphLockedBy(glyph) != self.lockerUserName: return
         name = glyph.name
         glyph.save()
+        glyph._RGlyph.clearGuides()
         rglyph = glyph._RGlyph
         rglyph.lib.update(glyph.lib)
         xml = rglyph.dumpToGLIF()
