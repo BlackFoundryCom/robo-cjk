@@ -599,7 +599,7 @@ class Font():
             if variation not in [x.name for x in self._RFont.layers]:
                 self._RFont.newLayer(variation)
 
-    def getmySQLGlyph(self, name, font = None):      
+    def getmySQLGlyph(self, name, font = None, exception = ""):      
         prev = self._mysqlInsertedGlyph.get(name, None)
         if prev is not None:
             now = time.time()
@@ -645,9 +645,11 @@ class Font():
         self.insertmysqlGlyph(glyph, name, BGlyph, font, gtype)
         for ae in made_of_aes:
             # print(ae)
+            if ae["name"] == exception: continue
             glyph = atomicElement.AtomicElement(ae["name"])
             self.insertmysqlGlyph(glyph, ae["name"], ae, font, gtype)
         for dc in made_of_dcs:
+            if dc["name"] == exception: continue
             glyph = deepComponent.DeepComponent(dc["name"])
             self.insertmysqlGlyph(glyph, dc["name"], dc, font, gtype)
         stop = time.time()

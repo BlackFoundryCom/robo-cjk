@@ -46,6 +46,8 @@ from views import scriptingWindow
 from views import textCenter
 # reload(textCenter)
 
+from mojo.events import addObserver, removeObserver
+
 import os, json, copy, time
 
 # import BF_fontbook_struct as bfs
@@ -1899,5 +1901,97 @@ class HistoryGlyph:
             path = "/".join([self.glyphFolder, file])
             os.remove(path)
         self.w.historyList.set(self.glyphHistoryList)
+
+
+def update(func):
+    def wrapper(self, *args, **kwargs):
+        func(self, *args, **kwargs)
+        UpdateCurrentGlyphView()
+    return wrapper
+
+
+class CharacterGlyphViewer:
+
+
+    def __init__(self, RCJKI):
+        self.RCJKI = RCJKI
+        self.currentFont = self.RCJKI.currentFont
+        self.currentGlyphName = self.RCJKI.currentGlyph.name
+        self.selectedGlyphName = None
+        self.interpovalues = {}
+        self.glyphList = sorted([x["name"] for x in self.currentFont.client.deep_component_get(self.currentFont.uid, self.currentGlyphName)["data"]["used_by"]])
+
+        self.w = FloatingWindow((300, 300), "Character Glyph Viewer")
+        self.w.glyphList = List((10, 10, 100, -10), 
+            self.glyphList, 
+            selectionCallback = self.glyphListSelectionCallback, 
+            drawFocusRing = False)
+        self.w.glyphList.setSelection([])
+        self.w.axes = List((110, 10, -10, 200), 
+            [], 
+            columnDescriptions=[{"title": "axes", "width":40}, {"title": "values", "cell": SliderListCell()}], 
+            editCallback = self.axesEditCallback, 
+            drawFocusRing = False)
+        self.observer()
+        self.w.open()
+        self.w.bind("close", self.windowWillClose)
+
+    def close(self):
+        self.w.close()
+
+    @update
+    def axesEditCallback(self, sender):
+        for e in sender.get():
+            axis = self.selectedGlyph._axes.get(e["axes"])
+            if e.get("values"):
+                value = axis.minValue + (axis.maxValue-axis.minValue)*int(e["values"])/100 
+            else:
+                value = axis.defaultValue
+            self.interpovalues[axis.name] = value
+
+
+    @update
+    def windowWillClose(self, sender):
+        self.observer(remove = True)
+
+
+    def observer(self, remove = False):
+        if not remove:
+            addObserver(self, "drawBackground", "drawBackground")
+            addObserver(self, "drawBackground", "drawInactive")
+            return
+        removeObserver(self, "drawBackground")
+        removeObserver(self, "drawInactive")
+
+
+    def drawBackground(self, info):
+        if self.selectedGlyphName is None: return
+        g = self.selectedGlyph
+        mjdt.save()
+        mjdt.fill(1,0,1,.8)
+        mjdt.stroke(0,0,0,0)
+        g.createPreviewLocationsStore()
+        preview = g.preview(self.interpovalues)
+        for i, element in enumerate(preview):
+            mjdt.save()
+            mjdt.translate(element.transformation["x"], element.transformation["y"])
+            mjdt.scale(element.transformation["scalex"], element.transformation["scaley"])
+            mjdt.drawGlyph(element.resultGlyph)
+            mjdt.restore()
+        mjdt.restore()
+
+
+    @update
+    def glyphListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel:
+            self.selectedGlyphName = None
+            self.selectedGlyph = None
+            return
+        self.selectedGlyphName = sender.get()[sel[0]]
+        self.RCJKI.currentFont.getmySQLGlyph(self.selectedGlyphName, exception = self.currentGlyphName)
+        self.selectedGlyph = self.RCJKI.currentFont[self.selectedGlyphName]
+        l = [{"axes": x.name, "values": x.defaultValue} for x in self.selectedGlyph._axes]
+        self.w.axes.set(l)
 
 

@@ -126,6 +126,7 @@ class RoboCJKController(object):
         self.menuItems = []
         self.openedGlyphName = ""
         self.HistoryGlyphWindow = None
+        self.CharacterGlyphViewer = None
         self.gitUserName = ''
         self.gitPassword = ''
         self.gitHostLocker = ''
@@ -384,6 +385,9 @@ class RoboCJKController(object):
         if self.HistoryGlyphWindow is not None:
             self.HistoryGlyphWindow.close()
             self.HistoryGlyphWindow = None
+        if self.CharacterGlyphViewer is not None:
+            self.CharacterGlyphViewer.close()
+            self.CharacterGlyphViewer = None
         stop = time.time()
         print(stop-start, "to close %s"%self.currentGlyph.name)
               
@@ -784,6 +788,8 @@ class RoboCJKController(object):
                 self.menuItems.append(item)
             item = ('Open History Glyph', self.openHistoryGlyph)
             self.menuItems.append(item)
+            item = ('Character Glyph Viewer', self.displayReferenceGlyph)
+            self.menuItems.append(item)
         elif self.isCharacterGlyph:
             if not validated:
                 item = ('Add Deep Component', self.addDeepComponent)
@@ -817,6 +823,9 @@ class RoboCJKController(object):
             self.menuItems.append(item)
 
         notification["additionContextualMenuItems"].extend(self.menuItems)
+
+    def displayReferenceGlyph(self, sender):
+        self.CharacterGlyphViewer = roboCJKView.CharacterGlyphViewer(self)
 
     def openHistoryGlyph(self, sender):
         self.HistoryGlyphWindow = roboCJKView.HistoryGlyph(self)
