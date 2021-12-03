@@ -642,16 +642,21 @@ class Font():
         print("download glyphs:", stop-start, 'seconds to download %s'%name)
 
         start = time.time()
-        self.insertmysqlGlyph(glyph, name, BGlyph, font, gtype)
+    
+
         for ae in made_of_aes:
-            # print(ae)
-            if ae["name"] == exception: continue
-            glyph = atomicElement.AtomicElement(ae["name"])
-            self.insertmysqlGlyph(glyph, ae["name"], ae, font, gtype)
+            if ae["name"] == exception or ae["name"] in font.keys(): continue
+
+            glyph2 = atomicElement.AtomicElement(ae["name"])
+            self.insertmysqlGlyph(glyph2, ae["name"], ae, font, "AE")
         for dc in made_of_dcs:
-            if dc["name"] == exception: continue
-            glyph = deepComponent.DeepComponent(dc["name"])
-            self.insertmysqlGlyph(glyph, dc["name"], dc, font, gtype)
+            if dc["name"] == exception or dc["name"] in font.keys(): continue
+
+            glyph2 = deepComponent.DeepComponent(dc["name"])
+            self.insertmysqlGlyph(glyph2, dc["name"], dc, font, "DC")
+
+        self.insertmysqlGlyph(glyph, name, BGlyph, font, gtype)
+
         stop = time.time()
         print("insert glyphs:", stop-start, 'seconds to insert %s'%str(1+len(made_of_aes+made_of_dcs)))
 
