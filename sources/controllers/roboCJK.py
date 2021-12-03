@@ -106,6 +106,9 @@ APPNAME = 'RoboFont'
 import threading
 import queue
 
+import cProfile, pstats, io
+from pstats import SortKey
+
 blackrobocjk_glyphwindowPosition = "com.black-foundry.blackrobocjk_glyphwindowPosition"
 
 class RoboCJKController(object):
@@ -610,11 +613,19 @@ class RoboCJKController(object):
             if self.currentGlyph.selectedElement: 
                 self.setListWithSelectedElement()
                 if point['clickCount'] == 2 and not self._currentSourceValidated():
+                    pr = cProfile.Profile()
+                    pr.enable()   
                     popover.EditPopoverAlignTool(
                         self, 
                         point['point'], 
                         self.currentGlyph
                         )
+                    pr.disable()
+                    s = io.StringIO()
+                    sortby = SortKey.CUMULATIVE
+                    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+                    ps.print_stats()
+                    print(s.getvalue())
         else:
             self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
             addObserver(self, 'mouseDragged', 'mouseDragged')
