@@ -1919,11 +1919,20 @@ class CharacterGlyphViewer:
         self.currentGlyphName = self.RCJKI.currentGlyph.name
         self.selectedGlyph = None
         self.interpovalues = {}
-        self.glyphList = sorted([x["name"] for x in self.currentFont.client.deep_component_get(self.currentFont.uid, self.currentGlyphName)["data"]["used_by"]])
+        self.glyphList = []
+
+        for x in self.currentFont.client.deep_component_get(self.currentFont.uid, self.currentGlyphName)["data"]["used_by"]:
+            name = x["name"]
+            try:
+                char = chr(int(name[3:],16))
+            except:
+                char = ""
+            self.glyphList.append(dict(char = char, name = name))
 
         self.w = FloatingWindow((300, 300), "Character Glyph Viewer")
         self.w.glyphList = List((10, 10, 100, -10), 
             self.glyphList, 
+            columnDescriptions = [{"title": "char", "width":30}, {"title": "name"}],
             selectionCallback = self.glyphListSelectionCallback, 
             drawFocusRing = False)
         self.w.glyphList.setSelection([])
@@ -1988,7 +1997,7 @@ class CharacterGlyphViewer:
         if not sel:
             self.selectedGlyph = None
             return
-        selectedGlyphName = sender.get()[sel[0]]
+        selectedGlyphName = sender.get()[sel[0]]["name"]
         self.RCJKI.currentFont.getmySQLGlyph(selectedGlyphName, exception = self.currentGlyphName)
         self.selectedGlyph = self.RCJKI.currentFont[selectedGlyphName]
         l = [{"axes": x.name, "values": x.defaultValue} for x in self.selectedGlyph._axes]
