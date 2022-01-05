@@ -1209,7 +1209,7 @@ class SourcesSheet:
             y += 25
 
         self.w.widthTitle = TextBox((10, y, 90, 20), "width", sizeStyle = 'small')
-        self.w.widthInput = EditText((100, y, -10, 20), str_to_int_or_float(self.RCJKI.currentFont.defaultGlyphWidth), callback = self.widthInputCallback)
+        self.w.widthInput = EditText((100, y, -10, 20), str_to_int_or_float(self.RCJKI.currentFont.defaultGlyphWidth), continuous = False)
 
         self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
         self.w.apply = Button((150, -20, 150, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
@@ -1254,7 +1254,7 @@ class SourcesSheet:
             copyFrom = self.w.copyfromPopupButton.getItem()
         else:
             copyFrom = ""
-        width = int(str(self.w.widthInput.get()).replace(" ", ""))
+        width = int(str(self.w.widthInput.get()).replace(" ", "").replace('\xa0', ""))
         self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName, copyFrom = copyFrom, width = width)
         self.RCJKI.currentGlyph.selectedSourceAxis = sourceName
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
@@ -1265,9 +1265,6 @@ class SourcesSheet:
         self.RCJKI.glyphView.setSelectedSource()
         self.RCJKI.disabledEditingUIIfValidated()
         self.w.close()
-
-    def widthInputCallback(self, sender):
-        sender.set(str_to_int_or_float(sender.get()))
 
     def cancelCallback(self, sender):
         self.w.close()
