@@ -19,7 +19,7 @@ along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 
 from mojo.UI import AccordionView, UpdateCurrentGlyphView, SetCurrentLayerByName
 from vanilla import *
-from vanilla.dialogs import askYesNo
+from vanilla.dialogs import askYesNo, message
 from mojo.roboFont import *
 from mojo.canvas import Canvas, CanvasGroup
 import mojo.drawingTools as mjdt
@@ -732,6 +732,9 @@ class AxisSheet:
         maxValue = str_to_int_or_float(self.w.maxValue.get())
         defaultValue = str_to_int_or_float(self.w.defaultValue.get())
         if not all([x!="" for x in [axisName, minValue, maxValue, defaultValue]]): return
+        if axisName in self.RCJKI.currentGlyph._axes.names:
+            message('Warning, this axis name already exists')
+            return
         self.RCJKI.currentGlyph.addAxis(axisName, minValue, maxValue, defaultValue)
         self.controller.setList()
         self.controller.controller.sourcesItem.setList()
