@@ -1915,19 +1915,9 @@ class CharacterGlyphViewer:
 
     def __init__(self, RCJKI):
         self.RCJKI = RCJKI
-        self.currentFont = self.RCJKI.currentFont
-        self.currentGlyphName = self.RCJKI.currentGlyph.name
         self.selectedGlyph = None
         self.interpovalues = {}
-        self.glyphList = []
-
-        for x in self.currentFont.client.deep_component_get(self.currentFont.uid, self.currentGlyphName)["data"]["used_by"]:
-            name = x["name"]
-            try:
-                char = chr(int(name[3:],16))
-            except:
-                char = ""
-            self.glyphList.append(dict(char = char, name = name))
+        self._getGlyphList()
 
         self.w = FloatingWindow((300, 300), "Character Glyph Viewer")
         self.w.glyphList = List((10, 10, 100, -10), 
@@ -1945,8 +1935,30 @@ class CharacterGlyphViewer:
         self.w.open()
         self.w.bind("close", self.windowWillClose)
 
+    def _getGlyphList(self):
+        self.currentFont = self.RCJKI.currentFont
+        self.currentGlyphName = self.RCJKI.currentGlyph.name
+        self.glyphList = []
+        for x in self.currentFont.client.deep_component_get(self.currentFont.uid, self.currentGlyphName)["data"]["used_by"]:
+            name = x["name"]
+            try:
+                char = chr(int(name[3:],16))
+            except:
+                char = ""
+            self.glyphList.append(dict(char = char, name = name))
+
     def close(self):
         self.w.close()
+
+    def disableUI(self):
+        self.w.glyphList.enable(False)
+        self.w.axes.enable(False)
+
+    def enableUI(self):
+        self._getGlyphList()
+        self.w.glyphList.set(self.glyphList)
+        self.w.glyphList.enable(True)
+        self.w.axes.enable(True)
 
     @update
     def axesEditCallback(self, sender):

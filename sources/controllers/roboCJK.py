@@ -387,8 +387,9 @@ class RoboCJKController(object):
             self.HistoryGlyphWindow.close()
             self.HistoryGlyphWindow = None
         if self.CharacterGlyphViewer is not None:
-            self.CharacterGlyphViewer.close()
-            self.CharacterGlyphViewer = None
+            self.CharacterGlyphViewer.disableUI()
+            # self.CharacterGlyphViewer.close()
+            # self.CharacterGlyphViewer = None
         stop = time.time()
         print(stop-start, "to close %s"%self.currentGlyph.name)
               
@@ -466,6 +467,8 @@ class RoboCJKController(object):
         self.openGlyphInspector()
         self.updateDeepComponent()
 
+        if self.CharacterGlyphViewer is not None:
+            self.CharacterGlyphViewer.enableUI()
         self.glyphInspectorWindow.updatePreview()
 
     def exportDataBase(self):
