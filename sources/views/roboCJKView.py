@@ -1920,12 +1920,13 @@ class CharacterGlyphViewer:
         self._getGlyphList()
 
         self.w = FloatingWindow((300, 300), "Character Glyph Viewer")
-        self.w.glyphList = List((10, 10, 100, -10), 
+        self.w.glyphList = List((10, 10, 100, -30), 
             self.glyphList, 
             columnDescriptions = [{"title": "char", "width":30}, {"title": "name"}],
             selectionCallback = self.glyphListSelectionCallback, 
             drawFocusRing = False)
         self.w.glyphList.setSelection([])
+        self.w.deselectButton = Button((10, -30, 100, 20), "deselect", callback = self.deselectCallback)
         self.w.axes = List((110, 10, -10, 200), 
             [], 
             columnDescriptions=[{"title": "axes", "width":40}, {"title": "values", "cell": SliderListCell()}], 
@@ -1934,6 +1935,9 @@ class CharacterGlyphViewer:
         self.observer()
         self.w.open()
         self.w.bind("close", self.windowWillClose)
+
+    def deselectCallback(self, sender):
+        self.w.glyphList.setSelection([])
 
     def _getGlyphList(self):
         self.currentFont = self.RCJKI.currentFont
