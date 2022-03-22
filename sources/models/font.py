@@ -190,6 +190,7 @@ class Font():
         self.uid = font["data"]["uid"]
         self._fullRFont = self._RFont
         self.fontLib = font["data"]["fontlib"]
+        self.designspace = font["data"]["designspace"]
         # self.dataBase = font["data"]["glyphs_composition"]
         try:
             dataBase_data = self.client.glyphs_composition_get(self.uid)["data"]
@@ -204,6 +205,9 @@ class Font():
         self._initFontLib(self.fontLib, self._RFont)
         self.fontVariations = self.fontLib.get('robocjk.fontVariations', [])
         self.defaultGlyphWidth = self._RFont.lib.get("robocjk.defaultGlyphWidth", 1000)
+
+    def updateDesignspace(self):
+        self.client.font_update(self.uid, designspace=json.dumps(self.designspace))
 
     def clearRFont(self):
         # for k, v in copy.deepcopy(self._RFont.lib.asDict()).items():

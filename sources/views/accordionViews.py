@@ -672,65 +672,93 @@ class AxisSheet:
         self.RCJKI = RCJKI
         self.controller = controller
         self.glyphType = glyphType
-        self.w = Sheet((300, 170), parentWindow)
+        self.w = Sheet((300, 200), parentWindow)
 
-        if glyphType != "characterGlyph":
-            self.w.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
-            self.w.axisName = EditText((100, 20, 150, 20), "", sizeStyle = 'small')
-        else:
-            self.fontVariations = [axis for axis in self.RCJKI.currentFont.fontVariations if axis not in self.RCJKI.currentGlyph._axes.names]
-            self.w.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
-            self.w.axisName = PopUpButton((100, 20, 150, 20), self.fontVariations, sizeStyle = 'small')
+        self.actualCharacter = False
+        if self.RCJKI.currentGlyph.name.startswith("uni") or self.RCJKI.currentGlyph._RGlyph.unicode:
+            self.actualCharacter = True
+
+        self.w.axesSegmentedButton = SegmentedButton((0, 0, -0, 20), [dict(title="Glyph Axes"), dict(title="Font Axes")], callback = self.axesSegmentedButtonCallback)
+        self.w.axesSegmentedButton.set(self.actualCharacter)
+
+        self.w.glyphaxes = Group((0, 20, -0, -20))
+        self.w.glyphaxes.show(not self.actualCharacter)
+        self.w.fontaxes = Group((0, 20, -0, -20))
+        self.w.fontaxes.show(self.actualCharacter)
+
+        # if glyphType != "characterGlyph":
+        self.w.glyphaxes.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
+        self.w.glyphaxes.axisName = EditText((100, 20, 150, 20), "", sizeStyle = 'small')
+        # else:
+        self.fontVariations = [axis for axis in self.RCJKI.currentFont.fontVariations if axis not in self.RCJKI.currentGlyph._axes.names]
+        self.w.fontaxes.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
+        self.w.fontaxes.axisName = PopUpButton((100, 20, 150, 20), self.fontVariations, sizeStyle = 'small')
         # else:
         #     self.layers = [l.name for l in self.RCJKI.currentFont._RFont.layers]
         #     self.w.axisNameTitle = TextBox((10, 20, 90, 20), "Axis name", sizeStyle = 'small')
         #     self.w.axisName = PopUpButton((100, 20, 150, 20), self.layers, sizeStyle = 'small')
 
-        self.w.minValueTitle = TextBox((10, 50, 90, 20), "Min value", sizeStyle = 'small')
-        self.w.minValue = EditText((100, 50, 150, 20), 0, sizeStyle = 'small', 
+        self.w.glyphaxes.maxValueTitle = TextBox((10, 50, 90, 20), "Max Value", sizeStyle = 'small')
+        self.w.glyphaxes.maxValue = EditText((100, 50, 150, 20), 1, sizeStyle = 'small', 
             # formatter = numberFormatter, 
             callback = self.valuesCallback, continuous = False)
 
-        self.w.maxValueTitle = TextBox((10, 80, 90, 20), "Max Value", sizeStyle = 'small')
-        self.w.maxValue = EditText((100, 80, 150, 20), 1, sizeStyle = 'small', 
+        self.w.glyphaxes.defaultValueTitle = TextBox((10, 80, 90, 20), "Default Value", sizeStyle = 'small')
+        self.w.glyphaxes.defaultValue = EditText((100, 80, 150, 20), 0, sizeStyle = 'small', 
+            # formatter = numberFormatter, 
+            callback = self.valuesCallback, continuous = False)  
+
+        self.w.glyphaxes.minValueTitle = TextBox((10, 110, 90, 20), "Min value", sizeStyle = 'small')
+        self.w.glyphaxes.minValue = EditText((100, 110, 150, 20), 0, sizeStyle = 'small', 
             # formatter = numberFormatter, 
             callback = self.valuesCallback, continuous = False)
 
-        self.w.defaultValueTitle = TextBox((10, 110, 90, 20), "Default Value", sizeStyle = 'small')
-        self.w.defaultValue = EditText((100, 110, 150, 20), 0, sizeStyle = 'small', 
-            # formatter = numberFormatter, 
-            callback = self.valuesCallback, continuous = False)        
 
         self.w.apply = Button((150, -20, -0, 20), "Add", sizeStyle = 'small',callback = self.applyCallback)
         self.w.cancel = Button((00, -20, 150, 20), "Cancel", sizeStyle = 'small',callback = self.cancelCallback)
         self.w.setDefaultButton(self.w.apply)
         self.w.open()
 
-    def valuesCallback(self, sender):
-        minvalue = str_to_int_or_float(self.w.minValue.get())
-        maxvalue = str_to_int_or_float(self.w.maxValue.get())
-        defaultvalue = str_to_int_or_float(self.w.defaultValue.get())
+    def axesSegmentedButtonCallback(self, sender):
+        i = sender.get()
+        for index, x in enumerate([self.w.glyphaxes, self.w.fontaxes]):
+            x.show(index == i)
+            self.actualCharacter = i
+        # self.w.glyphaxes.show(not i)
+        # self.w.fontaxes.show(i)
 
-        if sender == self.w.minValue:
+    def valuesCallback(self, sender):
+        minvalue = str_to_int_or_float(self.w.glyphaxes.minValue.get())
+        maxvalue = str_to_int_or_float(self.w.glyphaxes.maxValue.get())
+        defaultvalue = str_to_int_or_float(self.w.glyphaxes.defaultValue.get())
+
+        if sender == self.w.glyphaxes.minValue:
             if minvalue > maxvalue:
-                self.w.minValue.set(defaultvalue)
-        elif sender == self.w.maxValue:
+                self.w.glyphaxes.minValue.set(defaultvalue)
+        elif sender == self.w.glyphaxes.maxValue:
             if maxvalue < minvalue:
-                self.w.maxValue.set(defaultvalue)
+                self.w.glyphaxes.maxValue.set(defaultvalue)
         else:
             if not minvalue <= defaultvalue <= maxvalue:
-                self.w.defaultValue.set(minvalue)
+                self.w.glyphaxes.defaultValue.set(minvalue)
             # if not min([minvalue, maxvalue]) <= defaultvalue <= max([minvalue, maxvalue]):
             #     self.w.defaultValue.set(minvalue)
 
-    def applyCallback(self, sender):
-        if self.glyphType != "characterGlyph":
-            axisName = self.w.axisName.get()
-        else: 
-            axisName = self.fontVariations[self.w.axisName.get()]
-        minValue = str_to_int_or_float(self.w.minValue.get())
-        maxValue = str_to_int_or_float(self.w.maxValue.get())
-        defaultValue = str_to_int_or_float(self.w.defaultValue.get())
+    def applyCallback(self, sender): 
+        if self.actualCharacter:
+            axisName = self.w.fontaxes.axisName.getItem()
+            # axisName = self.fontVariations[self.w.glyphaxes.axisName.get()]
+            minValue, maxValue, defaultValue = 0, 1, 0
+            for axis in self.RCJKI.currentFont.designspace["axes"]:
+                if axis["tag"] == axisName:
+                    minValue = str_to_int_or_float(axis["minValue"])
+                    maxValue = str_to_int_or_float(axis["maxValue"])
+                    defaultValue = str_to_int_or_float(axis["defaultValue"])
+        else:
+            axisName = self.w.glyphaxes.axisName.get()
+            minValue = str_to_int_or_float(self.w.glyphaxes.minValue.get())
+            maxValue = str_to_int_or_float(self.w.glyphaxes.maxValue.get())
+            defaultValue = str_to_int_or_float(self.w.glyphaxes.defaultValue.get())
         if not all([x!="" for x in [axisName, minValue, maxValue, defaultValue]]): return
         if axisName in self.RCJKI.currentGlyph._axes.names:
             message('Warning, this axis name already exists')
@@ -900,7 +928,8 @@ class AxesGroup(Group):
             #     callback = self.setLocationToPreviousMinButtonCallback)
             # self.setLocationToPreviousMinButton.show(False)
 
-        self.addAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addAxisButtonCallback)
+        self.addGlyphAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addGlyphAxisButtonCallback)
+        # self.addFontAxisButton = Button((150, -20, 150, 20), "add font axis", sizeStyle = "small", callback = self.addFontAxisButtonCallback)
         self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
 
     def editSelectedAxisMaximumValueButtonCallback(self, sender):
@@ -1138,7 +1167,10 @@ class AxesGroup(Group):
         # ps.print_stats()
         # print('axesListEditCallback (AccordionViews.py)', s.getvalue())
 
-    def addAxisButtonCallback(self, sender):
+    def addGlyphAxisButtonCallback(self, sender):
+        AxisSheet(self.controller.w, self.RCJKI, self, "deepComponent")
+
+    def addFontAxisButtonCallback(self, sender):
         AxisSheet(self.controller.w, self.RCJKI, self, self.glyphtype)
 
     def removeAxisButtonCallback(self, sender):
@@ -1164,12 +1196,23 @@ class SourcesSheet:
             height = 110 + 30*len(self.RCJKI.currentGlyph._axes)
         else:
             height = 90 + 30*len(self.RCJKI.currentGlyph._axes)
-        self.w = Sheet((300, height), parentWindow)
+        self.w = Sheet((500, height), parentWindow)
 
         y = 10
         if glyphType != "atomicElement":
             self.w.sourceNameTitle = TextBox((10, y, 90, 20), 'Source name', sizeStyle = 'small')
-            self.w.sourceName = EditText((100, y, -0, 20), "", sizeStyle = "small")
+            self.w.sourceName = EditText((100, y, 200, 20), "", sizeStyle = "small")
+
+            layers = []
+            for l in self.RCJKI.currentFont._RFont.layers:
+                fl = self.RCJKI.currentFont._RFont.getLayer(l.name)
+                if self.RCJKI.currentGlyph.name in fl.keys():
+                    if len(fl[self.RCJKI.currentGlyph.name]):
+                        layers.append(l)
+            self.layers = ["None"]+[l.name for l in layers]# if l.name != 'foreground']
+            self.w.layerNameTitle = TextBox((300, y, 90, 20), "Layer name", sizeStyle = 'small')
+            self.w.layerName = PopUpButton((360, y, -0, 20), self.layers, sizeStyle = 'small')
+
         else:
             layers = []
             for l in self.RCJKI.currentFont._RFont.layers:
@@ -1178,7 +1221,7 @@ class SourcesSheet:
                     if len(fl[self.RCJKI.currentGlyph.name]):
                         layers.append(l)
             self.layers = [l.name for l in layers]# if l.name != 'foreground']
-            self.w.sourceNameTitle = TextBox((10, y, 90, 20), "Axis name", sizeStyle = 'small')
+            self.w.sourceNameTitle = TextBox((10, y, 90, 20), "Layer name", sizeStyle = 'small')
             self.w.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
         y += 25
 
@@ -1186,8 +1229,8 @@ class SourcesSheet:
         for i, axis in enumerate(self.RCJKI.currentGlyph._axes):
             textbox = TextBox((10, y, 90, 20), axis.name, sizeStyle = 'small')
             defaultValue = TextBox((70, y+5, 100, 20), "default:%s"%axis.defaultValue, sizeStyle = 'small', alignment="left")
-            minValue = TextBox((100, y+5, 50, 20), axis.minValue, sizeStyle = 'small', alignment="right")
-            editText = EditText((150, y, -50, 20), 
+            minValue = TextBox((170, y+5, 50, 20), axis.minValue, sizeStyle = 'small', alignment="right")
+            editText = EditText((220, y, -50, 20), 
                 axis.defaultValue, #[axis.defaultValue, axis.maxValue][i + 1 == len(self.RCJKI.currentGlyph._axes)], 
                 sizeStyle = "small", 
                 # formatter = numberFormatter, 
@@ -1212,7 +1255,7 @@ class SourcesSheet:
         self.w.widthInput = EditText((100, y, -10, 20), str_to_int_or_float(self.RCJKI.currentFont.defaultGlyphWidth), continuous = False)
 
         self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
-        self.w.apply = Button((150, -20, 150, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
+        self.w.apply = Button((150, -20, -0, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
         self.w.setDefaultButton(self.w.apply)
         self.w.open()
 
@@ -1235,12 +1278,18 @@ class SourcesSheet:
     def applyCallback(self, sender):
         sourceName = ""
         layerName = ""
-        if self.glyphType != "atomicElement":
-            sourceName = self.w.sourceName.get()
-        else:
-            if not self.layers: return
-            layerName = self.layers[self.w.sourceName.get()]
-        if not sourceName and not layerName: return
+        if not self.w.sourceName.get() and self.layers[self.w.layerName.get()] == "None": return
+
+        sourceName = self.w.sourceName.get()
+        if self.layers[self.w.layerName.get()] != "None":
+            layerName = self.layers[self.w.layerName.get()]
+
+        # if self.glyphType != "atomicElement":
+        #     sourceName = self.w.sourceName.get()
+        # else:
+        #     if not self.layers: return
+        #     layerName = self.layers[self.w.sourceName.get()]
+        # if not sourceName and not layerName: return
         location = {}
         for i, axis in enumerate(self.RCJKI.currentGlyph._axes):
             try:
@@ -2030,6 +2079,7 @@ class CharacterGlyphInspector(Inspector):
         self.previewItem = PreviewGroup((10, 0, -10, -0), self.RCJKI)
 
         self.axesItem = AxesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, axes)
+        # self.glyphAxesItem = AxesGroup((10, 0, -10, -0), self.RCJKI, self, "deepComponent", axes)
         self.sourcesItem = SourcesGroup((10, 0, -10, -0), self.RCJKI, self, self.type, glyphVariationsAxes)
 
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "characterGlyph", glyphVariationsAxes)
@@ -2043,6 +2093,7 @@ class CharacterGlyphInspector(Inspector):
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
 
                        dict(label="Font axes", view=self.axesItem, minSize=80, size=100, collapsed=False, canResize=True),
+                       # dict(label="Glyph axes", view=self.glyphAxesItem, minSize=80, size=100, collapsed=False, canResize=True),
                        dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=100, collapsed=False, canResize=True),
 
                        # dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),

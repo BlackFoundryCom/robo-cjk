@@ -930,7 +930,7 @@ class RoboCJKView(BaseWindowController):
         self.RCJKI.toggleObservers(forceKill=True)
 
     def fontInfosCallback(self, sender):
-        sheets.FontInfosSheet(self.RCJKI, self.w, (220, 225))
+        sheets.FontInfosSheet(self.RCJKI, self.w, (420, 225))
 
     def lockControllerDCButtonCallback(self, sender):
         self.lockController = sheets.LockController(self.RCJKI, self.w)
@@ -1195,6 +1195,7 @@ class RoboCJKView(BaseWindowController):
                 print("hello")
                 # self.RCJKI.dataBase = True
                 f = self.RCJKI.client.font_get(self.RCJKI.fontsList[self.currentrcjkFile]['uid'])
+                print("response", f, f["data"]["designspace"])
                 self.RCJKI.currentFont._init_for_mysql(f, self.RCJKI.client, self.RCJKI.mysql_userName, self.RCJKI.hiddenSavePath)
                 version = self.RCJKI.currentFont.fontLib.get("robocjk.version", 0)
                 if version > self.RCJKI._version:

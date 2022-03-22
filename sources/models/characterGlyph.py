@@ -82,7 +82,7 @@ class CharacterGlyph(Glyph):
         self.save()
 
 
-    def preview(self, position:dict={}, font = None, forceRefresh=True, axisPreview = False):
+    def preview(self, position:dict={}, deltasStore:dict={}, font = None, forceRefresh=True, axisPreview = False):
         locationKey = ','.join([k+':'+str(v) for k,v in position.items()]) if position else ','.join([k+':'+str(v) for k,v in self.normalizedValueToMinMaxValue(self.getLocation(), self).items()])
         # print(locationKey)
         #### There is 3 possible condition for the drawing/preview if there is a selected element(s) ####

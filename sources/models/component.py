@@ -614,7 +614,13 @@ class VariationGlyphs(list):
 
     def _normalizedLocation(self, location, axes):
         # return {k:v for k,v in location.items() if v != axes.get(k).minValue}
-        return {k:v for k,v in location.items() if v != axes.get(k).defaultValue}
+        def _clamp(k, v, axes):
+            if v > axes.get(k).maxValue:
+                return axes.get(k).maxValue
+            elif v < axes.get(k).minValue:
+                return axes.get(k).minValue
+            else: return v
+        return {k:_clamp(k, v, axes) for k,v in location.items() if v != axes.get(k).defaultValue}
 
     # def __iter__(self):
     #     for x in self:
