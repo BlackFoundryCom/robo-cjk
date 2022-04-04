@@ -1768,6 +1768,9 @@ class ImportDeepComponentFromAnotherCharacterGlyph:
             return
         self.index = sel[0]
         dc = copy.deepcopy(self.deepComponents[self.index])
+        if dc.name in self.RCJKI.get_cg_used_by(self.RCJKI.currentFont, self.RCJKI.currentGlyph.name, []):
+            message("Impossible to import this variable component, it will trigger an infinite loop")
+            return
         self.RCJKI.currentGlyph.addDeepComponentNamed(dc.name, dc)
 
         if len(self.glyphVariations) == len(self.RCJKI.currentGlyph._glyphVariations):

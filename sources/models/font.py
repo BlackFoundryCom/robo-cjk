@@ -623,8 +623,7 @@ class Font():
         else:
             gtype = "CG"
 
-        made_of_aes = []
-        made_of_dcs = []
+        made_of = []
         exceptions = [exception]
 
         start = time.time()
@@ -634,14 +633,14 @@ class Font():
         elif gtype == "DC":
             glyph = deepComponent.DeepComponent(name)
             BGlyph = self.client.deep_component_get(self.uid, name)["data"]
-            made_of_aes = BGlyph["made_of"]
+            made_of = BGlyph["made_of"]
             if name  == exception:
                 exceptions = [e["name"] for e in BGlyph["made_of"]]
         elif gtype == "CG":
             glyph = characterGlyph.CharacterGlyph(name)
             BGlyph = self.client.character_glyph_get(self.uid, name)["data"]
-            made_of_dcs = BGlyph["made_of"]
-            made_of_aes = [x for dc in made_of_dcs for x in dc["made_of"]]
+            made_of = BGlyph["made_of"]
+            made_of.extend([x for dc in made_of for x in dc["made_of"]])
             if name  == exception:
                 exceptions = [e["name"] for e in BGlyph["made_of"]]
 
@@ -651,23 +650,25 @@ class Font():
         print("download glyphs:", stop-start, 'seconds to download %s'%name)
 
         start = time.time()
-    
 
-        for ae in made_of_aes:
-            if ae["name"] in exceptions or ae["name"] in font.keys(): continue
-            glyph2 = atomicElement.AtomicElement(ae["name"])
-            self.insertmysqlGlyph(glyph2, ae["name"], ae, font, "AE")
-
-        for dc in made_of_dcs:
-            if dc["name"] in exceptions or dc["name"] in font.keys(): continue
-            glyph2 = deepComponent.DeepComponent(dc["name"])
-            self.insertmysqlGlyph(glyph2, dc["name"], dc, font, "DC")
-
+        for elem in made_of:
+            name = elem["name"]
+            if name in self.staticAtomicElementSet():
+                type = "AE"
+                glyph2 = atomicElement.AtomicElement(name)
+            elif name in self.staticDeepComponentSet():
+                type = 'DC'
+                glyph2 = deepComponent.DeepComponent(name)
+            else:
+                type = "CG"
+                glyph2 = characterGlyph.CharacterGlyph(name)
+            self.insertmysqlGlyph(glyph2, name, elem, font, type) 
+  
         if name not in exceptions:
             self.insertmysqlGlyph(glyph, name, BGlyph, font, gtype)
 
         stop = time.time()
-        print("insert glyphs:", stop-start, 'seconds to insert %s'%str(1+len(made_of_aes+made_of_dcs)))
+        print("insert glyphs:", stop-start, 'seconds to insert %s'%str(1+len(made_of)))
 
     def insertmysqlGlyph(self, glyph, name, BGlyph, font, gtype):
         if BGlyph is None: return

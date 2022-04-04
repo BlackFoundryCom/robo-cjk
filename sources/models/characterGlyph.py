@@ -275,10 +275,10 @@ class CharacterGlyph(Glyph):
                 status = lib.get(statusKey, 0)
             else:
                 if variationGlyphsKey not in self._RGlyph.lib.keys(): 
-                    deepComponents = self._RGlyph.lib[deepComponentsKey]
+                    deepComponents = self._RGlyph.lib.get(deepComponentsKey, [])
                     variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
                 else:
-                    deepComponents = self._RGlyph.lib[deepComponentsKey]
+                    deepComponents = self._RGlyph.lib.get(deepComponentsKey, [])
                     variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
                 hasAxisKey = axesKey in self._RGlyph.lib.keys()
                 axes = self._RGlyph.lib.get(axesKey)

@@ -253,6 +253,9 @@ class CompositionRulesGroup(Group):
         self.existingInstancesList.set(self.existingDeepComponentInstances)
 
     def variantListDoubleClickCallback(self, sender):
+        if self.deepComponentName in self.RCJKI.get_cg_used_by(self.RCJKI.currentFont, self.RCJKI.currentGlyph.name, []):
+            message("Impossible to import this variable component, it will trigger an infinite loop")
+            return
         self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
         self.RCJKI.updateDeepComponent(update = False)
 
@@ -307,6 +310,9 @@ class CompositionRulesGroup(Group):
         sel = sender.getSelection()
         if not sel: return
         dcname = self.deepComponentSettings["name"]
+        if dcname in self.RCJKI.get_cg_used_by(self.RCJKI.currentFont, self.RCJKI.currentGlyph.name, []):
+            message("Impossible to import this variable component, it will trigger an infinite loop")
+            return
         self.RCJKI.currentGlyph.addDeepComponentNamed(dcname, self.deepComponentSettings)
 
         if len(self.deepComponentVariationSettings) == len(self.RCJKI.currentGlyph._glyphVariations):
@@ -678,7 +684,7 @@ class AxisSheet:
         if self.RCJKI.currentGlyph.name.startswith("uni") or self.RCJKI.currentGlyph._RGlyph.unicode:
             self.actualCharacter = True
 
-        self.w.axesSegmentedButton = SegmentedButton((0, 0, -0, 20), [dict(title="Glyph Axes"), dict(title="Font Axes")], callback = self.axesSegmentedButtonCallback)
+        self.w.axesSegmentedButton = SegmentedButton((0, 0, -0, 20), [dict(title="Glyph Axes"), dict(title="Axes")], callback = self.axesSegmentedButtonCallback)
         self.w.axesSegmentedButton.set(self.actualCharacter)
 
         self.w.glyphaxes = Group((0, 20, -0, -20))
@@ -749,7 +755,7 @@ class AxisSheet:
             axisName = self.w.fontaxes.axisName.getItem()
             # axisName = self.fontVariations[self.w.glyphaxes.axisName.get()]
             minValue, maxValue, defaultValue = 0, 1, 0
-            for axis in self.RCJKI.currentFont.designspace["axes"]:
+            for axis in self.RCJKI.currentFont.designspace.get("axes", []):
                 if axis["tag"] == axisName:
                     minValue = str_to_int_or_float(axis["minValue"])
                     maxValue = str_to_int_or_float(axis["maxValue"])
@@ -1192,42 +1198,53 @@ class SourcesSheet:
         self.RCJKI = RCJKI
         self.controller = controller
         self.glyphType = glyphType
+        sheet_width = 500
         if glyphType != "atomicElement":
-            height = 110 + 30*len(self.RCJKI.currentGlyph._axes)
+            height = 140 + 30*len(self.RCJKI.currentGlyph._axes)
         else:
-            height = 90 + 30*len(self.RCJKI.currentGlyph._axes)
+            height = 140 + 30*len(self.RCJKI.currentGlyph._axes)
         self.w = Sheet((500, height), parentWindow)
 
+        self.w.source = Group((0, 30, -0, -20))
+        self.w.layer = Group((0, 30, -0, -20))
+        self.is_source = True
+        self.w.source.show(self.is_source)
+        self.w.layer.show(not self.is_source)
+
         y = 10
-        if glyphType != "atomicElement":
-            self.w.sourceNameTitle = TextBox((10, y, 90, 20), 'Source name', sizeStyle = 'small')
-            self.w.sourceName = EditText((100, y, 200, 20), "", sizeStyle = "small")
+        # if glyphType != "atomicElement":
 
-            layers = []
-            for l in self.RCJKI.currentFont._RFont.layers:
-                fl = self.RCJKI.currentFont._RFont.getLayer(l.name)
-                if self.RCJKI.currentGlyph.name in fl.keys():
-                    if len(fl[self.RCJKI.currentGlyph.name]):
-                        layers.append(l)
-            self.layers = ["None"]+[l.name for l in layers]# if l.name != 'foreground']
-            self.w.layerNameTitle = TextBox((300, y, 90, 20), "Layer name", sizeStyle = 'small')
-            self.w.layerName = PopUpButton((360, y, -0, 20), self.layers, sizeStyle = 'small')
+        self.w.segmentedButton = SegmentedButton((0, 0, -0, 20), [dict(title="Source"), dict(title='Layer')], callback = self.segmentedButtonCallback)
+        self.w.segmentedButton.set(0)
 
-        else:
-            layers = []
-            for l in self.RCJKI.currentFont._RFont.layers:
-                fl = self.RCJKI.currentFont._RFont.getLayer(l.name)
-                if self.RCJKI.currentGlyph.name in fl.keys():
-                    if len(fl[self.RCJKI.currentGlyph.name]):
-                        layers.append(l)
-            self.layers = [l.name for l in layers]# if l.name != 'foreground']
-            self.w.sourceNameTitle = TextBox((10, y, 90, 20), "Layer name", sizeStyle = 'small')
-            self.w.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
-        y += 25
+        self.w.source.sourceNameTitle = TextBox((10, y, 90, 20), 'Source name', sizeStyle = 'small')
+        self.w.source.sourceName = EditText((100, y, -10, 20), "", sizeStyle = "small")
+
+        layers = []
+        for l in self.RCJKI.currentFont._RFont.layers:
+            fl = self.RCJKI.currentFont._RFont.getLayer(l.name)
+            if self.RCJKI.currentGlyph.name in fl.keys():
+                if len(fl[self.RCJKI.currentGlyph.name]):
+                    layers.append(l)
+        self.layers = ["None"]+[l.name for l in layers]# if l.name != 'foreground']
+        self.w.layer.layerNameTitle = TextBox((10, y, 90, 20), "Layer name", sizeStyle = 'small')
+        self.w.layer.layerName = PopUpButton((100, y, -10, 20), self.layers, sizeStyle = 'small')
+
+        # else:
+        #     layers = []
+        #     for l in self.RCJKI.currentFont._RFont.layers:
+        #         fl = self.RCJKI.currentFont._RFont.getLayer(l.name)
+        #         if self.RCJKI.currentGlyph.name in fl.keys():
+        #             if len(fl[self.RCJKI.currentGlyph.name]):
+        #                 layers.append(l)
+        #     self.layers = [l.name for l in layers]# if l.name != 'foreground']
+        #     self.w.source.sourceNameTitle = TextBox((10, y, 90, 20), "Layer name", sizeStyle = 'small')
+        #     self.w.source.sourceName = PopUpButton((100, y, 150, 20), self.layers, sizeStyle = 'small')
+        y += 55
 
         self.axes = {}
         for i, axis in enumerate(self.RCJKI.currentGlyph._axes):
-            textbox = TextBox((10, y, 90, 20), axis.name, sizeStyle = 'small')
+            textbox = TextBox((10, y+5, 90, 20), axis.name, sizeStyle = 'small')
             defaultValue = TextBox((70, y+5, 100, 20), "default:%s"%axis.defaultValue, sizeStyle = 'small', alignment="left")
             minValue = TextBox((170, y+5, 50, 20), axis.minValue, sizeStyle = 'small', alignment="right")
             editText = EditText((220, y, -50, 20), 
@@ -1246,18 +1263,25 @@ class SourcesSheet:
             y += 25
 
         if glyphType != "atomicElement":
-            self.w.copyfromTitle = TextBox((10, y, 90, 20), "copy from", sizeStyle = 'small')
+            self.w.source.copyfromTitle = TextBox((10, y-30, 90, 20), "copy from", sizeStyle = 'small')
             self.sources = ["master"]+self.RCJKI.currentGlyph._glyphVariations.sourceNames
-            self.w.copyfromPopupButton = PopUpButton((100, y, -10, 20), self.sources, sizeStyle = 'small')
+            self.w.source.copyfromPopupButton = PopUpButton((100, y-30, -10, 20), self.sources, sizeStyle = 'small')
             y += 25
 
-        self.w.widthTitle = TextBox((10, y, 90, 20), "width", sizeStyle = 'small')
-        self.w.widthInput = EditText((100, y, -10, 20), str_to_int_or_float(self.RCJKI.currentFont.defaultGlyphWidth), continuous = False)
+        self.w.source.widthTitle = TextBox((10, y-30, 90, 20), "width", sizeStyle = 'small')
+        self.w.source.widthInput = EditText((100, y-30, -10, 20), str_to_int_or_float(self.RCJKI.currentFont.defaultGlyphWidth), continuous = False)
 
-        self.w.cancel = Button((0, -20, 150, 20), 'Cancel', sizeStyle = 'small', callback = self.cancelCallback)
-        self.w.apply = Button((150, -20, -0, 20), 'Apply', sizeStyle = 'small', callback = self.applyCallback)
+        self.w.cancel = Button((0, -20, sheet_width/3, 20), 'Close', sizeStyle = 'small', callback = self.cancelCallback)
+        self.w.apply = Button((sheet_width/3, -20, sheet_width/3, 20), 'Add', sizeStyle = 'small', callback = self.applyCallback)
+        self.w.apply_and_close = Button(((sheet_width/3)*2, -20, sheet_width/3, 20), 'Add and close', sizeStyle = 'small', callback = self.applyCallback)
         self.w.setDefaultButton(self.w.apply)
         self.w.open()
+
+    def segmentedButtonCallback(self, sender):
+        index = sender.get()
+        self.is_source = index == 0
+        for i, x in enumerate([self.w.source, self.w.layer]):
+            x.show(i==index)
 
     def valuesCallback(self, sender):
         axis = self.axes[sender]
@@ -1278,18 +1302,17 @@ class SourcesSheet:
     def applyCallback(self, sender):
         sourceName = ""
         layerName = ""
-        if not self.w.sourceName.get() and self.layers[self.w.layerName.get()] == "None": return
+        if self.is_source:
+            sourceName = self.w.source.sourceName.get()
+            if not sourceName:
+                message("Error, missing source name")
+                return
+        else:
+            layerName = self.layers[self.w.layer.layerName.get()]
+            if layerName == "None":
+                message("Error, no layer name selected")
+                return
 
-        sourceName = self.w.sourceName.get()
-        if self.layers[self.w.layerName.get()] != "None":
-            layerName = self.layers[self.w.layerName.get()]
-
-        # if self.glyphType != "atomicElement":
-        #     sourceName = self.w.sourceName.get()
-        # else:
-        #     if not self.layers: return
-        #     layerName = self.layers[self.w.sourceName.get()]
-        # if not sourceName and not layerName: return
         location = {}
         for i, axis in enumerate(self.RCJKI.currentGlyph._axes):
             try:
@@ -1299,13 +1322,21 @@ class SourcesSheet:
             except Exception as e:
                 print(e)
                 continue
-        if self.glyphType != "atomicElement":
-            copyFrom = self.w.copyfromPopupButton.getItem()
-        else:
-            copyFrom = ""
-        width = int(str(self.w.widthInput.get()).replace(" ", "").replace('\xa0', ""))
+
+        copyFrom = ""
+        width = self.RCJKI.currentGlyph._RGlyph.width
+
+        if layerName and not sourceName:
+            sourceName = layerName
+
+        if self.glyphType != "atomicElement" and self.is_source:
+            copyFrom = self.w.source.copyfromPopupButton.getItem()
+            width = int(str(self.w.source.widthInput.get()).replace(" ", "").replace('\xa0', ""))
+
         self.RCJKI.currentGlyph.addSource(sourceName=sourceName, location=location, layerName=layerName, copyFrom = copyFrom, width = width)
-        self.RCJKI.currentGlyph.selectedSourceAxis = sourceName
+        if self.is_source:
+            self.RCJKI.currentGlyph.selectedSourceAxis = sourceName
+
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
         self.controller.setList()
@@ -1313,7 +1344,8 @@ class SourcesSheet:
         self.controller.controller.propertiesItem.setglyphState()
         self.RCJKI.glyphView.setSelectedSource()
         self.RCJKI.disabledEditingUIIfValidated()
-        self.w.close()
+        if sender == self.w.apply_and_close:
+            self.w.close()
 
     def cancelCallback(self, sender):
         self.w.close()
@@ -1338,25 +1370,26 @@ class SourcesGroup(Group):
         self.removeSourceButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeSourceButtonCallback)
 
     def setList(self, sel=None):
-        if self.RCJKI.currentGlyph.type == "atomicElement":
-            self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:y.defaultValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
-        else:    
-            self.sources = [{"On/Off":x.on, "name":x.sourceName, **{y.name:y.defaultValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+        # if self.RCJKI.currentGlyph.type == "atomicElement":
+        #     self.sources = [{"On/Off":x.on, "layerName":x.layerName, **{y.name:y.defaultValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
+        # else:    
+        self.sources = [{"On/Off":x.on, "name":x.sourceName, "layerName":x.layerName, **{y.name:y.defaultValue for y in self.RCJKI.currentGlyph._axes}} for x in self.RCJKI.currentGlyph._glyphVariations]
         for i, source in enumerate(self.sources):
             source.update(self.RCJKI.currentGlyph._glyphVariations[i].location)
 
         checkbox = CheckBoxListCell()
         self.listDescription = [
-                    {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox},
-                    {"title": "name", "editable": True, "width": 120},
-                    *[dict(title=x.name, editable = True, width = 60) for x in self.RCJKI.currentGlyph._axes]
+                    {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox, "minWidth":40},
+                    {"title": "name", "editable": True, "minWidth":70, "maxWidth":200, "width": 120},
+                    {"title": "layerName", "editable": True, "minWidth":70, "maxWidth":200, "width": 120},
+                    *[dict(title=x.name, editable = True, width = 60, minWidth=40) for x in self.RCJKI.currentGlyph._axes]
                     ]
-        if self.RCJKI.currentGlyph.type == "atomicElement":
-            self.listDescription = [
-                    {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox},
-                    {"title": "layerName", "editable": True, "width": 120},
-                    *[dict(title=x.name, editable = True, width = 60) for x in self.RCJKI.currentGlyph._axes]
-                    ]
+        # if self.RCJKI.currentGlyph.type == "atomicElement":
+        #     self.listDescription = [
+        #             {"title": "On/Off", "editable": True, "width": 40, "cell":checkbox, "minWidth":40},
+        #             {"title": "layerName", "editable": True, "minWidth":70, "maxWidth":200, "width": 120},
+        #             *[dict(title=x.name, editable = True, width = 60, minWidth=40) for x in self.RCJKI.currentGlyph._axes]
+        #             ]
 
         if hasattr(self, "sourcesList"):
             delattr(self, "sourcesList")
@@ -1368,7 +1401,8 @@ class SourcesGroup(Group):
             doubleClickCallback = self.sourcesListDoubleClickCallback,
             selectionCallback = self.sourcesListSelectionCallback,
             drawFocusRing = False,
-            showColumnTitles = True
+            showColumnTitles = True,
+            allowsSorting = False
             )
         if sel is not None:
             self.sourcesList.setSelection(sel)
@@ -1452,7 +1486,16 @@ class SourcesGroup(Group):
         else:
             isel = sender.getSelection()[0]
             if self.glyphtype != "atomicElement":
-                self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['name']
+                name = sender.get()[isel]['name']
+                layername = sender.get()[isel]['layerName']
+                if name and not layername:
+                    self.RCJKI.currentGlyph.selectedSourceAxis = name
+                elif layername and not name:
+                    self.RCJKI.currentGlyph.selectedSourceAxis = layername
+                elif layername and name and layername == name:
+                    self.RCJKI.currentGlyph.selectedSourceAxis = name
+                else:
+                    self.RCJKI.currentGlyph.selectedSourceAxis = None
             else:
                 self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['layerName']
 
@@ -2088,13 +2131,16 @@ class CharacterGlyphInspector(Inspector):
         self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
         self.transformationItem = TransformationGroup((10, 0, -10, -0), self.RCJKI, self)
 
+        axesSize = 100+10*len(self.RCJKI.currentGlyph._axes)
+        sourceSize =100+10*len(self.RCJKI.currentGlyph._glyphVariations)
+
         descriptions = [
                        dict(label="Composition Rules", view=self.compositionRulesItem, size=100, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
 
-                       dict(label="Font axes", view=self.axesItem, minSize=80, size=100, collapsed=False, canResize=True),
+                       dict(label="Axes", view=self.axesItem, minSize=80, size=axesSize, collapsed=False, canResize=True),
                        # dict(label="Glyph axes", view=self.glyphAxesItem, minSize=80, size=100, collapsed=False, canResize=True),
-                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=100, collapsed=False, canResize=True),
+                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=sourceSize, collapsed=False, canResize=True),
 
                        # dict(label="Font variation axes", view=self.glyphVariationAxesItem, minSize=80, size=150, collapsed=False, canResize=True),
                        dict(label="Deep component axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
@@ -2125,12 +2171,15 @@ class DeepComponentInspector(Inspector):
         self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
         self.transformationItem = TransformationGroup((10, 0, -10, -0), self.RCJKI, self)
 
+        axesSize = 100+10*len(self.RCJKI.currentGlyph._axes)
+        sourceSize =100+10*len(self.RCJKI.currentGlyph._glyphVariations)
+
         descriptions = [
                        dict(label="Related glyphs", view=self.relatedGlyphsItem, size=140, collapsed=False, canResize=True),
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
 
-                       dict(label="Glyph axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
-                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Glyph axes", view=self.axesItem, minSize=80, size=axesSize, collapsed=False, canResize=True),
+                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=sourceSize, collapsed=False, canResize=True),
 
                        # dict(label="Deep component axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Atomic element axes", view=self.deepComponentAxesItem, minSize=100, size=150, collapsed=False, canResize=True),
@@ -2161,11 +2210,14 @@ class AtomicElementInspector(Inspector):
         # self.glyphVariationAxesItem = GlyphVariationAxesGroup((0, 0, -0, -0), self.RCJKI, self, "atomicElement", glyphVariationsAxes)
         self.propertiesItem = PropertiesGroup((10, 0, -10, -0), self.RCJKI, self)
 
+        axesSize = 100+10*len(self.RCJKI.currentGlyph._axes)
+        sourceSize =100+10*len(self.RCJKI.currentGlyph._glyphVariations)
+
         descriptions = [
                        dict(label="Preview", view=self.previewItem, minSize=100, size=300, collapsed=False, canResize=True),
 
-                       dict(label="Glyph axes", view=self.axesItem, minSize=80, size=150, collapsed=False, canResize=True),
-                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=150, collapsed=False, canResize=True),
+                       dict(label="Glyph axes", view=self.axesItem, minSize=80, size=axesSize, collapsed=False, canResize=True),
+                       dict(label="Glyph Sources", view=self.sourcesItem, minSize=80, size=sourceSize, collapsed=False, canResize=True),
 
                        # dict(label="Atomic element axes", view=self.glyphVariationAxesItem, minSize=100, size=170, collapsed=False, canResize=True),
                        dict(label="Properties", view=self.propertiesItem, minSize = 80, size=150, collapsed=False, canResize=True)
