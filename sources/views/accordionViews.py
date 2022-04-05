@@ -1481,6 +1481,7 @@ class SourcesGroup(Group):
     @lockedProtect
     # @refreshPreview
     def sourcesListDoubleClickCallback(self, sender):
+        layername = None
         if not sender.getSelection(): 
             self.RCJKI.currentGlyph.selectedSourceAxis = None
         else:
@@ -1491,13 +1492,14 @@ class SourcesGroup(Group):
                 if name and not layername:
                     self.RCJKI.currentGlyph.selectedSourceAxis = name
                 elif layername and not name:
-                    self.RCJKI.currentGlyph.selectedSourceAxis = layername
+                    self.RCJKI.currentGlyph.selectedSourceAxis = None
                 elif layername and name and layername == name:
-                    self.RCJKI.currentGlyph.selectedSourceAxis = name
+                    self.RCJKI.currentGlyph.selectedSourceAxis = None
                 else:
                     self.RCJKI.currentGlyph.selectedSourceAxis = None
             else:
-                self.RCJKI.currentGlyph.selectedSourceAxis = sender.get()[isel]['layerName']
+                layername = sender.get()[isel]['layerName']
+                self.RCJKI.currentGlyph.selectedSourceAxis = layername
 
         self.RCJKI.currentGlyph.selectedElement = []
         if self.glyphtype != "atomicElement":
@@ -1507,9 +1509,9 @@ class SourcesGroup(Group):
         self.RCJKI.axisPreview = []
 
         if len(self.RCJKI.currentGlyph) and self.RCJKI.currentGlyph.type != "deepComponent":
-            layerName = self.RCJKI.currentGlyph.selectedSourceAxis
-            if layerName in [l.name for l in self.RCJKI.currentFont._RFont.layers]:
-                SetCurrentLayerByName(layerName)
+            # layerName = self.RCJKI.currentGlyph.selectedSourceAxis
+            if layername in [l.name for l in self.RCJKI.currentFont._RFont.layers]:
+                SetCurrentLayerByName(layername)
 
         self.RCJKI.currentGlyph.redrawSelectedElementSource = True
         self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
