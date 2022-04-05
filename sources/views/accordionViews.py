@@ -1780,7 +1780,7 @@ class DeepComponentListGroup(Group):
             index = edited[1]
             name = sender.get()[index]["name"]
             if self.RCJKI.currentGlyph.type == 'characterGlyph':
-                if name not in self.RCJKI.currentFont.staticDeepComponentSet():
+                if name not in self.RCJKI.currentFont.staticDeepComponentSet() | self.RCJKI.currentFont.staticCharacterGlyphSet():
                     self.setList()
                     return
             else:
