@@ -139,24 +139,23 @@ class AtomicElement(Glyph):
             self._axes = Axes()
             self._axes._init_with_old_format(key)
             self._glyphVariations = VariationGlyphs()
-            self._glyphVariations._init_with_old_format(key, self._axes)
-            # self._glyphVariations = VariationGlyphs(dict(self._RGlyph.lib[glyphVariationsKey]))
+            self._glyphVariations._init_with_old_format(key, self._axes, defaultWidth = self._RGlyph.width)
         else:
             if axesKey in self._RGlyph.lib:
                 self._axes = Axes(self._RGlyph.lib[axesKey])
-                self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey], self._axes)
+                self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey], self._axes, defaultWidth = self._RGlyph.width)
                 self._status = self._RGlyph.lib.get(statusKey, 0)
             else:
                 self._axes = Axes()
                 self._axes._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]))
                 self._glyphVariations = VariationGlyphs()
-                self._glyphVariations._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]), self._axes)
+                self._glyphVariations._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]), self._axes, defaultWidth = self._RGlyph.width)
         # self._temp_set_Status_value()
 
     def addGlyphVariation(self, newAxisName, newLayerName):
         self._axes.addAxis({"name":newAxisName, "minValue":0, "maxValue":1})
         variation = {"location":{newAxisName:1}, "layerName":newLayerName}
-        self._glyphVariations.addVariation(variation, self._axes)
+        self._glyphVariations.addVariation(variation, self._axes, defaultWidth = self._RGlyph.width)
 
         glyph = AtomicElement(self.name)
         txt = self._RFont.getLayer(newLayerName)[self.name].dumpToGLIF()

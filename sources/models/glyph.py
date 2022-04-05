@@ -304,7 +304,7 @@ class Glyph(RGlyph):
                     if k != "name":
                         items[k] = v
                 deepComponents.append(items)
-        self._glyphVariations.addVariation(dict(sourceName=sourceName, location=location, layerName=layerName, deepComponents = deepComponents, width = width), self._axes)
+        self._glyphVariations.addVariation(dict(sourceName=sourceName, location=location, layerName=layerName, deepComponents = deepComponents, width = width), self._axes, defaultWidth = self._RGlyph.width)
 
     def removeSource(self, selectedAxisIndex):
         self._glyphVariations.removeVariation(selectedAxisIndex)

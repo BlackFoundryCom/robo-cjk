@@ -241,7 +241,7 @@ class DeepComponent(Glyph):
             if hasAxisKey:
                 self._deepComponents = DeepComponents(deepComponents)
                 self._axes = Axes(axes)
-                self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes)
+                self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
                 self._status = status
             else:
                 self._deepComponents = DeepComponents()
@@ -249,7 +249,7 @@ class DeepComponent(Glyph):
                 self._axes = Axes()      
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
-                self._glyphVariations._init_with_old_format(variationGlyphs, self._axes)
+                self._glyphVariations._init_with_old_format(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
             # self._temp_set_Status_value()
         except Exception as e:
             self._deepComponents = DeepComponents()
@@ -270,7 +270,7 @@ class DeepComponent(Glyph):
 
     def addGlyphVariation(self, newAxisName):
         self._axes.addAxis({"name":newAxisName, "minValue":0, "maxValue":1})
-        self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{newAxisName:1}}, self.axes)
+        self._glyphVariations.addVariation({"deepComponents":self._deepComponents, "location":{newAxisName:1}}, self.axes, defaultWidth = self._RGlyph.width)
 
     def removeGlyphVariation(self, axisName):
         index = 0
@@ -330,7 +330,6 @@ class DeepComponent(Glyph):
         # if name in self._glyphVariations.axes: return
         self.addGlyphVariation(name)
 
-        # self._glyphVariations.addVariation(name, self._deepComponents)
 
     def renameVariationAxis(self, oldName, newName):
         self._axes.renameAxis(oldName, newName)
@@ -339,12 +338,6 @@ class DeepComponent(Glyph):
         #         axis.name == newName
         self._glyphVariations.renameAxisInsideLocation(oldName, newName)
 
-        # for variation in self._glyphVariations:
-        #     if oldName in variation.location:
-        #         variation.location[newName] = variation.location[oldName]
-        #         del variation.location[oldName]
-        # self._glyphVariations.addVariation(newName, self._glyphVariations[oldName])
-        # self._glyphVariations.removeAxis(oldName)
 
     def removeVariationAxis(self, name):
         self.removeGlyphVariation(name)

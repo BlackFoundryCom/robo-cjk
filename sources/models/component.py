@@ -561,15 +561,15 @@ locations, loc [{'BL_S_lo': 1.0, 'X_WH_bo': 0}, {'BR_S_lo': 1.0, 'X_WH_bo': 0}, 
 
 class VariationGlyphs(list):
 
-    def __init__(self, variationGlyphs=[], axes = []):
+    def __init__(self, variationGlyphs=[], axes = [], defaultWidth = None):
         for variation in variationGlyphs:
-            self.addVariation(variation, axes)
+            self.addVariation(variation, axes, defaultWidth)
         # print("variationGlyphs", variationGlyphs)
 
-    def _init_with_old_format(self, data, axes):
+    def _init_with_old_format(self, data, axes, defaultWidth = None):
         for k, v in data.items():
             variation = {"location": {k:v.get("maxValue")}, "sourceName":k, "layerName": v.get("layerName"), "deepComponents": v.get("content").get("deepComponents")}
-            self.addVariation(variation, axes)
+            self.addVariation(variation, axes, defaultWidth)
         for variation in self:
             variation.deepComponents._convertOffsetFromRCenterToTCenter()
 
@@ -582,12 +582,14 @@ class VariationGlyphs(list):
         for variation in self:
             variation.location[axisName] = defaultValue
 
-    def addVariation(self, variation, axes):
+    def addVariation(self, variation, axes, defaultWidth = None):
         loc = self._normalizedLocation(variation.get('location'), axes)
         locations = [self._normalizedLocation(x, axes) for x in self.locations]
         if loc in locations or not loc:
             print("locations, loc", locations, loc)
             variation["on"] = False
+        if "width" not in variation and defaultWidth is not None:
+            variation["width"] = defaultWidth
         self.append(VariationGlyphsInfos(**variation))
 
     def activateSource(self, index, value, axes):
