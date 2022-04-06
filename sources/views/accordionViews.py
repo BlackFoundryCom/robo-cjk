@@ -1494,7 +1494,7 @@ class SourcesGroup(Group):
                 elif layername and not name:
                     self.RCJKI.currentGlyph.selectedSourceAxis = None
                 elif layername and name and layername == name:
-                    self.RCJKI.currentGlyph.selectedSourceAxis = None
+                    self.RCJKI.currentGlyph.selectedSourceAxis = name
                 else:
                     self.RCJKI.currentGlyph.selectedSourceAxis = None
             else:
