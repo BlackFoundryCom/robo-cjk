@@ -1468,7 +1468,7 @@ class SourcesGroup(Group):
                 variation.sourceName = name
         else:
             locations = {}
-            for axis in self.listDescription[2:]:
+            for axis in self.listDescription[3:]:
                 axisName = axis["title"]
                 value = values[edited[1]][axisName]
                 locations[axisName] = str_to_int_or_float(value)
