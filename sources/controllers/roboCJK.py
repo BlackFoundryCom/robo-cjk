@@ -159,6 +159,7 @@ class RoboCJKController(object):
         # self.bf_log = bf_log
 
         self.glyphInspectorWindow = None
+        self.copyDCSettingsFromAnotherGlyphWindow = None
 
         self.updateDeepComponentQueue = queue.Queue()
 
@@ -274,6 +275,7 @@ class RoboCJKController(object):
     def updateDeepComponent(self, update = False):
         if not self.currentGlyph.selectedSourceAxis:
             self.currentGlyph.selectedSourceAxis = {}#{x.name:0 for x in self.currentGlyph._axes}
+            self.copyDCSettingsFromAnotherGlyphWindowSetUI()
 
     def decomposeGlyphToBackupLayer(self, glyph):
         def _decompose(glyph, axis, layername):
@@ -390,6 +392,7 @@ class RoboCJKController(object):
             self.CharacterGlyphViewer.disableUI()
             # self.CharacterGlyphViewer.close()
             # self.CharacterGlyphViewer = None
+        self.copyDCSettingsFromAnotherGlyphWindowSetUI(empty = True)
         stop = time.time()
         print(stop-start, "to close %s"%self.currentGlyph.name)
               
@@ -452,6 +455,7 @@ class RoboCJKController(object):
             self.glyphInspectorWindow.sourcesItem.setList()
             self.glyphInspectorWindow.axesItem.setList()
             self.currentViewSourceValue.set("")
+            self.copyDCSettingsFromAnotherGlyphWindowSetUI()
         if not self._currentSourceValidated():
             self.installCustomTool(install = True, sender = "currentGlyphChanged True")
         else:
@@ -619,6 +623,7 @@ class RoboCJKController(object):
                         point['point'], 
                         self.currentGlyph
                         )
+            self.copyDCSettingsFromAnotherGlyphWindowSetUI()
         else:
             self.currentGlyph.setTransformationCenterToSelectedElements((point['point'].x, point['point'].y))
             addObserver(self, 'mouseDragged', 'mouseDragged')
@@ -779,6 +784,7 @@ class RoboCJKController(object):
             self.doRedo()
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
+            self.copyDCSettingsFromAnotherGlyphWindowSetUI()
             if len(self.currentGlyph) and self.currentGlyph.type != "deepComponent":
                 SetCurrentLayerByName("foreground")
 
@@ -790,6 +796,24 @@ class RoboCJKController(object):
             self.disabledEditingUIIfValidated()
         if self._currentSourceValidated(): return
         self.currentGlyph.keyDown((modifiers, inputKey, character))
+
+    def getLocationOfCurrentSelectedSource(self, g):
+        if not g.selectedSourceAxis:
+            return {}
+        sourceName = g.selectedSourceAxis
+        source = g._glyphVariations.getFromSourceName(sourceName)
+        location = source.location
+        return location
+
+
+    def getSelectionIndex(self, g):
+        selectionElements = g.selectedElement
+        if len(selectionElements) > 1:
+            return None
+        elif not selectionElements:
+            return None
+        else: return selectionElements[0]
+
 
     def glyphAdditionContextualMenuItems(self, notification):
         self.menuItems = []
@@ -812,6 +836,8 @@ class RoboCJKController(object):
                 item = ('Add variable component', self.addDeepComponent)
                 self.menuItems.append(item)
                 item = ('Import variable component from another Character Glyph', self.importDeepComponentFromAnotherCharacterGlyph)
+                self.menuItems.append(item)
+                item = ('Copy DC settings from another glyph', self.copyDCSettingsFromAnotherGlyph)
                 self.menuItems.append(item)
 
             if self.currentGlyph.selectedElement:
@@ -840,6 +866,19 @@ class RoboCJKController(object):
             self.menuItems.append(item)
 
         notification["additionContextualMenuItems"].extend(self.menuItems)
+
+
+    def copyDCSettingsFromAnotherGlyphWindowSetUI(self, empty = False):
+        if self.copyDCSettingsFromAnotherGlyphWindow is None:
+            return
+        else:
+            self.copyDCSettingsFromAnotherGlyphWindow.setUI(empty = empty)
+
+
+    def copyDCSettingsFromAnotherGlyph(self, sender):
+        self.copyDCSettingsFromAnotherGlyphWindow = roboCJKView.CopySettingsFromSource(self)
+        self.copyDCSettingsFromAnotherGlyphWindowSetUI()
+        
 
     def displayReferenceGlyph(self, sender):
         self.CharacterGlyphViewer = roboCJKView.CharacterGlyphViewer(self)

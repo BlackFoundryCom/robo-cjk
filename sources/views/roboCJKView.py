@@ -30,6 +30,7 @@ from AppKit import NSFont, NumberFormatter, NSColor
 from imp import reload
 from utils import decorators, files
 from lib.cells.colorCell import RFColorCell
+from collections import defaultdict
 # reload(decorators)
 # reload(files)
 # reload(canvasGroups)
@@ -49,6 +50,8 @@ from views import textCenter
 from mojo.events import addObserver, removeObserver
 
 import os, json, copy, time
+import threading
+import queue
 
 # import BF_fontbook_struct as bfs
 # import BF_rcjk2mysql
@@ -2023,3 +2026,231 @@ class CharacterGlyphViewer:
         self.w.axes.set(l)
 
 
+
+class CopySettingsFromSource:
+
+    
+    def updateView(func):
+        def wrapper(self, *args, **kwargs):
+            func(self, *args, **kwargs)
+            self.w.canvas.update()
+        return wrapper
+
+    
+    def __init__(self, RCJKI, *args, **kwargs):
+        self.RCJKI = RCJKI
+        if self.currentGlyph is None:
+            return
+        self.glyphName = ""
+        self.glyph = None
+        self.selectedDeepComponentIndex = None
+        self.selectedDeepComponentName = None
+        self.selectedDeepComponentGlyph = None
+        self.location = {}
+        self.w = FloatingWindow((350, 200))
+        self.characterLists = []
+        self.DC2CG = {}
+        self.w.searchGlyph = EditText((0, 0, 150, 20), "",
+            callback = self._searchGlyphCallback,
+            continuous = False)
+        self.w.charlist = List((0, 20, 150, -20), self.characterLists, 
+            columnDescriptions=[{"title": "char", "width":20}, {"title": "name"}],
+            drawFocusRing = False,
+            showColumnTitles = False,
+            selectionCallback = self._charlistSelectionCallback
+            )
+        self.preview = 0
+        self.w.preview = CheckBox((5, -20, 150, 20), 'preview', 
+            value = self.preview, callback = self.previewCallback,
+            sizeStyle = "small")
+        self.w.canvas = Canvas((150, 0, 150, 200), delegate = self)
+        self.w.apply = SquareButton((300, 0, 50, -0), "Apply", callback = self.applyCallback)
+        self.observer()
+        self.w.bind("close", self.windowWillClose)
+        self.w.open()
+
+
+    @property
+    def currentGlyph(self):
+        return self.RCJKI.currentGlyph
+    
+
+    def applyCallback(self, sender):
+        if self.glyph is None:
+            return
+        selectedSourceAxisindex = self.RCJKI.currentGlyph.selectedElement[0]
+        if not self.RCJKI.currentGlyph.selectedSourceAxis:
+            DCSettings = self.glyph._deepComponents[self.selectedDeepComponentIndex]
+            self.RCJKI.currentGlyph._deepComponents[selectedSourceAxisindex].set(DCSettings)
+        else:
+            for source in self.glyph._glyphVariations:
+                if source.location == self.location:
+                    DCSettings = source["deepComponents"][self.selectedDeepComponentIndex]
+                    selectedSourceAxisname = self.RCJKI.currentGlyph.selectedSourceAxis
+                    s = self.RCJKI.currentGlyph._glyphVariations.getFromSourceName(selectedSourceAxisname)
+                    s.deepComponents[selectedSourceAxisindex].set(DCSettings)
+                    break
+
+        self.RCJKI.updateDeepComponent(update = False)
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
+        self.RCJKI.currentGlyph.reinterpolate = True
+
+
+    def windowWillClose(self, sender):
+        self.observer(remove = True)
+        self.RCJKI.copyDCSettingsFromAnotherGlyphWindow = None
+        UpdateCurrentGlyphView()
+
+
+    def observer(self, remove = False):
+        if not remove:
+            addObserver(self, 'drawGlyphWindow', 'draw')
+            addObserver(self, 'drawGlyphWindow', 'drawInactive')
+            addObserver(self, 'drawGlyphWindow', 'drawBackground')
+            addObserver(self, 'drawGlyphWindow', 'drawPreview')
+            return
+        removeObserver(self, 'draw')
+        removeObserver(self, 'drawInactive')
+        removeObserver(self, 'drawBackground')
+        removeObserver(self, 'drawPreview')
+
+
+    def drawGlyphWindow(self, info):
+        if self.selectedDeepComponentGlyph is None: return
+        if not self.preview: return
+        try:
+            mjdt.save()
+            mjdt.stroke(1, 0, 0, 1)
+            mjdt.fill(1, 0, 0, .1)
+            mjdt.drawGlyph(self.selectedDeepComponentGlyph)
+            mjdt.restore()
+        except Exception as e:
+            print("Exception", e)
+
+
+    def previewCallback(self, sender):
+        self.preview = sender.get()
+        UpdateCurrentGlyphView()
+
+
+    def _searchGlyphCallback(self, sender):
+        elem = sender.get()
+        name, char, index = None, None, None
+        if len(elem) == 1:
+            char = elem
+        else:
+            name = elem
+        for i, x in enumerate(self.characterLists):
+            if name is not None and x["name"].startswith(name):
+                index = i
+                break
+            elif char is not None and x["char"] == char:
+                index = i
+                break
+        if index is not None:
+            self.w.charlist.setSelection([index])
+        
+        
+    def _setGlyphName(self, name):
+        self.glyphName = name
+        self.glyph = self.RCJKI.currentFont[name]
+        self.selectedDeepComponentIndex = None
+        for i, dc in enumerate(self.glyph._deepComponents):
+            if dc["name"] == self.selectedDeepComponentName:
+                self.selectedDeepComponentIndex = i
+                break
+        self.w.canvas.update()
+        
+        
+    def setLocation(self, location):
+        self.location = location
+        self.w.canvas.update()
+
+
+    def _getAndSetCharlist_queue(self, queue):
+        name = queue.get()
+        self.w.charlist.enable(False)
+        if name is None:
+            self.characterLists = []
+            self.selectedDeepComponentIndex = None
+            self.selectedDeepComponentName = None
+            self.selectedDeepComponentGlyph = None
+            self.glyph = None
+        else:
+            f = self.RCJKI.currentFont
+            used_by = f.client.deep_component_get(f.uid, name)["data"]["used_by"]
+            characters = sorted([x["name"] for x in used_by])
+            self.characterLists = [
+                dict(
+                    name=x, 
+                    char=chr(int(x.split(".")[0][3:],16))
+                    ) for x in characters
+                ]
+            self.DC2CG[name] = self.characterLists
+        self.w.charlist.set(self.characterLists)
+        self._searchGlyphCallback(self.w.searchGlyph)
+        self.w.charlist.enable(True)
+        self.w.canvas.update()
+        queue.task_done()
+    
+    
+    def _setCharList(self):
+        name = self.selectedDeepComponentName
+        if name in self.DC2CG:
+            self.characterLists = self.DC2CG[name]
+            self.w.charlist.set(self.characterLists)
+            self._searchGlyphCallback(self.w.searchGlyph)
+            self.w.canvas.update()
+        else:
+            self.queue = queue.Queue()
+            threading.Thread(target=self._getAndSetCharlist_queue, args = (self.queue,), daemon=True).start()
+            self.queue.put(self.selectedDeepComponentName)
+ 
+    
+    def _charlistSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: 
+            return
+        name = sender.get()[sel[0]]["name"]
+        self._setGlyphName(name)
+        UpdateCurrentGlyphView()
+            
+        
+    def setSelectedDeepComponentIndexAndName(self, index):
+        if index is not None:
+            self.selectedDeepComponentName = self.currentGlyph._deepComponents[index].name
+        else:
+            self.selectedDeepComponentName = None
+
+        self._setCharList()
+        
+
+
+    def setUI(self, empty = False):
+        if empty:
+            self.setLocation({})
+            self.setSelectedDeepComponentIndexAndName(None)
+            return
+        g = self.RCJKI.currentGlyph
+        if g is None: return
+        selection = self.RCJKI.getSelectionIndex(g)
+        location = self.RCJKI.getLocationOfCurrentSelectedSource(g)
+        self.setLocation(location)
+        self.setSelectedDeepComponentIndexAndName(selection)
+        
+        
+    def draw(self):
+        if self.glyph is None: return
+        mjdt.save()
+        mjdt.translate(17, 51)
+        mjdt.scale(.12)
+        for i, atomicElement in enumerate(self.glyph.preview(self.location, forceRefresh=True)):
+            if i == self.selectedDeepComponentIndex:
+                self.selectedDeepComponentGlyph = atomicElement.glyph
+                UpdateCurrentGlyphView()
+                mjdt.fill(.7, 0, .15, 1)
+            else:
+                mjdt.fill(0, 0, 0, 1)
+            mjdt.drawGlyph(atomicElement.glyph)
+        mjdt.restore()

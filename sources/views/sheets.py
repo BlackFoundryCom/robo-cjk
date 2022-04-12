@@ -244,6 +244,7 @@ class SelectFontVariationSheet():
             source = [{'Axis':axis, 'PreviewValue':0} for axis in self.RCJKI.currentGlyph._glyphVariations]
         isel = len(source)
         self.RCJKI.currentGlyph.selectedSourceAxis = source[isel-1]['Axis']
+        self.RCJKI.copyDCSettingsFromAnotherGlyphWindowSetUI()
         self.view.sourcesList.setSelection([isel-1])
         self.RCJKI.updateDeepComponent(update = False)
         
