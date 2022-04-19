@@ -73,6 +73,7 @@ class ScriptingWindow:
 
         from utils import decorators, files, locker
         from models import atomicElement, deepComponent, characterGlyph
+        from mojo.roboFont import RGlyph
         
         def CurrentRCJKFont():
             return self.RCJKI.currentFont

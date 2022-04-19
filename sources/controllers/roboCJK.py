@@ -271,6 +271,27 @@ class RoboCJKController(object):
     def didUndo(self, info):
         self.updateDeepComponent(update = False)
 
+
+    def createInstanceLayer(self, font, glyph, location, layerName):
+        """ memo
+        location = {x["Axis"]:x["PreviewValue"] for x in g.sourcesList}
+        newLayerName = "_".join([f"{k}{round(v)}" for k,v in location.items()])
+        """
+        font._RFont.newLayer(layerName)
+        font._RFont.getLayer(layerName).newGlyph(glyph.name)
+        rg = font._RFont.getLayer(layerName)[glyph.name]
+
+        tempglyph = RGlyph()
+        tempglyph.name = glyph.name
+        pen = tempglyph.getPen()
+        for x in glyph.preview(position = location, forceRefresh = True):
+            x.glyph.draw(pen)
+
+        rg.readGlyphFromString(tempglyph.dumpToGLIF())
+
+        glyph.addSource(location = location, layerName = layerName, width = glyph._RGlyph.width)
+
+
     @refresh
     def updateDeepComponent(self, update = False):
         if not self.currentGlyph.selectedSourceAxis:

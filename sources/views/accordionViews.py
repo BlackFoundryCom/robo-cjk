@@ -875,6 +875,52 @@ class ModifyAxisSheet:
     def cancelCallback(self, sender):
         self.w.close()
 
+class InstanciateLocationSheet:
+
+    def __init__(self, parentWindow, RCJKI, layername, location, controller):
+        self.w = Sheet((300, 100), parentWindow)
+        self.RCJKI = RCJKI
+        self.layername = layername
+        self.location = location
+        self.w.title = TextBox((10, 10, -10, 20), 'Layer name')
+        self.w.input = EditText((10, 30, -10, 20), self.layername, callback = self.inputCallback)
+        self.w.closeButton = Button((10, -30, 140, 20), 'close', callback = self.closeWindowCallback)
+        self.w.applyButton = Button((150, -30, -10, 20), 'Apply', callback = self.applyCallback)
+        self.controller = controller
+        self.w.open()
+
+    def inputCallback(self, sender):
+        if not sender.get():
+            sender.set(self.layername)
+        else:
+            self.layername = sender.get()
+
+    def applyCallback(self, sender):
+        g = self.RCJKI.currentGlyph
+        layersNames = g._glyphVariations.layerNames()
+        if self.layername in layersNames:
+            message("Warning this layer name already exists")
+            return
+        self.RCJKI.createInstanceLayer(
+            self.RCJKI.currentFont,
+            self.RCJKI.currentGlyph,
+            self.location,
+            self.layername
+            )
+        self.controller.sourcesItem.setList()
+
+        # Set layer active in the glyphwindow
+        self.RCJKI.currentGlyph.selectedSourceAxis = None
+        if len(self.RCJKI.currentGlyph) and self.RCJKI.currentGlyph.type != "deepComponent":
+            if self.layername in [l.name for l in self.RCJKI.currentFont._RFont.layers]:
+                SetCurrentLayerByName(self.layername)
+        self.controller.sourcesItem.sourcesList.setSelection([len(self.controller.sourcesItem.sourcesList.get())-1])
+
+        self.w.close()
+
+    def closeWindowCallback(self, sender):
+        self.w.close()
+
 class AxesGroup(Group):
 
     def __init__(self, posSize, RCJKI, controller, glyphtype, axes = []):
@@ -938,6 +984,18 @@ class AxesGroup(Group):
         self.addGlyphAxisButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addGlyphAxisButtonCallback)
         # self.addFontAxisButton = Button((150, -20, 150, 20), "add font axis", sizeStyle = "small", callback = self.addFontAxisButtonCallback)
         self.removeAxisButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeAxisButtonCallback)
+        self.instanciateLocationButton = Button((300, -20, 150, 20), "Instanciate location", sizeStyle = "small", callback = self.instanciateLocationCallback)
+
+
+    def instanciateLocationCallback(self, sender):
+        location = {x["Axis"]:x["PreviewValue"] for x in self.RCJKI.currentGlyph.sourcesList}
+        if not location: return
+        if location in self.RCJKI.currentGlyph._glyphVariations.locations:
+            message("Warning, this location already exists in the sources")
+            return
+        newLayerName = "_".join([f"{k}{round(v)}" for k,v in location.items()])
+        InstanciateLocationSheet(self.controller.w, self.RCJKI, newLayerName, location, self.controller)
+
 
     def editSelectedAxisMaximumValueButtonCallback(self, sender):
         sel = self.axesList.getSelection()
