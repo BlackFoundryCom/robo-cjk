@@ -726,6 +726,13 @@ class VariationGlyphs(list):
         return [x["layerName"] for x in self]
 
     @property
+    def activeLayersNames(self):
+        """
+        Return a list of all the variations axes
+        """
+        return [x["layerName"] for x in self if x.on]
+
+    @property
     def infos(self):
         """
         Return a list of all the variations

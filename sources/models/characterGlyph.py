@@ -167,9 +167,7 @@ class CharacterGlyph(Glyph):
 
         if not position:
             position = self.getLocation()
-
         position =self.normalizedValueToMinMaxValue(position, self)
-
 
         # pr = cProfile.Profile()
         # pr.enable()
@@ -177,14 +175,12 @@ class CharacterGlyph(Glyph):
         locations = [{}]
         locations.extend([self.normalizedValueToMinMaxValue(x["location"], self) for x in self._glyphVariations if x["on"]])
         model = VariationModel(locations)
-
         if redrawAndTransformAll:
             masterDeepComponents = self._deepComponents
             axesDeepComponents = [variation.get("deepComponents") for variation in self._glyphVariations.getList() if variation.get("on")==1]
         else:
             masterDeepComponents = [x for i, x in enumerate(self._deepComponents) if i in self.selectedElement]
             axesDeepComponents = [[x for i, x in enumerate(variation.get("deepComponents")) if i in self.selectedElement] for variation in self._glyphVariations.getList() if variation.get("on")==1]
-        
         result = []
         deltasList = []
         for i, deepComponent in enumerate(masterDeepComponents):
@@ -195,7 +191,6 @@ class CharacterGlyph(Glyph):
             # result.append(model.interpolateFromMasters(position, [deepComponent, *variations]))
             result.append(model.interpolateFromDeltas(position, deltas))
             deltasList.append(deltas)
-
         
         if font is None:
             font = self.getParent()
@@ -220,7 +215,7 @@ class CharacterGlyph(Glyph):
 
         if len(self._RGlyph) and not self.selectedElement:
             layerGlyphs = []
-            layerNames = self._glyphVariations.axes
+            layerNames = self._glyphVariations.activeLayersNames
             for layerName in layerNames:
                 try:
                     g = font._RFont.getLayer(layerName)[self.name]
@@ -233,7 +228,7 @@ class CharacterGlyph(Glyph):
                 preview.append(self.ResultGlyph(resultGlyph))
 
         self.previewLocationsStore[','.join([k+':'+str(v) for k,v in position.items()])] = preview
-
+        
         if axisPreview:
             self.redrawSelectedElementSource = False
         else:
@@ -241,7 +236,6 @@ class CharacterGlyph(Glyph):
 
         for resultGlyph in preview:
             yield resultGlyph
-
         # pr.disable()
         # s = io.StringIO()
         # sortby = SortKey.CUMULATIVE
