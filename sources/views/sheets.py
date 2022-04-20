@@ -515,6 +515,8 @@ class NewGlyph:
 
     def applyButtonCallback(self, sender):
         chosenName = self.w.inputName.get()
+        if self.type == 'characterGlyph' and len(chosenName) == 1:
+            chosenName = f"uni{ord(chosenName):04X}"
         if " " in chosenName:
             message("Warning a name shouldn't contain a space")
             return
