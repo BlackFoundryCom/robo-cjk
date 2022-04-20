@@ -441,7 +441,8 @@ class RelatedGlyphsGroup(Group):
         elif self.filter in [2, 3]:
             DCSet = set([x for x in deepComponentSet if self.RCJKI.currentFont.get(x)._RGlyph.lib["robocjk.deepComponents"]])
             for c in self.relatedChars:
-                compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v[0]))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
+                compo = [f"DC_{ord(v[0]):04X}_00" for v in self.RCJKI.currentFont.dataBase[c]]
+                # compo = ["DC_%s_00"%files.normalizeUnicode(hex(ord(v[0]))[2:].upper()) for v in self.RCJKI.currentFont.dataBase[c]]
                 inside = len(set(compo) - DCSet) == 0
                 if self.filter == 2 and inside:
                     l.append(c)
@@ -1429,6 +1430,17 @@ class SourcesGroup(Group):
         
         self.addSourceButton = Button((0, -20, 150, 20), "+", sizeStyle = "small", callback = self.addSourceButtonCallback)
         self.removeSourceButton = Button((150, -20, 150, 20), "-", sizeStyle = "small", callback = self.removeSourceButtonCallback)
+        self.correctdirectionButton = Button((300, -20, 150, 20), "Correct all direction (PS)", sizeStyle = "small", callback = self.correctdirectionButtonCallback)
+
+    def correctdirectionButtonCallback(self, sender):
+        g = self.RCJKI.currentGlyph
+        g._RGlyph.correctDirection()
+        for variation in g._glyphVariations:
+            if variation.layerName:
+                if not g.name in self.RCJKI.currentFont._RFont.getLayer(variation.layerName).keys(): continue
+                g = self.RCJKI.currentFont._RFont.getLayer(variation.layerName)[g.name]
+                g.correctDirection()
+
 
     def setList(self, sel=None):
         # if self.RCJKI.currentGlyph.type == "atomicElement":
