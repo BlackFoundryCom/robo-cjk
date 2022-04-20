@@ -224,11 +224,15 @@ class CharacterGlyph(Glyph):
                     continue
                 layerGlyphs.append(g)
             if len(layerGlyphs):
-                resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
-                preview.append(self.ResultGlyph(resultGlyph))
+                try:
+                    resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
+                    preview.append(self.ResultGlyph(resultGlyph))
+                except:
+                    print("Warning, uncompatible layer(s)")
+                    pass
 
         self.previewLocationsStore[','.join([k+':'+str(v) for k,v in position.items()])] = preview
-        
+
         if axisPreview:
             self.redrawSelectedElementSource = False
         else:
