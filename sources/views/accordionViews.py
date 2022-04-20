@@ -187,27 +187,41 @@ class CompositionRulesGroup(Group):
             self.variantList.set([])
             return
         char = sender.get()[sel[0]]
-        self.code = files.normalizeUnicode(hex(ord(char[0]))[2:].upper())
-        self.suffix = char[1:].replace(" ", "")
-        if self.suffix == " ": self.suffix = ""
-        dcName = "DC_%s_00%s"%(self.code, self.suffix)
-        deepComponentSet = list(self.RCJKI.currentFont.staticDeepComponentSet())
-        if dcName not in deepComponentSet: 
-            dcName = "DC_%s_00"%(self.code)
+        if "_" in char:
+            self.code = f'{ord(char[0]):04X}'
+            version = char.split("_")[1]
             self.suffix = ""
+            deepComponentName = f"{self.code}_{version}"
+            for go in [self.RCJKI.currentFont.staticCharacterGlyphSet(), self.RCJKI.currentFont.staticDeepComponentSet()]:
+                for n in go:
+                    if n.endswith(deepComponentName):
+                        self.deepComponentName = n
+                        self.glyph = self.RCJKI.currentFont.get(self.deepComponentName)
+                        self.canvas.update()
+                        self.setExistingInstances(self.deepComponentName)
+                        break
+        else:
+            self.code = files.normalizeUnicode(hex(ord(char[0]))[2:].upper())
+            self.suffix = char[1:].replace(" ", "")
+            if self.suffix == " ": self.suffix = ""
+            dcName = "DC_%s_00%s"%(self.code, self.suffix)
+            deepComponentSet = list(self.RCJKI.currentFont.staticDeepComponentSet())
             if dcName not in deepComponentSet: 
-                self.variantList.set([])
-                return
-        index = deepComponentSet.index(dcName)
-        l = ["00"]
-        i = 1
-        while True:
-            name = "DC_%s_%s%s"%(self.code, str(i).zfill(2), self.suffix)
-            if not name in deepComponentSet:
-                break
-            l.append(str(i).zfill(2))
-            i += 1
-        self.variantList.set(l)
+                dcName = "DC_%s_00"%(self.code)
+                self.suffix = ""
+                if dcName not in deepComponentSet: 
+                    self.variantList.set([])
+                    return
+            index = deepComponentSet.index(dcName)
+            l = ["00"]
+            i = 1
+            while True:
+                name = "DC_%s_%s%s"%(self.code, str(i).zfill(2), self.suffix)
+                if not name in deepComponentSet:
+                    break
+                l.append(str(i).zfill(2))
+                i += 1
+            self.variantList.set(l)
 
     def variantListSelectionCallback(self, sender):
         sel = sender.getSelection()
@@ -243,7 +257,11 @@ class CompositionRulesGroup(Group):
         else:
             self.existingDeepComponentInstances = []
             uid = self.RCJKI.currentFont.uid
-            for char in self.RCJKI.currentFont.client.deep_component_get(uid, deepComponentName)["data"]["used_by"]:
+            if deepComponentName in self.RCJKI.currentFont.staticDeepComponentSet():
+                clientrequests = self.RCJKI.currentFont.client.deep_component_get(uid, deepComponentName)
+            else:
+                clientrequests = self.RCJKI.currentFont.client.character_glyph_get(uid, deepComponentName)
+            for char in clientrequests["data"]["used_by"]:
                 suffix = getSuffix(char["name"])
                 if suffix: suffix = "."+suffix
                 if char["unicode_hex"]:
