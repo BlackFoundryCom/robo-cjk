@@ -177,19 +177,20 @@ class DeepComponent(Glyph):
             font = self.getParent()
         for i, dc in enumerate(result):
             name = dc.get("name")
-            if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
-            g = font[name]
+            try: g = font[name]
+            except: continue
             
             if onlyTransformSelected: 
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
             else:
                 resultGlyph = RGlyph()
+                pen = resultGlyph.getPen()
                 pos = dc.get('coord')
                 g = g.preview(pos, font, forceRefresh=True)
 
                 for c in g:
                     c = c.glyph
-                    c.draw(resultGlyph.getPen())
+                    c.draw(pen)
 
                 if redrawAndTransformSelected: 
                     preview[self.selectedElement[i]].resultGlyph = resultGlyph   

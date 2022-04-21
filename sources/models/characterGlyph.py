@@ -196,17 +196,18 @@ class CharacterGlyph(Glyph):
             font = self.getParent()
         for i, dc in enumerate(result):
             name = dc.get("name")
-            if not set([name]) & (font.staticAtomicElementSet()|font.staticDeepComponentSet()|font.staticCharacterGlyphSet()): continue
-            g = font[name]
-            
+
+            try: g = font[name]
+            except: continue
+
             if onlyTransformSelected:
                 preview[self.selectedElement[i]].transformation = dc.get("transform")
             else:
                 resultGlyph = RGlyph()
+                pen = resultGlyph.getPen()
                 g = g.preview(position=dc.get('coord'), deltasStore=deltasList[i], font=font, forceRefresh=True)
                 for c in g:
-                    c = c.glyph
-                    c.draw(resultGlyph.getPen())
+                    c.glyph.draw(pen)
                 if redrawAndTransformSelected:
                     preview[self.selectedElement[i]].resultGlyph = resultGlyph   
                     preview[self.selectedElement[i]].transformation = dc.get("transform")
