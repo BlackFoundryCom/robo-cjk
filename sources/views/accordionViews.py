@@ -92,6 +92,8 @@ class CompositionRulesGroup(Group):
         self.controller = controller
         self.glyph = None
         self.existingDeepComponentInstances = []
+        self.last_deepComponentName_seen = None
+        self.glyphsets = [self.RCJKI.currentFont.staticCharacterGlyphSet(), self.RCJKI.currentFont.staticDeepComponentSet()]
         self.char = SmartTextBox(
             (0, 0, 80, -0),
             "",
@@ -107,7 +109,8 @@ class CompositionRulesGroup(Group):
         self.componentsList = List(
             (80, 0, 80, -0), [], 
             drawFocusRing = False,
-            selectionCallback = self.componentsListSelectionCallback)
+            selectionCallback = self.componentsListSelectionCallback,
+            doubleClickCallback = self.componentsListDoubleClickCallback)
         
         self.variantList = List(
             (160, 0, 80, -0), [], 
@@ -181,6 +184,35 @@ class CompositionRulesGroup(Group):
             mjdt.drawGlyph(c.glyph) 
         mjdt.restore()
 
+    def findDeepComponentName(self, char, index):
+        if self.last_deepComponentName_seen is not None:
+            if index == self.last_deepComponentName_seen and self.deepComponentName:
+                return
+        self.last_deepComponentName_seen = index
+        self.code = f'{ord(char[0]):04X}'
+        version = char.split("_")[1]
+        self.suffix = ""
+        deepComponentName = f"{self.code}_{version}"
+        for go in self.glyphsets:
+            for n in go:
+                if n.endswith(deepComponentName):
+                    self.deepComponentName = n
+                    self.glyph = self.RCJKI.currentFont.get(self.deepComponentName)
+                    self.canvas.update()
+                    self.setExistingInstances(self.deepComponentName)
+                    break
+
+    def componentsListDoubleClickCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: 
+            self.variantList.set([])
+            return
+        char = sender.get()[sel[0]]
+        if not "_" in char: return
+        self.findDeepComponentName(char, sel[0])
+        self.RCJKI.currentGlyph.addDeepComponentNamed(self.deepComponentName)
+        self.RCJKI.updateDeepComponent(update = False)
+
     def componentsListSelectionCallback(self, sender):
         sel = sender.getSelection()
         if not sel: 
@@ -188,18 +220,7 @@ class CompositionRulesGroup(Group):
             return
         char = sender.get()[sel[0]]
         if "_" in char:
-            self.code = f'{ord(char[0]):04X}'
-            version = char.split("_")[1]
-            self.suffix = ""
-            deepComponentName = f"{self.code}_{version}"
-            for go in [self.RCJKI.currentFont.staticCharacterGlyphSet(), self.RCJKI.currentFont.staticDeepComponentSet()]:
-                for n in go:
-                    if n.endswith(deepComponentName):
-                        self.deepComponentName = n
-                        self.glyph = self.RCJKI.currentFont.get(self.deepComponentName)
-                        self.canvas.update()
-                        self.setExistingInstances(self.deepComponentName)
-                        break
+            self.findDeepComponentName(char, sel[0])
         else:
             self.code = files.normalizeUnicode(hex(ord(char[0]))[2:].upper())
             self.suffix = char[1:].replace(" ", "")
