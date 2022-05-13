@@ -2142,7 +2142,7 @@ class CopySettingsFromSource:
         else:
             name = elem
         for i, x in enumerate(self.characterLists):
-            if name is not None and x["name"].startswith(name):
+            if name is not None and name in x["name"]:
                 index = i
                 break
             elif char is not None and x["char"] == char:
@@ -2153,14 +2153,18 @@ class CopySettingsFromSource:
         
         
     def _setGlyphName(self, name):
-        self.glyphName = name
-        self.glyph = self.RCJKI.currentFont[name]
-        self.selectedDeepComponentIndex = None
-        for i, dc in enumerate(self.glyph._deepComponents):
-            if dc["name"] == self.selectedDeepComponentName:
-                self.selectedDeepComponentIndex = i
-                break
-        self.w.canvas.update()
+        try:
+            self.glyphName = name
+            self.glyph = self.RCJKI.currentFont[name]
+            self.selectedDeepComponentIndex = None
+            for i, dc in enumerate(self.glyph._deepComponents):
+                if dc["name"] == self.selectedDeepComponentName:
+                    self.selectedDeepComponentIndex = i
+                    break
+            self.w.canvas.update()
+        except Exception as e:
+            print("_setGlyphName exception:", e)
+            pass
         
         
     def setLocation(self, location):
