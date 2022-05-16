@@ -1,5 +1,7 @@
 # Proposal for Deep Component support in Variable Fonts
 
+# This document is now historical, see [github.com/BlackFoundryCom/variable-components-spec](https://github.com/BlackFoundryCom/variable-components-spec)
+
 ## **1. Motivation & problem statement**
 
 CJK (Chinese, Japanese and Korean) fonts include a very large number of encoded compulsory glyphs. For example a Simplified Chinese font contains at the very least more than 6,700 Hanzi Glyphs. A traditional Chinese for Hong Kong or Taiwan will include more than 21,000 hanzi glyphs, a Korean font contains at least 2,350 Hangul glyphs and up to 11,172 Hangul glyphs to cover the full Unicode range, and simple Japanese font has a couple of hundreds Kana glyphs but also needs to have the minimum of 6,000 Kanji glyphs. These numbers can grow depending on the desired exhaustiveness of the font.
