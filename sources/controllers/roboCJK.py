@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Robo-CJK.  If not, see <https://www.gnu.org/licenses/>.
 """
 from mojo.events import addObserver, removeObserver, extractNSEvent, installTool, uninstallTool, getActiveEventTool
+from fontTools.ufoLib.glifLib import readGlyphFromString
 from imp import reload
 
 from utils import interpolation
@@ -287,8 +288,9 @@ class RoboCJKController(object):
         for x in glyph.preview(position = location, forceRefresh = True):
             x.glyph.draw(pen)
 
-        rg.readGlyphFromString(tempglyph.dumpToGLIF())
+        readGlyphFromString(tempglyph.dumpToGLIF(), rg.naked(), rg.naked().getPointPen())
         rg.round()
+        
         glyph.addSource(location = location, layerName = layerName, width = glyph._RGlyph.width)
 
 
