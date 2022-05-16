@@ -586,7 +586,6 @@ class VariationGlyphs(list):
         loc = self._normalizedLocation(variation.get('location'), axes)
         locations = [self._normalizedLocation(x, axes) for x in self.locations]
         if loc in locations or not loc:
-            print("locations, loc", locations, loc)
             variation["on"] = False
         if "width" not in variation and defaultWidth is not None:
             variation["width"] = defaultWidth
