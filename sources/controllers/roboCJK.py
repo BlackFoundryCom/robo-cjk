@@ -288,7 +288,7 @@ class RoboCJKController(object):
             x.glyph.draw(pen)
 
         rg.readGlyphFromString(tempglyph.dumpToGLIF())
-        rg._RGlyph.round()
+        rg.round()
         glyph.addSource(location = location, layerName = layerName, width = glyph._RGlyph.width)
 
 
