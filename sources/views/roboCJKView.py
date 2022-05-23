@@ -2193,7 +2193,8 @@ class CopySettingsFromSource:
                 ]
             self.DC2CG[name] = self.characterLists
         self.w.charlist.set(self.characterLists)
-        self._searchGlyphCallback(self.w.searchGlyph)
+        self.w.charlist.setSelection([])
+        # self._searchGlyphCallback(self.w.searchGlyph)
         self.w.charlist.enable(True)
         self.w.canvas.update()
         queue.task_done()
@@ -2204,6 +2205,7 @@ class CopySettingsFromSource:
         if name in self.DC2CG:
             self.characterLists = self.DC2CG[name]
             self.w.charlist.set(self.characterLists)
+            self.w.charlist.setSelection([])
             self._searchGlyphCallback(self.w.searchGlyph)
             self.w.canvas.update()
         else:
