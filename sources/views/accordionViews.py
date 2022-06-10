@@ -1314,8 +1314,9 @@ class SourcesSheet:
         y = 10
         # if glyphType != "atomicElement":
 
-        self.w.segmentedButton = SegmentedButton((0, 0, -0, 20), [dict(title="Source"), dict(title='Layer')], callback = self.segmentedButtonCallback)
+        self.w.segmentedButton = SegmentedButton((0, 0, -30, 20), [dict(title="Source"), dict(title='Layer')], callback = self.segmentedButtonCallback)
         self.w.segmentedButton.set(0)
+        self.w.topCloseButton = Button((-30, 0, 30, 20), "x", callback = self.cancelCallback, sizeStyle = "small")
 
         self.w.source.sourceNameTitle = TextBox((10, y, 90, 20), 'Source name', sizeStyle = 'small')
         self.w.source.sourceName = EditText((100, y, -10, 20), "", sizeStyle = "small")
