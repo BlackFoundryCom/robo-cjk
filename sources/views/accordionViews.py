@@ -1527,7 +1527,7 @@ class SourcesGroup(Group):
             return
         value = sender.get()
         try: 
-            value = int(value)
+            value = float(value)
         except:
             sender.set(self.RCJKI.currentGlyph._glyphVariations[sel[0]].width)
             return
