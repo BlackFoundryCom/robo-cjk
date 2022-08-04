@@ -118,6 +118,7 @@ class Font():
         self._fullGlyphs = {}
         self.mysqlGlyphData = {}
         self.fontVariations = []
+        self.designspace = {}
         if 'fontLib.json' in os.listdir(self.fontPath):
             libPath = os.path.join(self.fontPath, 'fontLib.json')
             with open(libPath, 'r') as file:
@@ -182,9 +183,9 @@ class Font():
             showUI = False
             )
         self._hiddenSavePath = hiddenSavePath
-        savePath = os.path.join(hiddenSavePath, f"{self.fontName}.ufo")
-        files.makepath(savePath)
-        self._RFont.save(savePath)
+        self.savePath = os.path.join(hiddenSavePath, f"{self.fontName}.ufo")
+        files.makepath(self.savePath)
+        self._RFont.save(self.savePath)
         self.mysqlGlyphData = {}
         self._mysqlInsertedGlyph = {}
         self.uid = font["data"]["uid"]
@@ -210,17 +211,13 @@ class Font():
         self.client.font_update(self.uid, designspace=json.dumps(self.designspace))
 
     def clearRFont(self):
-        # for k, v in copy.deepcopy(self._RFont.lib.asDict()).items():
-        #     self.fontLib[k] = v
         self._RFont = NewFont(
                 familyName=self.fontName, 
                 styleName='Regular', 
                 showUI = False,
                 )
         if self.mysql:
-            pass
-            # if self.fontpath is not None:
-            #     fontFilePath = files.makepath(os.path.join(self.fontpath, "%s.ufo"%fontName))
+            fontFilePath = self.savePath
         else:
             fontFilePath = '{}.ufo'.format(os.path.join(self.fontPath, self.fontName))
         self._RFont.save(fontFilePath)
@@ -879,28 +876,32 @@ class Font():
             l.append(glyphName)
         return sorted(l)
 
-    def newGlyph(self, glyphType, glyphName = "newGlyph"):
+    def newGlyph(self, glyphType, glyphName = "newGlyph", updateGlyphSet = True):
         if not self.mysql:
             glif = self.newGLIF(glyphType, glyphName)
             self.addGlyph(*glif, "foreground", font = self._fullRFont)
             self.addGlyph(*glif, "foreground")
             
             self.batchLockGlyphs([self[glyphName]])
+            self.updateStaticSet(glyphType)
             
         else:
             # pass
             xml = self.newGLIF(glyphType, glyphName)
             if glyphType == "atomicElement":
                 self.client.atomic_element_create(self.uid, xml)
-                self.staticAtomicElementSet(update = True)
+                if updateGlyphSet:
+                    self.staticAtomicElementSet(update = True)
             elif glyphType == "deepComponent":
                 self.client.deep_component_create(self.uid, xml)
-                self.staticDeepComponentSet(update = True)
+                if updateGlyphSet:
+                    self.staticDeepComponentSet(update = True)
             else:
                 self.client.character_glyph_create(self.uid, xml)
-                self.staticCharacterGlyphSet(update = True)
+                if updateGlyphSet:
+                    self.staticCharacterGlyphSet(update = True)
             self.getmySQLGlyph(glyphName)
-        self.updateStaticSet(glyphType)
+        
             # self.saveGlyph(self[glyphName])
         # self.save()
 
