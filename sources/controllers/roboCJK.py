@@ -148,7 +148,7 @@ class RoboCJKController(object):
 
         self.roundToGrid = False
         self.transformationToolIsActiv = False
-        self._unsave_modification = False
+        self._do_not_save_changes = False
         self.importDCFromCG = None
         self.sliderValue = None
         self.sliderName = None
@@ -383,8 +383,8 @@ class RoboCJKController(object):
         if self.glyphInspectorWindow is not None:
             self.glyphInspectorWindow.closeWindow()
             self.glyphInspectorWindow = None
-        if self._unsave_modification:
-            self._unsave_modification = False
+        if self._do_not_save_changes:
+            self._do_not_save_changes = False
             self.currentFont.batchUnlockGlyphs([self.currentGlyph.name])
             stop = time.time()
             print(stop-start, "to close %s"%self.currentGlyph.name)
@@ -895,14 +895,14 @@ class RoboCJKController(object):
             item = ('Import Axes and Sources from baseglyph', self.importAxesAndSourcesFromBaseglyph)
             self.menuItems.append(item)
 
-        item = ('Close glyph window without saving', self.closeWithoutSavingCallback)
+        item = ('Close glyph window without saving changes', self.closeWithoutSavingCallback)
         self.menuItems.append(item)
 
         notification["additionContextualMenuItems"].extend(self.menuItems)
 
 
     def closeWithoutSavingCallback(self, sender):
-        self._unsave_modification = True
+        self._do_not_save_changes = True
         CurrentGlyphWindow().close()
 
 
