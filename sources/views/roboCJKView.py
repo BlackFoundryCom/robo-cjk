@@ -138,7 +138,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     window.window().setPosSize(RCJKI.glyphWindowPosSize)
     if not locked:
         message(
-            "The couldn't be locked: any changes you make will not be saved",
+            "The glyph couldn't be locked: any changes you make will not be saved",
             "The glyph is locked by another session.",
             parentWindow=window.window(),
         )
