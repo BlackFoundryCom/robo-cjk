@@ -125,6 +125,7 @@ class RoboCJKController(object):
         self.componentWindow = None
         self.characterWindow = None
         self.currentGlyph = None
+        self.currentGlyphIsLocked = False
         self.menuItems = []
         self.openedGlyphName = ""
         self.HistoryGlyphWindow = None
@@ -412,9 +413,13 @@ class RoboCJKController(object):
                 self.currentFont.getGlyph(self.currentGlyph)
             self.currentFont.clearRFont()  
         else:
-            self.currentFont.saveGlyph(self.currentGlyph)
-            self.currentFont.saveFontlib()
-            self.currentFont.batchUnlockGlyphs([self.currentGlyph.name])
+            if self.currentGlyphIsLocked:
+                self.currentFont.saveGlyph(self.currentGlyph)
+                self.currentFont.saveFontlib()
+                self.currentFont.batchUnlockGlyphs([self.currentGlyph.name])
+                self.currentGlyphIsLocked = False
+            else:
+                print("not saving glyph, as it wasn't locked by us")
         if self.HistoryGlyphWindow is not None:
             self.HistoryGlyphWindow.close()
             self.HistoryGlyphWindow = None

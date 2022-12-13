@@ -308,27 +308,28 @@ class Font():
             locked, alreadyLocked = self.locker.lock(glyph)
             return locked, alreadyLocked
         else:
+            # Do import here, as the hot reload code (rreload) causes HTTPError
+            # to be different between import and as raised by client.py
+            from controllers.client import HTTPError
+
             if isinstance(glyph, str):
                 glyphname = glyph
             else:
                 glyphname = glyph.name
             glyphtype = self._findGlyphTypeFromName(glyphname)
-            if glyphtype == "atomicElement":
-                user = self.client.atomic_element_get(self.uid, glyphname, return_layers=False, return_related=False)["data"]["locked_by_user"]
-            elif glyphtype == "deepComponent":
-                user = self.client.deep_component_get(self.uid, glyphname, return_layers=False, return_related=False)["data"]["locked_by_user"]
-            else:
-                user = self.client.character_glyph_get(self.uid, glyphname, return_layers=False, return_related=False)["data"]["locked_by_user"]
-            if user:
-                return user["username"] == self.username, None
-            else:
+
+            try:
                 if glyphtype == "atomicElement":
                     user = self.client.atomic_element_lock(self.uid, glyphname)
                 elif glyphtype == "deepComponent":
                     user = self.client.deep_component_lock(self.uid, glyphname)
                 else:
                     user = self.client.character_glyph_lock(self.uid, glyphname)
-                return 1, None
+            except HTTPError as error:
+                print("Couldn't acquire the lock for glyph", glyphname)
+                return False, None
+            else:
+                return True, None
 
     def _findGlyphTypeFromName(self, name):
         if name in self.staticAtomicElementSet():
@@ -1058,8 +1059,10 @@ class Font():
         #     return self._BFont.get_aelement(glyphName)
 
     def saveGlyph(self, glyph):
-        if glyph is None: return  
-        if self.glyphLockedBy(glyph) != self.lockerUserName: return
+        if glyph is None:
+            return
+        if self.glyphLockedBy(glyph) != self.lockerUserName:
+            return
         name = glyph.name
         glyph.save()
         glyph._RGlyph.clearGuides()

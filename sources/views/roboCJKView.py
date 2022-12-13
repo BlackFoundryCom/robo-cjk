@@ -112,6 +112,7 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     # font[glyphName]._initWithLib()
     # locked, alreadyLocked = font.locker.lock(g)
     locked, alreadyLocked = font.lockGlyph(g)
+    RCJKI.currentGlyphIsLocked = locked
     if not RCJKI.mysql:
         print(locked, alreadyLocked)
         if not locked: return
@@ -133,8 +134,14 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     glyph = font.get(glyph.name, font._RFont)
     glyph.update()
     g = glyph._RGlyph
-    OpenGlyphWindow(g)
-    CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
+    window = OpenGlyphWindow(g)
+    window.window().setPosSize(RCJKI.glyphWindowPosSize)
+    if not locked:
+        message(
+            "The glyph couldn't be locked: any changes you make will not be saved",
+            "The glyph is locked by another session.",
+            parentWindow=window.window(),
+        )
     RCJKI.openedGlyphName = glyph.name
     stop = time.time()
     RCJKI.disabledEditingUIIfValidated()
@@ -1327,7 +1334,7 @@ class RoboCJKView(BaseWindowController):
         preview_start = time.time()
         user = self.RCJKI.currentFont.glyphLockedBy(glyph)
         preview_stop = time.time()
-        print("get locked by:", preview_stop-preview_start, "seconds to get lock for %s"%glyph.name)
+        print("get locked-by:", preview_stop-preview_start, "seconds to get locked-by for %s"%glyph.name)
         # color = glyph.markColor
         # if color is None:
         #     state.set(0)
