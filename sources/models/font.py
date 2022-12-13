@@ -35,7 +35,6 @@ from models import atomicElement, deepComponent, characterGlyph
 # reload(atomicElement)
 # reload(deepComponent)
 # reload(characterGlyph)
-from controllers.client import HTTPError
 
 # from rcjk2mysql import BF_mysql2rcjk as BF_mysql2rcjk
 # from rcjk2mysql import BF_fontbook_struct as bfs
@@ -309,6 +308,10 @@ class Font():
             locked, alreadyLocked = self.locker.lock(glyph)
             return locked, alreadyLocked
         else:
+            # Do import here, as the hot reload code (rreload) causes HTTPError
+            # to be different between import and as raised by client.py
+            from controllers.client import HTTPError
+
             if isinstance(glyph, str):
                 glyphname = glyph
             else:
