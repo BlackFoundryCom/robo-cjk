@@ -1056,8 +1056,10 @@ class Font():
         #     return self._BFont.get_aelement(glyphName)
 
     def saveGlyph(self, glyph):
-        if glyph is None: return  
-        if self.glyphLockedBy(glyph) != self.lockerUserName: return
+        if glyph is None:
+            return
+        if self.glyphLockedBy(glyph) != self.lockerUserName:
+            return
         name = glyph.name
         glyph.save()
         glyph._RGlyph.clearGuides()
