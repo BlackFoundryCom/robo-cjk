@@ -35,6 +35,7 @@ from models import atomicElement, deepComponent, characterGlyph
 # reload(atomicElement)
 # reload(deepComponent)
 # reload(characterGlyph)
+from controllers.client import HTTPError
 
 # from rcjk2mysql import BF_mysql2rcjk as BF_mysql2rcjk
 # from rcjk2mysql import BF_fontbook_struct as bfs
@@ -313,22 +314,19 @@ class Font():
             else:
                 glyphname = glyph.name
             glyphtype = self._findGlyphTypeFromName(glyphname)
-            if glyphtype == "atomicElement":
-                user = self.client.atomic_element_get(self.uid, glyphname, return_layers=False, return_related=False)["data"]["locked_by_user"]
-            elif glyphtype == "deepComponent":
-                user = self.client.deep_component_get(self.uid, glyphname, return_layers=False, return_related=False)["data"]["locked_by_user"]
-            else:
-                user = self.client.character_glyph_get(self.uid, glyphname, return_layers=False, return_related=False)["data"]["locked_by_user"]
-            if user:
-                return user["username"] == self.username, None
-            else:
+
+            try:
                 if glyphtype == "atomicElement":
                     user = self.client.atomic_element_lock(self.uid, glyphname)
                 elif glyphtype == "deepComponent":
                     user = self.client.deep_component_lock(self.uid, glyphname)
                 else:
                     user = self.client.character_glyph_lock(self.uid, glyphname)
-                return 1, None
+            except HTTPError as error:
+                print("Couldn't acquire the lock for glyph", glyphname)
+                return False, None
+            else:
+                return True, None
 
     def _findGlyphTypeFromName(self, name):
         if name in self.staticAtomicElementSet():
