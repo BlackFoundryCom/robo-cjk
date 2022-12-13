@@ -134,8 +134,13 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     glyph = font.get(glyph.name, font._RFont)
     glyph.update()
     g = glyph._RGlyph
-    OpenGlyphWindow(g)
-    CurrentGlyphWindow().window().setPosSize(RCJKI.glyphWindowPosSize)
+    window = OpenGlyphWindow(g)
+    window.window().setPosSize(RCJKI.glyphWindowPosSize)
+    if not locked:
+        message(
+            "The couldn't be locked, so changes will not be saved",
+            parentWindow=window.window(),
+        )
     RCJKI.openedGlyphName = glyph.name
     stop = time.time()
     RCJKI.disabledEditingUIIfValidated()
