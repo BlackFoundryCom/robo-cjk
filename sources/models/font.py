@@ -289,18 +289,6 @@ class Font():
         else:
             self.getGlyph(name, font = font)
         return self._glyphs[font[name]]
-        # try:
-        #     return self._glyphs[font[name]]
-        # except:
-        #     if self.mysql:
-        #         self.getmySQLGlyph(name)
-        #     else:
-        #         self.getGlyph(name, font = font)
-        #     return self._glyphs[font[name]]
-        # if self.mysql:
-        #     return self._glyphs[self._fullRFont[name]]
-        # else:
-        #     return self[name]
 
     # def loadMysqlDataBase(self):
     #     self.dataBase = json.loads(self._BFont.database_data)
