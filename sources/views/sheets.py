@@ -416,8 +416,8 @@ class FontInfosSheet():
         axes = []
         for axis in self.s.fontVariationAxisList.get():
             elem = {"name":axis["name"], "tag":axis["tag"], 
-            "defaultValue":axis["default"], 'maxValue':axis["maximum"], 
-            "minValue":axis["minimum"]}
+            "defaultValue":float(axis["default"]), 'maxValue':float(axis["maximum"]), 
+            "minValue":float(axis["minimum"])}
             axes.append(elem)
         return axes
 
