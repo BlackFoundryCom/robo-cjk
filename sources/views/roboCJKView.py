@@ -2267,3 +2267,200 @@ class CopySettingsFromSource:
                 mjdt.fill(0, 0, 0, 1)
             mjdt.drawGlyph(atomicElement.glyph)
         mjdt.restore()
+
+
+
+
+class VariableComponentChecker:
+
+    fonts = defaultdict(list)
+    for name in mjdt.installedFonts():
+        if "-" in name:
+            style = name.split("-")[-1]
+            if name.count("-") > 1:
+                font = "-".join(name.split("-")[:-1])
+            else:
+                font = name.split("-")[0]
+        else:
+            font, style = name, ""
+        fonts[font].append(style)
+
+    shift = 131074
+    option = 524320
+    cmd = 1048584
+    control = 262145
+    capslock = 65536
+    
+    def __init__(self, RCJKI):
+        self.ww, self.wh = 350, 340
+        self.w = Window((self.ww, self.wh), "Variable Component checker", minSize = (100, 340))
+        self.RCJKI = RCJKI
+        self.font = self.RCJKI.currentFont
+        self.CG2DC = self.font.dataBase
+        self.selectedCharacter = ""
+        self.DC2CG = defaultdict(list)
+        for k, vs in self.CG2DC.items():
+            for v in vs:
+                self.DC2CG[v].append(k)
+
+        self.overlay_available_fonts = sorted(self.fonts.keys())    
+        self.overlayfont = "HiraginoSans"
+        self.overlaystyles = self.fonts.get(self.overlayfont, [])
+        if self.overlaystyles:
+            self.overlaystyle = self.overlaystyles[0]
+        
+        if self.overlayfont not in self.overlay_available_fonts:
+            self.overlayfont = self.overlay_available_fonts[0]
+
+        self.fontoffx = 0
+        self.fontoffy = -55
+            
+        self.w.characterList = List((0, 20, 50, -0), [], selectionCallback = self.characterListSelectionCallback)
+        self.setcharacterList()
+        
+        self.offx, self.offy = 0, 0
+        self.scaleWidth = 100
+        self.w.scaleWidthTitle = TextBox((50, 5, 100, 20), 'Width:', sizeStyle = 'small')
+        self.w.scaleWidth = EditText((50, 20, 100, 20), self.scaleWidth, callback = self.scaleWidthCallback)
+
+        self.w.searchGlyph = EditText((0, 0, 50, 20), '', callback = self.searchGlyphCallback)
+
+        self.w.cbFontList = ComboBox(
+            (150, 20, 100, 20),
+            self.overlay_available_fonts,
+            sizeStyle="small",
+            callback=self.selectFontCallback,
+        )
+        
+        self.w.cbFontWeight = ComboBox(
+            (250, 20, 100, 20),
+            self.fonts.get(self.overlayfont, []),
+            sizeStyle="small",
+            callback=self.selectStyleCallback,
+        )
+
+
+        y = 40
+        self.w.canvas = Canvas((50, y, -0, -0), delegate = self)
+        self.observer()
+        self.w.bind('close', self.windowWillClose)
+        self.w.open()
+
+    def searchGlyphCallback(self, sender):
+        char = sender.get()
+        if char in self.characterList:
+            index = self.characterList.index(char)
+            self.w.characterList.setSelection([index])
+        self.updateView()
+
+    @property
+    def font_family(self):
+        return f"{self.overlayfont}-{self.overlaystyle}"
+        
+    def selectFontCallback(self, sender):
+        self.overlayfont = sender.get()
+        self.overlaystyles = self.fonts.get(self.overlayfont, [])
+        self.w.cbFontWeight.setItems(self.overlaystyles)
+        if self.overlaystyles:
+            self.overlaystyle = self.overlaystyles[0]
+            self.w.cbFontWeight.set(self.overlaystyles[0])
+        self.updateView()
+        
+    def selectStyleCallback(self, sender):
+        self.overlaystyle = sender.get()
+        self.updateView()
+        
+    def setcharacterList(self):
+        self.current_component_character = None
+        if self.RCJKI.currentGlyph is not None:
+            if "_" in self.RCJKI.currentGlyph.name:
+                hexuni = self.RCJKI.currentGlyph.name.split("_")[1]
+                try:
+                    self.current_component_character = chr(int(hexuni,16))
+                except Exception as e:
+                    print(f"Doesn't able to find the character attached to {self.RCJKI.currentGlyph.name}")
+                    
+        if self.current_component_character is not None:
+            self.characterList = sorted(self.DC2CG.get(self.current_component_character, []))
+            
+        self.w.characterList.set(self.characterList)
+
+    def changedGlyph(self):
+        self.setcharacterList()
+        self.selectedCharacter = ""
+        self.updateView()
+        
+    def characterListSelectionCallback(self, sender):
+        sel = sender.getSelection()
+        if not sel: 
+            return
+        item = sender.get()[sel[0]]
+        item = item[0] #to avoid localisation suffix for now
+        self.selectedCharacter = item
+        self.w.canvas.update()
+
+    def updateView(self):
+        self.w.canvas.update()
+        
+    def scaleWidthCallback(self, sender):
+        value = sender.get()
+        try:
+            if not '.' in value:
+                value+='.'
+            self.scaleWidth = float(value)
+        except:
+            sender.set(self.scaleWidth)
+        self.w.canvas.update()
+        
+    def windowWillClose(self, sender):
+        self.observer(remove = True)
+        self.RCJKI.variableComponentChecker = None
+    
+    def observer(self, remove = False):
+        if not remove:
+            addObserver(self, 'currentGlyphChanged', "currentGlyphChanged")
+            return
+        removeObserver(self, 'currentGlyphChanged')
+        
+    def currentGlyphChanged(self, sender):
+        print(sender)
+        
+    def mouseDown(self, event):
+        self.w.canvas.update()
+        # print(event)
+        # print(event.locationInWindow())
+        
+    def mouseDragged(self, event):
+        # print(event.deltaX(), event.deltaY())
+        if event.modifierFlags() == self.cmd:
+            self.fontoffx += event.deltaX()
+            self.fontoffy -= event.deltaY()
+        else:
+            self.offx += event.deltaX()
+            self.offy -= event.deltaY()
+        self.w.canvas.update()
+        
+    def draw(self):
+        try:
+            mjdt.save()
+            g = self.RCJKI.currentGlyph
+            # mjdt.font("GoogleSansSimplifiedChinese144pt-Regular", 300)
+            mjdt.font(self.font_family, 300)
+            mjdt.translate(self.fontoffx, self.fontoffy)
+            mjdt.fill(0, 0, 0, .1)
+            mjdt.save()
+            mjdt.scale(self.scaleWidth/100, 1)
+            mjdt.text(self.selectedCharacter, (0, 0))
+            mjdt.restore()
+            scalex, scaley = 300/1000, 300/1000
+            mjdt.fill(.7, .3, .4, .8)
+            mjdt.translate(self.offx, self.offy)
+            mjdt.scale(scalex, scaley)
+            loc = {}
+            if g.sourcesList: 
+                loc = {x["Axis"]:x["PreviewValue"] for x in g.sourcesList}
+            for contour in g.preview(loc, forceRefresh=False):
+                mjdt.drawGlyph(contour.glyph)
+            mjdt.restore()
+        except Exception as e:
+            print(e)

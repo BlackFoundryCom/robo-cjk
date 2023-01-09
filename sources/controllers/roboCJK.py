@@ -122,6 +122,7 @@ class RoboCJKController(object):
         self.observers = False
         self.drawer = drawer.Drawer(self)
         self.transformationTool = transformationTool.TransformationTool(self)
+        self.variableComponentChecker = None
         self.componentWindow = None
         self.characterWindow = None
         self.currentGlyph = None
@@ -508,6 +509,9 @@ class RoboCJKController(object):
 
         if self.CharacterGlyphViewer is not None:
             self.CharacterGlyphViewer.enableUI()
+
+        if self.variableComponentChecker is not None:
+            self.variableComponentChecker.changedGlyph()
         self.glyphInspectorWindow.updatePreview()
 
     def exportDataBase(self):
@@ -889,6 +893,9 @@ class RoboCJKController(object):
             item = ('Open History Glyph', self.openHistoryGlyph)
             self.menuItems.append(item)
 
+            item = ('Variable Component checker', self.variableComponentCheckerCallback)
+            self.menuItems.append(item)
+
         else:
             layersNames = ["foreground"]+[x.layerName for x in self.currentGlyph._glyphVariations]
             if len(self.currentGlyph):
@@ -904,6 +911,10 @@ class RoboCJKController(object):
         self.menuItems.append(item)
 
         notification["additionContextualMenuItems"].extend(self.menuItems)
+
+
+    def variableComponentCheckerCallback(self, sender):
+        self.variableComponentChecker = roboCJKView.VariableComponentChecker(self)
 
 
     def closeWithoutSavingCallback(self, sender):
