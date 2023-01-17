@@ -1084,14 +1084,16 @@ class Font():
                 layerglyph.lib.clear()
                 xml = layerglyph.dumpToGLIF()
                 if glyph.type == "atomicElement":
-                    layer_update_response = self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml)
-                    if layer_update_response['status'] == 404:
+                    try:
+                        layer_update_response = self.client.atomic_element_layer_update(self.uid, glyph.name, layerName, xml)
+                    except:
                         self.client.atomic_element_layer_create(self.uid, glyph.name, layerName, xml)
                 elif glyph.type == "deepComponent":
                     pass
                 else:
-                    layer_update_response = self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
-                    if layer_update_response['status'] == 404:
+                    try:
+                        layer_update_response = self.client.character_glyph_layer_update(self.uid, glyph.name, layerName, xml)
+                    except:
                         self.client.character_glyph_layer_create(self.uid, glyph.name, layerName, xml)
 
 
