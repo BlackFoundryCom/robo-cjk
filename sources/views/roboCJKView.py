@@ -2348,9 +2348,12 @@ class VariableComponentChecker:
 
     def searchGlyphCallback(self, sender):
         char = sender.get()
-        if char in self.characterList:
-            index = self.characterList.index(char)
-            self.w.characterList.setSelection([index])
+        if char not in self.characterList:
+            self.characterList.append(char)
+            self.w.characterList.set(self.characterList)
+        # if char in self.characterList:
+        index = self.characterList.index(char)
+        self.w.characterList.setSelection([index])
         self.updateView()
 
     @property
