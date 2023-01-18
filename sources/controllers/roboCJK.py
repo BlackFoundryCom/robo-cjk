@@ -492,6 +492,8 @@ class RoboCJKController(object):
             self.glyphInspectorWindow.axesItem.setList()
             self.currentViewSourceValue.set("")
             self.copyDCSettingsFromAnotherGlyphWindowSetUI()
+            if self.variableComponentChecker is not None:
+                self.variableComponentChecker.changedGlyph()
         if not self._currentSourceValidated():
             self.installCustomTool(install = True, sender = "currentGlyphChanged True")
         else:
@@ -510,8 +512,7 @@ class RoboCJKController(object):
         if self.CharacterGlyphViewer is not None:
             self.CharacterGlyphViewer.enableUI()
 
-        if self.variableComponentChecker is not None:
-            self.variableComponentChecker.changedGlyph()
+        
         self.glyphInspectorWindow.updatePreview()
 
     def exportDataBase(self):
