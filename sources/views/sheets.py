@@ -524,6 +524,20 @@ class NewGlyph:
             message("This name already exist in the font")
             return
         self.RCJKI.currentFont.newGlyph(self.type, chosenName)
+
+        if chosenName.startswith("uni") and "." not in chosenName and len(chosenName[3:])==5:
+            try:
+                g = self.RCJKI.currentFont[chosenName]
+                if not g._RGlyph.unicode:
+                    lock, _ = self.RCJKI.currentFont.lockGlyph(g)
+                    if lock:
+                        g._RGlyph.unicode = int(chosenName[3:],16)
+                        self.RCJKI.currentFont.saveGlyph(g)
+                    self.RCJKI.currentFont.batchUnlockGlyphs([chosenName])
+            except Exception as e:
+                print(f"not able to set a unicode for {chosenName}")
+                print(e)
+
         self.windowList.setSelection([])
         if self.type == 'deepComponent':
             self.windowList.set(self.RCJKI.currentFont.deepComponentSet)
