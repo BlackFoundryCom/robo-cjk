@@ -1509,7 +1509,8 @@ class RoboCJKView(BaseWindowController):
         if not self.RCJKI.currentFont.mysql:
             self.RCJKI.currentFont.batchLockGlyphs([self.RCJKI.currentFont[newGlyphName]])
         else:
-            self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
+            pass
+            # self.RCJKI.currentFont.batchLockGlyphs([newGlyphName])
         return newGlyphName
 
     def localiseAtomicElementCallback(self, sender):

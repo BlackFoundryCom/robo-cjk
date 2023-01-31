@@ -594,11 +594,11 @@ class Font():
             if variation not in [x.name for x in self._RFont.layers]:
                 self._RFont.newLayer(variation)
 
-    def getmySQLGlyph(self, name, font = None, exception = ""):      
+    def getmySQLGlyph(self, name, font = None, exception = "", forceReload  = False):      
         prev = self._mysqlInsertedGlyph.get(name, None)
         if prev is not None:
             now = time.time()
-            if now - prev < 30:
+            if now - prev < 30 and not forceReload:
                 return
 
         if font is None:
@@ -949,7 +949,6 @@ class Font():
             if not lock: return
             
             glyphType = self[glyphName].type
-            # self.updateStaticSet(glyphType)
             if glyphType == "atomicElement":
                 if newGlyphName in self.staticAtomicElementSet(update = True):
                     return
@@ -960,7 +959,6 @@ class Font():
                 if newGlyphName in self.staticCharacterGlyphSet(update = True):
                     return
             f = self._RFont.getLayer('foreground')
-            # f[glyphName].name = newGlyphName
             glyph = f[glyphName].copy()
             glyph.name = newGlyphName
             xml = glyph.dumpToGLIF()
@@ -972,9 +970,13 @@ class Font():
             else:
                 self.client.character_glyph_create(self.uid, xml)
 
+            lock, _ = self.lockGlyph(self[newGlyphName])
+            if not lock: 
+                self.batchUnlockGlyphs([glyphName])
+                return
+
             for layerName in self._fontLayers:
                 f = self._RFont.getLayer(layerName)
-                # f[glyphName].name = newGlyphName
                 if glyphName not in f.keys(): continue
                 g = f[glyphName].copy()
                 g.name = newGlyphName
@@ -984,12 +986,12 @@ class Font():
                 elif glyphType == "deepComponent":
                     pass
                 else:
-                    self.client.character_glyph_layer_create(self.uid, newGlyphName, layerName, xml)
-
-            # self.removeGlyph(glyphName)
+                    response = self.client.character_glyph_layer_create(self.uid, newGlyphName, layerName, xml)
+                    
             self.updateStaticSet(glyphType)
-            self.getmySQLGlyph(newGlyphName)
+            self.getmySQLGlyph(newGlyphName, forceReload = True)
             self.batchUnlockGlyphs([glyphName])
+            self.batchUnlockGlyphs([newGlyphName])
             
 
     @gitCoverage(msg = 'remove Glyph')
