@@ -104,16 +104,16 @@ class GlyphView(CanvasGroup):
 
         statusColor = colors.colors[status].rgba
         
-        value = False
-        if self.RCJKI.currentGlyph.type == "characterGlyph": 
-            value = self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name)
-        if value is not False:
-            percent = round(self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name))
-            txt = f"{selectedSource} - {percent}% possible regression"
-        else:
-            txt = selectedSource
-        self.selectedSource.set(txt)  
-        self.selectedSource.setColor(*statusColor)      
+        # value = False
+        # if self.RCJKI.currentGlyph.type == "characterGlyph": 
+        #     value = self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name)
+        # if value is not False:
+        #     percent = round(self.RCJKI.getRegressionPercentage(self.RCJKI.currentGlyph.name))
+        #     txt = f"{selectedSource} - {percent}% possible regression"
+        # else:
+        #     txt = selectedSource
+        # self.selectedSource.set(txt)  
+        # self.selectedSource.setColor(*statusColor)      
 
 class GlyphPreviewCanvas(CanvasGroup):
 
