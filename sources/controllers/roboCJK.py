@@ -884,6 +884,8 @@ class RoboCJKController(object):
                 if not validated:
                     item = ('Remove Selected variable component', self.removeDeepComponent)
                     self.menuItems.append(item)
+                    item = ("Decompose selected variable component", self.decomposeSelectedVariableComponent)
+                    self.menuItems.append(item)
                 item = ('go to selected variable component', self.gotoselectedDC)
                 self.menuItems.append(item)
             variationsAxes = [x["layerName"] for x in self.currentGlyph._glyphVariations]
@@ -913,6 +915,68 @@ class RoboCJKController(object):
 
         notification["additionContextualMenuItems"].extend(self.menuItems)
 
+
+    # def _createInstanceLayer(self, font, glyph, location, layerName):
+    #     """ memo
+    #     location = {x["Axis"]:x["PreviewValue"] for x in g.sourcesList}
+    #     newLayerName = "_".join([f"{k}{round(v)}" for k,v in location.items()])
+    #     """
+    #     font._RFont.newLayer(layerName)
+    #     font._RFont.getLayer(layerName).newGlyph(glyph.name)
+    #     rg = font._RFont.getLayer(layerName)[glyph.name]
+
+    #     tempglyph = RGlyph()
+    #     tempglyph.name = glyph.name
+    #     pen = tempglyph.getPen()
+    #     for x in glyph.preview(position = location, forceRefresh = True):
+    #         x.glyph.draw(pen)
+
+    #     readGlyphFromString(tempglyph.dumpToGLIF(), rg.naked(), rg.naked().getPointPen())
+    #     rg.round()
+        
+    #     glyph.addSource(location = location, layerName = layerName, width = glyph._RGlyph.width)
+
+    #uni4F10
+    def decomposeSelectedVariableComponent(self, sender):
+        def decompose_glyph(rg, index, location = {}):
+            print("location", location)
+            # tempglyph = RGlyph()
+            # tempglyph.name = g.name
+            g.redrawSelectedElementSource = True
+            g.redrawSelectedElementPreview = True
+            g.reinterpolate = True
+            pen = rg.getPen()
+            x = list(g.preview(position = location, forceRefresh = True))[index]
+            x.glyph.draw(pen)
+
+            # readGlyphFromString(tempglyph.dumpToGLIF(), rg.naked(), rg.naked().getPointPen())
+            rg.round()
+
+        g = self.currentGlyph
+        font = self.currentFont
+        selected_component_indexes = g.selectedElement
+
+        font_layers = [l.name for l in font._RFont.layers]
+        print(font_layers)
+        for component_index in selected_component_indexes:
+            decompose_glyph(g._RGlyph, index = component_index)
+        for vari, var in enumerate(g._glyphVariations):
+            layer_name = var["layerName"]
+            if not layer_name:
+                layer_name = var["sourceName"]
+                g._glyphVariations[vari].layerName = layer_name
+            if layer_name not in font_layers:
+                font._RFont.newLayer(layer_name)
+            rf = font._RFont.getLayer(layer_name)
+            if g.name not in rf.keys():
+                rf.newGlyph(g.name)
+            rg = rf[g.name]
+
+            for component_index in selected_component_indexes:
+                decompose_glyph(rg, component_index, var["location"])
+
+        self.removeDeepComponent(None)
+        self.glyphInspectorWindow.sourcesItem.setList()
 
     def variableComponentCheckerCallback(self, sender):
         self.variableComponentChecker = roboCJKView.VariableComponentChecker(self)
