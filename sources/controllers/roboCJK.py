@@ -825,7 +825,7 @@ class RoboCJKController(object):
         if character == ' ':
             self.currentGlyph.selectedSourceAxis = None
             self.copyDCSettingsFromAnotherGlyphWindowSetUI()
-            if len(self.currentGlyph) and self.currentGlyph.type != "deepComponent":
+            if len(self.currentGlyph._RGlyph) and self.currentGlyph.type != "deepComponent":
                 SetCurrentLayerByName("foreground")
 
             self.updateDeepComponent()
