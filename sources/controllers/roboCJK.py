@@ -930,8 +930,11 @@ class RoboCJKController(object):
         selected_component_indexes = g.selectedElement
 
         font_layers = [l.name for l in font._RFont.layers]
+        default = {}
+        for axe in g._axes:
+            default[axe.name] = axe.defaultValue
         for component_index in selected_component_indexes:
-            decompose_glyph(g._RGlyph, index = component_index)
+            decompose_glyph(g._RGlyph, index = component_index, location=default)
         for vari, var in enumerate(g._glyphVariations):
             layer_name = var["layerName"]
             if not layer_name:
