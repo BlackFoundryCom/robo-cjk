@@ -1623,7 +1623,7 @@ class SourcesGroup(Group):
         self.RCJKI.sliderName = None
         self.RCJKI.axisPreview = []
 
-        if len(self.RCJKI.currentGlyph) and self.RCJKI.currentGlyph.type != "deepComponent":
+        if len(self.RCJKI.currentGlyph._RGlyph) and self.RCJKI.currentGlyph.type != "deepComponent":
             # layerName = self.RCJKI.currentGlyph.selectedSourceAxis
             if layername in [l.name for l in self.RCJKI.currentFont._RFont.layers]:
                 SetCurrentLayerByName(layername)
