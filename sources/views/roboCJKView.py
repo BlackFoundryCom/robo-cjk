@@ -2383,9 +2383,15 @@ class VariableComponentChecker:
                     self.current_component_character = chr(int(hexuni,16))
                 except Exception as e:
                     print(f"Doesn't able to find the character attached to {self.RCJKI.currentGlyph.name}")
-                    
+            else:
+                if self.RCJKI.currentGlyph.unicode:
+                    self.current_component_character = chr(self.RCJKI.currentGlyph.unicode)
+                elif "uni" in self.RCJKI.currentGlyph.name:
+                    code = self.RCJKI.currentGlyph.name.split(".")[0][3:]
+                    self.current_component_character = chr(int(code,16))
+ 
         if self.current_component_character is not None:
-            self.characterList = sorted(self.DC2CG.get(self.current_component_character, []))
+            self.characterList = sorted(self.DC2CG.get(self.current_component_character, [self.current_component_character]))
             
         self.w.characterList.set(self.characterList)
 
