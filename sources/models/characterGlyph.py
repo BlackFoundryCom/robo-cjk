@@ -266,7 +266,6 @@ class CharacterGlyph(Glyph):
         try:
             deepComponents = lib.get(deepComponentsKey, [])
             variationGlyphs = lib.get(variationGlyphsKey, [])
-            hasAxisKey = axesKey in lib.keys()
             self._deepComponents = DeepComponents(deepComponents)
             self._axes = Axes(lib.get(axesKey, []))
             self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
