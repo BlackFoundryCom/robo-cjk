@@ -34,7 +34,7 @@ DeepComponents = component.DeepComponents
 Axes = component.Axes
 VariationGlyphs = component.VariationGlyphs
 
-import copy, time, traceback
+import copy, time
 from fontTools.varLib.models import VariationModel
 
 # Deprecated keys
@@ -263,21 +263,14 @@ class CharacterGlyph(Glyph):
     def _initWithLib(self, lib=None):
         if lib is None:
             lib = self._RGlyph.lib
-        try:
-            self._deepComponents = DeepComponents(lib.get(deepComponentsKey, []))
-            self._axes = Axes(lib.get(axesKey, []))
-            self._glyphVariations = VariationGlyphs(
-                lib.get(variationGlyphsKey, []),
-                self._axes,
-                defaultWidth=self._RGlyph.width,
-            )
-            self._status = lib.get(statusKey, 0)
-        except Exception as e:
-            print("Error while loading glyph")
-            traceback.print_exc()
-            self._deepComponents = DeepComponents()
-            self._axes = Axes()   
-            self._glyphVariations = VariationGlyphs()
+        self._deepComponents = DeepComponents(lib.get(deepComponentsKey, []))
+        self._axes = Axes(lib.get(axesKey, []))
+        self._glyphVariations = VariationGlyphs(
+            lib.get(variationGlyphsKey, []),
+            self._axes,
+            defaultWidth=self._RGlyph.width,
+        )
+        self._status = lib.get(statusKey, 0)
 
     def duplicateSelectedElements(self): # TODO
         # for selectedElement in self._getSelectedElement():
