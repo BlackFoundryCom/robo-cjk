@@ -34,12 +34,12 @@ DeepComponents = component.DeepComponents
 Axes = component.Axes
 VariationGlyphs = component.VariationGlyphs
 
-import copy, time
+import copy, time, traceback
 from fontTools.varLib.models import VariationModel
 
 # Deprecated keys
 # deepComponentsKeyOld = 'robocjk.characterGlyph.deepComponents'
-glyphVariationsKey = 'robocjk.fontVariationGlyphs'
+# glyphVariationsKey = 'robocjk.fontVariationGlyphs'
 
 # Actual keys
 deepComponentsKey = 'robocjk.deepComponents'
@@ -261,41 +261,20 @@ class CharacterGlyph(Glyph):
         return self._glyphVariations
 
     def _initWithLib(self, lib=None):
+        if lib is None:
+            lib = self._RGlyph.lib
         try:
-            if lib:
-                if variationGlyphsKey not in lib.keys():
-                    deepComponents = lib[deepComponentsKey]
-                    variationGlyphs = lib[glyphVariationsKey]
-                else:
-                    deepComponents = lib[deepComponentsKey]
-                    variationGlyphs = lib[variationGlyphsKey]
-                hasAxisKey = axesKey in lib.keys()
-                axes = lib.get(axesKey)
-                status = lib.get(statusKey, 0)
-            else:
-                if variationGlyphsKey not in self._RGlyph.lib.keys(): 
-                    deepComponents = self._RGlyph.lib.get(deepComponentsKey, [])
-                    variationGlyphs = self._RGlyph.lib[glyphVariationsKey]
-                else:
-                    deepComponents = self._RGlyph.lib.get(deepComponentsKey, [])
-                    variationGlyphs = self._RGlyph.lib[variationGlyphsKey]
-                hasAxisKey = axesKey in self._RGlyph.lib.keys()
-                axes = self._RGlyph.lib.get(axesKey)
-                status = self._RGlyph.lib.get(statusKey, 0)
-            if hasAxisKey:
-                self._deepComponents = DeepComponents(deepComponents)
-                self._axes = Axes(axes)
-                self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
-                self._status = status
-            else:
-                self._deepComponents = DeepComponents()
-                self._deepComponents._init_with_old_format(deepComponents)
-                self._axes = Axes()      
-                self._axes._init_with_old_format(variationGlyphs)
-                self._glyphVariations = VariationGlyphs()
-                self._glyphVariations._init_with_old_format(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
+            deepComponents = lib.get(deepComponentsKey, [])
+            variationGlyphs = lib.get(variationGlyphsKey, [])
+            hasAxisKey = axesKey in lib.keys()
+            self._deepComponents = DeepComponents(deepComponents)
+            self._axes = Axes(lib.get(axesKey, []))
+            self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
+            self._status = lib.get(statusKey, 0)
             # self._temp_set_Status_value()
         except Exception as e:
+            print("Error while loading glyph")
+            traceback.print_exc()
             self._deepComponents = DeepComponents()
             self._axes = Axes()   
             self._glyphVariations = VariationGlyphs()
