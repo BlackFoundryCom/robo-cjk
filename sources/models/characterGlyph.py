@@ -264,13 +264,14 @@ class CharacterGlyph(Glyph):
         if lib is None:
             lib = self._RGlyph.lib
         try:
-            deepComponents = lib.get(deepComponentsKey, [])
-            variationGlyphs = lib.get(variationGlyphsKey, [])
-            self._deepComponents = DeepComponents(deepComponents)
+            self._deepComponents = DeepComponents(lib.get(deepComponentsKey, []))
             self._axes = Axes(lib.get(axesKey, []))
-            self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
+            self._glyphVariations = VariationGlyphs(
+                lib.get(variationGlyphsKey, []),
+                self._axes,
+                defaultWidth=self._RGlyph.width,
+            )
             self._status = lib.get(statusKey, 0)
-            # self._temp_set_Status_value()
         except Exception as e:
             print("Error while loading glyph")
             traceback.print_exc()
