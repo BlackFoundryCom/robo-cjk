@@ -61,6 +61,7 @@ lockedProtect = decorators.lockedProtect
 refresh = decorators.refresh
 
 from mojo.roboFont import *
+from mojo.extensions import *
 from datetime import datetime
 import threading
 import queue
@@ -71,6 +72,9 @@ CHECKING1 = colors.CHECKING1
 CHECKING2 = colors.CHECKING2
 CHECKING3 = colors.CHECKING3
 DONE = colors.DONE
+
+extKeyStub = 'blackFoundry.robocjk.'
+component_checker_font = extKeyStub + 'component_checker_font'
 
 EditButtonImagePath = os.path.join(os.getcwd(), "resources", "EditButton.pdf")
 removeGlyphImagePath = os.path.join(os.getcwd(), "resources", "removeButton.pdf")
@@ -2305,7 +2309,7 @@ class VariableComponentChecker:
                 self.DC2CG[v].append(k)
 
         self.overlay_available_fonts = sorted(self.fonts.keys())    
-        self.overlayfont = "HiraginoSans"
+        self.overlayfont = getExtensionDefault(component_checker_font, fallback="HiraginoSans")
         self.overlaystyles = self.fonts.get(self.overlayfont, [])
         if self.overlaystyles:
             self.overlaystyle = self.overlaystyles[0]
@@ -2332,6 +2336,7 @@ class VariableComponentChecker:
             sizeStyle="small",
             callback=self.selectFontCallback,
         )
+        self.w.cbFontList.set(self.overlayfont)
         
         self.w.cbFontWeight = ComboBox(
             (250, 20, 100, 20),
@@ -2363,6 +2368,7 @@ class VariableComponentChecker:
         
     def selectFontCallback(self, sender):
         self.overlayfont = sender.get()
+        setExtensionDefault(component_checker_font, self.overlayfont)
         self.overlaystyles = self.fonts.get(self.overlayfont, [])
         self.w.cbFontWeight.setItems(self.overlaystyles)
         if self.overlaystyles:
