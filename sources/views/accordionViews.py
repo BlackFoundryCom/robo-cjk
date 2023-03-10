@@ -285,8 +285,9 @@ class CompositionRulesGroup(Group):
             for char in clientrequests["data"]["used_by"]:
                 suffix = getSuffix(char["name"])
                 if suffix: suffix = "."+suffix
-                if char["unicode_hex"]:
-                    self.existingDeepComponentInstances.append(chr(int(char["unicode_hex"],16))+suffix)
+                if char["unicodes"]:
+                    for unic in char["unicodes"]:
+                        self.existingDeepComponentInstances.append(chr(unic)+suffix)
                 else:
                     self.existingDeepComponentInstances.append(char["name"]+suffix)
         self.existingInstancesList.set(self.existingDeepComponentInstances)
