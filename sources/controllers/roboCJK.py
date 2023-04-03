@@ -290,6 +290,7 @@ class RoboCJKController(object):
         pen = tempglyph.getPen()
         for x in glyph.preview(position = location, forceRefresh = True):
             x.glyph.draw(pen)
+            tempglyph.width = x.glyph.width
 
         readGlyphFromString(tempglyph.dumpToGLIF(), rg.naked(), rg.naked().getPointPen())
         rg.round()
