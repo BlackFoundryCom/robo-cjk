@@ -1217,60 +1217,10 @@ class Font():
             self.locker.changeLockName(oldName, newName)
             return True
         else:
-            # if not isinstance(oldName, str):
-            #     oldName = oldName["name"]
-            print(oldName, newName)
             glyphType = self[oldName].type
-
-            lock, _ = self.lockGlyph(self[oldName])
-            if not lock: return
-            
-            # self.updateStaticSet(glyphType)
-            if glyphType == "atomicElement":
-                glyphlist = self.staticAtomicElementSet(update = True)
-                if newName in glyphlist:
-                    self.batchUnlockGlyphs([oldName])
-                    return
-            elif glyphType == "deepComponent":
-                glyphlist = self.staticDeepComponentSet(update = True)
-                if newName in glyphlist:
-                    self.batchUnlockGlyphs([oldName])
-                    return
-            else:
-                glyphlist = self.staticCharacterGlyphSet(update = True)
-                if newName in glyphlist:
-                    self.batchUnlockGlyphs([oldName])
-                    return
-
-            f = self._RFont.getLayer('foreground')
-            # if self.glyphLockedBy(self[oldName]) not in [None, self.lockerUserName]: return
-            f[oldName].name = newName
-            glyph = f[newName]
-            xml = glyph.dumpToGLIF()
-            glyphType = self[glyph.name].type
-            if glyphType == "atomicElement":
-                self.client.atomic_element_create(self.uid, xml)
-            elif glyphType == "deepComponent":
-                self.client.deep_component_create(self.uid, xml)
-            else:
-                self.client.character_glyph_create(self.uid, xml)
-
-            for layerName in self._fontLayers:
-                f = self._RFont.getLayer(layerName)
-                if oldName not in f.keys(): continue
-                f[oldName].name = newName
-                g = f[newName]
-                xml = g.dumpToGLIF()
-                if glyphType == "atomicElement":
-                    self.client.atomic_element_layer_create(self.uid, newName, layerName, xml)
-                elif glyphType == "deepComponent":
-                    pass
-                else:
-                    self.client.character_glyph_layer_create(self.uid, newName, layerName, xml)
-
+            self.duplicateGlyph(oldName, newName)
             self.removeGlyph(oldName, glyphType)
             self.updateStaticSet(glyphType)
             self.getmySQLGlyph(newName)
-            self.batchUnlockGlyphs([oldName])
             return True
             
