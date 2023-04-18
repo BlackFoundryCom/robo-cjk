@@ -2297,7 +2297,7 @@ class VariableComponentChecker:
     capslock = 65536
     
     def __init__(self, RCJKI):
-        self.ww, self.wh = 350, 340
+        self.ww, self.wh = 600, 440
         self.w = Window((self.ww, self.wh), "Variable Component checker", minSize = (100, 340))
         self.RCJKI = RCJKI
         self.font = self.RCJKI.currentFont
@@ -2317,13 +2317,13 @@ class VariableComponentChecker:
         if self.overlayfont not in self.overlay_available_fonts:
             self.overlayfont = self.overlay_available_fonts[0]
 
-        self.fontoffx = 0
-        self.fontoffy = -55
+        self.fontoffx = 50
+        self.fontoffy = 0
             
         self.w.characterList = List((0, 20, 50, -0), [], selectionCallback = self.characterListSelectionCallback)
         self.setcharacterList()
         
-        self.offx, self.offy = 0, 0
+        self.offx, self.offy = 0, 100
         self.scaleWidth = 100
         self.w.scaleWidthTitle = TextBox((50, 5, 100, 20), 'Width:', sizeStyle = 'small')
         self.w.scaleWidth = EditText((50, 20, 100, 20), self.scaleWidth, callback = self.scaleWidthCallback)
