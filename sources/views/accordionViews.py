@@ -1208,6 +1208,12 @@ class AxesGroup(Group):
         self.RCJKI.updateDeepComponent(update = False)
         self.axesList.setSelection(sel)
         self.controller.updatePreview()
+        self.RCJKI.currentGlyph.sourcesList = [{"Axis":x["Axis"], "DefaultValue":x["DefaultValue"], "MinValue":x["MinValue"], "MaxValue":x["MaxValue"], "PreviewValue":self.RCJKI.userValue(float(x["PreviewValue"]), float(x["MinValue"]), float(x["MaxValue"]))} for x in self.axesList.get()]
+        if self.RCJKI.variableComponentChecker is not None:
+            self.RCJKI.variableComponentChecker.updateView()
+        self.RCJKI.currentGlyph.redrawSelectedElementSource = True
+        self.RCJKI.currentGlyph.redrawSelectedElementPreview = True
+        self.RCJKI.currentGlyph.reinterpolate = True
 
     @lockedProtect
     def axesListSelectionCallback(self, sender):
