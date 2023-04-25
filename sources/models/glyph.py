@@ -392,11 +392,17 @@ class Glyph(RGlyph):
     def setTransformationCenterToSelectedElements(self, center):
         tx, ty = center
         for index in self.selectedElement:
-            self._deepComponents[index]["transform"]["tcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
-            self._deepComponents[index]["transform"]["tcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
-            for variation in self._glyphVariations:
-                variation.deepComponents[index]["transform"]["tcenterx"] = int((tx-self._deepComponents[index]["transform"]["x"])/self._deepComponents[index]["transform"]["scalex"])
-                variation.deepComponents[index]["transform"]["tcentery"] = int((ty-self._deepComponents[index]["transform"]["y"])/self._deepComponents[index]["transform"]["scaley"])
+            if self.selectedSourceAxis:
+                for variation in self._glyphVariations:
+                    if variation["sourceName"] != self.selectedSourceAxis: 
+                        continue
+                    transform = variation.deepComponents[index]["transform"]
+                    variation.deepComponents[index]["transform"]["tcenterx"] = int((tx-transform["x"])/transform["scalex"])
+                    variation.deepComponents[index]["transform"]["tcentery"] = int((ty-transform["y"])/transform["scaley"])
+            else:
+                transform = self._deepComponents[index]["transform"]
+                self._deepComponents[index]["transform"]["tcenterx"] = int((tx-transform["x"])/transform["scalex"])
+                self._deepComponents[index]["transform"]["tcentery"] = int((ty-transform["y"])/transform["scaley"])
         self.redrawSelectedElementSource = True
         self.redrawSelectedElementPreview = True
 
