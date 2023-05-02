@@ -2325,13 +2325,17 @@ class VariableComponentChecker:
         
         self.offx, self.offy = 0, 100
         self.scaleWidth = 100
+        self.scaleHeight = 100
         self.w.scaleWidthTitle = TextBox((50, 5, 100, 20), 'Width:', sizeStyle = 'small')
         self.w.scaleWidth = EditText((50, 20, 100, 20), self.scaleWidth, callback = self.scaleWidthCallback)
+
+        self.w.scaleHeightTitle = TextBox((150, 5, 100, 20), 'Height:', sizeStyle = 'small')
+        self.w.scaleHeight = EditText((150, 20, 100, 20), self.scaleHeight, callback = self.scaleHeightCallback)
 
         self.w.searchGlyph = EditText((0, 0, 50, 20), '', callback = self.searchGlyphCallback)
 
         self.w.cbFontList = ComboBox(
-            (150, 20, 100, 20),
+            (250, 20, 100, 20),
             self.overlay_available_fonts,
             sizeStyle="small",
             callback=self.selectFontCallback,
@@ -2339,7 +2343,7 @@ class VariableComponentChecker:
         self.w.cbFontList.set(self.overlayfont)
         
         self.w.cbFontWeight = ComboBox(
-            (250, 20, 100, 20),
+            (350, 20, 100, 20),
             self.fonts.get(self.overlayfont, []),
             sizeStyle="small",
             callback=self.selectStyleCallback,
@@ -2427,6 +2431,16 @@ class VariableComponentChecker:
         except:
             sender.set(self.scaleWidth)
         self.w.canvas.update()
+
+    def scaleHeightCallback(self, sender):
+        value = sender.get()
+        try:
+            if not '.' in value:
+                value+='.'
+            self.scaleHeight = float(value)
+        except:
+            sender.set(self.scaleHeight)
+        self.w.canvas.update()
         
     def windowWillClose(self, sender):
         self.observer(remove = True)
@@ -2465,7 +2479,7 @@ class VariableComponentChecker:
             mjdt.translate(self.fontoffx, self.fontoffy)
             mjdt.fill(0, 0, 0, .1)
             mjdt.save()
-            mjdt.scale(self.scaleWidth/100, 1)
+            mjdt.scale(self.scaleWidth/100, self.scaleHeight/100)
             mjdt.text(self.selectedCharacter, (0, 0))
             mjdt.restore()
             scalex, scaley = 300/1000, 300/1000
