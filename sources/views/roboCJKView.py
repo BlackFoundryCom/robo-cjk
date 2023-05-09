@@ -116,39 +116,44 @@ def openGlyphWindowIfLockAcquired(RCJKI, glyph):
     # font[glyphName]._initWithLib()
     # locked, alreadyLocked = font.locker.lock(g)
     locked, alreadyLocked = font.lockGlyph(g)
-    RCJKI.currentGlyphIsLocked = locked
-    if not RCJKI.mysql:
-        print(locked, alreadyLocked)
-        if not locked: return
-        if not alreadyLocked:
-            RCJKI.gitEngine.pull()
-            # font.getGlyphs()
-            getRelatedGlyphs(font, glyph.name)
-            # font.getGlyph(font[glyphName])
-            # g = font.get(glyphName, font._RFont)._RGlyph
-    else:
-        # if not locked: return
-        getRelatedGlyphs(font, glyph.name)
-    if not g.width:
-        g.width = font.defaultGlyphWidth
     try:
-        CurrentGlyphWindow().close()
-    except: pass
-    # font.get(glyphName, font._RFont).update()
-    glyph = font.get(glyph.name, font._RFont)
-    glyph.update()
-    g = glyph._RGlyph
-    window = OpenGlyphWindow(g)
-    window.window().setPosSize(RCJKI.glyphWindowPosSize)
-    if not locked:
-        message(
-            "The glyph couldn't be locked: any changes you make will not be saved",
-            "The glyph is locked by another session.",
-            parentWindow=window.window(),
-        )
-    RCJKI.openedGlyphName = glyph.name
+        RCJKI.currentGlyphIsLocked = locked
+        if not RCJKI.mysql:
+            print(locked, alreadyLocked)
+            if not locked: return
+            if not alreadyLocked:
+                RCJKI.gitEngine.pull()
+                # font.getGlyphs()
+                getRelatedGlyphs(font, glyph.name)
+                # font.getGlyph(font[glyphName])
+                # g = font.get(glyphName, font._RFont)._RGlyph
+        else:
+            # if not locked: return
+            getRelatedGlyphs(font, glyph.name)
+        if not g.width:
+            g.width = font.defaultGlyphWidth
+        try:
+            CurrentGlyphWindow().close()
+        except: pass
+        # font.get(glyphName, font._RFont).update()
+        glyph = font.get(glyph.name, font._RFont)
+        glyph.update()
+        g = glyph._RGlyph
+        window = OpenGlyphWindow(g)
+        window.window().setPosSize(RCJKI.glyphWindowPosSize)
+        if not locked:
+            message(
+                "The glyph couldn't be locked: any changes you make will not be saved",
+                "The glyph is locked by another session.",
+                parentWindow=window.window(),
+            )
+        RCJKI.openedGlyphName = glyph.name
+        RCJKI.disabledEditingUIIfValidated()
+    except Exception:
+        font.batchUnlockGlyphs([glyph.name])
+        raise
+
     stop = time.time()
-    RCJKI.disabledEditingUIIfValidated()
     print(stop-start, 'to open a %s'%glyph.name)
 
 
