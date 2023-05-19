@@ -229,7 +229,7 @@ class CharacterGlyph(Glyph):
                     resultGlyph = model.interpolateFromMasters(position, [self._RGlyph, *layerGlyphs])
                     preview.append(self.ResultGlyph(resultGlyph))
                 except:
-                    print("Warning, uncompatible layer(s)")
+                    print("Warning, incompatible layer(s)")
                     pass
 
         self.previewLocationsStore[','.join([k+':'+str(v) for k,v in position.items()])] = preview
