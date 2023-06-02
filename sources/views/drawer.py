@@ -140,7 +140,7 @@ class Drawer():
                 if not self.RCJKI.currentGlyph.selectedSourceAxis:
                     color = (.25, 0, .5, .8)
                 else: color = (.5, 0, .25, .4)
-            if len(self.RCJKI.currentGlyph): return
+            # if len(self.RCJKI.currentGlyph): return
 
         self.drawAxisPreview(self.RCJKI.currentGlyph, color, scale, customColor, view)   
 
