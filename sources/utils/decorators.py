@@ -86,7 +86,7 @@ def glyphUndo(func):
                     lib = RLib()
                     deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self)
                     lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
-                    lib[axesKey] = copy.deepcopy(self._axes.getList())
+                    lib[axesKey] = copy.deepcopy(self._axes.getList(with_global_axes = True))
                     lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getList())
                     self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                     self.stackUndo_lib.append(lib)
@@ -105,7 +105,7 @@ def glyphAddRemoveUndo(func):
                 lib = RLib()
                 deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self)
                 lib[deepComponentsKey] = copy.deepcopy(self._deepComponents.getList())
-                lib[axesKey] = copy.deepcopy(self._axes.getList())
+                lib[axesKey] = copy.deepcopy(self._axes.getList(with_global_axes = True))
                 lib[glyphVariationsKey] = copy.deepcopy(self._glyphVariations.getList())
                 self.stackUndo_lib = self.stackUndo_lib[:self.indexStackUndo_lib]
                 self.stackUndo_lib.append(lib)
@@ -124,7 +124,7 @@ def glyphTransformUndo(func):
                 lib = RLib()
                 deepComponentsKey, axesKey, glyphVariationsKey = _getKeys(self.RCJKI.currentGlyph)
                 lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
-                lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList())
+                lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList(with_global_axes = True))
                 lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
                 self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
                 self.RCJKI.currentGlyph.stackUndo_lib.append(lib)

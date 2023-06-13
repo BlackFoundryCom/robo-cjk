@@ -743,7 +743,7 @@ class RoboCJKController(object):
                     # glyphVariationsKey = 'robocjk.characterGlyph.glyphVariations'
                     lib = RLib()
                     lib[deepComponentsKey] = copy.deepcopy(self.currentGlyph._deepComponents.getList())
-                    lib[axesKey] = copy.deepcopy(self.currentGlyph._axes.getList())
+                    lib[axesKey] = copy.deepcopy(self.currentGlyph._axes.getList(with_global_axes = True))
                     lib[glyphVariationsKey] = copy.deepcopy(self.currentGlyph._glyphVariations.getList())
                     self.currentGlyph.stackUndo_lib.append(lib)
             else:

@@ -241,20 +241,20 @@ class DeepComponent(Glyph):
                 status = self._RGlyph.lib.get(statusKey, 0)
             if hasAxisKey:
                 self._deepComponents = DeepComponents(deepComponents)
-                self._axes = Axes(axes)
+                self._axes = Axes(axes, global_axes = self.currentFont.designspace["axes"])
                 self._glyphVariations = VariationGlyphs(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
                 self._status = status
             else:
                 self._deepComponents = DeepComponents()
                 self._deepComponents._init_with_old_format(deepComponents)
-                self._axes = Axes()      
+                self._axes = Axes(global_axes = self.currentFont.designspace["axes"])      
                 self._axes._init_with_old_format(variationGlyphs)
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(variationGlyphs, self._axes, defaultWidth = self._RGlyph.width)
             # self._temp_set_Status_value()
         except Exception as e:
             self._deepComponents = DeepComponents()
-            self._axes = Axes()  
+            self._axes = Axes(global_axes = self.currentFont.designspace["axes"])  
             self._glyphVariations = VariationGlyphs()
 
     def duplicateSelectedElements(self): # TODO
@@ -365,4 +365,10 @@ class DeepComponent(Glyph):
         self.lib.update(lib)
         if 'public.markColor' in self.lib:
             del self.lib['public.markColor']
+        if not self.lib[axesKey]:
+            del self.lib[axesKey]
+        if not self.lib[deepComponentsKey]:
+            del self.lib[deepComponentsKey]
+        if not self.lib[variationGlyphsKey]:
+            del self.lib[variationGlyphsKey]
         # self.markColor = color

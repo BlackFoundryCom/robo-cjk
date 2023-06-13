@@ -264,7 +264,7 @@ class CharacterGlyph(Glyph):
         if lib is None:
             lib = self._RGlyph.lib
         self._deepComponents = DeepComponents(lib.get(deepComponentsKey, []))
-        self._axes = Axes(lib.get(axesKey, []))
+        self._axes = Axes(lib.get(axesKey, []), global_axes = self.currentFont.designspace["axes"])
         self._glyphVariations = VariationGlyphs(
             lib.get(variationGlyphsKey, []),
             self._axes,
@@ -379,4 +379,10 @@ class CharacterGlyph(Glyph):
         self.lib.update(lib)
         if 'public.markColor' in self.lib:
             del self.lib['public.markColor']
+        if not self.lib[axesKey]:
+            del self.lib[axesKey]
+        if not self.lib[deepComponentsKey]:
+            del self.lib[deepComponentsKey]
+        if not self.lib[variationGlyphsKey]:
+            del self.lib[variationGlyphsKey]
         # self.markColor = color

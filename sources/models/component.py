@@ -140,7 +140,7 @@ class MathDict(dict, _MathMixin):
 
 class Axis:
 
-    def __init__(self, name="", minValue=0, maxValue=1, defaultValue=None):
+    def __init__(self, name="", minValue=0, maxValue=1, defaultValue=None, global_axis = False, **kwargs):
         # for k, v in kwargs.items():
         #     self[k] = v
         self.name = name
@@ -150,12 +150,15 @@ class Axis:
             self.defaultValue = minValue
         else:
             self.defaultValue = defaultValue
+        self.global_axis = global_axis
 
     def __repr__(self):
         return "<"+str(vars(self))+">"
 
-    def _toDict(self):
-        return MathDict({x:getattr(self, x) for x in vars(self)})
+    def _toDict(self, with_global_axes = False):
+        if with_global_axes:
+            return MathDict({x:getattr(self, x) for x in vars(self)})
+        return MathDict({x:getattr(self, x) for x in vars(self) if x != "global_axis"})
 
 class Axes(list):
 
@@ -163,9 +166,11 @@ class Axes(list):
     This class refere to robocjk.axes key
     """
 
-    def __init__(self, axes = []):
+    def __init__(self, axes = [], global_axes = []):
         for axis in axes:
             self.addAxis(axis)
+        for axis in global_axes:
+            self.addAxis(axis, global_axis = True)
 
     def _init_with_old_format(self, data):
         for k, v in data.items():
@@ -179,12 +184,14 @@ class Axes(list):
         # return self._axesNames
     
 
-    def addAxis(self, axis:dict):
-        self.append(Axis(**axis))
+    def addAxis(self, axis:dict, global_axis = False):
+        if global_axis:
+            axis["name"] = axis["tag"]
+        self.append(Axis(**axis, global_axis = global_axis))
 
     def renameAxis(self, oldName, newName):
         for axis in self:
-            if axis.name == oldName:
+            if axis.name == oldName and not axis.global_axis:
                 axis.name = newName
 
     def removeAxis(self, arg):
@@ -197,9 +204,11 @@ class Axes(list):
                     index = i
         self.pop(index)
 
-    def getList(self):
+    def getList(self, with_global_axes = False):
         # print("Axes", [x._toDict() for x in self])
-        return [x._toDict() for x in self]
+        if with_global_axes:
+            return [x._toDict(with_global_axes) for x in self]
+        return [x._toDict() for x in self if not x.global_axis]
         # return [x._toDict() for x in self]
 
     def get(self, name):

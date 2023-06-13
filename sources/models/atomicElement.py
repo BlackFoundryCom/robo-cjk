@@ -136,17 +136,17 @@ class AtomicElement(Glyph):
     def _initWithLib(self):
         if variationGlyphsKey not in self._RGlyph.lib.keys():
             key = dict(self._RGlyph.lib[glyphVariationsKey])
-            self._axes = Axes()
+            self._axes = Axes(global_axes = self.currentFont.designspace["axes"])
             self._axes._init_with_old_format(key)
             self._glyphVariations = VariationGlyphs()
             self._glyphVariations._init_with_old_format(key, self._axes, defaultWidth = self._RGlyph.width)
         else:
             if axesKey in self._RGlyph.lib:
-                self._axes = Axes(self._RGlyph.lib[axesKey])
+                self._axes = Axes(self._RGlyph.lib[axesKey], global_axes = self.currentFont.designspace["axes"])
                 self._glyphVariations = VariationGlyphs(self._RGlyph.lib[variationGlyphsKey], self._axes, defaultWidth = self._RGlyph.width)
                 self._status = self._RGlyph.lib.get(statusKey, 0)
             else:
-                self._axes = Axes()
+                self._axes = Axes(global_axes = self.currentFont.designspace["axes"])
                 self._axes._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]))
                 self._glyphVariations = VariationGlyphs()
                 self._glyphVariations._init_with_old_format(dict(self._RGlyph.lib[variationGlyphsKey]), self._axes, defaultWidth = self._RGlyph.width)
@@ -184,3 +184,7 @@ class AtomicElement(Glyph):
         self.lib.update(lib)
         if 'public.markColor' in self.lib:
             del self.lib['public.markColor']
+        if not self.lib[axesKey]:
+            del self.lib[axesKey]
+        if not self.lib[variationGlyphsKey]:
+            del self.lib[variationGlyphsKey]

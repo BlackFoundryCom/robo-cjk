@@ -1751,7 +1751,7 @@ class DeepComponentAxesGroup(Group):
             deepComponentsKey, glyphVariationsKey, axesKey = _getKeys(self.RCJKI.currentGlyph)
             lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
             lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
-            lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList())
+            lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList(with_global_axes = True))
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
@@ -1842,7 +1842,7 @@ class DeepComponentAxesGroup(Group):
             deepComponentsKey, glyphVariationsKey, axesKey = _getKeys(self.RCJKI.currentGlyph)
             lib[deepComponentsKey] = copy.deepcopy(self.RCJKI.currentGlyph._deepComponents.getList())
             lib[glyphVariationsKey] = copy.deepcopy(self.RCJKI.currentGlyph._glyphVariations.getList())
-            lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList())
+            lib[axesKey] = copy.deepcopy(self.RCJKI.currentGlyph._axes.getList(with_global_axes = True))
             self.RCJKI.currentGlyph.stackUndo_lib = self.RCJKI.currentGlyph.stackUndo_lib[:self.RCJKI.currentGlyph.indexStackUndo_lib]
             self.RCJKI.currentGlyph.stackUndo_lib.append(lib)
             self.RCJKI.currentGlyph.indexStackUndo_lib += 1
