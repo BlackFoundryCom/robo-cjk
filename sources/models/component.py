@@ -167,10 +167,13 @@ class Axes(list):
     """
 
     def __init__(self, axes = [], global_axes = []):
+        names = []
         for axis in axes:
+            names.append(axis["name"])
             self.addAxis(axis)
         for axis in global_axes:
-            self.addAxis(axis, global_axis = True)
+            if axis["tag"] not in names:
+                self.addAxis(axis, global_axis = True)
 
     def _init_with_old_format(self, data):
         for k, v in data.items():
