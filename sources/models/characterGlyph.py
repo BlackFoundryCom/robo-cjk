@@ -312,6 +312,7 @@ class CharacterGlyph(Glyph):
             dcglyph = self.currentFont[deepComponentName]
             for i, axis in enumerate(dcglyph._axes):
                 value = dcglyph._axes[i].defaultValue
+                if dcglyph._axes[i].global_axis: continue
                 d.coord.add(axis.name, value)
         else:
             d = items
@@ -373,6 +374,8 @@ class CharacterGlyph(Glyph):
             if v["width"] == self._RGlyph.width:
                 del lib[variationGlyphsKey][i]["width"]
         if self._status:
+            lib[statusKey] = self._status
+        if self._status == 0:
             lib[statusKey] = self._status
         if 'public.markColor' in lib:
             del lib['public.markColor']
