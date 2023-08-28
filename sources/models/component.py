@@ -633,7 +633,15 @@ class VariationGlyphs(list):
             elif v < axes.get(k).minValue:
                 return axes.get(k).minValue
             else: return v
-        return {k:_clamp(k, v, axes) for k,v in location.items() if v != axes.get(k).defaultValue}
+        d = {}
+        for k, v in location.items():
+            if axes.get(k) is None: continue
+            if v == axes.get(k).defaultValue: continue
+            clamp = _clamp(k, v, axes) 
+            if clamp is None: continue
+            d[k]=clamp
+        return d
+        # return {k:_clamp(k, v, axes) for k,v in location.items() if v != axes.get(k).defaultValue}
 
     # def __iter__(self):
     #     for x in self:
